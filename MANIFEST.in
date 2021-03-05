@@ -1,0 +1,2 @@
+include versioneer.py
+include spec2vec-mlops/_version.py

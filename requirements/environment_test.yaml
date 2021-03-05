@@ -1,0 +1,11 @@
+name: bimadi
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - pytest
+  - pytest-cov
+  - black=20.8b1
+  - pip
+  - pip:
+      - pytest-pycharm
