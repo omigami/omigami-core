@@ -5,4 +5,5 @@ channels:
 dependencies:
   - python=3.8
   - pip
-  - pip: []
+  - pip:
+      - ijson=3.1.*
