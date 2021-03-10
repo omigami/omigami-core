@@ -9,7 +9,7 @@ How to setup
 ------------
 ::
 
-    conda env create -f requirements/environment.frozen.yaml
+    conda env create -f requirements/environment.yaml
     conda env update -f requirements/environment_test.yaml
     conda activate spec2vec-mlops
 
