@@ -2,9 +2,8 @@ import pytest
 
 from tasks.load_data import DataLoader
 
-pytestmark = pytest.mark.skip
 
-
+@pytest.mark.skip(reason="this test requires internet connection.")
 @pytest.mark.parametrize(
     "uri",
     [
@@ -14,6 +13,6 @@ pytestmark = pytest.mark.skip
 )
 def test_load_gnps_json_with_small_and_big_file(uri):
     dl = DataLoader()
-    res = dl.load_gnps_json(uri)
 
-    assert res
+    for item in dl.load_gnps_json(uri):
+        assert isinstance(item, dict)
