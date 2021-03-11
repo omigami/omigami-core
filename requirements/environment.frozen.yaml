@@ -7,3 +7,4 @@ dependencies:
   - pip
   - pip:
       - ijson=3.1.*
+      - drfs
