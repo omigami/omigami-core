@@ -2,7 +2,10 @@ from pathlib import Path
 
 import pytest
 
+from spec2vec_mlops import config
 from spec2vec_mlops.tasks.load_data import DataLoader
+
+KEYS = config["gnps_json"]["necessary_keys"].get(list)
 
 
 @pytest.fixture()
@@ -22,13 +25,17 @@ def gnps_small_json():
 def test_load_gnps_json_with_web_uri(uri):
     dl = DataLoader()
 
-    for item in dl.load_gnps_json(uri):
-        assert isinstance(item, dict)
+    res = dl.iterate_items_from_json(uri)
+
+    assert isinstance(res, list)
+    for r in res:
+        assert isinstance(r, dict)
 
 
 def test_load_gnps_json_with_local_uri(gnps_small_json):
     dl = DataLoader()
 
-    for item in dl.load_gnps_json(gnps_small_json):
-        assert isinstance(item, dict)
-        assert item["spectrum_id"]
+    for res in dl.iterate_items_from_json(gnps_small_json):
+        assert isinstance(res, dict)
+        for k in KEYS:
+            assert k in res

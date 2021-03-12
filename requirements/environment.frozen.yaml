@@ -6,6 +6,7 @@ dependencies:
   - python=3.8
   - pip
   - prefect=0.14.12
+  - confuse=1.4.0
   - pip:
       - ijson==3.1.4
       - git+https://github.com/datarevenue-berlin/drfs
