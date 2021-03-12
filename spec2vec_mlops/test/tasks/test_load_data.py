@@ -14,7 +14,7 @@ def gnps_small_json():
     return f"file://{ASSET_DIR}"
 
 
-@pytest.mark.skip(reason="this test requires internet connection.")
+@pytest.mark.longrun
 @pytest.mark.parametrize(
     "uri",
     [
