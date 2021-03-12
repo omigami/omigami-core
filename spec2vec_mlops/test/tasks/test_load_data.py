@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from tasks.load_data import DataLoader
+from spec2vec_mlops.tasks.load_data import DataLoader
 
 
 @pytest.fixture()
