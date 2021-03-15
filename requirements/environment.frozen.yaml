@@ -1,8 +1,12 @@
-name: spec2vec-mlops
+name: spec2vec_mlops
 channels:
   - conda-forge
   - bioconda
 dependencies:
   - python=3.8
   - pip
-  - pip: []
+  - prefect=0.14.12
+  - confuse=1.4.0
+  - pip:
+      - ijson==3.1.4
+      - git+https://github.com/datarevenue-berlin/drfs

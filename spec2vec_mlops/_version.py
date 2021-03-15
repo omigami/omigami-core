@@ -42,8 +42,8 @@ def get_config():
     cfg.VCS = "git"
     cfg.style = "pep440"
     cfg.tag_prefix = ""
-    cfg.parentdir_prefix = "spec2vec-mlops"
-    cfg.versionfile_source = "spec2vec-mlops/_version.py"
+    cfg.parentdir_prefix = "spec2vec_mlops"
+    cfg.versionfile_source = "spec2vec_mlops/_version.py"
     cfg.verbose = False
     return cfg
 

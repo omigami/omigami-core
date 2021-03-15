@@ -1,4 +1,4 @@
-name: spec2vec-mlops
+name: spec2vec_mlops
 channels:
   - conda-forge
   - bioconda
