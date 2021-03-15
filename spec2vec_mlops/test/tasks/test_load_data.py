@@ -25,7 +25,7 @@ def gnps_small_json():
 def test_load_gnps_json_with_web_uri(uri):
     dl = DataLoader()
 
-    res = dl.iterate_items_from_json(uri)
+    res = dl.load_gnps_json(uri)
 
     assert isinstance(res, list)
     for r in res:
@@ -35,7 +35,7 @@ def test_load_gnps_json_with_web_uri(uri):
 def test_load_gnps_json_with_local_uri(gnps_small_json):
     dl = DataLoader()
 
-    for res in dl.iterate_items_from_json(gnps_small_json):
+    for res in dl.load_gnps_json(gnps_small_json):
         assert isinstance(res, dict)
         for k in KEYS:
             assert k in res

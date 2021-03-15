@@ -18,7 +18,7 @@ class DataLoader:
     def __init__(self):
         pass
 
-    def iterate_items_from_json(self, uri: str) -> List[Dict]:
+    def load_gnps_json(self, uri: str) -> List[Dict]:
         uri = urlopen(uri)
         logger.info(f"Loading data from {uri}... This might take a while.")
         items = ijson.items(uri, "item", multiple_values=True)
@@ -29,5 +29,5 @@ class DataLoader:
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
 def load_data_task(uri) -> List[Dict[str, str]]:
     dl = DataLoader()
-    results = dl.iterate_items_from_json(uri)
+    results = dl.load_gnps_json(uri)
     return results
