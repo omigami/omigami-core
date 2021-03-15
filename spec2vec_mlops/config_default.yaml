@@ -1,4 +1,5 @@
 gnps_json:
+  uri: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
   necessary_keys:
     - "spectrum_id"
     - "source_file"

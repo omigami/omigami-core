@@ -1,8 +1,10 @@
+import datetime
 import logging
 from typing import Dict, List
 from urllib.request import urlopen
 
 import ijson
+from prefect import task
 
 from spec2vec_mlops import config
 
@@ -22,3 +24,10 @@ class DataLoader:
         items = ijson.items(uri, "item", multiple_values=True)
         results = [{k: item[k] for k in KEYS} for item in items]
         return results
+
+
+@task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
+def load_data_task(uri) -> List[Dict[str, str]]:
+    dl = DataLoader()
+    results = dl.iterate_items_from_json(uri)
+    return results
