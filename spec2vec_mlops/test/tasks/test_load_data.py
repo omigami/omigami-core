@@ -8,12 +8,6 @@ from spec2vec_mlops.tasks.load_data import DataLoader
 KEYS = config["gnps_json"]["necessary_keys"].get(list)
 
 
-@pytest.fixture()
-def gnps_small_json():
-    ASSET_DIR = str(Path(__file__).parents[1] / "assets" / "SMALL_GNPS.json")
-    return f"file://{ASSET_DIR}"
-
-
 @pytest.mark.longrun
 @pytest.mark.parametrize(
     "uri",
