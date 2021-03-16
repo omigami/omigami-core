@@ -9,6 +9,7 @@ dependencies:
   - prefect=0.14.*
   - confuse=1.4.*
   - spec2vec=0.4.*
+  - rdkit
   - pip:
       - ijson==3.*
       - git+https://github.com/datarevenue-berlin/drfs
