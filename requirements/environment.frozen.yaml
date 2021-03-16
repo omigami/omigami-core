@@ -12,3 +12,4 @@ dependencies:
   - pip:
       - ijson==3.1.4
       - git+https://github.com/datarevenue-berlin/drfs
+      - matchms==0.8.2
