@@ -12,4 +12,6 @@ def test_clean_data(gnps_small_json):
     cleaned_data = dc.clean_data(loaded_data)
 
     assert isinstance(cleaned_data, list)
-    assert isinstance(cleaned_data[0], Spectrum)
+    assert all(isinstance(spec, Spectrum) for spec in cleaned_data)
+    assert all(spec.get("inchi") != "N/A" for spec in cleaned_data)
+    assert all(isinstance(spec.get("charge"), int) for spec in cleaned_data)
