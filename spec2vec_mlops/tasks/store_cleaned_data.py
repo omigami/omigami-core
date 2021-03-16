@@ -1,9 +1,9 @@
 import datetime
 import logging
 import feast
-from typing import List, Dict
-
-from feast import ValueType
+from typing import List
+import pandas as pd
+from feast import ValueType, FeatureTable, Feature, Entity, FileSource
 from matchms import Spectrum
 from prefect import task
 
@@ -18,44 +18,52 @@ logger = logging.getLogger(__name__)
 
 class DataStorer:
     def __init__(self, out_dir: str):
+        self.feature_table_name = "spectrum_info"
         self.features2types = {
-            "mz_list": feast.value_type.ValueType.DOUBLE_LIST,
-            "intensity_list": feast.value_type.ValueType.DOUBLE_LIST,
-            "charge": feast.value_type.ValueType.INT64,
-            "ionmode": feast.value_type.ValueType.STRING,
-            "compound_name": feast.value_type.ValueType.STRING,
-            "adduct": feast.value_type.ValueType.STRING,
-            "formula_smiles": feast.value_type.ValueType.STRING,
-            "precursor_mz": feast.value_type.ValueType.FLOAT,
-            "inchikey": feast.value_type.ValueType.STRING,
-            "smiles": feast.value_type.ValueType.STRING,
-            "create_time": feast.value_type.ValueType.STRING,
+            "mz_list": ValueType.DOUBLE_LIST,
+            "intensity_list": ValueType.DOUBLE_LIST,
+            "charge": ValueType.INT64,
+            "ionmode": ValueType.STRING,
+            "compound_name": ValueType.STRING,
+            "adduct": ValueType.STRING,
+            "formula_smiles": ValueType.STRING,
+            "precursor_mz": ValueType.FLOAT,
+            "inchikey": ValueType.STRING,
+            "smiles": ValueType.STRING,
+            "create_time": ValueType.STRING,
         }
         self.out_dir = out_dir
 
     def store_cleaned_data(self, data: List[Spectrum]):
         client = feast.Client(core_url=FEAST_CORE_URL, telemetry=False)
-        if not any(table.name != "spectrum_info" for table in client.list_feature_tables()):
+        if not any(
+            table.name != self.feature_table_name
+            for table in client.list_feature_tables()
+        ):
             spectrum_info = self._create_spectrum_info_table(client)
+        else:
+            spectrum_info = client.get_feature_table(self.feature_table_name)
+        data_df = self._get_data_df(data)
+        client.ingest(spectrum_info, data_df)
 
-    def _create_spectrum_info_table(self, client) -> feast.feature_table.FeatureTable:
-        spectrum_id = feast.entity.Entity(
+    def _create_spectrum_info_table(self, client) -> FeatureTable:
+        spectrum_id = Entity(
             name="spectrum_id",
             description="Spectrum identifier",
             value_type=ValueType.INT64,
         )
         features = [
-            feast.feature.Feature(feature, dtype=feature_type)
+            Feature(feature, dtype=feature_type)
             for feature, feature_type in self.features2types.items()
         ]
-        batch_source = feast.data_source.FileSource(
+        batch_source = FileSource(
             file_format=feast.data_format.ParquetFormat(),
             file_url=str(self.out_dir),
-            event_timestamp_column="event_timestamp",
+            event_timestamp_column="create_time",
             created_timestamp_column="created_timestamp",
         )
-        spectrum_info = feast.feature_table.FeatureTable(
-            name="spectrum_info",
+        spectrum_info = FeatureTable(
+            name=self.feature_table_name,
             entities=["spectrum_id"],
             features=features,
             batch_source=batch_source,
@@ -63,6 +71,23 @@ class DataStorer:
         client.apply(spectrum_id)
         client.apply(spectrum_info)
         return spectrum_info
+
+    def _get_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
+        return pd.DataFrame.from_records(
+            [
+                {
+                    "mz_list": spectrum.peaks.mz,
+                    "intensity_list": spectrum.peaks.intensities,
+                    **{
+                        key: spectrum.metadata[key]
+                        for key in self.features2types.keys()
+                        if key in spectrum.metadata.keys()
+                    },
+                    "created_timestamp": datetime.datetime.now(),
+                }
+                for spectrum in data
+            ]
+        )
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
