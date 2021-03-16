@@ -38,6 +38,8 @@ class DataCleaner:
             return spectrum
 
     def _apply_filters(self, spectrum: Spectrum) -> Spectrum:
+        """ Applies a collection of filters to normalize data, like convert str to int
+        """
         spectrum = default_filters(spectrum)
         spectrum = add_parent_mass(spectrum)
         return spectrum
