@@ -38,3 +38,5 @@ gnps_json:
     - "Formula_smiles"
     - "Formula_inchi"
     - "url"
+feast:
+  url: "0.0.0.0:6565"
