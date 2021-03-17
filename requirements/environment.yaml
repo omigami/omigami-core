@@ -10,6 +10,7 @@ dependencies:
   - confuse=1.4.*
   - spec2vec=0.4.*
   - rdkit
+  - pubchempy=1.0.*
   - pip:
       - ijson==3.*
       - git+https://github.com/datarevenue-berlin/drfs
