@@ -9,7 +9,7 @@ from prefect import task
 
 from spec2vec_mlops import config
 
-KEYS = config["gnps_json"]["necessary_keys"].get(list)
+KEYS = config["cleaned_data"]["necessary_keys"].get(list)
 FEAST_CORE_URL = config["feast"]["url"].get(str)
 
 logging.basicConfig(level=logging.DEBUG)
@@ -19,19 +19,19 @@ logger = logging.getLogger(__name__)
 class DataStorer:
     def __init__(self, out_dir: str):
         self.feature_table_name = "spectrum_info"
-        self.features2types = {
+        not_string_features2types = {
             "mz_list": ValueType.DOUBLE_LIST,
             "intensity_list": ValueType.DOUBLE_LIST,
-            "charge": ValueType.INT64,
-            "ionmode": ValueType.STRING,
-            "compound_name": ValueType.STRING,
-            "adduct": ValueType.STRING,
-            "formula_smiles": ValueType.STRING,
             "precursor_mz": ValueType.FLOAT,
-            "inchikey": ValueType.STRING,
-            "smiles": ValueType.STRING,
-            "create_time": ValueType.STRING,
+            "charge": ValueType.INT64,
+            "parent_mass": ValueType.FLOAT,
         }
+        string_features2types = {
+            key.lower(): ValueType.STRING
+            for key in KEYS
+            if key.lower() not in not_string_features2types.keys()
+        }
+        self.features2types = {**not_string_features2types, **string_features2types}
         self.out_dir = out_dir
 
     def store_cleaned_data(self, data: List[Spectrum]):
@@ -59,7 +59,7 @@ class DataStorer:
         batch_source = FileSource(
             file_format=feast.data_format.ParquetFormat(),
             file_url=str(self.out_dir),
-            event_timestamp_column="create_time",
+            event_timestamp_column="event_timestamp",
             created_timestamp_column="created_timestamp",
         )
         spectrum_info = FeatureTable(
@@ -76,6 +76,7 @@ class DataStorer:
         return pd.DataFrame.from_records(
             [
                 {
+                    "spectrum_id": spectrum.metadata["spectrum_id"],
                     "mz_list": spectrum.peaks.mz,
                     "intensity_list": spectrum.peaks.intensities,
                     **{
@@ -83,6 +84,9 @@ class DataStorer:
                         for key in self.features2types.keys()
                         if key in spectrum.metadata.keys()
                     },
+                    "event_timestamp": datetime.datetime.strptime(
+                        spectrum.metadata["create_time"], "%Y-%m-%d %H:%M:%S.%f"
+                    ),
                     "created_timestamp": datetime.datetime.now(),
                 }
                 for spectrum in data

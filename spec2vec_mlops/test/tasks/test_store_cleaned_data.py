@@ -1,7 +1,5 @@
-import datetime
 import feast
 import pytest
-import pandas as pd
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.clean_data import DataCleaner
 from spec2vec_mlops.tasks.load_data import DataLoader
@@ -36,22 +34,8 @@ def test_create_spectrum_info_table(data_storer):
 def test_get_data_df(data_storer, cleaned_data):
     spectrum_df = data_storer._get_data_df(cleaned_data)
     assert len(spectrum_df) == len(cleaned_data)
-    assert len(spectrum_df.columns) == len(data_storer.features2types.keys()) + 1
+    assert len(spectrum_df.columns) == len(data_storer.features2types.keys()) + 2
 
 
 def test_store_cleaned_data(data_storer, cleaned_data):
     data_storer.store_cleaned_data(cleaned_data)
-    options = {
-        "HISTORICAL_FEATURE_OUTPUT_LOCATION": f"{data_storer.out_dir}/test_data/output",
-        "SPARK_STAGING_LOCATION": f"{data_storer.out_dir}/test_data/staging",
-    }
-    client = feast.Client(core_url=FEAST_CORE_URL, telemetry=False, options=options)
-    entities_of_interest = pd.DataFrame(
-        {
-            "spectrum_id": [i for i in range(100)],
-            "event_timestamp": [datetime.datetime(2013, 1, 1)] * 100,
-        }
-    )
-    job = client.get_historical_features(
-        ["spectrum_info:compound_name"], entities_of_interest
-    )
