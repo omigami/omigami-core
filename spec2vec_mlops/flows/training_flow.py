@@ -19,19 +19,21 @@ URI = "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data
 def spec2vec_train_pipeline():
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/spec2vec-mlops:v1",
+            image="drtools:spec2vec-mlops-v1",
         ),
-        "storage": S3("eks-mlops"),
+        "storage": S3("dr-prefect"),
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(URI)
         raw = load_data_task(uri)
+        print("Data loading is complete...")
         # cleaned = clean_data_task(raw)
         # saved = save_data_to_feast_task(cleaned)
         # documents = convert_data_to_documents_task(saved)
         # encoded = encode_training_data_task(documents)
         # trained = train_model_task(documents)
-        training_flow.register(project_name="spec2vec-mlops-trial-01")
+    training_flow_id = training_flow.register(project_name="spec2vec-mlops-trial-01")
+    return training_flow_id
 
 
 # training_flow_state = training_flow.run()
