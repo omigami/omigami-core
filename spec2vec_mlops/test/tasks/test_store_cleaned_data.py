@@ -28,13 +28,15 @@ def cleaned_data(gnps_small_json):
 def test_create_spectrum_info_table(data_storer):
     client = feast.Client(core_url=FEAST_CORE_URL, telemetry=False)
     data_storer._create_spectrum_info_table(client)
-    assert client.list_feature_tables()[0].name == "spectrum_info"
+    assert client.list_feature_tables()[0].name == data_storer.feature_table_name
 
 
 def test_get_data_df(data_storer, cleaned_data):
     spectrum_df = data_storer._get_data_df(cleaned_data)
     assert len(spectrum_df) == len(cleaned_data)
-    assert len(spectrum_df.columns) == len(data_storer.features2types.keys()) + 2
+    assert (
+        len(spectrum_df.columns) == len(data_storer.features2types.keys()) + 3
+    )  # +3 because of spectrum_id, created_timestamp and event_timestamp
 
 
 def test_store_cleaned_data(data_storer, cleaned_data):

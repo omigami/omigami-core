@@ -95,6 +95,6 @@ class DataStorer:
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def load_data_task(data: List[Spectrum], out_dir: str):
+def store_cleaned_task(data: List[Spectrum], out_dir: str):
     ds = DataStorer(out_dir)
     ds.store_cleaned_data(data)

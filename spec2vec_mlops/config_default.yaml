@@ -69,6 +69,7 @@ cleaned_data:
     - "ionmode"
     - "task_id"
     - "user_id"
+    - "inchikey"
     - "inchikey_smiles"
     - "inchikey_inchi"
     - "formula_smiles"
