@@ -1,5 +1,5 @@
 #TODO: Make tag versionable
-TAG="drtools/prefect:spec2vec_mlops_v4"
+TAG="drtools/prefect:spec2vec_mlops_v5"
 SPARK_TAG="drtools/prefect:spec2vec_mlops_spark_v1"
 
 

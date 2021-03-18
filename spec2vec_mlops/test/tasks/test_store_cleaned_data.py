@@ -1,6 +1,6 @@
-import feast
 import pytest
-from spec2vec_mlops import config
+
+from feast.sdk.python.feast import Client
 from spec2vec_mlops.tasks.clean_data import DataCleaner
 from spec2vec_mlops.tasks.load_data import DataLoader
 from spec2vec_mlops.tasks.store_cleaned_data import DataStorer
@@ -28,7 +28,7 @@ def cleaned_data(gnps_small_json):
 
 
 def test_create_spectrum_info_table(data_storer):
-    client = feast.Client(core_url=FEAST_CORE_URL, telemetry=False)
+    client = Client(core_url=FEAST_CORE_URL, telemetry=False)
     data_storer._create_spectrum_info_table(client)
     assert client.list_feature_tables()[0].name == data_storer.feature_table_name
 

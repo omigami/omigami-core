@@ -3,10 +3,17 @@ import logging
 import feast
 from typing import List
 import pandas as pd
-from feast import ValueType, FeatureTable, Feature, Entity, FileSource
 from matchms import Spectrum
 from prefect import task
-
+from feast.sdk.python.feast import (
+    ValueType,
+    FeatureTable,
+    Entity,
+    Feature,
+    FileSource,
+    Client,
+)
+from feast.sdk.python.feast.data_format import ParquetFormat
 from spec2vec_mlops import config
 
 KEYS = config["cleaned_data"]["necessary_keys"].get(list)
@@ -36,7 +43,7 @@ class DataStorer:
         self.out_dir = out_dir
 
     def store_cleaned_data(self, data: List[Spectrum]):
-        client = feast.Client(core_url=self.feast_core_url, telemetry=False)
+        client = Client(core_url=self.feast_core_url, telemetry=False)
         if not any(
             table.name != self.feature_table_name
             for table in client.list_feature_tables()
@@ -58,7 +65,7 @@ class DataStorer:
             for feature, feature_type in self.features2types.items()
         ]
         batch_source = FileSource(
-            file_format=feast.data_format.ParquetFormat(),
+            file_format=ParquetFormat(),
             file_url=str(self.out_dir),
             event_timestamp_column="event_timestamp",
             created_timestamp_column="created_timestamp",
