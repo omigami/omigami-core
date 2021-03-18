@@ -78,7 +78,7 @@ cleaned_data:
     - "formula_inchi"
     - "url"
 feast:
-  url: "0.0.0.0:6565"
+  url: "feast-feast-core.feast:6565"
 prefect_flow_registration:
   api_server:
     remote: "https://prefect.mlops.datarevenue.com/graphql"

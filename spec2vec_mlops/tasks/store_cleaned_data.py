@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class DataStorer:
     def __init__(self, out_dir: str):
+        self.feast_core_url = FEAST_CORE_URL
         self.feature_table_name = "spectrum_info"
         not_string_features2types = {
             "mz_list": ValueType.DOUBLE_LIST,
@@ -35,7 +36,7 @@ class DataStorer:
         self.out_dir = out_dir
 
     def store_cleaned_data(self, data: List[Spectrum]):
-        client = feast.Client(core_url=FEAST_CORE_URL, telemetry=False)
+        client = feast.Client(core_url=self.feast_core_url, telemetry=False)
         if not any(
             table.name != self.feature_table_name
             for table in client.list_feature_tables()
