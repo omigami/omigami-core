@@ -24,7 +24,7 @@ class DataCleaner:
 
     def clean_data(self, data: List[Dict]) -> List[Spectrum]:
         # TODO: Paralelize with Dask
-        spectra = [parsed for spec in data if (parsed := self._parse_data(spec))
+        spectra = [self._parse_data(spec) for spec in data if self._parse_data(spec)
                    is not None]
         return spectra
 
@@ -69,7 +69,7 @@ class DataCleaner:
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def clean_data(spectra_data: List[Dict]):
+def clean_data_task(spectra_data: List[Dict]):
     data_cleaner = DataCleaner()
     results = data_cleaner.clean_data(spectra_data)
     return results

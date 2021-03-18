@@ -7,6 +7,7 @@ from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
 from spec2vec_mlops import config
+from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.load_data import load_data_task
 
 logging.basicConfig(level=logging.DEBUG)
@@ -30,7 +31,7 @@ def spec2vec_train_pipeline_local(source_uri: str) -> State:
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_COMPLETE_GNPS,
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project",
+    project_name: str = "spec2vec-mlops-project-10",
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -58,8 +59,10 @@ def spec2vec_train_pipeline_distributed(
         uri = Parameter(name="uri")
         raw = load_data_task(uri)
         logger.info("Data loading is complete.")
-        # cleaned = clean_data_task(raw)
-        # saved = save_data_to_feast_task(cleaned)
+        logger.info("Cleaning data.")
+        cleaned = clean_data_task(raw)
+        logger.info("Finished cleaning data.")
+        # store_cleaned_task(cleaned)
         # documents = convert_data_to_documents_task(saved)
         # encoded = encode_training_data_task(documents)
         # trained = train_model_task(documents)
