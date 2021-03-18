@@ -48,9 +48,9 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools:spec2vec-mlops-v1",
+            image="drtools/prefect:spec2vec_mlops_v4",
             labels=["dev"],
-            service_account_name="dask-jupyter-sa",
+            service_account_name="prefect-server-serviceaccount",
         ),
         "storage": S3("dr-prefect"),
     }
