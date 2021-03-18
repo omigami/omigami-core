@@ -24,8 +24,11 @@ class DataCleaner:
 
     def clean_data(self, data: List[Dict]) -> List[Spectrum]:
         # TODO: Paralelize with Dask
-        spectra = [parsed for spec in data if (parsed := self._parse_data(spec))
-                   is not None]
+        spectra = []
+        for spec in data:
+            spectrum = self._parse_data(spec)
+            if spectrum:
+                spectra.append(spectrum)
         return spectra
 
     def _parse_data(self, spectrum_dict: dict) -> Spectrum:
