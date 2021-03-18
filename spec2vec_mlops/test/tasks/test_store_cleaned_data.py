@@ -1,6 +1,6 @@
 import pytest
+from feast import Client
 
-from feast.sdk.python.feast import Client
 from spec2vec_mlops.tasks.clean_data import DataCleaner
 from spec2vec_mlops.tasks.load_data import DataLoader
 from spec2vec_mlops.tasks.store_cleaned_data import DataStorer
