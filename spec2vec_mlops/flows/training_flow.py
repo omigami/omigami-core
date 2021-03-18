@@ -1,3 +1,5 @@
+import logging
+
 import click
 from prefect import Flow, Parameter, Client
 from prefect.engine.state import State
@@ -6,6 +8,9 @@ from prefect.storage import S3
 
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.load_data import load_data_task
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # variable definitions
 SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"].get(str)
@@ -17,6 +22,7 @@ API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"].ge
 def spec2vec_train_pipeline_local(source_uri: str) -> State:
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
+        logger.info("Data loading is complete.")
     state = flow.run()
     return state
 
@@ -51,7 +57,7 @@ def spec2vec_train_pipeline_distributed(
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
         raw = load_data_task(uri)
-        print("Data loading is complete.")
+        logger.info("Data loading is complete.")
         # cleaned = clean_data_task(raw)
         # saved = save_data_to_feast_task(cleaned)
         # documents = convert_data_to_documents_task(saved)
@@ -83,6 +89,7 @@ def register_train_pipeline_cli(*args, **kwargs):
 
 @cli.command(name="register-all-flows")
 def deploy_model_cli():
+    # spec2vec_model_deployment_pipeline_distributed()
     spec2vec_train_pipeline_distributed()
 
 
