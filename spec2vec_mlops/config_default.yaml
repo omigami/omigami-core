@@ -1,5 +1,6 @@
 gnps_json:
-  uri: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
+  uri_complete_data: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
+  uri_partial_data: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json"
   necessary_keys:
     - "spectrum_id"
     - "source_file"

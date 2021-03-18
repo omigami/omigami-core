@@ -8,6 +8,7 @@ dependencies:
   - prefect=0.14.*
   - confuse=1.4.*
   - click=7.1.*
+  - boto3=1.17.*
   - pip:
       - ijson==3.*
       - git+https://github.com/datarevenue-berlin/drfs
