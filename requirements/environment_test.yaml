@@ -2,6 +2,7 @@ name: spec2vec_mlops
 channels:
   - conda-forge
   - bioconda
+  - nlesc
 dependencies:
   - pytest
   - pytest-cov

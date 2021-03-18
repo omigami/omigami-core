@@ -4,15 +4,15 @@ channels:
   - bioconda
   - nlesc
 dependencies:
-  - python=3.8
+  - python=3.7
   - pip
   - prefect=0.14.*
   - confuse=1.4.*
   - spec2vec=0.4.*
-  - rdkit
+  - rdkit=2020.09.*
+  - ijson=3.1.*
   - click=7.1.*
   - boto3=1.17.*
   - pip:
-      - ijson==3.*
       - git+https://github.com/datarevenue-berlin/drfs
       - matchms==0.8.*

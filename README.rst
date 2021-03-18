@@ -11,14 +11,14 @@ How to setup
 
     conda env create -f requirements/environment.frozen.yaml
     conda env update -f requirements/environment_test.yaml
-    conda activate spec2vec-mlops
+    conda activate spec2vec_mlops
 
 How to update all packages
 --------------------------
 To update all packages and create new frozen environments. Make sure you have correct
 environment activated. You'll need at least `conda>=4.9`::
 
-    conda activate spec2vec-mlops
+    conda activate spec2vec_mlops
     python dress.py env freeze environment.yaml
     conda env update -f environment_test.yaml
 
