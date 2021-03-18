@@ -7,11 +7,11 @@ from prefect.storage import S3
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.load_data import load_data_task
 
-# variable definitions region
-SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri_complete_data"].get(str)
-SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri_partial_data"].get(str)
-API_SERVER = "https://prefect.mlops.datarevenue.com/graphql"  # "http://localhost:4200"
-# setting API_SERVER to "http://localhost:4200" requires port-forwarding
+# variable definitions
+SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"].get(str)
+SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"].get(str)
+API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"].get(str)
+API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"].get(str)
 
 
 def spec2vec_train_pipeline_local(source_uri: str) -> State:
@@ -23,9 +23,23 @@ def spec2vec_train_pipeline_local(source_uri: str) -> State:
 
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_COMPLETE_GNPS,
-    api_server: str = API_SERVER,
+    api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project",
 ) -> str:
+    """Function to register Prefect flow using remote cluster
+
+    Parameters
+    ----------
+    source_uri: uri to load data from
+    api_server: api_server to instantiate Client object
+        when set to API_SERVER_LOCAL port-forwarding is required.
+    project_name: name to register project in Prefect
+
+    Returns
+    -------
+    flow_run_id: unique flow_run_id registered in Prefect
+
+    """
     custom_confs = {
         "run_config": KubernetesRun(
             image="drtools:spec2vec-mlops-v1",
