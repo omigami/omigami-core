@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 
 from spec2vec_mlops import config

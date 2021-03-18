@@ -1,5 +1,7 @@
 gnps_json:
-  uri: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
+  uri:
+    complete: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
+    partial: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json"
   necessary_keys:
     - "spectrum_id"
     - "source_file"
@@ -77,3 +79,7 @@ cleaned_data:
     - "url"
 feast:
   url: "0.0.0.0:6565"
+prefect_flow_registration:
+  api_server:
+    remote: "https://prefect.mlops.datarevenue.com/graphql"
+    local: "http://localhost:4200"
