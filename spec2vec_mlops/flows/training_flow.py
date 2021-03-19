@@ -8,6 +8,7 @@ from prefect.storage import S3
 
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.load_data import load_data_task
+from spec2vec_mlops.tasks.clean_data import clean_data_task
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -23,6 +24,8 @@ def spec2vec_train_pipeline_local(source_uri: str) -> State:
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
         logger.info("Data loading is complete.")
+        cleaned = clean_data_task.map(raw)
+        logger.info("Data cleaning is complete.")
     state = flow.run()
     return state
 
@@ -48,7 +51,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops_v4",
+            image="drtools/prefect:spec2vec_mlops_v6",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),
@@ -58,7 +61,8 @@ def spec2vec_train_pipeline_distributed(
         uri = Parameter(name="uri")
         raw = load_data_task(uri)
         logger.info("Data loading is complete.")
-        # cleaned = clean_data_task(raw)
+        cleaned = clean_data_task.map(raw)
+        logger.info("Data cleaning is complete.")
         # saved = save_data_to_feast_task(cleaned)
         # documents = convert_data_to_documents_task(saved)
         # encoded = encode_training_data_task(documents)
