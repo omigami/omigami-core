@@ -40,4 +40,4 @@ you should update the Dockerfile.
 In order to publish this Docker Image, there's an auxiliary script to do this.
 To run it, execute::
 
-    bash release.sh
+    bash deploy.sh
