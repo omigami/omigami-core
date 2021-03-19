@@ -7,8 +7,8 @@ from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
 from spec2vec_mlops import config
-from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.load_data import load_data_task
+from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_task
 
 logging.basicConfig(level=logging.DEBUG)
@@ -28,7 +28,8 @@ def spec2vec_train_pipeline_local(
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
         logger.info("Data loading is complete.")
-        cleaned = clean_data_task(raw)
+        cleaned = clean_data_task.map(raw)
+        logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
     state = flow.run()
     return state
@@ -69,7 +70,8 @@ def spec2vec_train_pipeline_distributed(
         uri = Parameter(name="uri")
         raw = load_data_task(uri)
         logger.info("Data loading is complete.")
-        cleaned = clean_data_task(raw)
+        cleaned = clean_data_task.map(raw)
+        logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
         # documents = convert_data_to_documents_task(saved)
         # encoded = encode_training_data_task(documents)
