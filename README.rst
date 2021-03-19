@@ -28,3 +28,16 @@ How to add or update a single package
 1. Install the package as usual with conda
 2. Check which version was installed and add major and minor version to environment.frozen.yaml
 3. Add the package with the most relaxed version restrictions possible to environment.yaml
+
+How to build a docker image
+-------------------------------------
+Whenever a Flow is registered in Prefect Server using Kubernetes, it needs to use a
+Docker image that has Prefect installed and all the packages needed for running the code.
+
+Usually, updating the requirements file should cover all the needed packages. Otherwise,
+you should update the Dockerfile.
+
+In order to publish this Docker Image, there's an auxiliary script to do this.
+To run it, execute::
+
+    bash deploy.sh
