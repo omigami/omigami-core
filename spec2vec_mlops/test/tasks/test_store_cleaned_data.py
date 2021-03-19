@@ -2,8 +2,6 @@ import pytest
 from feast import Client
 
 from spec2vec_mlops import config
-from spec2vec_mlops.tasks.clean_data import DataCleaner
-from spec2vec_mlops.tasks.load_data import DataLoader
 from spec2vec_mlops.tasks.store_cleaned_data import DataStorer
 
 
@@ -17,15 +15,6 @@ pytestmark = pytest.mark.skip(
 @pytest.fixture
 def data_storer(tmpdir):
     return DataStorer(f"file://{tmpdir}", FEAST_CORE_URL)
-
-
-@pytest.fixture
-def cleaned_data(gnps_small_json):
-    dl = DataLoader()
-    dc = DataCleaner()
-
-    loaded_data = dl.load_gnps_json(gnps_small_json)
-    return dc.clean_data(loaded_data)
 
 
 def test_create_spectrum_info_table(data_storer):

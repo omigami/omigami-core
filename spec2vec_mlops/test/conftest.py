@@ -1,6 +1,8 @@
 from pathlib import Path
 
 import pytest
+from spec2vec_mlops.tasks.clean_data import DataCleaner
+from spec2vec_mlops.tasks.load_data import DataLoader
 
 
 def pytest_addoption(parser):
@@ -22,3 +24,12 @@ def pytest_configure(config):
 def gnps_small_json():
     ASSET_DIR = str(Path(__file__).parents[0] / "assets" / "SMALL_GNPS.json")
     return f"file://{ASSET_DIR}"
+
+
+@pytest.fixture
+def cleaned_data(gnps_small_json):
+    dl = DataLoader()
+    dc = DataCleaner()
+
+    loaded_data = dl.load_gnps_json(gnps_small_json)
+    return [dc.clean_data(spectrum) for spectrum in loaded_data]

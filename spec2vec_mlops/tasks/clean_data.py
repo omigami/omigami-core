@@ -14,6 +14,7 @@ from matchms.filtering import (
     derive_inchi_from_smiles,
     derive_smiles_from_inchi,
     derive_inchikey_from_inchi,
+    normalize_intensities,
 )
 from prefect import task
 
@@ -36,10 +37,10 @@ class DataCleaner:
             return spectrum
 
     def _apply_filters(self, spectrum: Spectrum) -> Spectrum:
-        """ Applies a collection of filters to normalize data, like convert str to int
-        """
+        """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
         spectrum = add_parent_mass(spectrum)
+        spectrum = normalize_intensities(spectrum)
         return spectrum
 
     def _harmonize_spectrum(self, spectrum: Spectrum) -> Spectrum:
