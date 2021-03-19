@@ -5,7 +5,7 @@ snap ()
 
 TAG="drtools/prefect:spec2vec_mlops$(snap)"
 SPARK_TAG="drtools/prefect:spec2vec_mlops_spark$(snap)"
-CREATE_SPARK = 0
+CREATE_SPARK=0
 
 echo "$TAG"
 
