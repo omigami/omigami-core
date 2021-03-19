@@ -16,4 +16,4 @@ dependencies:
   - pip:
       - git+https://github.com/datarevenue-berlin/drfs
       - matchms==0.8.2
-      - feast=0.9.3
+      - feast==0.9.3

@@ -1,19 +1,11 @@
 import datetime
 import logging
-import feast
 from typing import List
 import pandas as pd
+from feast import ValueType, Client, FeatureTable, Entity, Feature, FileSource
+from feast.data_format import ParquetFormat
 from matchms import Spectrum
 from prefect import task
-from feast.sdk.python.feast import (
-    ValueType,
-    FeatureTable,
-    Entity,
-    Feature,
-    FileSource,
-    Client,
-)
-from feast.sdk.python.feast.data_format import ParquetFormat
 from spec2vec_mlops import config
 
 KEYS = config["cleaned_data"]["necessary_keys"].get(list)

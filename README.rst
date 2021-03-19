@@ -19,7 +19,7 @@ To update all packages and create new frozen environments. Make sure you have co
 environment activated. You'll need at least `conda>=4.9`::
 
     conda activate spec2vec_mlops
-    python dress.py env freeze requirements/environment.yaml
+    python requirements/dress.py env freeze requirements/environment.yaml
     conda env update -f requirements/environment_test.yaml
 
 How to add or update a single package
