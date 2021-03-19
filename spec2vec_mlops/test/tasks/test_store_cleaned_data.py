@@ -8,8 +8,7 @@ from spec2vec_mlops.tasks.store_cleaned_data import DataStorer
 
 FEAST_CORE_URL = "0.0.0.0:6565"
 
-pytest.mark.skip("These tests can only be run if the Feast docker-compose is up")
-
+pytestmark = pytest.mark.skip("These tests can only be run if the Feast docker-compose is up")
 
 @pytest.fixture
 def data_storer(tmpdir):
