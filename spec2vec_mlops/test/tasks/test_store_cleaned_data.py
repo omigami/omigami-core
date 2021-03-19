@@ -1,20 +1,22 @@
 import pytest
 from feast import Client
 
+from spec2vec_mlops import config
 from spec2vec_mlops.tasks.clean_data import DataCleaner
 from spec2vec_mlops.tasks.load_data import DataLoader
 from spec2vec_mlops.tasks.store_cleaned_data import DataStorer
 
 
-FEAST_CORE_URL = "0.0.0.0:6565"
+FEAST_CORE_URL = config["feast"]["url"]["local"].get(str)
 
-pytestmark = pytest.mark.skip("These tests can only be run if the Feast docker-compose is up")
+pytestmark = pytest.mark.skip(
+    "These tests can only be run if the Feast docker-compose is up"
+)
+
 
 @pytest.fixture
 def data_storer(tmpdir):
-    data_storer = DataStorer(f"file://{tmpdir}")
-    data_storer.feast_core_url = FEAST_CORE_URL
-    return data_storer
+    return DataStorer(f"file://{tmpdir}", FEAST_CORE_URL)
 
 
 @pytest.fixture

@@ -19,12 +19,17 @@ SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"].get(str)
 API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"].get(str)
 API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"].get(str)
+FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"].get(str)
 
 
-def spec2vec_train_pipeline_local(source_uri: str) -> State:
+def spec2vec_train_pipeline_local(
+    source_uri: str, feast_source_dir: str, feast_core_url: str
+) -> State:
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
         logger.info("Data loading is complete.")
+        cleaned = clean_data_task(raw)
+        store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
     state = flow.run()
     return state
 
@@ -33,6 +38,8 @@ def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-11",
+    feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/",
+    feast_core_url: str = FEAST_CORE_URL_REMOTE,
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -42,6 +49,8 @@ def spec2vec_train_pipeline_distributed(
     api_server: api_server to instantiate Client object
         when set to API_SERVER_LOCAL port-forwarding is required.
     project_name: name to register project in Prefect
+    feast_source_dir: location to save the file source of Feast
+    feast_core_url: url where to connect to Feast server
 
     Returns
     -------
@@ -60,10 +69,8 @@ def spec2vec_train_pipeline_distributed(
         uri = Parameter(name="uri")
         raw = load_data_task(uri)
         logger.info("Data loading is complete.")
-        logger.info("Cleaning data.")
         cleaned = clean_data_task(raw)
-        logger.info("Finished cleaning data.")
-        store_cleaned_task(cleaned)
+        store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
         # documents = convert_data_to_documents_task(saved)
         # encoded = encode_training_data_task(documents)
         # trained = train_model_task(documents)

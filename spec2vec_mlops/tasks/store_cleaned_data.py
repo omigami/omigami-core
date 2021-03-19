@@ -9,15 +9,14 @@ from prefect import task
 from spec2vec_mlops import config
 
 KEYS = config["cleaned_data"]["necessary_keys"].get(list)
-FEAST_CORE_URL = config["feast"]["url"].get(str)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
 class DataStorer:
-    def __init__(self, out_dir: str):
-        self.feast_core_url = FEAST_CORE_URL
+    def __init__(self, out_dir: str, feast_core_url: str):
+        self.feast_core_url = feast_core_url
         self.feature_table_name = "spectrum_info"
         not_string_features2types = {
             "mz_list": ValueType.DOUBLE_LIST,
@@ -95,6 +94,6 @@ class DataStorer:
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def store_cleaned_task(data: List[Spectrum], out_dir: str):
-    ds = DataStorer(out_dir)
+def store_cleaned_task(data: List[Spectrum], out_dir: str, feast_core_url: str):
+    ds = DataStorer(out_dir, feast_core_url)
     ds.store_cleaned_data(data)
