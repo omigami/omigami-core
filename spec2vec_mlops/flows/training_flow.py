@@ -3,6 +3,7 @@ import logging
 import click
 from prefect import Flow, Parameter, Client
 from prefect.engine.state import State
+from prefect.executors import DaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
@@ -36,7 +37,7 @@ def spec2vec_train_pipeline_local(
 
 
 def spec2vec_train_pipeline_distributed(
-    source_uri: str = SOURCE_URI_PARTIAL_GNPS,
+    source_uri: str = SOURCE_URI_COMPLETE_GNPS,
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-11",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/",
@@ -65,6 +66,7 @@ def spec2vec_train_pipeline_distributed(
             service_account_name="prefect-server-serviceaccount",
         ),
         "storage": S3("dr-prefect"),
+        "executor": DaskExecutor(),
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
