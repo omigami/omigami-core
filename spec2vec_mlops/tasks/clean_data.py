@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from matchms import Spectrum
 from matchms.importing.load_from_json import as_spectrum
@@ -72,7 +72,7 @@ class DataCleaner:
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def clean_data(spectra_data: List[Dict]):
+def clean_data_task(spectra_data: List[Dict]):
     data_cleaner = DataCleaner()
     results = data_cleaner.clean_data(spectra_data)
     return results
