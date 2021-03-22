@@ -19,3 +19,4 @@ def test_clean_data(gnps_small_json):
     )
     assert all(isinstance(spec.get("charge"), int) for spec in cleaned_data)
     assert all(spec.get("parent_mass") for spec in cleaned_data)
+    assert all(spec.get("spectrum_id") for spec in cleaned_data)
