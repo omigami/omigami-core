@@ -25,7 +25,7 @@ def cleaned_data(gnps_small_json):
     dc = DataCleaner()
 
     loaded_data = dl.load_gnps_json(gnps_small_json)
-    return dc.clean_data(loaded_data)
+    return [dc.clean_data(spectrum) for spectrum in loaded_data]
 
 
 def test_create_spectrum_info_table(data_storer):

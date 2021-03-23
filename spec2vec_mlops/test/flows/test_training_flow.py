@@ -1,7 +1,13 @@
+import pytest
+
 from spec2vec_mlops import config
 from spec2vec_mlops.flows.training_flow import spec2vec_train_pipeline_local
 
 FEAST_CORE_URL_LOCAL = config["feast"]["url"]["local"].get(str)
+
+pytestmark = pytest.mark.skip(
+    "These tests can only be run if the Feast docker-compose is up"
+)
 
 
 def test_spec2vec_train_pipeline_local(gnps_small_json, tmpdir):
