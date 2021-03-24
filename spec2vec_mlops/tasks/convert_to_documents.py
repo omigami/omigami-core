@@ -1,6 +1,5 @@
 import datetime
 import logging
-from typing import List
 from prefect import task
 from spec2vec import SpectrumDocument
 from spec2vec_mlops import config
@@ -17,16 +16,12 @@ class DocumentConverter:
         pass
 
     @staticmethod
-    def convert_to_documents(
-        spectra: List[Spectrum], n_decimals: int
-    ) -> List[SpectrumDocument]:
-        return [SpectrumDocument(s, n_decimals=n_decimals) for s in spectra]
+    def convert_to_document(spectrum: Spectrum, n_decimals: int) -> SpectrumDocument:
+        return SpectrumDocument(spectrum, n_decimals=n_decimals)
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def convert_to_documents_task(
-    spectra: List[Spectrum], n_decimals: int
-) -> List[SpectrumDocument]:
+def convert_to_documents_task(spectrum: Spectrum, n_decimals: int) -> SpectrumDocument:
     document_converter = DocumentConverter()
-    results = document_converter.convert_to_documents(spectra, n_decimals)
-    return results
+    result = document_converter.convert_to_document(spectrum, n_decimals)
+    return result

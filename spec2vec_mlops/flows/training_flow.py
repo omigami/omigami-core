@@ -1,13 +1,14 @@
 import logging
 
 import click
-from prefect import Flow, Parameter, Client
+from prefect import Flow, Parameter, Client, unmapped
 from prefect.engine.state import State
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
 from spec2vec_mlops import config
+from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_task
@@ -32,6 +33,7 @@ def spec2vec_train_pipeline_local(
         cleaned = clean_data_task.map(raw)
         logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
+        documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
     state = flow.run()
     return state
 
@@ -39,7 +41,7 @@ def spec2vec_train_pipeline_local(
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_COMPLETE_GNPS,
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-11",
+    project_name: str = "spec2vec-mlops-project-unmapped-load-data",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/",
     feast_core_url: str = FEAST_CORE_URL_REMOTE,
 ) -> str:
@@ -75,7 +77,7 @@ def spec2vec_train_pipeline_distributed(
         cleaned = clean_data_task.map(raw)
         logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
-        # documents = convert_data_to_documents_task(saved)
+        documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
         # encoded = encode_training_data_task(documents)
         # trained = train_model_task(documents)
     client = Client(api_server=api_server)
