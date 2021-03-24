@@ -36,11 +36,12 @@ jobs:
           envName: spec2vec_mlops
           envFileName: 'requirements/environment.frozen.yaml'
           pythonVersion: 3.7
+          activateEnv: 'true'
           
       - name: Set prefect server
         run: |
             prefect backend server && \
-            echo "PREFECT__CLOUD__API=${{ secrets.PROD_PREFECT_SERVER_API }}" >> $GITHUB_ENV
+            echo "PREFECT__CLOUD__API=${{ secrets.PREFECT_SERVER_API }}" >> $GITHUB_ENV
             
       - name: Register model deployment flow
         run: |
