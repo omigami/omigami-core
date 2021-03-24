@@ -17,6 +17,9 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -35,14 +38,16 @@ jobs:
         with:
           python-version: 3.7.10
 
-      - name: Install dependencies
-        uses: fdiblen/anaconda-action@0.1.7
+      - name: Setup Miniconda & Install Dependencies
+        uses: conda-incubator/setup-miniconda@v2
         with:
-          envName: spec2vec_mlops
-          envFileName: 'requirements/environment.frozen.yaml'
-          pythonVersion: 3.7.10
-          activateEnv: 'true'
-          
+          miniconda-version: "latest"
+          activate-environment: spec2vec_mlops
+          environment-file: requirements/environment.frozen.yaml
+          python-version: 3.7.10
+          auto-activate-base: false
+      - run: conda activate spec2vec_mlops
+
       - name: Set prefect server
         run: |
             prefect backend server && \
