@@ -14,8 +14,10 @@ KEYS = config["cleaned_data"]["necessary_keys"].get(list)
 
 class DataStorer:
     def __init__(self, out_dir: str, feast_core_url: str):
-        self.feast_core_url = feast_core_url
+        self.client = Client(core_url=feast_core_url, telemetry=False)
         self.feature_table_name = "spectrum_info"
+        self.out_dir = out_dir
+
         not_string_features2types = {
             "mz_list": ValueType.DOUBLE_LIST,
             "intensity_list": ValueType.DOUBLE_LIST,
@@ -30,21 +32,19 @@ class DataStorer:
             if key.lower() not in not_string_features2types.keys()
         }
         self.features2types = {**not_string_features2types, **string_features2types}
-        self.out_dir = out_dir
+        self.spectrum_info = self._get_or_create_spectrum_table()
 
-    def store_cleaned_data(self, data: List[Spectrum]):
-        client = Client(core_url=self.feast_core_url, telemetry=False)
+    def _get_or_create_spectrum_table(self) -> FeatureTable:
         if not any(
             table.name != self.feature_table_name
-            for table in client.list_feature_tables()
+            for table in self.client.list_feature_tables()
         ):
-            spectrum_info = self._create_spectrum_info_table(client)
+            spectrum_info = self._create_spectrum_info_table()
         else:
-            spectrum_info = client.get_feature_table(self.feature_table_name)
-        data_df = self._get_cleaned_data_df(data)
-        client.ingest(spectrum_info, data_df)
+            spectrum_info = self.client.get_feature_table(self.feature_table_name)
+        return spectrum_info
 
-    def _create_spectrum_info_table(self, client) -> FeatureTable:
+    def _create_spectrum_info_table(self) -> FeatureTable:
         spectrum_id = Entity(
             name="spectrum_id",
             description="Spectrum identifier",
@@ -66,9 +66,13 @@ class DataStorer:
             features=features,
             batch_source=batch_source,
         )
-        client.apply(spectrum_id)
-        client.apply(spectrum_info)
+        self.client.apply(spectrum_id)
+        self.client.apply(spectrum_info)
         return spectrum_info
+
+    def store_cleaned_data(self, data: List[Spectrum]):
+        data_df = self._get_cleaned_data_df(data)
+        self.client.ingest(self.spectrum_info, data_df)
 
     def _get_cleaned_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
@@ -91,10 +95,8 @@ class DataStorer:
         )
 
     def store_words(self, data: List[SpectrumDocument]):
-        client = Client(core_url=self.feast_core_url, telemetry=False)
-        spectrum_info = self._create_spectrum_info_table(client)
         data_df = self._get_words_df(data)
-        client.ingest(spectrum_info, data_df)
+        self.client.ingest(self.spectrum_info, data_df)
 
     def _get_words_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
