@@ -29,13 +29,18 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
-          
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7.10
+
       - name: Install dependencies
         uses: fdiblen/anaconda-action@0.1.7
         with:
           envName: spec2vec_mlops
           envFileName: 'requirements/environment.frozen.yaml'
-          pythonVersion: 3.7
+          pythonVersion: 3.7.10
           activateEnv: 'true'
           
       - name: Set prefect server
