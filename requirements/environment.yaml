@@ -14,6 +14,5 @@ dependencies:
   - click=7.1.*
   - boto3=1.17.*
   - pip:
-      - git+https://github.com/datarevenue-berlin/drfs
       - matchms==0.8.*
       - feast==0.9.*

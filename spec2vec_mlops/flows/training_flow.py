@@ -41,7 +41,7 @@ def spec2vec_train_pipeline_local(
 
 
 def spec2vec_train_pipeline_distributed(
-    source_uri: str = SOURCE_URI_PARTIAL_GNPS,
+    source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-documents-task",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/",

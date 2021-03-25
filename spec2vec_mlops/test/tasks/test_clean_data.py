@@ -7,8 +7,8 @@ from spec2vec_mlops.tasks.load_data import DataLoader
 def test_clean_data(gnps_small_json):
     dl = DataLoader()
     dc = DataCleaner()
-    loaded_data = dl.load_gnps_json(gnps_small_json)
 
+    loaded_data = dl.load_gnps_json(gnps_small_json)
     for data in loaded_data:
         cleaned_data = dc.clean_data(data)
 
