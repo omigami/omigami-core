@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 from spec2vec_mlops.tasks.clean_data import DataCleaner
+from spec2vec_mlops.tasks.convert_to_documents import DocumentConverter
 from spec2vec_mlops.tasks.load_data import DataLoader
 
 
@@ -33,3 +34,9 @@ def cleaned_data(gnps_small_json):
 
     loaded_data = dl.load_gnps_json(gnps_small_json)
     return [dc.clean_data(spectrum) for spectrum in loaded_data]
+
+
+@pytest.fixture
+def documents_data(cleaned_data):
+    converter = DocumentConverter()
+    return [converter.convert_to_document(spectrum, 1) for spectrum in cleaned_data]
