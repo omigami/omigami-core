@@ -12,7 +12,7 @@ from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_task
-from spec2vec_mlops.tasks.store_words import store_words_task
+from spec2vec_mlops.tasks.store_documents import store_documents_task
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ def spec2vec_train_pipeline_local(
         logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
         documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
-        store_words_task(documents, feast_source_dir, feast_core_url)
+        store_documents_task(documents, feast_source_dir, feast_core_url)
     state = flow.run()
     return state
 
@@ -80,7 +80,7 @@ def spec2vec_train_pipeline_distributed(
         logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
         documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
-        store_words_task(documents, feast_source_dir, feast_core_url)
+        store_documents_task(documents, feast_source_dir, feast_core_url)
         # encoded = encode_training_data_task(documents)
         # trained = train_model_task(documents)
     client = Client(api_server=api_server)

@@ -23,7 +23,10 @@ def documents_data(cleaned_data):
 
 def test_create_spectrum_info_table(data_storer):
     data_storer._create_spectrum_info_table()
-    assert data_storer.client.list_feature_tables()[0].name == data_storer.feature_table_name
+    assert (
+        data_storer.client.list_feature_tables()[0].name
+        == data_storer.feature_table_name
+    )
 
 
 def test_get_cleaned_data_df(data_storer, cleaned_data):
@@ -39,10 +42,16 @@ def test_store_cleaned_data(data_storer, cleaned_data):
 
 
 def test_get_words_df(data_storer, documents_data):
-    words_df = data_storer._get_words_df(documents_data)
-    assert len(words_df) == len(documents_data)
-    assert set(words_df.columns) == {"spectrum_id", "words", "event_timestamp"}
+    documents_df = data_storer._get_documents_df(documents_data)
+    assert len(documents_df) == len(documents_data)
+    assert set(documents_df.columns) == {
+        "spectrum_id",
+        "words",
+        "losses",
+        "weights",
+        "event_timestamp",
+    }
 
 
 def test_store_words(data_storer, documents_data):
-    data_storer.store_words(documents_data)
+    data_storer.store_documents(documents_data)

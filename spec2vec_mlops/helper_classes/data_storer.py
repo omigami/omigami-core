@@ -25,6 +25,8 @@ class DataStorer:
             "charge": ValueType.INT64,
             "parent_mass": ValueType.FLOAT,
             "words": ValueType.DOUBLE_LIST,
+            "losses": ValueType.DOUBLE_LIST,
+            "weights": ValueType.DOUBLE_LIST,
         }
         string_features2types = {
             key.lower(): ValueType.STRING
@@ -82,6 +84,8 @@ class DataStorer:
                     "mz_list": spectrum.peaks.mz,
                     "intensity_list": spectrum.peaks.intensities,
                     "words": [],
+                    "losses": [],
+                    "weights": [],
                     **{
                         key: spectrum.metadata[key]
                         for key in self.features2types.keys()
@@ -94,16 +98,18 @@ class DataStorer:
             ]
         )
 
-    def store_words(self, data: List[SpectrumDocument]):
-        data_df = self._get_words_df(data)
+    def store_documents(self, data: List[SpectrumDocument]):
+        data_df = self._get_documents_df(data)
         self.client.ingest(self.spectrum_info, data_df)
 
-    def _get_words_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
+    def _get_documents_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
                 {
                     "spectrum_id": document.metadata["spectrum_id"],
                     "words": document.words,
+                    "losses": document.losses,
+                    "weights": document.weights,
                     "event_timestamp": datetime.datetime.now(),
                 }
                 for document in data
