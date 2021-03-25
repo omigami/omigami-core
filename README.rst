@@ -19,8 +19,8 @@ To update all packages and create new frozen environments. Make sure you have co
 environment activated. You'll need at least `conda>=4.9`::
 
     conda activate spec2vec_mlops
-    python dress.py env freeze environment.yaml
-    conda env update -f environment_test.yaml
+    python requirements/dress.py env freeze requirements/environment.yaml
+    conda env update -f requirements/environment_test.yaml
 
 How to add or update a single package
 -------------------------------------
@@ -41,3 +41,16 @@ In order to publish this Docker Image, there's an auxiliary script to do this.
 To run it, execute::
 
     bash deploy.sh
+
+How to set up a local Feast
+-------------------------------------
+::
+
+    git clone https://github.com/feast-dev/feast.git
+    cd feast/infra/docker-compose
+    cp .env.sample .env
+
+And to run it:
+::
+
+    docker-compose pull && docker-compose up -d

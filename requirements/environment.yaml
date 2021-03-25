@@ -15,3 +15,4 @@ dependencies:
   - boto3=1.17.*
   - pip:
       - matchms==0.8.*
+      - feast==0.9.*

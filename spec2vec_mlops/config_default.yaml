@@ -40,6 +40,25 @@ gnps_json:
     - "Formula_smiles"
     - "Formula_inchi"
     - "url"
+cleaned_data:
+  necessary_keys:
+    - "compound_name"
+    - "adduct"
+    - "precursor_mz"
+    - "charge"
+    - "smiles"
+    - "inchi"
+    - "inchiaux"
+    - "ionmode"
+    - "inchikey"
+    - "inchikey_smiles"
+    - "inchikey_inchi"
+    - "formula_smiles"
+    - "formula_inchi"
+feast:
+  url:
+    remote: "feast-feast-core.feast:6565"
+    local: "0.0.0.0:6565"
 prefect_flow_registration:
   api_server:
     remote: "https://prefect.mlops.datarevenue.com/graphql"

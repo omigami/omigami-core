@@ -3,12 +3,14 @@ import logging
 import click
 from prefect import Flow, Parameter, Client
 from prefect.engine.state import State
+from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
+from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_task
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -18,14 +20,18 @@ SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"].get(str)
 API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"].get(str)
 API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"].get(str)
+FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"].get(str)
 
 
-def spec2vec_train_pipeline_local(source_uri: str) -> State:
+def spec2vec_train_pipeline_local(
+    source_uri: str, feast_source_dir: str, feast_core_url: str
+) -> State:
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
         logger.info("Data loading is complete.")
         cleaned = clean_data_task(raw)
         logger.info("Data cleaning is complete.")
+        store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
     state = flow.run()
     return state
 
@@ -33,7 +39,9 @@ def spec2vec_train_pipeline_local(source_uri: str) -> State:
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project",
+    project_name: str = "spec2vec-mlops-project-11",
+    feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/",
+    feast_core_url: str = FEAST_CORE_URL_REMOTE,
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -43,6 +51,8 @@ def spec2vec_train_pipeline_distributed(
     api_server: api_server to instantiate Client object
         when set to API_SERVER_LOCAL port-forwarding is required.
     project_name: name to register project in Prefect
+    feast_source_dir: location to save the file source of Feast
+    feast_core_url: url where to connect to Feast server
 
     Returns
     -------
@@ -51,11 +61,12 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.402f067",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f69f8b6",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),
         "storage": S3("dr-prefect"),
+        "executor": LocalDaskExecutor(),
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
@@ -63,7 +74,7 @@ def spec2vec_train_pipeline_distributed(
         logger.info("Data loading is complete.")
         cleaned = clean_data_task(raw)
         logger.info("Data cleaning is complete.")
-        # saved = save_data_to_feast_task(cleaned)
+        store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
         # documents = convert_data_to_documents_task(saved)
         # encoded = encode_training_data_task(documents)
         # trained = train_model_task(documents)
