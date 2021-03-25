@@ -16,3 +16,4 @@ dependencies:
   - pip:
       - matchms==0.8.2
       - feast==0.9.3
+      - mlflow==1.14.1

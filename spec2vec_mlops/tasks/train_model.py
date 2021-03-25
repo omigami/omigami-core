@@ -41,7 +41,6 @@ class ModelTrainer:
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
 def train_model_task(
     documents: List[SpectrumDocument],
-    n_decimals: int,
     iterations: int = None,
     window: int = None,
 ) -> Word2Vec:
