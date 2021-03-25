@@ -54,3 +54,12 @@ And to run it:
 ::
 
     docker-compose pull && docker-compose up -d
+
+Black format your code
+-------------------------------------
+
+Please black format you code before checking in. This should be done using the black
+version provided in the environment and the following command:
+::
+
+    black --target-version py37 spec2vec_mlops
