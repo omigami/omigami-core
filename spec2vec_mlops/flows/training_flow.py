@@ -29,7 +29,7 @@ def spec2vec_train_pipeline_local(
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
         logger.info("Data loading is complete.")
-        cleaned = clean_data_task(raw)
+        cleaned = clean_data_task.map(raw)
         logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
     state = flow.run()
@@ -72,7 +72,7 @@ def spec2vec_train_pipeline_distributed(
         uri = Parameter(name="uri")
         raw = load_data_task(uri)
         logger.info("Data loading is complete.")
-        cleaned = clean_data_task(raw)
+        cleaned = clean_data_task.map(raw)
         logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
         # documents = convert_data_to_documents_task(saved)
