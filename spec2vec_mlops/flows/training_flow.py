@@ -29,7 +29,7 @@ def spec2vec_train_pipeline_local(
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
         logger.info("Data loading is complete.")
-        cleaned = clean_data_task.map(raw)
+        cleaned = clean_data_task(raw)
         logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
     state = flow.run()
@@ -37,7 +37,7 @@ def spec2vec_train_pipeline_local(
 
 
 def spec2vec_train_pipeline_distributed(
-    source_uri: str = SOURCE_URI_COMPLETE_GNPS,
+    source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-11",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/",
@@ -72,7 +72,7 @@ def spec2vec_train_pipeline_distributed(
         uri = Parameter(name="uri")
         raw = load_data_task(uri)
         logger.info("Data loading is complete.")
-        cleaned = clean_data_task.map(raw)
+        cleaned = clean_data_task(raw)
         logger.info("Data cleaning is complete.")
         store_cleaned_task(cleaned, feast_source_dir, feast_core_url)
         # documents = convert_data_to_documents_task(saved)

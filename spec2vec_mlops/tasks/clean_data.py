@@ -22,9 +22,14 @@ class DataCleaner:
     def __init__(self):
         pass
 
-    def clean_data(self, spectrum: Dict) -> Optional[Spectrum]:
-        parsed = self._parse_data(spectrum)
-        return parsed if parsed else None
+    def clean_data(self, data: List[Dict]) -> List[Spectrum]:
+        # TODO: Paralelize with Dask
+        spectra = []
+        for spec in data:
+            spectrum = self._parse_data(spec)
+            if spectrum:
+                spectra.append(spectrum)
+        return spectra
 
     def _parse_data(self, spectrum_dict: dict) -> Spectrum:
         spectrum = as_spectrum(spectrum_dict)
@@ -67,7 +72,7 @@ class DataCleaner:
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def clean_data_task(spectra_data: Dict):
+def clean_data_task(spectra_data: List[Dict]):
     data_cleaner = DataCleaner()
     results = data_cleaner.clean_data(spectra_data)
     return results
