@@ -15,5 +15,9 @@ def test_spec2vec_train_pipeline_local(gnps_small_json, tmpdir):
         source_uri=gnps_small_json,
         feast_source_dir=f"file://{tmpdir}",
         feast_core_url=FEAST_CORE_URL_LOCAL,
+        n_decimals=2,
+        iterations=10,
+        window=5,
+        save_model_path=f"{tmpdir}/mflow",
     )
     assert state.is_successful()

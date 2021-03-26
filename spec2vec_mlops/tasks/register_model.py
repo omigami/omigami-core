@@ -1,6 +1,7 @@
 import datetime
 
 import mlflow
+from gensim.models import Word2Vec
 from mlflow.pyfunc import PythonModel
 from prefect import task
 
@@ -33,7 +34,7 @@ class ModelRegister:
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
 def register_model_task(
-    model: Model,
+    model: Word2Vec,
     path: str,
     n_decimals: int,
 ):
