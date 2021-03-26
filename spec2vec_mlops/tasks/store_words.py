@@ -1,7 +1,5 @@
 import datetime
 from typing import List
-
-from matchms import Spectrum
 from prefect import task
 from spec2vec import SpectrumDocument
 
