@@ -53,5 +53,5 @@ def test_get_words_df(data_storer, documents_data):
     }
 
 
-def test_store_words(data_storer, documents_data):
+def test_store_documents(data_storer, documents_data):
     data_storer.store_documents(documents_data)
