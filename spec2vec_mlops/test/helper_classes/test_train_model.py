@@ -1,5 +1,5 @@
 from gensim.models import Word2Vec
-from spec2vec_mlops.tasks.train_model import ModelTrainer
+from spec2vec_mlops.helper_classes.model_trainer import ModelTrainer
 
 
 def test_train_model(documents_data):

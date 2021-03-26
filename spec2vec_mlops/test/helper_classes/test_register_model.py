@@ -3,8 +3,8 @@ import shutil
 
 import mlflow
 import pytest
-from spec2vec_mlops.tasks.register_model import ModelRegister, Model
-from spec2vec_mlops.tasks.train_model import ModelTrainer
+from spec2vec_mlops.helper_classes.model_register import Model, ModelRegister
+from spec2vec_mlops.helper_classes.model_trainer import ModelTrainer
 
 
 @pytest.fixture

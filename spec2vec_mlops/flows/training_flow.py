@@ -11,7 +11,7 @@ from spec2vec_mlops import config
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
-from spec2vec_mlops.tasks.register_model import register_model_task, Model
+from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_words import store_words_task
 from spec2vec_mlops.tasks.train_model import train_model_task

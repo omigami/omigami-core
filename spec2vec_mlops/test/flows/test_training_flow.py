@@ -1,3 +1,4 @@
+import shutil
 import pytest
 
 from spec2vec_mlops import config
@@ -21,3 +22,4 @@ def test_spec2vec_train_pipeline_local(gnps_small_json, tmpdir):
         save_model_path=f"{tmpdir}/mflow",
     )
     assert state.is_successful()
+    shutil.rmtree("mlruns")
