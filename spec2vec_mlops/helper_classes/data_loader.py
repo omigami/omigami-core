@@ -14,9 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class DataLoader:
-    def __init__(self):
-        pass
-
     def load_gnps_json(self, uri: str) -> List[Dict]:
         uri = urlopen(uri)
         logger.info(f"Loading data from {uri}... This might take a while.")
