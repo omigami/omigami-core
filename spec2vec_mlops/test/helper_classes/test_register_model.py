@@ -15,9 +15,8 @@ def trained_model(documents_data):
 
 def test_register_model(trained_model, tmpdir):
     path = f"{tmpdir}/mlflow/"
-    mlflow.set_registry_uri(f"{path}/mlflow")
-    model_register = ModelRegister()
-    model_register.register_model(Model(trained_model), f"{path}/model", n_decimals=2)
+    model_register = ModelRegister(f"file:/{path}")
+    model_register.register_model(
+        Model(trained_model), "experiment", f"{path}/model", n_decimals=2
+    )
     assert os.path.exists(f"{path}/model/python_model.pkl")
-    assert os.path.exists("mlruns/0/")
-    shutil.rmtree("mlruns")

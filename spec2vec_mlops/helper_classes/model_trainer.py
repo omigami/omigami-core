@@ -31,6 +31,6 @@ class ModelTrainer:
             A trained Word2Vec model
         """
         model = train_new_word2vec_model(
-            [d.words for d in documents], iterations=iterations, window=window
+            documents, iterations=iterations, window=window
         )
         return model

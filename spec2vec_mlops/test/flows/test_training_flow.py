@@ -1,4 +1,4 @@
-import shutil
+import mlflow
 import pytest
 
 from spec2vec_mlops import config
@@ -20,6 +20,7 @@ def test_spec2vec_train_pipeline_local(gnps_small_json, tmpdir):
         iterations=10,
         window=5,
         save_model_path=f"{tmpdir}/mflow",
+        mlflow_server_uri=f"{tmpdir}/mlflow/",
+        experiment_name="experiment",
     )
     assert state.is_successful()
-    shutil.rmtree("mlruns")

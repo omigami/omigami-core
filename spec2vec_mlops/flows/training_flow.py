@@ -25,6 +25,7 @@ SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"].get(str)
 API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"].get(str)
 API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"].get(str)
 FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"].get(str)
+MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
 
 
 def spec2vec_train_pipeline_local(
@@ -33,8 +34,10 @@ def spec2vec_train_pipeline_local(
     feast_core_url: str,
     n_decimals: int,
     save_model_path: str,
-    iterations: int = None,
-    window: int = None,
+    mlflow_server_uri: str,
+    experiment_name: str,
+    iterations: int = 25,
+    window: int = 500,
 ) -> State:
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
@@ -45,13 +48,15 @@ def spec2vec_train_pipeline_local(
         documents = convert_to_documents_task.map(
             cleaned, n_decimals=unmapped(n_decimals)
         )
+        store_words_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(documents, iterations, window)
         register_model_task(
+            mlflow_server_uri,
             model,
+            experiment_name,
             save_model_path,
             n_decimals,
         )
-        store_words_task(documents, feast_source_dir, feast_core_url)
     state = flow.run()
     return state
 
@@ -59,13 +64,14 @@ def spec2vec_train_pipeline_local(
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-store-losses-weights",
+    project_name: str = "spec2vec-mlops-project-register-model",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/",
     feast_core_url: str = FEAST_CORE_URL_REMOTE,
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow/",
-    iterations: int = None,
-    window: int = None,
+    mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
+    iterations: int = 25,
+    window: int = 500,
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -89,7 +95,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.95ca2ce",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.5066695",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),
@@ -107,7 +113,9 @@ def spec2vec_train_pipeline_distributed(
         store_words_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(documents, iterations, window)
         register_model_task(
+            mlflow_server_uri,
             model,
+            project_name,
             save_model_path,
             n_decimals,
         )

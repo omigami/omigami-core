@@ -64,3 +64,6 @@ prefect_flow_registration:
   api_server:
     remote: "https://prefect.mlops.datarevenue.com/graphql"
     local: "http://localhost:4200"
+mlflow:
+  url:
+    remote: "https://mlflow.mlflow:5000"
