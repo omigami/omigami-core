@@ -1,16 +1,10 @@
 import datetime
+
+from matchms import Spectrum
 from prefect import task
 from spec2vec import SpectrumDocument
-from matchms import Spectrum
 
-
-class DocumentConverter:
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def convert_to_document(spectrum: Spectrum, n_decimals: int) -> SpectrumDocument:
-        return SpectrumDocument(spectrum, n_decimals=n_decimals)
+from spec2vec_mlops.helper_classes.document_converter import DocumentConverter
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
