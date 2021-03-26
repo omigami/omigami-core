@@ -5,10 +5,6 @@ from spec2vec_mlops.tasks.convert_to_documents import DocumentConverter
 
 FEAST_CORE_URL = config["feast"]["url"]["local"].get(str)
 
-pytestmark = pytest.mark.skip(
-    "These tests can only be run if the Feast docker-compose is up"
-)
-
 
 @pytest.fixture()
 def data_storer(tmpdir):
@@ -21,6 +17,7 @@ def documents_data(cleaned_data):
     return [converter.convert_to_document(spectrum, 1) for spectrum in cleaned_data]
 
 
+@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_create_spectrum_info_table(data_storer):
     data_storer._create_spectrum_info_table()
     assert (
@@ -37,15 +34,24 @@ def test_get_cleaned_data_df(data_storer, cleaned_data):
     )  # +3 because of spectrum_id, created_timestamp and event_timestamp
 
 
+@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_store_cleaned_data(data_storer, cleaned_data):
     data_storer.store_cleaned_data(cleaned_data)
 
 
 def test_get_words_df(data_storer, documents_data):
-    words_df = data_storer._get_words_df(documents_data)
-    assert len(words_df) == len(documents_data)
-    assert set(words_df.columns) == {"spectrum_id", "words", "event_timestamp"}
+    documents_df = data_storer._get_documents_df(documents_data)
+    assert set(documents_df.columns) == {
+        "spectrum_id",
+        "words",
+        "losses",
+        "weights",
+        "event_timestamp",
+    }
+    assert not documents_df.spectrum_id.isnull().any()
+    assert not documents_df.words.isnull().any()
 
 
-def test_store_words(data_storer, documents_data):
-    data_storer.store_words(documents_data)
+@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
+def test_store_documents(data_storer, documents_data):
+    data_storer.store_documents(documents_data)
