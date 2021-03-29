@@ -1,7 +1,4 @@
 import os
-import shutil
-
-import mlflow
 import pytest
 from spec2vec_mlops.helper_classes.model_register import Model, ModelRegister
 from spec2vec_mlops.helper_classes.model_trainer import ModelTrainer
