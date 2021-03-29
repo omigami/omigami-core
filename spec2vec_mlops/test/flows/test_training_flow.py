@@ -1,4 +1,3 @@
-import mlflow
 import pytest
 from prefect import Flow, unmapped
 from prefect.engine.state import State
@@ -6,10 +5,11 @@ from prefect.engine.state import State
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
+from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
-
+from spec2vec_mlops.tasks.train_model import train_model_task
 
 FEAST_CORE_URL_LOCAL = config["feast"]["url"]["local"].get(str)
 
@@ -19,14 +19,30 @@ pytestmark = pytest.mark.skip(
 
 
 def spec2vec_train_pipeline_local(
-    source_uri: str, feast_source_dir: str, feast_core_url: str
+    source_uri: str,
+    feast_source_dir: str,
+    feast_core_url: str,
+    n_decimals: int,
+    save_model_path: str,
+    mlflow_server_uri: str,
+    experiment_name: str,
+    iterations: int = 25,
+    window: int = 500,
 ) -> State:
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
         cleaned = clean_data_task.map(raw)
         store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
-        documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
+        documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(n_decimals))
         store_documents_task(documents, feast_source_dir, feast_core_url)
+        model = train_model_task(documents, iterations, window)
+        register_model_task(
+            mlflow_server_uri,
+            model,
+            experiment_name,
+            save_model_path,
+            n_decimals,
+        )
     state = flow.run()
     return state
 
