@@ -1,6 +1,8 @@
 from pathlib import Path
 
 import pytest
+
+from spec2vec_mlops.helper_classes.model_trainer import ModelTrainer
 from spec2vec_mlops.tasks.clean_data import DataCleaner
 from spec2vec_mlops.tasks.convert_to_documents import DocumentConverter
 from spec2vec_mlops.tasks.load_data import DataLoader
@@ -40,3 +42,9 @@ def cleaned_data(gnps_small_json):
 def documents_data(cleaned_data):
     converter = DocumentConverter()
     return [converter.convert_to_document(spectrum, 1) for spectrum in cleaned_data]
+
+
+@pytest.fixture
+def word2vec_model(documents_data):
+    model = ModelTrainer().train_model(documents_data, iterations=10, window=5)
+    return model
