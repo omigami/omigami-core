@@ -37,7 +37,7 @@ class ModelRegister:
     def _get_or_create_experiment_id(experiment_name: str, path: str) -> str:
         experiment = mlflow.get_experiment_by_name(experiment_name)
         if experiment:
-            return experiment.id
+            return experiment.experiment_id
         else:
             return mlflow.create_experiment(
                 experiment_name, artifact_location=f"{path}/artifacts"
