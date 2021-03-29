@@ -2,7 +2,6 @@ import logging
 
 import click
 from prefect import Flow, Parameter, Client, unmapped
-from prefect.engine.state import State
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
@@ -23,21 +22,6 @@ SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"].get(str)
 API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"].get(str)
 API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"].get(str)
 FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"].get(str)
-
-
-def spec2vec_train_pipeline_local(
-    source_uri: str, feast_source_dir: str, feast_core_url: str
-) -> State:
-    with Flow("flow") as flow:
-        raw = load_data_task(source_uri)
-        logger.info("Data loading is complete.")
-        cleaned = clean_data_task.map(raw)
-        logger.info("Data cleaning is complete.")
-        store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
-        documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
-        store_documents_task(documents, feast_source_dir, feast_core_url)
-    state = flow.run()
-    return state
 
 
 def spec2vec_train_pipeline_distributed(
