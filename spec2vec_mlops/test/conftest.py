@@ -1,8 +1,6 @@
+import pickle
 from pathlib import Path
-
 import pytest
-from spec2vec_mlops.tasks.clean_data import DataCleaner
-from spec2vec_mlops.tasks.load_data import DataLoader
 
 
 def pytest_addoption(parser):
@@ -27,9 +25,16 @@ def gnps_small_json():
 
 
 @pytest.fixture
-def cleaned_data(gnps_small_json):
-    dl = DataLoader()
-    dc = DataCleaner()
+def cleaned_data():
+    path = str(Path(__file__).parents[0] / "assets" / "SMALL_GNPS_cleaned.pickle")
+    with open(path, 'rb') as handle:
+        cleaned_data = pickle.load(handle)
+    return cleaned_data
 
-    loaded_data = dl.load_gnps_json(gnps_small_json)
-    return [dc.clean_data(spectrum) for spectrum in loaded_data]
+
+@pytest.fixture
+def documents_data(cleaned_data):
+    path = str(Path(__file__).parents[0] / "assets" / "SMALL_GNPS_as_documents.pickle")
+    with open(path, 'rb') as handle:
+        documets_data = pickle.load(handle)
+    return documets_data
