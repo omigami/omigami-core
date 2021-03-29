@@ -2,7 +2,6 @@ import logging
 
 import click
 from prefect import Flow, Parameter, Client, unmapped
-from prefect.engine.state import State
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
@@ -13,7 +12,7 @@ from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
-from spec2vec_mlops.tasks.store_words import store_words_task
+from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 
 logging.basicConfig(level=logging.DEBUG)
@@ -26,39 +25,6 @@ API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"].
 API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"].get(str)
 FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"].get(str)
 MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
-
-
-def spec2vec_train_pipeline_local(
-    source_uri: str,
-    feast_source_dir: str,
-    feast_core_url: str,
-    n_decimals: int,
-    save_model_path: str,
-    mlflow_server_uri: str,
-    experiment_name: str,
-    iterations: int = 25,
-    window: int = 500,
-) -> State:
-    with Flow("flow") as flow:
-        raw = load_data_task(source_uri)
-        logger.info("Data loading is complete.")
-        cleaned = clean_data_task.map(raw)
-        logger.info("Data cleaning is complete.")
-        store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
-        documents = convert_to_documents_task.map(
-            cleaned, n_decimals=unmapped(n_decimals)
-        )
-        store_words_task(documents, feast_source_dir, feast_core_url)
-        model = train_model_task(documents, iterations, window)
-        register_model_task(
-            mlflow_server_uri,
-            model,
-            experiment_name,
-            save_model_path,
-            n_decimals,
-        )
-    state = flow.run()
-    return state
 
 
 def spec2vec_train_pipeline_distributed(
@@ -110,7 +76,7 @@ def spec2vec_train_pipeline_distributed(
         logger.info("Data cleaning is complete.")
         store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
         documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
-        store_words_task(documents, feast_source_dir, feast_core_url)
+        store_documents_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(documents, iterations, window)
         register_model_task(
             mlflow_server_uri,
