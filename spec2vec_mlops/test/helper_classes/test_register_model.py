@@ -1,7 +1,4 @@
 import os
-import shutil
-
-import mlflow
 import pytest
 from spec2vec_mlops.helper_classes.model_register import Model, ModelRegister
 from spec2vec_mlops.helper_classes.model_trainer import ModelTrainer
@@ -20,3 +17,16 @@ def test_register_model(trained_model, tmpdir):
         Model(trained_model), "experiment", f"{path}/model", n_decimals=2
     )
     assert os.path.exists(f"{path}/model/python_model.pkl")
+
+
+def test_get_or_create_experiment(tmpdir):
+    path = f"{tmpdir}/mlflow/"
+    model_register = ModelRegister(f"file:/{path}")
+    experiment_name = "experiment"
+    # create
+    created_experiment_id = model_register._get_or_create_experiment_id(
+        experiment_name, path
+    )
+    # get
+    experiment_id = model_register._get_or_create_experiment_id(experiment_name, path)
+    assert created_experiment_id == experiment_id

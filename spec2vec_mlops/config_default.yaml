@@ -66,4 +66,4 @@ prefect_flow_registration:
     local: "http://localhost:4200"
 mlflow:
   url:
-    remote: "https://mlflow.mlflow:5000"
+    remote: "http://mlflow.mlflow:5000"
