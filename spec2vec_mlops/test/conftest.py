@@ -27,7 +27,7 @@ def gnps_small_json():
 @pytest.fixture
 def cleaned_data():
     path = str(Path(__file__).parents[0] / "assets" / "SMALL_GNPS_cleaned.pickle")
-    with open(path, 'rb') as handle:
+    with open(path, "rb") as handle:
         cleaned_data = pickle.load(handle)
     return cleaned_data
 
@@ -35,6 +35,6 @@ def cleaned_data():
 @pytest.fixture
 def documents_data(cleaned_data):
     path = str(Path(__file__).parents[0] / "assets" / "SMALL_GNPS_as_documents.pickle")
-    with open(path, 'rb') as handle:
+    with open(path, "rb") as handle:
         documets_data = pickle.load(handle)
     return documets_data
