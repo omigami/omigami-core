@@ -13,6 +13,9 @@ def register_model_task(
     experiment_name: str,
     path: str,
     n_decimals: int,
+    conda_env_path: str = None,
 ):
     model_register = ModelRegister(server_uri)
-    model_register.register_model(Model(model), experiment_name, path, n_decimals)
+    model_register.register_model(
+        Model(model), experiment_name, path, n_decimals, conda_env_path
+    )

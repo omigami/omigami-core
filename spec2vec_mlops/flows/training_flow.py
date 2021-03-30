@@ -38,6 +38,7 @@ def spec2vec_train_pipeline_distributed(
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
+    conda_env_path: str = "requirements/environment.frozen.yaml",
     iterations: int = 25,
     window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
@@ -68,7 +69,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.c8cf39e",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.9a7b40a",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),
@@ -91,6 +92,7 @@ def spec2vec_train_pipeline_distributed(
             project_name,
             save_model_path,
             n_decimals,
+            conda_env_path,
         )
         embeddings = make_embeddings_task.map(
             unmapped(model),
