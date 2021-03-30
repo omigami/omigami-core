@@ -1,11 +1,7 @@
+import pickle
 from pathlib import Path
-
 import pytest
-
 from spec2vec_mlops.helper_classes.model_trainer import ModelTrainer
-from spec2vec_mlops.tasks.clean_data import DataCleaner
-from spec2vec_mlops.tasks.convert_to_documents import DocumentConverter
-from spec2vec_mlops.tasks.load_data import DataLoader
 
 
 def pytest_addoption(parser):
@@ -23,25 +19,31 @@ def pytest_configure(config):
         setattr(config.option, "markexpr", "not longrun")
 
 
+@pytest.fixture
+def assets_dir():
+    return Path(__file__).parents[0] / "assets"
+
+
 @pytest.fixture()
-def gnps_small_json():
-    ASSET_DIR = str(Path(__file__).parents[0] / "assets" / "SMALL_GNPS.json")
-    return f"file://{ASSET_DIR}"
+def gnps_small_json(assets_dir):
+    path = str(assets_dir / "SMALL_GNPS.json")
+    return f"file://{path}"
 
 
 @pytest.fixture
-def cleaned_data(gnps_small_json):
-    dl = DataLoader()
-    dc = DataCleaner()
-
-    loaded_data = dl.load_gnps_json(gnps_small_json)
-    return [dc.clean_data(spectrum) for spectrum in loaded_data]
+def cleaned_data(assets_dir):
+    path = str(assets_dir / "SMALL_GNPS_cleaned.pickle")
+    with open(path, "rb") as handle:
+        cleaned_data = pickle.load(handle)
+    return cleaned_data
 
 
 @pytest.fixture
-def documents_data(cleaned_data):
-    converter = DocumentConverter()
-    return [converter.convert_to_document(spectrum, 1) for spectrum in cleaned_data]
+def documents_data(assets_dir):
+    path = str(assets_dir / "SMALL_GNPS_as_documents.pickle")
+    with open(path, "rb") as handle:
+        documets_data = pickle.load(handle)
+    return documets_data
 
 
 @pytest.fixture

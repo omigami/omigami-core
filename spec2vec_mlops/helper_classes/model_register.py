@@ -26,9 +26,10 @@ class ModelRegister:
             mlflow.log_param("n_decimals_for_documents", n_decimals)
             mlflow.log_param("iter", model.model.iter)
             mlflow.log_param("window", model.model.window)
-            mlflow.pyfunc.save_model(
-                path=path,
+            mlflow.pyfunc.log_model(
+                "model",
                 python_model=model,
+                registered_model_name=experiment_name,
                 # TODO: maybe add a conda_env
             )
             mlflow.log_metric("alpha", model.model.alpha)

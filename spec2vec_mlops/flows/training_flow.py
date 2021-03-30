@@ -2,7 +2,6 @@ import logging
 
 import click
 from prefect import Flow, Parameter, Client, unmapped
-from prefect.engine.state import State
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
@@ -13,7 +12,7 @@ from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
-from spec2vec_mlops.tasks.store_words import store_words_task
+from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 
@@ -29,48 +28,14 @@ FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"].get(str)
 MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
 
 
-def spec2vec_train_pipeline_local(
-    source_uri: str,
-    feast_source_dir: str,
-    feast_core_url: str,
-    n_decimals: int,
-    save_model_path: str,
-    mlflow_server_uri: str,
-    experiment_name: str,
-    iterations: int = 25,
-    window: int = 500,
-) -> State:
-    with Flow("flow") as flow:
-        raw = load_data_task(source_uri)
-        logger.info("Data loading is complete.")
-        cleaned = clean_data_task.map(raw)
-        logger.info("Data cleaning is complete.")
-        store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
-        documents = convert_to_documents_task.map(
-            cleaned, n_decimals=unmapped(n_decimals)
-        )
-        store_words_task(documents, feast_source_dir, feast_core_url)
-        model = train_model_task(documents, iterations, window)
-        register_model_task(
-            mlflow_server_uri,
-            model,
-            experiment_name,
-            save_model_path,
-            n_decimals,
-        )
-        embeddings = make_embeddings_task.map(unmapped(model), documents)
-    state = flow.run()
-    return state
-
-
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-make-embeddings",
-    feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/",
+    project_name: str = "spec2vec-mlops-project-register-model-2",
+    feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/feast",
     feast_core_url: str = FEAST_CORE_URL_REMOTE,
     n_decimals: int = 2,
-    save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow/",
+    save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
     iterations: int = 25,
     window: int = 500,
@@ -112,7 +77,7 @@ def spec2vec_train_pipeline_distributed(
         logger.info("Data cleaning is complete.")
         store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
         documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
-        store_words_task(documents, feast_source_dir, feast_core_url)
+        store_documents_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(documents, iterations, window)
         register_model_task(
             mlflow_server_uri,
