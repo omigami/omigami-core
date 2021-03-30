@@ -30,7 +30,7 @@ class ModelRegister:
                 "model",
                 python_model=model,
                 registered_model_name=experiment_name,
-                # TODO: maybe add a conda_env
+                conda_env="requirements/environment.frozen.yaml"
             )
             mlflow.log_metric("alpha", model.model.alpha)
 
@@ -40,6 +40,4 @@ class ModelRegister:
         if experiment:
             return experiment.experiment_id
         else:
-            return mlflow.create_experiment(
-                experiment_name, artifact_location=f"{path}/artifacts"
-            )
+            return mlflow.create_experiment(experiment_name, artifact_location=path)
