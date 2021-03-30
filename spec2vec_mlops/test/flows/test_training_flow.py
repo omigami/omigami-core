@@ -10,6 +10,7 @@ from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
+from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 
 FEAST_CORE_URL_LOCAL = config["feast"]["url"]["local"].get(str)
 
@@ -45,6 +46,7 @@ def spec2vec_train_pipeline_local(
             save_model_path,
             n_decimals,
         )
+        embeddings = make_embeddings_task.map(unmapped(model), documents)
     state = flow.run()
     return state
 

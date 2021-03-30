@@ -1,7 +1,7 @@
 import pickle
 from pathlib import Path
+
 import pytest
-from spec2vec_mlops.helper_classes.model_trainer import ModelTrainer
 
 
 def pytest_addoption(parser):
@@ -42,11 +42,13 @@ def cleaned_data(assets_dir):
 def documents_data(assets_dir):
     path = str(assets_dir / "SMALL_GNPS_as_documents.pickle")
     with open(path, "rb") as handle:
-        documets_data = pickle.load(handle)
-    return documets_data
+        documents_data = pickle.load(handle)
+    return documents_data
 
 
 @pytest.fixture
-def word2vec_model(documents_data):
-    model = ModelTrainer().train_model(documents_data, iterations=10, window=5)
+def word2vec_model(assets_dir):
+    path = str(assets_dir / "model.pickle")
+    with open(path, "rb") as handle:
+        model = pickle.load(handle)
     return model
