@@ -11,8 +11,8 @@ class EmbeddingMaker:
     def make_embedding(
         model: Word2Vec,
         document: SpectrumDocument,
-        allowed_missing_percentage: Union[float, int] = 5.0,
-        intensity_weighting_power: Union[float, int] = 0.5,
+        intensity_weighting_power: Union[float, int] = None,
+        allowed_missing_percentage: Union[float, int] = None,
     ) -> np.ndarray:
         embedding = calc_vector(
             model=model,
