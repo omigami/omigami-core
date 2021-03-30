@@ -3,7 +3,8 @@ import datetime
 from gensim.models import Word2Vec
 from prefect import task
 
-from spec2vec_mlops.helper_classes.model_register import Model, ModelRegister
+from spec2vec_mlops.helper_classes.model_register import ModelRegister
+from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
@@ -17,5 +18,5 @@ def register_model_task(
 ):
     model_register = ModelRegister(server_uri)
     model_register.register_model(
-        Model(model), experiment_name, path, n_decimals, conda_env_path
+        Model(model, n_decimals), experiment_name, path, n_decimals, conda_env_path
     )

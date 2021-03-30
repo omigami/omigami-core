@@ -1,14 +1,7 @@
 import mlflow
 from mlflow.exceptions import MlflowException
-from mlflow.pyfunc import PythonModel
 
-
-class Model(PythonModel):
-    def __init__(self, model):
-        self.model = model
-
-    def predict(self, context, model_input):
-        pass
+from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
 
 class ModelRegister:

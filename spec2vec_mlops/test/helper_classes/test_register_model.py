@@ -1,6 +1,7 @@
 import os
 
-from spec2vec_mlops.helper_classes.model_register import Model, ModelRegister
+from spec2vec_mlops.helper_classes.model_register import ModelRegister
+from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
 
 def test_get_or_create_experiment(tmpdir):
