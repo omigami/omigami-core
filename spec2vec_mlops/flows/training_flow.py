@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 import click
 from prefect import Flow, Parameter, Client, unmapped
@@ -14,6 +15,7 @@ from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
+from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -39,6 +41,8 @@ def spec2vec_train_pipeline_distributed(
     conda_env_path: str = "requirements/environment.frozen.yaml",
     iterations: int = 25,
     window: int = 500,
+    intensity_weighting_power: Union[float, int] = 0.5,
+    allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -54,6 +58,9 @@ def spec2vec_train_pipeline_distributed(
     save_model_path: path to save the trained model with MLFlow to
     iterations: number of training iterations.
     window: window size for context words
+    intensity_weighting_power: exponent used to scale intensity weights for each word
+    allowed_missing_percentage: number of what percentage of a spectrum is allowed
+        to be unknown to the model
 
     Returns
     -------
@@ -87,7 +94,12 @@ def spec2vec_train_pipeline_distributed(
             n_decimals,
             conda_env_path,
         )
-        # encoded = encode_training_data_task(documents)
+        embeddings = make_embeddings_task.map(
+            unmapped(model),
+            documents,
+            intensity_weighting_power,
+            allowed_missing_percentage,
+        )
     client = Client(api_server=api_server)
     client.create_project(project_name)
     training_flow_id = client.register(
