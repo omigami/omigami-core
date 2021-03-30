@@ -9,10 +9,10 @@ from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def make_embeddigns_task(
+def make_embeddings_task(
     model: Word2Vec,
     document: SpectrumDocument,
 ) -> np.ndarray:
     embedding_maker = EmbeddingMaker()
-    embeddings = embedding_maker.make_embeddings(model, document)
+    embeddings = embedding_maker.make_embedding(model, document)
     return embeddings

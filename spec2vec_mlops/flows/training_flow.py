@@ -15,7 +15,7 @@ from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_words import store_words_task
 from spec2vec_mlops.tasks.train_model import train_model_task
-from spec2vec_mlops.tasks.make_embeddings import make_embeddigns_task
+from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ def spec2vec_train_pipeline_local(
             save_model_path,
             n_decimals,
         )
-        embeddings = make_embeddigns_task.map(unmapped(model), documents)
+        embeddings = make_embeddings_task.map(unmapped(model), documents)
     state = flow.run()
     return state
 
@@ -121,7 +121,7 @@ def spec2vec_train_pipeline_distributed(
             save_model_path,
             n_decimals,
         )
-        embeddings = make_embeddigns_task.map(unmapped(model), documents)
+        embeddings = make_embeddings_task.map(unmapped(model), documents)
     client = Client(api_server=api_server)
     client.create_project(project_name)
     training_flow_id = client.register(

@@ -8,7 +8,7 @@ from spec2vec.vector_operations import calc_vector
 
 class EmbeddingMaker:
     @staticmethod
-    def make_embeddings(
+    def make_embedding(
         model: Word2Vec,
         document: SpectrumDocument,
         allowed_missing_percentage: Union[float, int] = 5.0,
