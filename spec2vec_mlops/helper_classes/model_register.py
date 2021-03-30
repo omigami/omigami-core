@@ -25,9 +25,12 @@ class ModelRegister:
     ):
         experiment_id = self._get_or_create_experiment_id(experiment_name, path)
         with mlflow.start_run(experiment_id=experiment_id):
-            mlflow.log_param("n_decimals_for_documents", n_decimals)
-            mlflow.log_param("iter", model.model.iter)
-            mlflow.log_param("window", model.model.window)
+            params = {
+                "n_decimals_for_documents": n_decimals,
+                "iter": model.model.iter,
+                "window": model.model.window,
+            }
+            mlflow.log_params(params)
             try:
                 mlflow.pyfunc.log_model(
                     "model",
