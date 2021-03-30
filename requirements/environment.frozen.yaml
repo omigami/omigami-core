@@ -13,6 +13,8 @@ dependencies:
   - click=7.1.2
   - boto3=1.17.27
   - ijson=3.1.3
+  - numpy=1.19.2
   - pip:
       - matchms==0.8.2
       - feast==0.9.3
+      - mlflow==1.14.1
