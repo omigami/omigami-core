@@ -83,9 +83,11 @@ def spec2vec_train_pipeline_distributed(
         cleaned = clean_data_task.map(raw)
         logger.info("Data cleaning is complete.")
         store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
+
+        # TODO: this step should use data from feast
         documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
         store_documents_task(documents, feast_source_dir, feast_core_url)
-        model = train_model_task(documents, iterations, window)
+        model = train_model_task(feast_core_url, iterations, window)
         register_model_task(
             mlflow_server_uri,
             model,
