@@ -97,8 +97,8 @@ def spec2vec_train_pipeline_distributed(
         embeddings = make_embeddings_task.map(
             unmapped(model),
             documents,
-            intensity_weighting_power,
-            allowed_missing_percentage,
+            unmapped(intensity_weighting_power),
+            unmapped(allowed_missing_percentage),
         )
     client = Client(api_server=api_server)
     client.create_project(project_name)
