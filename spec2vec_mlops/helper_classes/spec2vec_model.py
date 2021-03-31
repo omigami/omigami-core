@@ -1,7 +1,6 @@
 from typing import List, Dict, Union
 
 from gensim.models import Word2Vec
-from matchms import calculate_scores
 from mlflow.pyfunc import PythonModel
 
 from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
@@ -27,11 +26,10 @@ class Model(PythonModel):
 
     def predict(self, context, model_input: List[Dict]):
         embeddings = self._pre_process_data(model_input)
+        return embeddings  # temporary
         # get library embeddings from feast
         # compare both embeddings
         # return best_matches for each spectrum
-        # scores = calculate_scores(spectrum_documents, spectrum_documents, spec2vec_similarity, is_symmetric=True)
-        # best_matches = scores.scores_by_query(spectrum_documents[11], sort=True)[:10]
 
     def _pre_process_data(self, model_input):
         cleaned_data = [self.data_cleaner.clean_data(data) for data in model_input]
