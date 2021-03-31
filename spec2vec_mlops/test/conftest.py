@@ -19,7 +19,7 @@ def pytest_configure(config):
         setattr(config.option, "markexpr", "not longrun")
 
 
-@pytest.fixture
+@pytest.fixture()
 def assets_dir():
     return Path(__file__).parents[0] / "assets"
 
@@ -30,7 +30,7 @@ def gnps_small_json(assets_dir):
     return f"file://{path}"
 
 
-@pytest.fixture
+@pytest.fixture()
 def cleaned_data(assets_dir):
     path = str(assets_dir / "SMALL_GNPS_cleaned.pickle")
     with open(path, "rb") as handle:
@@ -38,7 +38,7 @@ def cleaned_data(assets_dir):
     return cleaned_data
 
 
-@pytest.fixture
+@pytest.fixture()
 def documents_data(assets_dir):
     path = str(assets_dir / "SMALL_GNPS_as_documents.pickle")
     with open(path, "rb") as handle:
@@ -46,9 +46,18 @@ def documents_data(assets_dir):
     return documents_data
 
 
-@pytest.fixture
+@pytest.fixture()
 def word2vec_model(assets_dir):
     path = str(assets_dir / "model.pickle")
     with open(path, "rb") as handle:
         model = pickle.load(handle)
     return model
+
+
+@pytest.fixture()
+def embeddings(assets_dir):
+    path = str(assets_dir / "embeddings.pickle")
+    with open(path, "rb") as handle:
+        embeddings = pickle.load(handle)
+    return embeddings
+
