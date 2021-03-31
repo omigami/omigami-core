@@ -19,6 +19,7 @@ def test_create_spectrum_info_table(data_storer):
     )
 
 
+@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_get_cleaned_data_df(data_storer, cleaned_data):
     spectrum_df = data_storer._get_cleaned_data_df(cleaned_data)
     assert len(spectrum_df) == len(cleaned_data)
@@ -32,6 +33,7 @@ def test_store_cleaned_data(data_storer, cleaned_data):
     data_storer.store_cleaned_data(cleaned_data)
 
 
+@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_get_words_df(data_storer, documents_data):
     documents_df = data_storer._get_documents_df(documents_data)
     assert set(documents_df.columns) == {
