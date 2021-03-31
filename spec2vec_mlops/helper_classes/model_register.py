@@ -22,9 +22,9 @@ class ModelRegister:
         path: str,
         n_decimals: int,
         conda_env_path: str = None,
-    ):
+    ) -> str:
         experiment_id = self._get_or_create_experiment_id(experiment_name, path)
-        with mlflow.start_run(experiment_id=experiment_id):
+        with mlflow.start_run(experiment_id=experiment_id) as run:
             params = {
                 "n_decimals_for_documents": n_decimals,
                 "iter": model.model.iter,
@@ -46,6 +46,7 @@ class ModelRegister:
                     conda_env=conda_env_path,
                 )
             mlflow.log_metric("alpha", model.model.alpha)
+            return run.info.run_id
 
     @staticmethod
     def _get_or_create_experiment_id(experiment_name: str, path: str) -> str:
