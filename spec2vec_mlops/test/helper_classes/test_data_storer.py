@@ -5,12 +5,14 @@ from spec2vec_mlops.helper_classes.data_storer import DataStorer
 FEAST_CORE_URL = config["feast"]["url"]["local"].get(str)
 
 
+pytestmark = pytest.mark.skip("It can only be run if the Feast docker-compose is up")
+
+
 @pytest.fixture()
 def data_storer(tmpdir):
     return DataStorer(f"file://{tmpdir}", FEAST_CORE_URL)
 
 
-@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_create_spectrum_info_table(data_storer):
     data_storer._create_spectrum_info_table()
     assert (
@@ -19,7 +21,6 @@ def test_create_spectrum_info_table(data_storer):
     )
 
 
-@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_get_cleaned_data_df(data_storer, cleaned_data):
     spectrum_df = data_storer._get_cleaned_data_df(cleaned_data)
     assert len(spectrum_df) == len(cleaned_data)
@@ -31,12 +32,10 @@ def test_get_cleaned_data_df(data_storer, cleaned_data):
     assert not spectrum_df.created_timestamp.isnull().any()
 
 
-@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_store_cleaned_data(data_storer, cleaned_data):
     data_storer.store_cleaned_data(cleaned_data)
 
 
-@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_get_documents_df(data_storer, documents_data):
     documents_df = data_storer._get_documents_df(documents_data)
     assert set(documents_df.columns) == {
@@ -51,7 +50,6 @@ def test_get_documents_df(data_storer, documents_data):
     assert not documents_df.event_timestamp.isnull().any()
 
 
-@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_store_documents(data_storer, documents_data):
     data_storer.store_documents(documents_data)
 
@@ -69,7 +67,5 @@ def test_get_embeddings_df(data_storer, documents_data, embeddings):
     assert not embeddings_df.event_timestamp.isnull().any()
 
 
-@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_store_embeddings(data_storer, documents_data, embeddings):
     data_storer.store_embeddings(documents_data, embeddings, "")
-
