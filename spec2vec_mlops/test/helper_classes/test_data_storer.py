@@ -25,6 +25,9 @@ def test_get_cleaned_data_df(data_storer, cleaned_data):
     assert (
         len(spectrum_df.columns) == len(data_storer.features2types.keys()) + 3
     )  # +3 because of spectrum_id, created_timestamp and event_timestamp
+    assert not spectrum_df.spectrum_id.isnull().any()
+    assert not spectrum_df.event_timestamp.isnull().any()
+    assert not spectrum_df.created_timestamp.isnull().any()
 
 
 @pytest.mark.skip("It can only be run if the Feast docker-compose is up")
@@ -32,7 +35,7 @@ def test_store_cleaned_data(data_storer, cleaned_data):
     data_storer.store_cleaned_data(cleaned_data)
 
 
-def test_get_words_df(data_storer, documents_data):
+def test_get_documents_df(data_storer, documents_data):
     documents_df = data_storer._get_documents_df(documents_data)
     assert set(documents_df.columns) == {
         "spectrum_id",
@@ -43,11 +46,24 @@ def test_get_words_df(data_storer, documents_data):
     }
     assert not documents_df.spectrum_id.isnull().any()
     assert not documents_df.words.isnull().any()
+    assert not documents_df.event_timestamp.isnull().any()
 
 
 @pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_store_documents(data_storer, documents_data):
     data_storer.store_documents(documents_data)
+
+
+def test_get_embeddings_df(data_storer, documents_data, embeddings):
+    embeddings_df = data_storer._get_embeddings_df(documents_data, embeddings)
+    assert set(embeddings_df.columns) == {
+        "spectrum_id",
+        "embeddings",
+        "event_timestamp",
+    }
+    assert not embeddings_df.spectrum_id.isnull().any()
+    assert not embeddings_df.embeddings.isnull().any()
+    assert not embeddings_df.event_timestamp.isnull().any()
 
 
 @pytest.mark.skip("It can only be run if the Feast docker-compose is up")

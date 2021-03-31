@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import List
 
 import numpy as np
@@ -92,8 +92,8 @@ class DataStorer:
                         for key in self.features2types.keys()
                         if key in spectrum.metadata.keys()
                     },
-                    "event_timestamp": datetime.datetime.now(),
-                    "created_timestamp": datetime.datetime.now(),
+                    "event_timestamp": spectrum.metadata.get("create_time", datetime.now()),
+                    "created_timestamp": datetime.now(),
                 }
                 for spectrum in data
             ]
@@ -111,7 +111,7 @@ class DataStorer:
                     "words": document.words,
                     "losses": document.losses,
                     "weights": document.weights,
-                    "event_timestamp": datetime.datetime.now(),
+                    "event_timestamp": document.metadata.get("create_time", datetime.now()),
                 }
                 for document in data
             ]
@@ -126,8 +126,8 @@ class DataStorer:
             [
                 {
                     "spectrum_id": document.metadata["spectrum_id"],
-                    "embedding": embedding,
-                    "event_timestamp": document.metadata["create_time"]
+                    "embeddings": embedding,
+                    "event_timestamp": document.metadata.get("create_time", datetime.now())
                 }
                 for document, embedding in zip(data, embeddings)
             ]
