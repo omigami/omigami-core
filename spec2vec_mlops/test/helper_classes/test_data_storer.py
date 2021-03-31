@@ -57,10 +57,11 @@ def test_store_documents(data_storer, documents_data):
 
 
 def test_get_embeddings_df(data_storer, documents_data, embeddings):
-    embeddings_df = data_storer._get_embeddings_df(documents_data, embeddings)
+    embeddings_df = data_storer._get_embeddings_df(documents_data, embeddings, "run_id")
     assert set(embeddings_df.columns) == {
         "spectrum_id",
         "embeddings",
+        "run_id",
         "event_timestamp",
     }
     assert not embeddings_df.spectrum_id.isnull().any()
@@ -70,5 +71,5 @@ def test_get_embeddings_df(data_storer, documents_data, embeddings):
 
 @pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_store_embeddings(data_storer, documents_data, embeddings):
-    data_storer.store_embeddings(documents_data, embeddings)
+    data_storer.store_embeddings(documents_data, embeddings, "")
 

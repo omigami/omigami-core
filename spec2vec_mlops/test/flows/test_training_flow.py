@@ -40,7 +40,7 @@ def spec2vec_train_pipeline_local(
         )
         store_documents_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(documents, iterations, window)
-        register_model_task(
+        run_id = register_model_task(
             mlflow_server_uri,
             model,
             experiment_name,
@@ -48,7 +48,7 @@ def spec2vec_train_pipeline_local(
             n_decimals,
         )
         embeddings = make_embeddings_task.map(unmapped(model), documents)
-        store_embeddings_task(documents, embeddings, feast_source_dir, feast_core_url)
+        store_embeddings_task(documents, embeddings, run_id, feast_source_dir, feast_core_url)
     state = flow.run()
     return state
 

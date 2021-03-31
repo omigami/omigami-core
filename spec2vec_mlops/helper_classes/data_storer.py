@@ -35,6 +35,7 @@ class DataStorer:
             for key in KEYS
             if key.lower() not in not_string_features2types.keys()
         }
+        string_features2types["run_id"] = ValueType.STRING
         self.features2types = {**not_string_features2types, **string_features2types}
         self.spectrum_info = self._get_or_create_spectrum_table()
 
@@ -89,6 +90,7 @@ class DataStorer:
                     "losses": [],
                     "weights": [],
                     "embeddings": [],
+                    "run_id": "",
                     **{
                         key: spectrum.metadata[key]
                         for key in self.features2types.keys()
@@ -119,16 +121,17 @@ class DataStorer:
             ]
         )
 
-    def store_embeddings(self, data: List[SpectrumDocument], embeddings: List[np.ndarray]):
-        df = self._get_embeddings_df(data, embeddings)
+    def store_embeddings(self, data: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str):
+        df = self._get_embeddings_df(data, embeddings, run_id)
         self.client.ingest(self.spectrum_info, df)
 
-    def _get_embeddings_df(self, data: List[SpectrumDocument], embeddings: List[np.ndarray]) -> pd.DataFrame:
+    def _get_embeddings_df(self, data: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
                 {
                     "spectrum_id": document.metadata["spectrum_id"],
                     "embeddings": embedding,
+                    "run_id": run_id,
                     "event_timestamp": document.metadata.get("create_time", datetime.now())
                 }
                 for document, embedding in zip(data, embeddings)
