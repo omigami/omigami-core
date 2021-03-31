@@ -1,6 +1,7 @@
 import datetime
 from typing import List
 
+import numpy as np
 import pandas as pd
 from feast import ValueType, Client, FeatureTable, Entity, Feature, FileSource
 from feast.data_format import ParquetFormat
@@ -113,5 +114,21 @@ class DataStorer:
                     "event_timestamp": datetime.datetime.now(),
                 }
                 for document in data
+            ]
+        )
+
+    def store_embeddings(self, data: List[SpectrumDocument], embeddings: List[np.ndarray]):
+        df = self._get_embeddings_df(data, embeddings)
+        self.client.ingest(self.spectrum_info, df)
+
+    def _get_embeddings_df(self, data: List[SpectrumDocument], embeddings: List[np.ndarray]) -> pd.DataFrame:
+        return pd.DataFrame.from_records(
+            [
+                {
+                    "spectrum_id": document.metadata["spectrum_id"],
+                    "embedding": embedding,
+                    "event_timestamp": document.metadata["create_time"]
+                }
+                for document, embedding in zip(data, embeddings)
             ]
         )

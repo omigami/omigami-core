@@ -48,3 +48,9 @@ def test_get_words_df(data_storer, documents_data):
 @pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_store_documents(data_storer, documents_data):
     data_storer.store_documents(documents_data)
+
+
+@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
+def test_store_embeddings(data_storer, documents_data, embeddings):
+    data_storer.store_embeddings(documents_data, embeddings)
+
