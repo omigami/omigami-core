@@ -31,6 +31,11 @@ class ModelRegister:
                     python_model=model,
                     registered_model_name=experiment_name,
                     conda_env=conda_env_path,
+                    code_path=[
+                        "spec2vec_mlops/helper_classes/data_cleaner.py",
+                        "spec2vec_mlops/helper_classes/document_converter.py",
+                        "spec2vec_mlops/helper_classes/embedding_maker.py",
+                    ],
                 )
             # This is need to run the flow locally. mlflow.pyfunc.log_model is not supported without a database
             except MlflowException:
@@ -38,6 +43,11 @@ class ModelRegister:
                     f"{path}/model",
                     python_model=model,
                     conda_env=conda_env_path,
+                    code_path=[
+                        "spec2vec_mlops/helper_classes/data_cleaner.py",
+                        "spec2vec_mlops/helper_classes/document_converter.py",
+                        "spec2vec_mlops/helper_classes/embedding_maker.py",
+                    ],
                 )
             mlflow.log_metric("alpha", model.model.alpha)
             return run.info.run_id

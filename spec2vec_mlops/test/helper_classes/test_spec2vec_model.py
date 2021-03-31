@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 import mlflow
 import pytest
 import numpy as np
@@ -5,6 +7,8 @@ import numpy as np
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
+
+os.chdir(Path(__file__).parents[3])
 
 
 @pytest.fixture
