@@ -60,6 +60,8 @@ feast:
   url:
     remote: "feast-feast-core.feast:6565"
     local: "0.0.0.0:6565"
+  spark:
+    output_location: "/tmp/historical_feature_output"
 prefect_flow_registration:
   api_server:
     remote: "https://prefect.mlops.datarevenue.com/graphql"
