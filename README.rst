@@ -55,6 +55,20 @@ And to run it:
 
     docker-compose pull && docker-compose up -d
 
+How to register the training flow manually
+------------------------------------------
+
+To register the flow manually to Prefect you need to follow these steps:
+::
+
+    conda activate spec2vec_mlops
+    export AWS_PROFILE=<your data revenue profile>
+    export PYTHONPATH=$(pwd)
+    prefect backend server
+    python spec2vec_mlops/flows/training_flow.py register-train-pipeline
+
+Then you can check the flow here: https://prefect.mlops.datarevenue.com/default
+
 Black format your code
 -------------------------------------
 
