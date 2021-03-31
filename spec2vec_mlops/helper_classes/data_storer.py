@@ -28,6 +28,7 @@ class DataStorer:
             "words": ValueType.DOUBLE_LIST,
             "losses": ValueType.DOUBLE_LIST,
             "weights": ValueType.DOUBLE_LIST,
+            "embeddings": ValueType.DOUBLE_LIST,
         }
         string_features2types = {
             key.lower(): ValueType.STRING
@@ -87,6 +88,7 @@ class DataStorer:
                     "words": [],
                     "losses": [],
                     "weights": [],
+                    "embeddings": [],
                     **{
                         key: spectrum.metadata[key]
                         for key in self.features2types.keys()
