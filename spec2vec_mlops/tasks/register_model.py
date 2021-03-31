@@ -1,4 +1,5 @@
 import datetime
+from typing import Union
 
 from gensim.models import Word2Vec
 from prefect import task
@@ -14,9 +15,14 @@ def register_model_task(
     experiment_name: str,
     path: str,
     n_decimals: int,
+    intensity_weighting_power: Union[float, int],
+    allowed_missing_percentage: Union[float, int],
     conda_env_path: str = None,
 ):
     model_register = ModelRegister(server_uri)
     model_register.register_model(
-        Model(model, n_decimals), experiment_name, path, n_decimals, conda_env_path
+        Model(model, n_decimals, intensity_weighting_power, allowed_missing_percentage),
+        experiment_name,
+        path,
+        conda_env_path,
     )

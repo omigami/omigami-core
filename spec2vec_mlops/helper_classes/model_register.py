@@ -13,13 +13,14 @@ class ModelRegister:
         model: Model,
         experiment_name: str,
         path: str,
-        n_decimals: int,
         conda_env_path: str = None,
-    ):
+    ) -> str:
         experiment_id = self._get_or_create_experiment_id(experiment_name, path)
-        with mlflow.start_run(experiment_id=experiment_id):
+        with mlflow.start_run(experiment_id=experiment_id) as run:
             params = {
-                "n_decimals_for_documents": n_decimals,
+                "n_decimals_for_documents": model.n_decimals,
+                "intensity_weighting_power": model.intensity_weighting_power,
+                "allowed_missing_percentage": model.allowed_missing_percentage,
                 "iter": model.model.iter,
                 "window": model.model.window,
             }
@@ -39,6 +40,7 @@ class ModelRegister:
                     conda_env=conda_env_path,
                 )
             mlflow.log_metric("alpha", model.model.alpha)
+            return run.info.run_id
 
     @staticmethod
     def _get_or_create_experiment_id(experiment_name: str, path: str) -> str:

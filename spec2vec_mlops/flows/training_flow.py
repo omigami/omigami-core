@@ -92,6 +92,8 @@ def spec2vec_train_pipeline_distributed(
             project_name,
             save_model_path,
             n_decimals,
+            intensity_weighting_power,
+            allowed_missing_percentage,
             conda_env_path,
         )
         embeddings = make_embeddings_task.map(
