@@ -12,6 +12,7 @@ How to setup
     conda env create -f requirements/environment.frozen.yaml
     conda env update -f requirements/environment_test.yaml
     conda activate spec2vec_mlops
+    pip install -e .
 
 How to update all packages
 --------------------------
