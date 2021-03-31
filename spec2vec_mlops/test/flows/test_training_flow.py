@@ -38,7 +38,7 @@ def spec2vec_train_pipeline_local(
             cleaned, n_decimals=unmapped(n_decimals)
         )
         store_documents_task(documents, feast_source_dir, feast_core_url)
-        model = train_model_task(documents, iterations, window)
+        model = train_model_task(feast_core_url, iterations, window)
         register_model_task(
             mlflow_server_uri,
             model,
