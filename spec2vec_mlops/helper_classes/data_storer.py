@@ -50,7 +50,7 @@ class DataStorer:
         spectrum_id = Entity(
             name="spectrum_id",
             description="Spectrum identifier",
-            value_type=ValueType.INT64,
+            value_type=ValueType.STRING,
         )
         features = [
             Feature(feature, dtype=feature_type)
@@ -111,6 +111,7 @@ class DataStorer:
                     "losses": document.losses,
                     "weights": document.weights,
                     "event_timestamp": datetime.datetime.now(),
+                    "created_timestamp": datetime.datetime.now(),
                 }
                 for document in data
             ]
