@@ -8,6 +8,12 @@ from spec2vec_mlops.helper_classes.embedding import Embedding
 
 
 class Spec2VecEmbeddings(Spec2Vec):
+    """Calculate spec2vec similarity scores between a reference and a query.
+    The only difference between Spec2VecEmbeddings and Spec2Vec is that
+    Spec2VecEmbeddings methods take as input argument Embedding instead of Union[SpectrumDocument, Spectrum].
+    The Embeddings are being stored at training so there is no need to recompute them at every lookup.
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
