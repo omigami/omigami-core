@@ -1,9 +1,7 @@
 import datetime
-from typing import List
 
 from gensim.models import Word2Vec
 from prefect import task
-from spec2vec import SpectrumDocument
 
 from spec2vec_mlops.helper_classes.feature_loader import FeatureLoader
 from spec2vec_mlops.helper_classes.model_trainer import ModelTrainer
@@ -16,7 +14,8 @@ def train_model_task(
     window: int = 500,
 ) -> Word2Vec:
     feature_loader = FeatureLoader(feast_core_url)
-    documents = feature_loader.load_documents()
+    all_spectrum_ids = feature_loader.load_all_spectrum_ids()
+    documents = feature_loader.load_documents(spectrum_ids=all_spectrum_ids)
     model_trainer = ModelTrainer()
     model = model_trainer.train_model(documents, iterations, window)
     return model

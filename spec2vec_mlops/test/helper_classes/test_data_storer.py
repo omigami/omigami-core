@@ -13,7 +13,17 @@ def data_storer(tmpdir):
 @pytest.mark.skip("It can only be run if the Feast docker-compose is up")
 def test_create_spectrum_entity(data_storer):
     data_storer._create_spectrum_entity()
-    assert data_storer.client.list_entities()[0].name == data_storer.entity_name
+    assert data_storer.feature_entity_name in [
+        e.name for e in data_storer.client.list_entities()
+    ]
+
+
+@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
+def test_create_spectrum_meta_entity(data_storer):
+    data_storer._create_meta_entity()
+    assert data_storer.meta_entity_name in [
+        e.name for e in data_storer.client.list_entities()
+    ]
 
 
 @pytest.mark.skip("It can only be run if the Feast docker-compose is up")

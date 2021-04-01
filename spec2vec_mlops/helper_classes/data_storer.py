@@ -23,7 +23,8 @@ class SpectrumData:
 class DataStorer:
     def __init__(self, out_dir: str, feast_core_url: str):
         self.client = Client(core_url=feast_core_url, telemetry=False)
-        self.entity_name = "spectrum_id"
+        self.feature_entity_name = "spectrum_id"
+        self.meta_entity_name = "spectrum_meta_id"
         self.feature_table_name = "spectrum_info"
         self.meta_table_name = "spectrum_meta"
         self.out_data_dir = os.path.join(out_dir, "data")
@@ -49,8 +50,11 @@ class DataStorer:
 
     def _get_or_create_spectrum_table(self) -> SpectrumData:
         entity_names = [e.name for e in self.client.list_entities()]
-        if self.entity_name not in entity_names:
+        if self.feature_entity_name not in entity_names:
             self._create_spectrum_entity()
+
+        if self.meta_entity_name not in entity_names:
+            self._create_meta_entity()
 
         table_names = [t.name for t in self.client.list_feature_tables()]
         if self.feature_table_name not in table_names:
@@ -70,12 +74,21 @@ class DataStorer:
 
     def _create_spectrum_entity(self) -> Entity:
         spectrum_id = Entity(
-            name=self.entity_name,
+            name=self.feature_entity_name,
             description="Spectrum identifier",
             value_type=ValueType.STRING,
         )
         self.client.apply(spectrum_id)
         return spectrum_id
+
+    def _create_meta_entity(self) -> Entity:
+        spectrum_meta_id = Entity(
+            name=self.meta_entity_name,
+            description="Spectrum metadata identifier",
+            value_type=ValueType.INT64,
+        )
+        self.client.apply(spectrum_meta_id)
+        return spectrum_meta_id
 
     def _create_spectrum_info_table(self) -> FeatureTable:
         features = [
@@ -90,7 +103,7 @@ class DataStorer:
         )
         spectrum_info = FeatureTable(
             name=self.feature_table_name,
-            entities=[self.entity_name],
+            entities=[self.feature_entity_name],
             features=features,
             batch_source=batch_source,
         )
@@ -108,7 +121,7 @@ class DataStorer:
         all_spectrum_ids = Feature("all_spectrum_ids", dtype=ValueType.STRING_LIST)
         spectrum_meta = FeatureTable(
             name=self.meta_table_name,
-            entities=[self.entity_name],
+            entities=[self.meta_entity_name],
             features=[all_spectrum_ids],
             batch_source=meta_source,
         )
@@ -118,12 +131,15 @@ class DataStorer:
 
     def store_cleaned_data(self, data: List[Spectrum]):
         data_df = self._get_cleaned_data_df(data)
+        print(data_df.dtypes)
         self.client.ingest(self.spectrum_data.spectrum_info, data_df)
 
-        all_spectrum_ids = data_df["spectrum_id"].tolist()  # TODO: add existing ids
+        # TODO: add existing ids
+        all_spectrum_ids = data_df["spectrum_id"].tolist()
         meta_df = pd.DataFrame.from_records(
             [
                 {
+                    self.meta_entity_name: 1,
                     "all_spectrum_ids": all_spectrum_ids,
                     "event_timestamp": datetime.datetime.now(),
                     "created_timestamp": datetime.datetime.now(),
@@ -136,7 +152,7 @@ class DataStorer:
         return pd.DataFrame.from_records(
             [
                 {
-                    "spectrum_id": spectrum.metadata["spectrum_id"],
+                    self.feature_entity_name: spectrum.metadata["spectrum_id"],
                     "mz_list": spectrum.peaks.mz,
                     "intensity_list": spectrum.peaks.intensities,
                     "words": [],
@@ -158,10 +174,12 @@ class DataStorer:
         data_df = self._get_documents_df(data)
         self.client.ingest(self.spectrum_data.spectrum_info, data_df)
 
-        all_spectrum_ids = data_df["spectrum_id"].tolist()  # TODO: add existing ids
+        # TODO: add existing ids
+        all_spectrum_ids = data_df["spectrum_id"].tolist()
         meta_df = pd.DataFrame.from_records(
             [
                 {
+                    self.meta_entity_name: 1,
                     "all_spectrum_ids": all_spectrum_ids,
                     "event_timestamp": datetime.datetime.now(),
                     "created_timestamp": datetime.datetime.now(),
@@ -174,7 +192,7 @@ class DataStorer:
         return pd.DataFrame.from_records(
             [
                 {
-                    "spectrum_id": document.metadata["spectrum_id"],
+                    self.feature_entity_name: document.metadata["spectrum_id"],
                     "words": document.words,
                     "losses": document.losses,
                     "weights": document.weights,
