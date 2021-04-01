@@ -6,9 +6,6 @@ from spec2vec.model_building import train_new_word2vec_model
 
 
 class ModelTrainer:
-    def __init__(self):
-        pass
-
     @staticmethod
     def train_model(
         documents: List[SpectrumDocument],

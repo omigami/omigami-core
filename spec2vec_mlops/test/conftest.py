@@ -1,7 +1,7 @@
 import pickle
 from pathlib import Path
-
 import pytest
+from spec2vec_mlops.helper_classes.data_loader import DataLoader
 
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 
@@ -30,6 +30,12 @@ def assets_dir():
 def gnps_small_json(assets_dir):
     path = str(assets_dir / "SMALL_GNPS.json")
     return f"file://{path}"
+
+
+@pytest.fixture()
+def loaded_data(gnps_small_json):
+    dl = DataLoader()
+    return dl.load_gnps_json(gnps_small_json)
 
 
 @pytest.fixture
