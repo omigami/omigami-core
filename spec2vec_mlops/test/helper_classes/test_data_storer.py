@@ -11,11 +11,26 @@ def data_storer(tmpdir):
 
 
 @pytest.mark.skip("It can only be run if the Feast docker-compose is up")
-def test_create_spectrum_info_table(data_storer):
+def test_create_spectrum_entity(data_storer):
+    data_storer._create_spectrum_entity()
+    assert data_storer.client.list_entities()[0].name == data_storer.entity_name
+
+
+@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
+def test_create_spectrum_table(data_storer):
     data_storer._create_spectrum_info_table()
     assert (
-        data_storer.client.list_feature_tables()[0].name
+        data_storer.client.get_feature_table(data_storer.feature_table_name).name
         == data_storer.feature_table_name
+    )
+
+
+@pytest.mark.skip("It can only be run if the Feast docker-compose is up")
+def test_create_meta_table(data_storer):
+    data_storer._create_spectrum_meta_table()
+    assert (
+        data_storer.client.get_feature_table(data_storer.meta_table_name).name
+        == data_storer.meta_table_name
     )
 
 
@@ -42,6 +57,7 @@ def test_get_words_df(data_storer, documents_data):
         "losses",
         "weights",
         "event_timestamp",
+        "created_timestamp",
     }
     assert not documents_df.spectrum_id.isnull().any()
     assert not documents_df.words.isnull().any()
