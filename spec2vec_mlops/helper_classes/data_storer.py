@@ -131,11 +131,57 @@ class DataStorer:
             ]
         )
 
+
+class EmbeddingStorer:
+    def __init__(self, out_dir: str, feast_core_url: str):
+        self.client = Client(core_url=feast_core_url, telemetry=False)
+        self.feature_table_name = "embeddings_info"
+        self.out_dir = out_dir
+        self.features2types = {
+            "run_id": ValueType.STRING,
+            "embedding": ValueType.DOUBLE_LIST,
+        }
+        self.embeddings_info = self._get_or_create_embeddings_table()
+
+    def _get_or_create_embeddings_table(self) -> FeatureTable:
+        existing_tables = [table.name for table in self.client.list_feature_tables()]
+        if self.feature_table_name in existing_tables:
+            embeddings_info = self.client.get_feature_table(self.feature_table_name)
+        else:
+            embeddings_info = self._create_embeddings_table()
+        return embeddings_info
+
+    def _create_embeddings_table(self) -> FeatureTable:
+        spectrum_id = Entity(
+            name="spectrum_id",
+            description="Embeddings identifier",
+            value_type=ValueType.INT64,
+        )
+        features = [
+            Feature(feature, dtype=feature_type)
+            for feature, feature_type in self.features2types.items()
+        ]
+        batch_source = FileSource(
+            file_format=ParquetFormat(),
+            file_url=str(self.out_dir),
+            event_timestamp_column="event_timestamp",
+            created_timestamp_column="created_timestamp",
+        )
+        embeddings_info = FeatureTable(
+            name=self.feature_table_name,
+            entities=["spectrum_id"],
+            features=features,
+            batch_source=batch_source,
+        )
+        self.client.apply(spectrum_id)
+        self.client.apply(embeddings_info)
+        return embeddings_info
+
     def store_embeddings(
         self, data: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str
     ):
         df = self._get_embeddings_df(data, embeddings, run_id)
-        self.client.ingest(self.spectrum_info, df)
+        self.client.ingest(self.embeddings_info, df)
 
     def _get_embeddings_df(
         self,

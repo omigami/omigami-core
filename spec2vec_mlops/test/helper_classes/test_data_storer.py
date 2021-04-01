@@ -1,6 +1,6 @@
 import pytest
 from spec2vec_mlops import config
-from spec2vec_mlops.helper_classes.data_storer import DataStorer
+from spec2vec_mlops.helper_classes.data_storer import DataStorer, EmbeddingStorer
 
 FEAST_CORE_URL = config["feast"]["url"]["local"].get(str)
 
@@ -13,12 +13,15 @@ def data_storer(tmpdir):
     return DataStorer(f"file://{tmpdir}", FEAST_CORE_URL)
 
 
+@pytest.fixture()
+def embedding_storer(tmpdir):
+    return EmbeddingStorer(f"file://{tmpdir}", FEAST_CORE_URL)
+
+
 def test_create_spectrum_info_table(data_storer):
     data_storer._create_spectrum_info_table()
-    assert (
-        data_storer.client.list_feature_tables()[0].name
-        == data_storer.feature_table_name
-    )
+    existing_tables = [table.name for table in data_storer.client.list_feature_tables()]
+    assert data_storer.feature_table_name in existing_tables
 
 
 def test_get_cleaned_data_df(data_storer, cleaned_data):
@@ -54,8 +57,18 @@ def test_store_documents(data_storer, documents_data):
     data_storer.store_documents(documents_data)
 
 
-def test_get_embeddings_df(data_storer, documents_data, embeddings):
-    embeddings_df = data_storer._get_embeddings_df(documents_data, embeddings, "run_id")
+def test_create_embeddings_table(embedding_storer):
+    embedding_storer._create_embeddings_table()
+    existing_tables = [
+        table.name for table in embedding_storer.client.list_feature_tables()
+    ]
+    assert embedding_storer.feature_table_name in existing_tables
+
+
+def test_get_embeddings_df(embedding_storer, documents_data, embeddings):
+    embeddings_df = embedding_storer._get_embeddings_df(
+        documents_data, embeddings, "run_id"
+    )
     assert set(embeddings_df.columns) == {
         "spectrum_id",
         "embeddings",
@@ -67,5 +80,5 @@ def test_get_embeddings_df(data_storer, documents_data, embeddings):
     assert not embeddings_df.event_timestamp.isnull().any()
 
 
-def test_store_embeddings(data_storer, documents_data, embeddings):
-    data_storer.store_embeddings(documents_data, embeddings, "")
+def test_store_embeddings(embedding_storer, documents_data, embeddings):
+    embedding_storer.store_embeddings(documents_data, embeddings, "")
