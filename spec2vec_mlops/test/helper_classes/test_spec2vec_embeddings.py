@@ -75,4 +75,4 @@ def test_calculate_scores_with_spec2vec_embeddings(
         is_symmetric=False,
     )
     assert np.all(scores_from_embeddings.scores == scores_from_documents.scores)
-    assert scores_from_embeddings.scores_by_query(embeddings[51])[:10]
+    assert scores_from_embeddings.scores_by_query(embeddings[51])[0]
