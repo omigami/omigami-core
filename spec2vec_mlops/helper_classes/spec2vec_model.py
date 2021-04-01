@@ -31,7 +31,7 @@ class Model(PythonModel):
         # compare both embeddings
         # return best_matches for each spectrum
 
-    def _pre_process_data(self, model_input):
+    def _pre_process_data(self, model_input: List[Dict]):
         cleaned_data = [self.data_cleaner.clean_data(data) for data in model_input]
         documents = [
             self.document_converter.convert_to_document(spectrum, self.n_decimals)
