@@ -60,4 +60,3 @@ def embeddings(assets_dir):
     with open(path, "rb") as handle:
         embeddings = pickle.load(handle)
     return embeddings
-

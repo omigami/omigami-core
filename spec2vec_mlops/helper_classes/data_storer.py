@@ -96,7 +96,9 @@ class DataStorer:
                         for key in self.features2types.keys()
                         if key in spectrum.metadata.keys()
                     },
-                    "event_timestamp": self._convert_create_time(spectrum.metadata.get("create_time")),
+                    "event_timestamp": self._convert_create_time(
+                        spectrum.metadata.get("create_time")
+                    ),
                     "created_timestamp": datetime.now(),
                 }
                 for spectrum in data
@@ -121,24 +123,33 @@ class DataStorer:
                     "words": document.words,
                     "losses": document.losses,
                     "weights": document.weights,
-                    "event_timestamp": self._convert_create_time(document.metadata.get("create_time")),
+                    "event_timestamp": self._convert_create_time(
+                        document.metadata.get("create_time")
+                    ),
                 }
                 for document in data
             ]
         )
 
-    def store_embeddings(self, data: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str):
+    def store_embeddings(
+        self, data: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str
+    ):
         df = self._get_embeddings_df(data, embeddings, run_id)
         self.client.ingest(self.spectrum_info, df)
 
-    def _get_embeddings_df(self, documents: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str) -> pd.DataFrame:
+    def _get_embeddings_df(
+        self,
+        documents: List[SpectrumDocument],
+        embeddings: List[np.ndarray],
+        run_id: str,
+    ) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
                 {
                     "spectrum_id": document.metadata["spectrum_id"],
                     "embeddings": embedding,
                     "run_id": run_id,
-                    "event_timestamp": datetime.now()
+                    "event_timestamp": datetime.now(),
                 }
                 for document, embedding in zip(documents, embeddings)
             ]
