@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
+import pytest
 from matchms import calculate_scores
 from spec2vec import Spec2Vec
+
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
 
@@ -74,3 +75,4 @@ def test_calculate_scores_with_spec2vec_embeddings(
         is_symmetric=False,
     )
     assert np.all(scores_from_embeddings.scores == scores_from_documents.scores)
+    assert scores_from_embeddings.scores_by_query(embeddings[51])[:10]
