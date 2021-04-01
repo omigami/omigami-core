@@ -1,14 +1,11 @@
 from matchms import Spectrum
 
 from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
-from spec2vec_mlops.tasks.load_data import DataLoader
 
 
-def test_clean_data(gnps_small_json):
-    dl = DataLoader()
+def test_clean_data(loaded_data):
     dc = DataCleaner()
 
-    loaded_data = dl.load_gnps_json(gnps_small_json)
     for data in loaded_data:
         cleaned_data = dc.clean_data(data)
 

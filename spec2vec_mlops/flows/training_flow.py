@@ -8,14 +8,14 @@ from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
 from spec2vec_mlops import config
+from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.load_data import load_data_task
-from spec2vec_mlops.tasks.clean_data import clean_data_task
+from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
-from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-register-model-2",
+    project_name: str = "spec2vec-mlops-project-add-preprocessing",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/feast",
     feast_core_url: str = FEAST_CORE_URL_REMOTE,
     n_decimals: int = 2,
@@ -69,7 +69,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.435c6e7",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.9670706",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),
@@ -92,6 +92,8 @@ def spec2vec_train_pipeline_distributed(
             project_name,
             save_model_path,
             n_decimals,
+            intensity_weighting_power,
+            allowed_missing_percentage,
             conda_env_path,
         )
         embeddings = make_embeddings_task.map(
