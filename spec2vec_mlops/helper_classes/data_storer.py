@@ -125,15 +125,15 @@ class DataStorer:
         df = self._get_embeddings_df(data, embeddings, run_id)
         self.client.ingest(self.spectrum_info, df)
 
-    def _get_embeddings_df(self, data: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str) -> pd.DataFrame:
+    def _get_embeddings_df(self, documents: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
                 {
                     "spectrum_id": document.metadata["spectrum_id"],
                     "embeddings": embedding,
                     "run_id": run_id,
-                    "event_timestamp": document.metadata.get("create_time", datetime.now())
+                    "event_timestamp": datetime.now()
                 }
-                for document, embedding in zip(data, embeddings)
+                for document, embedding in zip(documents, embeddings)
             ]
         )
