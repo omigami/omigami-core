@@ -96,12 +96,18 @@ class DataStorer:
                         for key in self.features2types.keys()
                         if key in spectrum.metadata.keys()
                     },
-                    "event_timestamp": spectrum.metadata.get("create_time", datetime.now()),
+                    "event_timestamp": self._convert_create_time(spectrum.metadata.get("create_time")),
                     "created_timestamp": datetime.now(),
                 }
                 for spectrum in data
             ]
         )
+
+    def _convert_create_time(self, create_time: str):
+        if create_time:
+            return datetime.strptime(create_time, "%Y-%m-%d %H:%M:%S.%f")
+        else:
+            return datetime.now()
 
     def store_documents(self, data: List[SpectrumDocument]):
         data_df = self._get_documents_df(data)
@@ -115,7 +121,7 @@ class DataStorer:
                     "words": document.words,
                     "losses": document.losses,
                     "weights": document.weights,
-                    "event_timestamp": document.metadata.get("create_time", datetime.now()),
+                    "event_timestamp": self._convert_create_time(document.metadata.get("create_time")),
                 }
                 for document in data
             ]
