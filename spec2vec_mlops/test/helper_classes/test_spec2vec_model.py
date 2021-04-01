@@ -28,14 +28,14 @@ def saved_model_run_id(word2vec_model, tmpdir):
     return run_id
 
 
-def test_pre_process_data(loaded_data, word2vec_model, documents_data):
+def test_pre_process_data(gnps_small_json, word2vec_model, documents_data):
     model = Model(
         word2vec_model,
         n_decimals=1,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
     )
-    embeddings_from_model = model._pre_process_data([loaded_data[0]])
+    embeddings_from_model = model._pre_process_data(gnps_small_json)
 
     em = EmbeddingMaker()
     embedding_from_flow = em.make_embedding(
@@ -47,9 +47,9 @@ def test_pre_process_data(loaded_data, word2vec_model, documents_data):
     assert all(embedding_from_flow == embeddings_from_model[0])
 
 
-def test_predict_from_saved_model(saved_model_run_id, loaded_data):
+def test_predict_from_saved_model(saved_model_run_id, gnps_small_json):
     run = mlflow.get_run(saved_model_run_id)
     modelpath = f"{run.info.artifact_uri}/model/"
     model = mlflow.pyfunc.load_model(modelpath)
-    embeddings = model.predict(loaded_data)
+    embeddings = model.predict(gnps_small_json)
     assert isinstance(embeddings[0], np.ndarray)

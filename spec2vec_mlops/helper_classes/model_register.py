@@ -32,6 +32,7 @@ class ModelRegister:
                     registered_model_name=experiment_name,
                     conda_env=conda_env_path,
                     code_path=[
+                        "spec2vec_mlops/helper_classes/data_loader.py",
                         "spec2vec_mlops/helper_classes/data_cleaner.py",
                         "spec2vec_mlops/helper_classes/document_converter.py",
                         "spec2vec_mlops/helper_classes/embedding_maker.py",
@@ -44,6 +45,7 @@ class ModelRegister:
                     python_model=model,
                     conda_env=conda_env_path,
                     code_path=[
+                        "spec2vec_mlops/helper_classes/data_loader.py",
                         "spec2vec_mlops/helper_classes/data_cleaner.py",
                         "spec2vec_mlops/helper_classes/document_converter.py",
                         "spec2vec_mlops/helper_classes/embedding_maker.py",
