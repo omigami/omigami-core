@@ -1,14 +1,7 @@
 import mlflow
 from mlflow.exceptions import MlflowException
-from mlflow.pyfunc import PythonModel
 
-
-class Model(PythonModel):
-    def __init__(self, model):
-        self.model = model
-
-    def predict(self, context, model_input):
-        pass
+from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
 
 class ModelRegister:
@@ -20,13 +13,14 @@ class ModelRegister:
         model: Model,
         experiment_name: str,
         path: str,
-        n_decimals: int,
         conda_env_path: str = None,
-    ):
+    ) -> str:
         experiment_id = self._get_or_create_experiment_id(experiment_name, path)
-        with mlflow.start_run(experiment_id=experiment_id):
+        with mlflow.start_run(experiment_id=experiment_id) as run:
             params = {
-                "n_decimals_for_documents": n_decimals,
+                "n_decimals_for_documents": model.n_decimals,
+                "intensity_weighting_power": model.intensity_weighting_power,
+                "allowed_missing_percentage": model.allowed_missing_percentage,
                 "iter": model.model.iter,
                 "window": model.model.window,
             }
@@ -37,6 +31,12 @@ class ModelRegister:
                     python_model=model,
                     registered_model_name=experiment_name,
                     conda_env=conda_env_path,
+                    code_path=[
+                        "spec2vec_mlops/helper_classes/data_loader.py",
+                        "spec2vec_mlops/helper_classes/data_cleaner.py",
+                        "spec2vec_mlops/helper_classes/document_converter.py",
+                        "spec2vec_mlops/helper_classes/embedding_maker.py",
+                    ],
                 )
             # This is need to run the flow locally. mlflow.pyfunc.log_model is not supported without a database
             except MlflowException:
@@ -44,8 +44,15 @@ class ModelRegister:
                     f"{path}/model",
                     python_model=model,
                     conda_env=conda_env_path,
+                    code_path=[
+                        "spec2vec_mlops/helper_classes/data_loader.py",
+                        "spec2vec_mlops/helper_classes/data_cleaner.py",
+                        "spec2vec_mlops/helper_classes/document_converter.py",
+                        "spec2vec_mlops/helper_classes/embedding_maker.py",
+                    ],
                 )
             mlflow.log_metric("alpha", model.model.alpha)
+            return run.info.run_id
 
     @staticmethod
     def _get_or_create_experiment_id(experiment_name: str, path: str) -> str:
