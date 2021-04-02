@@ -1,3 +1,5 @@
+from typing import Union
+
 import pytest
 from prefect import Flow, unmapped
 from prefect.engine.state import State
@@ -30,6 +32,8 @@ def spec2vec_train_pipeline_local(
     experiment_name: str,
     iterations: int = 25,
     window: int = 500,
+    intensity_weighting_power: Union[float, int] = 0.5,
+    allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> State:
     with Flow("flow") as flow:
         raw = load_data_task(source_uri)
@@ -46,8 +50,15 @@ def spec2vec_train_pipeline_local(
             experiment_name,
             save_model_path,
             n_decimals,
+            intensity_weighting_power,
+            allowed_missing_percentage,
         )
-        embeddings = make_embeddings_task.map(unmapped(model), documents)
+        embeddings = make_embeddings_task.map(
+            unmapped(model),
+            documents,
+            unmapped(intensity_weighting_power),
+            unmapped(allowed_missing_percentage),
+        )
         store_embeddings_task(
             documents, embeddings, run_id, feast_source_dir, feast_core_url
         )
