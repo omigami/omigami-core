@@ -13,6 +13,7 @@ from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
+from spec2vec_mlops.tasks.store_embeddings import store_embeddings_task
 
 FEAST_CORE_URL_LOCAL = config["feast"]["url"]["local"].get(str)
 
@@ -43,7 +44,7 @@ def spec2vec_train_pipeline_local(
         )
         store_documents_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(feast_core_url, iterations, window)
-        register_model_task(
+        run_id = register_model_task(
             mlflow_server_uri,
             model,
             experiment_name,
@@ -57,6 +58,9 @@ def spec2vec_train_pipeline_local(
             documents,
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
+        )
+        store_embeddings_task(
+            documents, embeddings, run_id, feast_source_dir, feast_core_url
         )
     state = flow.run()
     return state

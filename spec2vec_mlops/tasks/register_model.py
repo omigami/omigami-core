@@ -18,11 +18,12 @@ def register_model_task(
     intensity_weighting_power: Union[float, int],
     allowed_missing_percentage: Union[float, int],
     conda_env_path: str = None,
-):
+) -> str:
     model_register = ModelRegister(server_uri)
-    model_register.register_model(
+    run_id = model_register.register_model(
         Model(model, n_decimals, intensity_weighting_power, allowed_missing_percentage),
         experiment_name,
         path,
         conda_env_path,
     )
+    return run_id
