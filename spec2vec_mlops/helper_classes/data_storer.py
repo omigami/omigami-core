@@ -74,6 +74,35 @@ class Storer(BaseStorer):
         return feature_table
 
 
+class SpectrumIDStorer(Storer):
+    def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
+        super().__init__(
+            out_dir,
+            feast_core_url,
+            feature_table_name,
+            **{
+                "all_spectrum_ids": ValueType.STRING_LIST,
+            },
+        )
+        self.table = self.get_or_create_table(
+            entity_name="spectrum_ids_id",
+            entity_description="List of spectrum IDs identifier",
+        )
+
+    def store_spectrum_ids(self, data: List[str]):
+        df = pd.DataFrame.from_records(
+            [
+                {
+                    "spectrum_ids_id": "1",
+                    "all_spectrum_ids": data,
+                    "event_timestamp": datetime.now(),
+                    "created_timestamp": datetime.now(),
+                }
+            ]
+        )
+        self.client.ingest(self.table, df)
+
+
 class SpectrumStorer(Storer):
     def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
         super().__init__(
@@ -87,9 +116,11 @@ class SpectrumStorer(Storer):
             entity_name="spectrum_id", entity_description="Spectrum identifier"
         )
 
-    def store_cleaned_data(self, data: List[Spectrum]):
+    def store_cleaned_data(self, data: List[Spectrum]) -> List[str]:
         data_df = self._get_cleaned_data_df(data)
         self.client.ingest(self.table, data_df)
+        spectrum_ids_stored = data_df["spectrum_id"].tolist()
+        return spectrum_ids_stored
 
     def _get_cleaned_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
         return pd.DataFrame.from_records(

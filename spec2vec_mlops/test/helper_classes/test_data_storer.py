@@ -9,6 +9,7 @@ from spec2vec_mlops.helper_classes.data_storer import (
     EmbeddingStorer,
     Storer,
     SpectrumStorer,
+    SpectrumIDStorer,
     string_features2types,
     not_string_features2types,
 )
@@ -19,6 +20,15 @@ pytestmark = pytest.mark.skipif(
     os.getenv("SKIP_FEAST_TEST", True),
     reason="It can only be run if the Feast docker-compose is up",
 )
+
+
+@pytest.fixture()
+def spectrum_ids_storer(tmpdir):
+    return SpectrumIDStorer(
+        out_dir=f"file://{tmpdir}",
+        feast_core_url=FEAST_CORE_URL,
+        feature_table_name="spectrum_ids_info",
+    )
 
 
 @pytest.fixture()
@@ -57,6 +67,22 @@ def test_storer_create_spectrum_info_table(tmpdir):
         **string_features2types,
     )
     table = storer.get_or_create_table("spectrum_id", "Spectrum identifier")
+    existing_tables = [table.name for table in storer.client.list_feature_tables()]
+    assert isinstance(table, FeatureTable)
+    assert storer.feature_table_name in existing_tables
+
+
+def test_storer_create_spectrum_ids_info_table(tmpdir):
+    storer = Storer(
+        out_dir=f"file://{tmpdir}",
+        feast_core_url=FEAST_CORE_URL,
+        feature_table_name="spectrum_ids_info",
+        **not_string_features2types,
+        **string_features2types,
+    )
+    table = storer.get_or_create_table(
+        "spectrum_ids_id", "List of spectrum IDs identifier"
+    )
     existing_tables = [table.name for table in storer.client.list_feature_tables()]
     assert isinstance(table, FeatureTable)
     assert storer.feature_table_name in existing_tables
@@ -105,8 +131,13 @@ def test_spectrum_storer_get_cleaned_data_df(spectrum_storer, cleaned_data):
 
 
 def test_spectrum_storer_store_cleaned_data(spectrum_storer, cleaned_data):
-    print(spectrum_storer.client.list_feature_tables())
-    spectrum_storer.store_cleaned_data(cleaned_data)
+    spectrum_ids = spectrum_storer.store_cleaned_data(cleaned_data)
+    assert len(spectrum_ids) == 100
+
+
+def test_spectrum_ids_storer_store_spectrum_ids(spectrum_ids_storer, cleaned_data):
+    spectrum_ids = [spectrum.metadata["spectrum_id"] for spectrum in cleaned_data]
+    spectrum_ids_storer.store_spectrum_ids(spectrum_ids)
 
 
 def test_document_storer_get_documents_df(document_storer, documents_data):
