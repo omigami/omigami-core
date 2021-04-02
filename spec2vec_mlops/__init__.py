@@ -6,4 +6,4 @@ __version__ = get_versions()["version"]
 del get_versions
 
 # loads default config_default.yaml file lazily
-config = confuse.LazyConfig("spec2vec_mlops", __name__)
+config = confuse.Configuration("spec2vec_mlops", __name__)
