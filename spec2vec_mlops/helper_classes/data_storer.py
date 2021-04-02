@@ -81,7 +81,7 @@ class SpectrumStorer(Storer):
             feast_core_url,
             feature_table_name,
             **string_features2types,
-            **not_string_features2types
+            **not_string_features2types,
         )
         self.table = self.get_or_create_table(
             entity_name="spectrum_id", entity_description="Spectrum identifier"
@@ -126,7 +126,11 @@ class DocumentStorer(Storer):
             out_dir,
             feast_core_url,
             feature_table_name,
-            **{"words": ValueType.DOUBLE_LIST, "losses": ValueType.DOUBLE_LIST, "weights": ValueType.DOUBLE_LIST,},
+            **{
+                "words": ValueType.DOUBLE_LIST,
+                "losses": ValueType.DOUBLE_LIST,
+                "weights": ValueType.DOUBLE_LIST,
+            },
         )
         self.table = self.get_or_create_table(
             entity_name="spectrum_id", entity_description="Document identifier"
@@ -147,6 +151,7 @@ class DocumentStorer(Storer):
                     "event_timestamp": self._convert_create_time(
                         document.metadata.get("create_time")
                     ),
+                    "created_timestamp": datetime.now(),
                 }
                 for document in data
             ]
@@ -166,7 +171,7 @@ class EmbeddingStorer(Storer):
             out_dir,
             feast_core_url,
             feature_table_name,
-            **{"run_id": ValueType.STRING, "embedding": ValueType.DOUBLE_LIST}
+            **{"run_id": ValueType.STRING, "embedding": ValueType.DOUBLE_LIST},
         )
         self.table = self.get_or_create_table(
             entity_name="spectrum_id", entity_description="Embedding identifier"

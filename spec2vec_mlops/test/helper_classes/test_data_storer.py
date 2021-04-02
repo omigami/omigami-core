@@ -62,20 +62,6 @@ def test_storer_create_spectrum_info_table(tmpdir):
     assert storer.feature_table_name in existing_tables
 
 
-def test_create_spectrum_entity(data_storer):
-    data_storer._create_spectrum_entity()
-    assert data_storer.feature_entity_name in [
-        e.name for e in data_storer.client.list_entities()
-    ]
-
-
-def test_create_spectrum_meta_entity(data_storer):
-    data_storer._create_meta_entity()
-    assert data_storer.meta_entity_name in [
-        e.name for e in data_storer.client.list_entities()
-    ]
-
-
 def test_storer_create_embedding_info_table(tmpdir):
     storer = Storer(
         out_dir=f"file://{tmpdir}",
@@ -89,20 +75,16 @@ def test_storer_create_embedding_info_table(tmpdir):
     assert storer.feature_table_name in existing_tables
 
 
-def test_create_meta_table(data_storer):
-    data_storer._create_spectrum_meta_table()
-    assert (
-        data_storer.client.get_feature_table(data_storer.meta_table_name).name
-        == data_storer.meta_table_name
-    )
-
-
 def test_storer_create_document_info_table(tmpdir):
     storer = Storer(
         out_dir=f"file://{tmpdir}",
         feast_core_url=FEAST_CORE_URL,
         feature_table_name="document_info",
-        **{"words": ValueType.DOUBLE_LIST, "losses": ValueType.DOUBLE_LIST, "weights": ValueType.DOUBLE_LIST,},
+        **{
+            "words": ValueType.DOUBLE_LIST,
+            "losses": ValueType.DOUBLE_LIST,
+            "weights": ValueType.DOUBLE_LIST,
+        },
     )
     table = storer.get_or_create_table("spectrum_id", "Document identifier")
     existing_tables = [table.name for table in storer.client.list_feature_tables()]
