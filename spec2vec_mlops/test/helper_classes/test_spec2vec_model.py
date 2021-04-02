@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
+
 import mlflow
 import pytest
-import numpy as np
 
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
@@ -28,13 +28,17 @@ def saved_model_run_id(word2vec_model, tmpdir):
     return run_id
 
 
-def test_pre_process_data(gnps_small_json, word2vec_model, documents_data):
-    model = Model(
+@pytest.fixture()
+def model(word2vec_model):
+    return Model(
         word2vec_model,
         n_decimals=1,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
     )
+
+
+def test_pre_process_data(word2vec_model, gnps_small_json, model, documents_data):
     embeddings_from_model = model._pre_process_data(gnps_small_json)
 
     em = EmbeddingMaker()
@@ -44,12 +48,20 @@ def test_pre_process_data(gnps_small_json, word2vec_model, documents_data):
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5.0,
     )
-    assert all(embedding_from_flow == embeddings_from_model[0])
+    assert all(embedding_from_flow.vector == embeddings_from_model[0].vector)
+
+
+def test_get_best_matches(model, embeddings):
+    best_matches = model._get_best_matches(embeddings[:50], embeddings[50:])
+    assert all(
+        key in best_matches[0] for key in ["spectrum_id", "best_match_id", "score"]
+    )
 
 
 def test_predict_from_saved_model(saved_model_run_id, gnps_small_json):
     run = mlflow.get_run(saved_model_run_id)
     modelpath = f"{run.info.artifact_uri}/model/"
     model = mlflow.pyfunc.load_model(modelpath)
-    embeddings = model.predict(gnps_small_json)
-    assert isinstance(embeddings[0], np.ndarray)
+    best_matches = model.predict(gnps_small_json)
+    for spectrum in best_matches:
+        assert spectrum["best_match_id"] is not None

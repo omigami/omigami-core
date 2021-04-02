@@ -1,12 +1,15 @@
 from typing import List, Dict, Union
 
 from gensim.models import Word2Vec
+from matchms import calculate_scores
 from mlflow.pyfunc import PythonModel
 
-from spec2vec_mlops.helper_classes.data_loader import DataLoader
 from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
+from spec2vec_mlops.helper_classes.data_loader import DataLoader
 from spec2vec_mlops.helper_classes.document_converter import DocumentConverter
+from spec2vec_mlops.helper_classes.embedding import Embedding
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
+from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
 
 class Model(PythonModel):
@@ -26,12 +29,12 @@ class Model(PythonModel):
         self.document_converter = DocumentConverter()
         self.embedding_maker = EmbeddingMaker()
 
-    def predict(self, context, model_input: str):
+    def predict(self, context, model_input: str) -> List[Dict]:
         embeddings = self._pre_process_data(model_input)
-        return embeddings  # temporary
         # get library embeddings from feast
-        # compare both embeddings
-        # return best_matches for each spectrum
+        # for now going to use the calculated ones
+        best_matches = self._get_best_matches(embeddings, embeddings)
+        return best_matches
 
     def _pre_process_data(self, model_input: str):
         loaded_data = self.data_loader.load_gnps_json(model_input)
@@ -50,3 +53,28 @@ class Model(PythonModel):
             for document in documents
         ]
         return embeddings
+
+    def _get_best_matches(
+        self, references: List[Embedding], queries: List[Embedding]
+    ) -> List[Dict]:
+        spec2vec_embeddings_similarity = Spec2VecEmbeddings(
+            model=self.model,
+            intensity_weighting_power=self.intensity_weighting_power,
+            allowed_missing_percentage=self.allowed_missing_percentage,
+        )
+        scores = calculate_scores(
+            references,
+            queries,
+            spec2vec_embeddings_similarity,
+        )
+        best_matches = []
+        for query in queries:
+            best_match = scores.scores_by_query(query)[0]
+            best_matches.append(
+                {
+                    "spectrum_id": query.spectrum_id,
+                    "best_match_id": best_match[0].spectrum_id,
+                    "score": best_match[1],
+                }
+            )
+        return best_matches
