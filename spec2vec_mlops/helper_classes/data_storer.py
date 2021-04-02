@@ -50,7 +50,7 @@ class Storer(BaseStorer):
         entity = Entity(
             name=entity_name,
             description=entity_description,
-            value_type=ValueType.INT64,
+            value_type=ValueType.STRING,
         )
         features = [
             Feature(feature, dtype=feature_type)
