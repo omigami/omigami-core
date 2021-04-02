@@ -8,6 +8,7 @@ from feast.data_format import ParquetFormat
 from matchms import Spectrum
 from spec2vec import SpectrumDocument
 from spec2vec_mlops.helper_classes.base_storer import BaseStorer
+from spec2vec_mlops.helper_classes.embedding import Embedding
 
 from spec2vec_mlops import config
 
@@ -172,7 +173,7 @@ class EmbeddingStorer(Storer):
         )
 
     def store_embeddings(
-        self, data: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str
+        self, data: List[SpectrumDocument], embeddings: List[Embedding], run_id: str
     ):
         df = self._get_embedding_df(data, embeddings, run_id)
         self.client.ingest(self.table, df)
@@ -180,14 +181,14 @@ class EmbeddingStorer(Storer):
     def _get_embedding_df(
         self,
         documents: List[SpectrumDocument],
-        embeddings: List[np.ndarray],
+        embeddings: List[Embedding],
         run_id: str,
     ) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
                 {
-                    "spectrum_id": document.metadata["spectrum_id"],
-                    "embedding": embedding,
+                    "spectrum_id": embedding.spectrum_id,
+                    "embedding": embedding.vector,
                     "run_id": run_id,
                     "event_timestamp": datetime.now(),
                     "create_timestamp": datetime.now(),
