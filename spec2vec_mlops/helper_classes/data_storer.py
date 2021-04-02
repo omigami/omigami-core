@@ -131,7 +131,6 @@ class DataStorer:
 
     def store_cleaned_data(self, data: List[Spectrum]):
         data_df = self._get_cleaned_data_df(data)
-        print(data_df.dtypes)
         self.client.ingest(self.spectrum_data.spectrum_info, data_df)
 
         # TODO: add existing ids
