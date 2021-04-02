@@ -32,6 +32,8 @@ class ModelRegister:
                     registered_model_name=experiment_name,
                     conda_env=conda_env_path,
                     code_path=[
+                        "spec2vec_mlops/config_default.yaml"
+                        "spec2vec_mlops/__init__.py"
                         "spec2vec_mlops/helper_classes/data_loader.py",
                         "spec2vec_mlops/helper_classes/data_cleaner.py",
                         "spec2vec_mlops/helper_classes/document_converter.py",
@@ -47,10 +49,14 @@ class ModelRegister:
                     python_model=model,
                     conda_env=conda_env_path,
                     code_path=[
+                        "spec2vec_mlops/config_default.yaml"
+                        "spec2vec_mlops/__init__.py"
                         "spec2vec_mlops/helper_classes/data_loader.py",
                         "spec2vec_mlops/helper_classes/data_cleaner.py",
                         "spec2vec_mlops/helper_classes/document_converter.py",
+                        "spec2vec_mlops/helper_classes/embedding.py",
                         "spec2vec_mlops/helper_classes/embedding_maker.py",
+                        "spec2vec_mlops/helper_classes/spec2vec_embeddings.py",
                     ],
                 )
             mlflow.log_metric("alpha", model.model.alpha)
