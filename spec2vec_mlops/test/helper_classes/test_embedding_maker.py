@@ -12,4 +12,4 @@ def test_make_embeddings(documents_data, word2vec_model):
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5.0,
     )
-    assert isinstance(res, np.ndarray)
+    assert isinstance(res.vector, np.ndarray)
