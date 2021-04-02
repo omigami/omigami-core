@@ -1,3 +1,5 @@
+import os
+import time
 from datetime import datetime
 from typing import List
 
@@ -5,6 +7,7 @@ import numpy as np
 import pandas as pd
 from feast import ValueType, Client, FeatureTable, Entity, Feature, FileSource
 from feast.data_format import ParquetFormat
+from feast.pyspark.abc import RetrievalJob
 from matchms import Spectrum
 from spec2vec import SpectrumDocument
 from spec2vec_mlops.helper_classes.base_storer import BaseStorer
@@ -13,6 +16,10 @@ from spec2vec_mlops.helper_classes.embedding import Embedding
 from spec2vec_mlops import config
 
 KEYS = config["cleaned_data"]["necessary_keys"].get(list)
+FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION = os.getenv(
+    "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION",
+    config["feast"]["spark"]["output_location"].get(str),
+)
 
 not_string_features2types = {
     "mz_list": ValueType.DOUBLE_LIST,
@@ -26,6 +33,10 @@ string_features2types = {
     for key in KEYS
     if key.lower() not in not_string_features2types.keys()
 }
+
+
+class FeatureLoaderError(Exception):
+    pass
 
 
 class Storer(BaseStorer):
@@ -73,6 +84,12 @@ class Storer(BaseStorer):
         self.client.apply(feature_table)
         return feature_table
 
+    @staticmethod
+    def _wait_for_job(job: RetrievalJob):
+        while job.get_status().name not in ("FAILED", "COMPLETED"):
+            print(".", end="")
+            time.sleep(0.5)
+
 
 class SpectrumIDStorer(Storer):
     def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
@@ -101,6 +118,24 @@ class SpectrumIDStorer(Storer):
             ]
         )
         self.client.ingest(self.table, df)
+
+    def read_spectrum_ids(self) -> List[str]:
+        entities_of_interest = pd.DataFrame(
+            {
+                "spectrum_ids_id": ["1"],
+                "event_timestamp": [datetime.now()],
+            }
+        )
+        job = self.client.get_historical_features(
+            [f"{self.feature_table_name}:all_spectrum_ids"],
+            entity_source=entities_of_interest,
+            output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
+        )
+        self._wait_for_job(job)
+        if job.get_status().name == "FAILED":
+            raise FeatureLoaderError
+        df = pd.read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        return df[f"{self.feature_table_name}__all_spectrum_ids"].iloc[0]
 
 
 class SpectrumStorer(Storer):
