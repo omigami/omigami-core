@@ -3,6 +3,7 @@ from feast import ValueType, FeatureTable
 
 from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.data_storer import (
+    DocumentStorer,
     EmbeddingStorer,
     Storer,
     SpectrumStorer,
@@ -34,6 +35,15 @@ def embedding_storer(tmpdir):
     )
 
 
+@pytest.fixture()
+def document_storer(tmpdir):
+    return DocumentStorer(
+        out_dir=f"file://{tmpdir}",
+        feast_core_url=FEAST_CORE_URL,
+        feature_table_name="document_info",
+    )
+
+
 def test_storer_create_spectrum_info_table(tmpdir):
     storer = Storer(
         out_dir=f"file://{tmpdir}",
@@ -61,6 +71,19 @@ def test_storer_create_embedding_info_table(tmpdir):
     assert storer.feature_table_name in existing_tables
 
 
+def test_storer_create_document_info_table(tmpdir):
+    storer = Storer(
+        out_dir=f"file://{tmpdir}",
+        feast_core_url=FEAST_CORE_URL,
+        feature_table_name="document_info",
+        **{"words": ValueType.DOUBLE_LIST, "losses": ValueType.DOUBLE_LIST, "weights": ValueType.DOUBLE_LIST,},
+    )
+    table = storer.get_or_create_table("spectrum_id", "Document identifier")
+    existing_tables = [table.name for table in storer.client.list_feature_tables()]
+    assert isinstance(table, FeatureTable)
+    assert storer.feature_table_name in existing_tables
+
+
 def test_spectrum_storer_get_cleaned_data_df(spectrum_storer, cleaned_data):
     spectrum_df = spectrum_storer._get_cleaned_data_df(cleaned_data)
     assert len(spectrum_df) == len(cleaned_data)
@@ -78,8 +101,8 @@ def test_spectrum_storer_store_cleaned_data(spectrum_storer, cleaned_data):
     spectrum_storer.store_cleaned_data(cleaned_data)
 
 
-def test_spectrum_storer_get_documents_df(spectrum_storer, documents_data):
-    documents_df = spectrum_storer._get_documents_df(documents_data)
+def test_document_storer_get_documents_df(document_storer, documents_data):
+    documents_df = document_storer._get_documents_df(documents_data)
     assert set(documents_df.columns) == {
         "spectrum_id",
         "words",
@@ -92,8 +115,8 @@ def test_spectrum_storer_get_documents_df(spectrum_storer, documents_data):
     assert not documents_df.event_timestamp.isnull().any()
 
 
-def test_spectrum_storer_store_documents(spectrum_storer, documents_data):
-    spectrum_storer.store_documents(documents_data)
+def test_document_storer_store_documents(document_storer, documents_data):
+    document_storer.store_documents(documents_data)
 
 
 def test_embedding_storer_get_embedding_df(
