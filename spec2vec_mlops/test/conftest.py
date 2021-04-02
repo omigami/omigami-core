@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
 
+from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -58,3 +60,19 @@ def word2vec_model(assets_dir):
     with open(path, "rb") as handle:
         model = pickle.load(handle)
     return model
+
+
+@pytest.fixture()
+def embeddings(documents_data, word2vec_model):
+    em = EmbeddingMaker()
+    res = []
+    for document in documents_data:
+        res.append(
+            em.make_embedding(
+                model=word2vec_model,
+                document=document,
+                intensity_weighting_power=0.5,
+                allowed_missing_percentage=5.0,
+            )
+        )
+    return res
