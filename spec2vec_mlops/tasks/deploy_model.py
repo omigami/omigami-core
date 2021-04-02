@@ -5,18 +5,19 @@ from kubernetes import client, config
 from prefect import task
 
 seldon_deployment = """
-    apiVersion: machinelearning.seldon.io/v1
+    apiVersion: machinelearning.seldon.io/v1alpha2
     kind: SeldonDeployment
     metadata:
       name: spec2vec
     spec:
+      name: spec2vec
       predictors:
       - graph:
           children: []
           implementation: MLFLOW_SERVER
           modelUri: dummy
           name: spec2vec
-        name: model-a
+        name: default
         replicas: 1
         traffic: 100
         componentSpecs:
@@ -24,29 +25,28 @@ seldon_deployment = """
             # We are setting high failureThreshold as installing conda dependencies
             # can take long time and we want to avoid k8s killing the container prematurely
             containers:
-            - name: spec2vec
-              livenessProbe:
-                initialDelaySeconds: 60
-                failureThreshold: 100
-                periodSeconds: 5
-                successThreshold: 1
-                httpGet:
-                  path: /health/ping
-                  port: http
-                  scheme: HTTP
-              readinessProbe:
-                initialDelaySeconds: 60
-                failureThreshold: 100
-                periodSeconds: 5
-                successThreshold: 1
-                httpGet:
-                  path: /health/ping
-                  port: http
-                  scheme: HTTP
+              - name: spec2vec
+                readinessProbe:
+                  failureThreshold: 10
+                  initialDelaySeconds: 120
+                  periodSeconds: 30
+                  successThreshold: 1
+                  tcpSocket:
+                    port: 9000
+                  timeoutSeconds: 3
+                livenessProbe:
+                  failureThreshold: 10
+                  initialDelaySeconds: 120
+                  periodSeconds: 30
+                  successThreshold: 1
+                  tcpSocket:
+                    port: 9000
+                  timeoutSeconds: 3
+
 """
 
 CUSTOM_RESOURCE_INFO = dict(
-    group="machinelearning.seldon.io", version="v1", plural="seldondeployments",
+    group="machinelearning.seldon.io", version="v1alpha2", plural="seldondeployments",
 )
 
 
