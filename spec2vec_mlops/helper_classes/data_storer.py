@@ -7,52 +7,52 @@ from feast import ValueType, Client, FeatureTable, Entity, Feature, FileSource
 from feast.data_format import ParquetFormat
 from matchms import Spectrum
 from spec2vec import SpectrumDocument
+from spec2vec_mlops.helper_classes.base_storer import BaseStorer
 
 from spec2vec_mlops import config
 
 KEYS = config["cleaned_data"]["necessary_keys"].get(list)
 
+not_string_features2types = {
+    "mz_list": ValueType.DOUBLE_LIST,
+    "intensity_list": ValueType.DOUBLE_LIST,
+    "precursor_mz": ValueType.FLOAT,
+    "charge": ValueType.INT64,
+    "parent_mass": ValueType.FLOAT,
+    "words": ValueType.DOUBLE_LIST,
+    "losses": ValueType.DOUBLE_LIST,
+    "weights": ValueType.DOUBLE_LIST,
+}
+string_features2types = {
+    key.lower(): ValueType.STRING
+    for key in KEYS
+    if key.lower() not in not_string_features2types.keys()
+}
 
-class DataStorer:
-    def __init__(self, out_dir: str, feast_core_url: str):
-        self.client = Client(core_url=feast_core_url, telemetry=False)
-        self.feature_table_name = "spectrum_info"
+
+class Storer(BaseStorer):
+    def __init__(
+        self, out_dir: str, feast_core_url: str, feature_table_name: str, **kwargs
+    ):
         self.out_dir = out_dir
+        self.client = Client(core_url=feast_core_url, telemetry=False)
+        self.feature_table_name = feature_table_name
+        self.features2types = {**kwargs}
 
-        not_string_features2types = {
-            "mz_list": ValueType.DOUBLE_LIST,
-            "intensity_list": ValueType.DOUBLE_LIST,
-            "precursor_mz": ValueType.FLOAT,
-            "charge": ValueType.INT64,
-            "parent_mass": ValueType.FLOAT,
-            "words": ValueType.DOUBLE_LIST,
-            "losses": ValueType.DOUBLE_LIST,
-            "weights": ValueType.DOUBLE_LIST,
-            "embeddings": ValueType.DOUBLE_LIST,
-        }
-        string_features2types = {
-            key.lower(): ValueType.STRING
-            for key in KEYS
-            if key.lower() not in not_string_features2types.keys()
-        }
-        string_features2types["run_id"] = ValueType.STRING
-        self.features2types = {**not_string_features2types, **string_features2types}
-        self.spectrum_info = self._get_or_create_spectrum_table()
-
-    def _get_or_create_spectrum_table(self) -> FeatureTable:
-        if not any(
-            table.name != self.feature_table_name
-            for table in self.client.list_feature_tables()
-        ):
-            spectrum_info = self._create_spectrum_info_table()
+    def get_or_create_table(
+        self, entity_name: str, entity_description: str
+    ) -> FeatureTable:
+        existing_tables = [table.name for table in self.client.list_feature_tables()]
+        if self.feature_table_name in existing_tables:
+            feature_table = self.client.get_feature_table(self.feature_table_name)
         else:
-            spectrum_info = self.client.get_feature_table(self.feature_table_name)
-        return spectrum_info
+            feature_table = self._create_table(entity_name, entity_description)
+        return feature_table
 
-    def _create_spectrum_info_table(self) -> FeatureTable:
-        spectrum_id = Entity(
-            name="spectrum_id",
-            description="Spectrum identifier",
+    def _create_table(self, entity_name: str, entity_description: str) -> FeatureTable:
+        entity = Entity(
+            name=entity_name,
+            description=entity_description,
             value_type=ValueType.INT64,
         )
         features = [
@@ -65,19 +65,33 @@ class DataStorer:
             event_timestamp_column="event_timestamp",
             created_timestamp_column="created_timestamp",
         )
-        spectrum_info = FeatureTable(
+        feature_table = FeatureTable(
             name=self.feature_table_name,
-            entities=["spectrum_id"],
+            entities=[entity_name],
             features=features,
             batch_source=batch_source,
         )
-        self.client.apply(spectrum_id)
-        self.client.apply(spectrum_info)
-        return spectrum_info
+        self.client.apply(entity)
+        self.client.apply(feature_table)
+        return feature_table
+
+
+class SpectrumStorer(Storer):
+    def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
+        super().__init__(
+            out_dir,
+            feast_core_url,
+            feature_table_name,
+            **string_features2types,
+            **not_string_features2types
+        )
+        self.table = self.get_or_create_table(
+            entity_name="spectrum_id", entity_description="Spectrum identifier"
+        )
 
     def store_cleaned_data(self, data: List[Spectrum]):
         data_df = self._get_cleaned_data_df(data)
-        self.client.ingest(self.spectrum_info, data_df)
+        self.client.ingest(self.table, data_df)
 
     def _get_cleaned_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
@@ -89,8 +103,6 @@ class DataStorer:
                     "words": [],
                     "losses": [],
                     "weights": [],
-                    "embeddings": [],
-                    "run_id": "",
                     **{
                         key: spectrum.metadata[key]
                         for key in self.features2types.keys()
@@ -105,7 +117,8 @@ class DataStorer:
             ]
         )
 
-    def _convert_create_time(self, create_time: str):
+    @staticmethod
+    def _convert_create_time(create_time: str):
         if create_time:
             return datetime.strptime(create_time, "%Y-%m-%d %H:%M:%S.%f")
         else:
@@ -113,7 +126,7 @@ class DataStorer:
 
     def store_documents(self, data: List[SpectrumDocument]):
         data_df = self._get_documents_df(data)
-        self.client.ingest(self.spectrum_info, data_df)
+        self.client.ingest(self.table, data_df)
 
     def _get_documents_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
@@ -132,58 +145,25 @@ class DataStorer:
         )
 
 
-class EmbeddingStorer:
-    def __init__(self, out_dir: str, feast_core_url: str):
-        self.client = Client(core_url=feast_core_url, telemetry=False)
-        self.feature_table_name = "embeddings_info"
-        self.out_dir = out_dir
-        self.features2types = {
-            "run_id": ValueType.STRING,
-            "embedding": ValueType.DOUBLE_LIST,
-        }
-        self.embeddings_info = self._get_or_create_embeddings_table()
-
-    def _get_or_create_embeddings_table(self) -> FeatureTable:
-        existing_tables = [table.name for table in self.client.list_feature_tables()]
-        if self.feature_table_name in existing_tables:
-            embeddings_info = self.client.get_feature_table(self.feature_table_name)
-        else:
-            embeddings_info = self._create_embeddings_table()
-        return embeddings_info
-
-    def _create_embeddings_table(self) -> FeatureTable:
-        spectrum_id = Entity(
-            name="spectrum_id",
-            description="Embeddings identifier",
-            value_type=ValueType.INT64,
+class EmbeddingStorer(Storer):
+    def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
+        super().__init__(
+            out_dir,
+            feast_core_url,
+            feature_table_name,
+            **{"run_id": ValueType.STRING, "embedding": ValueType.DOUBLE_LIST}
         )
-        features = [
-            Feature(feature, dtype=feature_type)
-            for feature, feature_type in self.features2types.items()
-        ]
-        batch_source = FileSource(
-            file_format=ParquetFormat(),
-            file_url=str(self.out_dir),
-            event_timestamp_column="event_timestamp",
-            created_timestamp_column="created_timestamp",
+        self.table = self.get_or_create_table(
+            entity_name="spectrum_id", entity_description="Embedding identifier"
         )
-        embeddings_info = FeatureTable(
-            name=self.feature_table_name,
-            entities=["spectrum_id"],
-            features=features,
-            batch_source=batch_source,
-        )
-        self.client.apply(spectrum_id)
-        self.client.apply(embeddings_info)
-        return embeddings_info
 
     def store_embeddings(
         self, data: List[SpectrumDocument], embeddings: List[np.ndarray], run_id: str
     ):
-        df = self._get_embeddings_df(data, embeddings, run_id)
-        self.client.ingest(self.embeddings_info, df)
+        df = self._get_embedding_df(data, embeddings, run_id)
+        self.client.ingest(self.table, df)
 
-    def _get_embeddings_df(
+    def _get_embedding_df(
         self,
         documents: List[SpectrumDocument],
         embeddings: List[np.ndarray],
@@ -193,9 +173,10 @@ class EmbeddingStorer:
             [
                 {
                     "spectrum_id": document.metadata["spectrum_id"],
-                    "embeddings": embedding,
+                    "embedding": embedding,
                     "run_id": run_id,
                     "event_timestamp": datetime.now(),
+                    "create_timestamp": datetime.now(),
                 }
                 for document, embedding in zip(documents, embeddings)
             ]
