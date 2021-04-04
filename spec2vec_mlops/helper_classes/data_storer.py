@@ -157,6 +157,36 @@ class SpectrumStorer(Storer):
         spectrum_ids_stored = data_df["spectrum_id"].tolist()
         return spectrum_ids_stored
 
+    def read_clean_data(self, spectrum_ids: List[str]) -> List[Spectrum]:
+        entities_of_interest = pd.DataFrame(
+            {
+                "spectrum_id": spectrum_ids,
+                "event_timestamp": [datetime.now()] * len(spectrum_ids),
+            }
+        )
+        job = self.client.get_historical_features(
+            [
+                f"{self.feature_table_name}:mz_list",
+                f"{self.feature_table_name}:intensity_list",
+            ],
+            entity_source=entities_of_interest,
+            output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
+        )
+        self._wait_for_job(job)
+        if job.get_status().name == "FAILED":
+            raise FeatureLoaderError
+        df = pd.read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = df.set_index("spectrum_id")
+        spectra = []
+        for spectrum_id, record in df.iterrows():
+            spectrum = Spectrum(
+                mz=record["spectrum_info__mz_list"],
+                intensities=record["spectrum_info__intensity_list"],
+                metadata={"spectrum_id": spectrum_id},
+            )
+            spectra.append(spectrum)
+        return spectra
+
     def _get_cleaned_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
@@ -193,7 +223,7 @@ class DocumentStorer(Storer):
             feast_core_url,
             feature_table_name,
             **{
-                "words": ValueType.DOUBLE_LIST,
+                "words": ValueType.STRING_LIST,
                 "losses": ValueType.DOUBLE_LIST,
                 "weights": ValueType.DOUBLE_LIST,
             },
@@ -205,6 +235,31 @@ class DocumentStorer(Storer):
     def store_documents(self, data: List[SpectrumDocument]):
         data_df = self._get_documents_df(data)
         self.client.ingest(self.table, data_df)
+
+    def read_documents(self, spectrum_ids: List[str]) -> List[SpectrumDocument]:
+        entities_of_interest = pd.DataFrame(
+            {
+                "spectrum_id": spectrum_ids,
+                "event_timestamp": [datetime.now()] * len(spectrum_ids),
+            }
+        )
+        job = self.client.get_historical_features(
+            [
+                f"{self.feature_table_name}:words",
+            ],
+            entity_source=entities_of_interest,
+            output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
+        )
+        self._wait_for_job(job)
+        if job.get_status().name == "FAILED":
+            raise FeatureLoaderError
+        df = pd.read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = df.set_index("spectrum_id")
+        documents = []
+        for spectrum_id, record in df.iterrows():
+            # TODO: need to confirm if this is enough for Gensim
+            documents.append(record["spectrum_info__words"])
+        return documents
 
     def _get_documents_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
