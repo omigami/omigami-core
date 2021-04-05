@@ -74,7 +74,6 @@ class SpectrumIDStorer(BaseStorer):
         if job.get_status().name == "FAILED":
             raise StorerLoadError
         df = pd.read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
-        print(df)
         return df[f"{self._feast_table.feature_table_name}__all_spectrum_ids"].iloc[0]
 
     def _get_data_df(self, data: List[str]) -> pd.DataFrame:

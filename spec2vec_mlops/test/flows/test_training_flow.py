@@ -5,11 +5,8 @@ from prefect import Flow, unmapped
 from prefect.engine.state import State
 
 from spec2vec_mlops import config
-from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.register_model import register_model_task
-from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
-from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
@@ -36,13 +33,9 @@ def spec2vec_train_pipeline_local(
     allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> State:
     with Flow("flow") as flow:
-        raw = load_data_task(source_uri)
-        cleaned = clean_data_task.map(raw)
-        store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
-        documents = convert_to_documents_task.map(
-            feast_core_url, n_decimals=unmapped(n_decimals)
-        )
-        store_documents_task(documents, feast_source_dir, feast_core_url)
+        clean_data_task.map(source_uri, feast_source_dir, feast_core_url)
+        convert_to_documents_task(feast_source_dir, feast_core_url, n_decimals=2)
+
         model = train_model_task(feast_core_url, iterations, window)
         run_id = register_model_task(
             mlflow_server_uri,

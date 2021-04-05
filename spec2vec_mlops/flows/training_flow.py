@@ -10,11 +10,8 @@ from prefect.storage import S3
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
-from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
-from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
-from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.store_embeddings import store_embeddings_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 
@@ -79,15 +76,14 @@ def spec2vec_train_pipeline_distributed(
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
-        raw = load_data_task(uri)
-        logger.info("Data loading is complete.")
-        cleaned = clean_data_task.map(raw)
+        all_spectrum_ids = clean_data_task.map(uri, feast_source_dir, feast_core_url)
         logger.info("Data cleaning is complete.")
-        store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
-        documents = convert_to_documents_task.map(
-            feast_core_url, n_decimals=unmapped(2)
+
+        all_spectrum_ids = convert_to_documents_task(
+            feast_source_dir, feast_core_url, n_decimals=2
         )
-        store_documents_task(documents, feast_source_dir, feast_core_url)
+        logger.info("Document convertion is complete.")
+
         model = train_model_task(feast_core_url, iterations, window)
         run_id = register_model_task(
             mlflow_server_uri,
