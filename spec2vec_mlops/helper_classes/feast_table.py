@@ -1,13 +1,22 @@
+import os
 from feast import ValueType, Client, FeatureTable, Entity, Feature, FileSource
 from feast.data_format import ParquetFormat
 
+from spec2vec_mlops import config
 
-class FeastTable:
-    def __init__(
-        self, out_dir: str, feast_core_url: str, feature_table_name: str, **kwargs
-    ):
-        self.out_dir = out_dir
-        self.client = Client(core_url=feast_core_url, telemetry=False)
+FEAST_CORE_URL = os.getenv(
+    "FEAST_CORE_URL",
+    config["feast"]["url"]["local"].get(str),
+)
+FEAST_BASE_SOURCE_LOCATION = os.getenv(
+    "FEAST_BASE_SOURCE_LOCATION",
+    config["feast"]["spark"]["base_source_location"].get(str),
+)
+
+
+class FeastTableGenerator:
+    def __init__(self, feature_table_name: str, **kwargs):
+        self.client = Client(core_url=FEAST_CORE_URL, telemetry=False)
         self.feature_table_name = feature_table_name
         self.features2types = {**kwargs}
 
@@ -39,7 +48,9 @@ class FeastTable:
         ]
         batch_source = FileSource(
             file_format=ParquetFormat(),
-            file_url=str(self.out_dir),
+            file_url=str(
+                os.path.join(FEAST_BASE_SOURCE_LOCATION, self.feature_table_name)
+            ),
             event_timestamp_column="event_timestamp",
             created_timestamp_column="created_timestamp",
         )

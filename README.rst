@@ -67,6 +67,7 @@ Set these environment variables before running the test suite:
     export SKIP_FEAST_TEST=False
     export FEAST_SPARK_LAUNCHER=standalone
     export FEAST_SPARK_STAGING_LOCATION=file:///tmp/staging
+    export FEAST_BASE_SOURCE_LOCATION=file:///tmp/base_source
     export FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION=/tmp/output.parquet
     export FEAST_HISTORICAL_FEATURE_OUTPUT_FORMAT=parquet
     export FEAST_SPARK_HOME=[YOUR_PYSPARK_LIBRARY_PATH]

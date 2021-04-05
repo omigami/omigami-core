@@ -1,19 +1,20 @@
 import os
 import time
 from datetime import datetime
-from typing import List
+from typing import List, Dict, Any
 
 import pandas as pd
 from feast import ValueType
 from feast.pyspark.abc import RetrievalJob
 from matchms import Spectrum
-from spec2vec import SpectrumDocument
+from spec2vec import SpectrumDocument, Document
 
 from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.base_storer import BaseStorer
 from spec2vec_mlops.helper_classes.embedding import Embedding
-from spec2vec_mlops.helper_classes.feast_table import FeastTable
+from spec2vec_mlops.helper_classes.feast_table import FeastTableGenerator
 
+TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 KEYS = config["cleaned_data"]["necessary_keys"].get(list)
 FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION = os.getenv(
     "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION",
@@ -39,11 +40,24 @@ class StorerLoadError(Exception):
     pass
 
 
+class FeastSpectrumDocument(Document):
+    """Document as output from data stored in Feast."""
+
+    def __init__(self, feast_data: Dict[str, List[Any]]):
+        super().__init__(obj=feast_data)
+        self.weights = feast_data["weights"]
+        self.losses = feast_data["losses"]
+        self.metadata = feast_data["metadata"]
+
+    def _make_words(self):
+        """Create word from Feast data."""
+        self.words = self._obj["words"]
+        return self
+
+
 class SpectrumIDStorer(BaseStorer):
-    def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
-        self._feast_table = FeastTable(
-            out_dir,
-            feast_core_url,
+    def __init__(self, feature_table_name: str):
+        self._feast_table = FeastTableGenerator(
             feature_table_name,
             **{
                 "all_spectrum_ids": ValueType.STRING_LIST,
@@ -96,10 +110,8 @@ class SpectrumIDStorer(BaseStorer):
 
 
 class SpectrumStorer(BaseStorer):
-    def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
-        self._feast_table = FeastTable(
-            out_dir,
-            feast_core_url,
+    def __init__(self, feature_table_name: str):
+        self._feast_table = FeastTableGenerator(
             feature_table_name,
             **string_features2types,
             **not_string_features2types,
@@ -139,7 +151,12 @@ class SpectrumStorer(BaseStorer):
             spectrum = Spectrum(
                 mz=record["spectrum_info__mz_list"],
                 intensities=record["spectrum_info__intensity_list"],
-                metadata={"spectrum_id": spectrum_id},
+                metadata={
+                    "spectrum_id": spectrum_id,
+                    "create_time": datetime.strftime(
+                        record["event_timestamp"], TIME_FORMAT
+                    ),
+                },
             )
             spectra.append(spectrum)
         return spectra
@@ -169,7 +186,7 @@ class SpectrumStorer(BaseStorer):
     @staticmethod
     def _convert_create_time(create_time: str) -> datetime:
         if create_time:
-            return datetime.strptime(create_time, "%Y-%m-%d %H:%M:%S.%f")
+            return datetime.strptime(create_time, TIME_FORMAT)
         else:
             return datetime.now()
 
@@ -181,10 +198,8 @@ class SpectrumStorer(BaseStorer):
 
 
 class DocumentStorer(BaseStorer):
-    def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
-        self._feast_table = FeastTable(
-            out_dir,
-            feast_core_url,
+    def __init__(self, feature_table_name: str):
+        self._feast_table = FeastTableGenerator(
             feature_table_name,
             **{
                 "words": ValueType.STRING_LIST,
@@ -200,7 +215,7 @@ class DocumentStorer(BaseStorer):
         data_df = self._get_data_df(data)
         self._feast_table.client.ingest(self._document_table, data_df)
 
-    def read(self, ids: List[str]) -> List[SpectrumDocument]:
+    def read(self, ids: List[str]) -> List[Document]:
         entities_of_interest = pd.DataFrame(
             {
                 "spectrum_id": ids,
@@ -210,6 +225,8 @@ class DocumentStorer(BaseStorer):
         job = self._feast_table.client.get_historical_features(
             [
                 f"{self._feast_table.feature_table_name}:words",
+                f"{self._feast_table.feature_table_name}:losses",
+                f"{self._feast_table.feature_table_name}:weights",
             ],
             entity_source=entities_of_interest,
             output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
@@ -221,8 +238,15 @@ class DocumentStorer(BaseStorer):
         df = df.set_index("spectrum_id")
         documents = []
         for spectrum_id, record in df.iterrows():
-            # TODO: need to confirm if this is enough for Gensim
-            documents.append(record["document_info__words"])
+            doc = FeastSpectrumDocument(
+                {
+                    "words": record["document_info__words"],
+                    "losses": record["document_info__losses"],
+                    "weights": record["document_info__weights"],
+                    "metadata": {"spectrum_id": spectrum_id},
+                }
+            )
+            documents.append(doc)
         return documents
 
     def _get_data_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
@@ -231,7 +255,11 @@ class DocumentStorer(BaseStorer):
                 {
                     "spectrum_id": document.metadata["spectrum_id"],
                     "words": document.words,
-                    "losses": document.losses,
+                    "losses": document.losses
+                    or [""]
+                    * len(
+                        document.words
+                    ),  # needed to maintain the correct type in Spark
                     "weights": document.weights,
                     "event_timestamp": self._convert_create_time(
                         document.metadata.get("create_time")
@@ -245,7 +273,7 @@ class DocumentStorer(BaseStorer):
     @staticmethod
     def _convert_create_time(create_time: str) -> datetime:
         if create_time:
-            return datetime.strptime(create_time, "%Y-%m-%d %H:%M:%S.%f")
+            return datetime.strptime(create_time, TIME_FORMAT)
         else:
             return datetime.now()
 
@@ -257,12 +285,8 @@ class DocumentStorer(BaseStorer):
 
 
 class EmbeddingStorer(BaseStorer):
-    def __init__(
-        self, out_dir: str, feast_core_url: str, feature_table_name: str, run_id: str
-    ):
-        self._feast_table = FeastTable(
-            out_dir,
-            feast_core_url,
+    def __init__(self, feature_table_name: str, run_id: str):
+        self._feast_table = FeastTableGenerator(
             feature_table_name,
             **{"run_id": ValueType.STRING, "embedding": ValueType.DOUBLE_LIST},
         )

@@ -1,15 +1,12 @@
 import os
 
 import pytest
-from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.storer_classes import (
     SpectrumIDStorer,
     SpectrumStorer,
     DocumentStorer,
     EmbeddingStorer,
 )
-
-FEAST_CORE_URL = config["feast"]["url"]["local"].get(str)
 
 pytestmark = pytest.mark.skipif(
     os.getenv("SKIP_SPARK_TEST", True),
@@ -20,8 +17,6 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture()
 def spectrum_ids_storer(tmpdir):
     return SpectrumIDStorer(
-        out_dir=f"file://{tmpdir}",
-        feast_core_url=FEAST_CORE_URL,
         feature_table_name="spectrum_ids_info",
     )
 
@@ -29,8 +24,6 @@ def spectrum_ids_storer(tmpdir):
 @pytest.fixture()
 def spectrum_storer(tmpdir):
     return SpectrumStorer(
-        out_dir=f"file://{tmpdir}",
-        feast_core_url=FEAST_CORE_URL,
         feature_table_name="spectrum_info",
     )
 
@@ -38,8 +31,6 @@ def spectrum_storer(tmpdir):
 @pytest.fixture()
 def embedding_storer(tmpdir):
     return EmbeddingStorer(
-        out_dir=f"file://{tmpdir}",
-        feast_core_url=FEAST_CORE_URL,
         feature_table_name="embedding_info",
         run_id="1",
     )
@@ -48,8 +39,6 @@ def embedding_storer(tmpdir):
 @pytest.fixture()
 def document_storer(tmpdir):
     return DocumentStorer(
-        out_dir=f"file://{tmpdir}",
-        feast_core_url=FEAST_CORE_URL,
         feature_table_name="document_info",
     )
 

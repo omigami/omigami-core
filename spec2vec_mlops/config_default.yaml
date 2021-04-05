@@ -60,6 +60,7 @@ feast:
     remote: "feast-feast-core.feast:6565"
     local: "0.0.0.0:6565"
   spark:
+    base_source_location: "file:///tmp/base_source"
     output_location: "/tmp/historical_feature_output"
 prefect_flow_registration:
   api_server:

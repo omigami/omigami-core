@@ -2,7 +2,7 @@ import logging
 from typing import Union
 
 import click
-from prefect import Flow, Parameter, Client, unmapped
+from prefect import Flow, Parameter, Client
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
@@ -12,7 +12,6 @@ from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
-from spec2vec_mlops.tasks.store_embeddings import store_embeddings_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 
 logging.basicConfig(level=logging.DEBUG)
@@ -31,8 +30,6 @@ def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-spec2vec-store-embeddings",
-    feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/feast",
-    feast_core_url: str = FEAST_CORE_URL_REMOTE,
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
@@ -70,21 +67,23 @@ def spec2vec_train_pipeline_distributed(
             image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b3b114d",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
+            env={
+                "FEAST_BASE_SOURCE_LOCATION": "s3://dr-prefect/spec2vec-training-flow/feast",
+                "FEAST_CORE_URL": FEAST_CORE_URL_REMOTE,
+            },
         ),
         "storage": S3("dr-prefect"),
         "executor": LocalDaskExecutor(),
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
-        all_spectrum_ids = clean_data_task.map(uri, feast_source_dir, feast_core_url)
+        clean_data_task(uri)
         logger.info("Data cleaning is complete.")
 
-        all_spectrum_ids = convert_to_documents_task(
-            feast_source_dir, feast_core_url, n_decimals=2
-        )
+        convert_to_documents_task(n_decimals=2)
         logger.info("Document convertion is complete.")
 
-        model = train_model_task(feast_core_url, iterations, window)
+        model = train_model_task(iterations, window)
         run_id = register_model_task(
             mlflow_server_uri,
             model,
@@ -95,13 +94,12 @@ def spec2vec_train_pipeline_distributed(
             allowed_missing_percentage,
             conda_env_path,
         )
-        embeddings = make_embeddings_task.map(
-            unmapped(model),
-            documents,
-            unmapped(intensity_weighting_power),
-            unmapped(allowed_missing_percentage),
+        make_embeddings_task(
+            model,
+            run_id,
+            intensity_weighting_power,
+            allowed_missing_percentage,
         )
-        store_embeddings_task(embeddings, run_id, feast_source_dir, feast_core_url)
     client = Client(api_server=api_server)
     client.create_project(project_name)
     training_flow_id = client.register(
