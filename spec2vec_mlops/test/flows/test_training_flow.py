@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from typing import Union
 
 import pytest
@@ -5,16 +7,18 @@ from prefect import Flow, unmapped
 from prefect.engine.state import State
 
 from spec2vec_mlops import config
-from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
+from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
+from spec2vec_mlops.tasks.load_data import load_data_task
+from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
-from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
-from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 
 FEAST_CORE_URL_LOCAL = config["feast"]["url"]["local"].get(str)
+os.chdir(Path(__file__).parents[3])
+
 
 pytestmark = pytest.mark.skip(
     "This test can only be run if the Feast docker-compose is up"
