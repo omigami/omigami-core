@@ -40,7 +40,7 @@ def spec2vec_train_pipeline_local(
         cleaned = clean_data_task.map(raw)
         store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
         documents = convert_to_documents_task.map(
-            cleaned, n_decimals=unmapped(n_decimals)
+            feast_core_url, n_decimals=unmapped(n_decimals)
         )
         store_documents_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(feast_core_url, iterations, window)

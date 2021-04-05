@@ -3,7 +3,7 @@ import datetime
 from gensim.models import Word2Vec
 from prefect import task
 
-from spec2vec_mlops.helper_classes.feature_loader import FeatureLoader
+from spec2vec_mlops.helper_classes.data_storer import SpectrumIDStorer, DocumentStorer
 from spec2vec_mlops.helper_classes.model_trainer import ModelTrainer
 
 
@@ -13,9 +13,10 @@ def train_model_task(
     iterations: int = 25,
     window: int = 500,
 ) -> Word2Vec:
-    feature_loader = FeatureLoader(feast_core_url)
-    all_spectrum_ids = feature_loader.load_all_spectrum_ids()
-    documents = feature_loader.load_documents(spectrum_ids=all_spectrum_ids)
+    spectrum_ids_storer = SpectrumIDStorer(feast_core_url)
+    document_storer = DocumentStorer(feast_core_url)
+    all_spectrum_ids = spectrum_ids_storer.read_spectrum_ids()
+    documents = document_storer.read_documents(spectrum_ids=all_spectrum_ids)
     model_trainer = ModelTrainer()
     model = model_trainer.train_model(documents, iterations, window)
     return model

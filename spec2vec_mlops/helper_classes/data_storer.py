@@ -258,7 +258,7 @@ class DocumentStorer(Storer):
         documents = []
         for spectrum_id, record in df.iterrows():
             # TODO: need to confirm if this is enough for Gensim
-            documents.append(record["spectrum_info__words"])
+            documents.append(record["document_info__words"])
         return documents
 
     def _get_documents_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
