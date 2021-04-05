@@ -3,10 +3,10 @@ from feast import ValueType, FeatureTable
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
 from spec2vec_mlops import config
+from spec2vec_mlops.helper_classes.feast_table import FeastTable
 from spec2vec_mlops.helper_classes.storer_classes import (
     DocumentStorer,
     EmbeddingStorer,
-    FeastTable,
     SpectrumStorer,
 )
 
@@ -61,7 +61,8 @@ def test_spectrum_storer_get_data_df(spectrum_storer, cleaned_data):
     spectrum_df = spectrum_storer._get_data_df(cleaned_data)
     assert len(spectrum_df) == len(cleaned_data)
     assert (
-        len(spectrum_df.columns) == len(spectrum_storer._feast_table.features2types.keys()) + 3
+        len(spectrum_df.columns)
+        == len(spectrum_storer._feast_table.features2types.keys()) + 3
     )  # +3 because of spectrum_id, created_timestamp and event_timestamp
     assert not spectrum_df.spectrum_id.isnull().any()
     assert not spectrum_df.event_timestamp.isnull().any()
@@ -92,9 +93,7 @@ def test_document_storer_store_documents(document_storer, documents_data):
     document_storer.store(documents_data)
 
 
-def test_embedding_storer_get_data_df(
-    embedding_storer, documents_data, embeddings
-):
+def test_embedding_storer_get_data_df(embedding_storer, documents_data, embeddings):
     embedding_df = embedding_storer._get_data_df(embeddings)
     assert len(embedding_df) == len(documents_data)
     assert set(embedding_df.columns) == {
