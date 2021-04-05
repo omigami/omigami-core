@@ -1,5 +1,6 @@
 import pytest
 from feast import ValueType, FeatureTable
+from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
 from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.storer_classes import (
@@ -7,8 +8,6 @@ from spec2vec_mlops.helper_classes.storer_classes import (
     EmbeddingStorer,
     Storer,
     SpectrumStorer,
-    string_features2types,
-    not_string_features2types,
 )
 
 FEAST_CORE_URL = config["feast"]["url"]["local"].get(str)
@@ -44,45 +43,14 @@ def document_storer(tmpdir):
     )
 
 
-def test_storer_create_spectrum_info_table(tmpdir):
+def test_storer_get_or_create_table(tmpdir):
     storer = Storer(
         out_dir=f"file://{tmpdir}",
         feast_core_url=FEAST_CORE_URL,
-        feature_table_name="spectrum_info",
-        **not_string_features2types,
-        **string_features2types,
+        feature_table_name="test_table_info",
+        **{"column1": ValueType.DOUBLE_LIST, "column2": ValueType.STRING},
     )
-    table = storer.get_or_create_table("spectrum_id", "Spectrum identifier")
-    existing_tables = [table.name for table in storer.client.list_feature_tables()]
-    assert isinstance(table, FeatureTable)
-    assert storer.feature_table_name in existing_tables
-
-
-def test_storer_create_embedding_info_table(tmpdir):
-    storer = Storer(
-        out_dir=f"file://{tmpdir}",
-        feast_core_url=FEAST_CORE_URL,
-        feature_table_name="embedding_info",
-        **{"run_id": ValueType.STRING, "embedding": ValueType.DOUBLE_LIST},
-    )
-    table = storer.get_or_create_table("spectrum_id", "Embedding identifier")
-    existing_tables = [table.name for table in storer.client.list_feature_tables()]
-    assert isinstance(table, FeatureTable)
-    assert storer.feature_table_name in existing_tables
-
-
-def test_storer_create_document_info_table(tmpdir):
-    storer = Storer(
-        out_dir=f"file://{tmpdir}",
-        feast_core_url=FEAST_CORE_URL,
-        feature_table_name="document_info",
-        **{
-            "words": ValueType.DOUBLE_LIST,
-            "losses": ValueType.DOUBLE_LIST,
-            "weights": ValueType.DOUBLE_LIST,
-        },
-    )
-    table = storer.get_or_create_table("spectrum_id", "Document identifier")
+    table = storer.get_or_create_table("some_id", "Test_table identifier")
     existing_tables = [table.name for table in storer.client.list_feature_tables()]
     assert isinstance(table, FeatureTable)
     assert storer.feature_table_name in existing_tables
@@ -97,11 +65,11 @@ def test_spectrum_storer_get_cleaned_data_df(spectrum_storer, cleaned_data):
     assert not spectrum_df.spectrum_id.isnull().any()
     assert not spectrum_df.event_timestamp.isnull().any()
     assert not spectrum_df.created_timestamp.isnull().any()
-    assert spectrum_df.event_timestamp.dtype == "<M8[ns]"
+    assert is_datetime(spectrum_df.event_timestamp)
+    assert is_datetime(spectrum_df.created_timestamp)
 
 
 def test_spectrum_storer_store_cleaned_data(spectrum_storer, cleaned_data):
-    print(spectrum_storer.client.list_feature_tables())
     spectrum_storer.store_cleaned_data(cleaned_data)
 
 
