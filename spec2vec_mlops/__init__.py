@@ -1,9 +1,13 @@
-import confuse
+import os
+
+import yaml
 
 from ._version import get_versions
 
 __version__ = get_versions()["version"]
 del get_versions
 
-# loads default config_default.yaml file lazily
-config = confuse.Configuration("spec2vec_mlops", __name__)
+with open(
+    os.path.join(os.path.dirname(__file__), "config_default.yaml")
+) as yaml_config_file:
+    config = yaml.load(yaml_config_file)

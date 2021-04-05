@@ -16,7 +16,7 @@ from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 
-FEAST_CORE_URL_LOCAL = config["feast"]["url"]["local"].get(str)
+FEAST_CORE_URL_LOCAL = config["feast"]["url"]["local"]
 os.chdir(Path(__file__).parents[3])
 
 

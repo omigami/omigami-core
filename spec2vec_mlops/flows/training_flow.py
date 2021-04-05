@@ -22,12 +22,12 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # variable definitions
-SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"].get(str)
-SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"].get(str)
-API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"].get(str)
-API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"].get(str)
-FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"].get(str)
-MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
+SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
+SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
+API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"]
+API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"]
+FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"]
+MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"]
 
 
 def spec2vec_train_pipeline_distributed(
@@ -70,7 +70,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.03b0a4e",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.bc01d2a",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),

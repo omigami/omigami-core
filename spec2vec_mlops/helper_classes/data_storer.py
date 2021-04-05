@@ -9,7 +9,7 @@ from spec2vec import SpectrumDocument
 
 from spec2vec_mlops import config
 
-KEYS = config["cleaned_data"]["necessary_keys"].get(list)
+KEYS = config["cleaned_data"]["necessary_keys"]
 
 
 class DataStorer:

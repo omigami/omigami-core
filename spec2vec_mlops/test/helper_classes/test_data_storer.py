@@ -1,8 +1,9 @@
 import pytest
+
 from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.data_storer import DataStorer
 
-FEAST_CORE_URL = config["feast"]["url"]["local"].get(str)
+FEAST_CORE_URL = config["feast"]["url"]["local"]
 
 
 @pytest.fixture()
