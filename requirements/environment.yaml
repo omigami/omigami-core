@@ -14,7 +14,7 @@ dependencies:
   - boto3=1.17.*
   - ijson=3.1.*
   - numpy=1.19.*
-  - pandas=1.0.*
+  - pandas=1.2.*
   - pip:
       - matchms==0.8.*
       - feast==0.9.*
