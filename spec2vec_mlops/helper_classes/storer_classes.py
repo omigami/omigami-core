@@ -28,7 +28,7 @@ string_features2types = {
 }
 
 
-class Storer(BaseStorer):
+class FeastTable:
     def __init__(
         self, out_dir: str, feast_core_url: str, feature_table_name: str, **kwargs
     ):
@@ -38,7 +38,7 @@ class Storer(BaseStorer):
         self.features2types = {**kwargs}
 
     def get_or_create_table(
-        self, entity_name: str, entity_description: str
+        self, entity_description: str, entity_name="spectrum_id",
     ) -> FeatureTable:
         existing_tables = [table.name for table in self.client.list_feature_tables()]
         if self.feature_table_name in existing_tables:
@@ -47,7 +47,7 @@ class Storer(BaseStorer):
             feature_table = self._create_table(entity_name, entity_description)
         return feature_table
 
-    def _create_table(self, entity_name: str, entity_description: str) -> FeatureTable:
+    def _create_table(self, entity_description: str, entity_name="spectrum_id",) -> FeatureTable:
         entity = Entity(
             name=entity_name,
             description=entity_description,
@@ -73,32 +73,25 @@ class Storer(BaseStorer):
         self.client.apply(feature_table)
         return feature_table
 
-    @staticmethod
-    def _convert_create_time(create_time: str) -> datetime:
-        if create_time:
-            return datetime.strptime(create_time, "%Y-%m-%d %H:%M:%S.%f")
-        else:
-            return datetime.now()
 
-
-class SpectrumStorer(Storer):
+class SpectrumStorer(BaseStorer):
     def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
-        super().__init__(
+        self._feast_table = FeastTable(
             out_dir,
             feast_core_url,
             feature_table_name,
             **string_features2types,
             **not_string_features2types,
         )
-        self.table = self.get_or_create_table(
-            entity_name="spectrum_id", entity_description="Spectrum identifier"
+        self._spectrum_table = self._feast_table.get_or_create_table(
+            entity_description="Spectrum identifier"
         )
 
-    def store_cleaned_data(self, data: List[Spectrum]):
-        data_df = self._get_cleaned_data_df(data)
-        self.client.ingest(self.table, data_df)
+    def store(self, data: List[Spectrum]):
+        data_df = self._get_data_df(data)
+        self._feast_table.client.ingest(self._spectrum_table, data_df)
 
-    def _get_cleaned_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
+    def _get_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
                 {
@@ -108,7 +101,7 @@ class SpectrumStorer(Storer):
                     "losses": spectrum.losses,
                     **{
                         key: spectrum.metadata[key]
-                        for key in self.features2types.keys()
+                        for key in self._feast_table.features2types.keys()
                         if key in spectrum.metadata.keys()
                     },
                     "event_timestamp": self._convert_create_time(
@@ -120,10 +113,17 @@ class SpectrumStorer(Storer):
             ]
         )
 
+    @staticmethod
+    def _convert_create_time(create_time: str) -> datetime:
+        if create_time:
+            return datetime.strptime(create_time, "%Y-%m-%d %H:%M:%S.%f")
+        else:
+            return datetime.now()
 
-class DocumentStorer(Storer):
+
+class DocumentStorer(BaseStorer):
     def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
-        super().__init__(
+        self._feast_table = FeastTable(
             out_dir,
             feast_core_url,
             feature_table_name,
@@ -133,15 +133,15 @@ class DocumentStorer(Storer):
                 "weights": ValueType.DOUBLE_LIST,
             },
         )
-        self.table = self.get_or_create_table(
-            entity_name="spectrum_id", entity_description="Document identifier"
+        self._document_table = self._feast_table.get_or_create_table(
+            entity_description="Document identifier"
         )
 
-    def store_documents(self, data: List[SpectrumDocument]):
-        data_df = self._get_documents_df(data)
-        self.client.ingest(self.table, data_df)
+    def store(self, data: List[SpectrumDocument]):
+        data_df = self._get_data_df(data)
+        self._feast_table.client.ingest(self._document_table, data_df)
 
-    def _get_documents_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
+    def _get_data_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
                 {
@@ -157,34 +157,38 @@ class DocumentStorer(Storer):
             ]
         )
 
+    @staticmethod
+    def _convert_create_time(create_time: str) -> datetime:
+        if create_time:
+            return datetime.strptime(create_time, "%Y-%m-%d %H:%M:%S.%f")
+        else:
+            return datetime.now()
 
-class EmbeddingStorer(Storer):
-    def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
-        super().__init__(
+
+class EmbeddingStorer(BaseStorer):
+    def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str, run_id: str):
+        self._feast_table = FeastTable(
             out_dir,
             feast_core_url,
             feature_table_name,
             **{"run_id": ValueType.STRING, "embedding": ValueType.DOUBLE_LIST},
         )
-        self.table = self.get_or_create_table(
-            entity_name="spectrum_id", entity_description="Embedding identifier"
+        self.run_id = run_id
+        self._embedding_table = self._feast_table.get_or_create_table(
+            entity_description="Embedding identifier"
         )
 
-    def store_embeddings(self, embeddings: List[Embedding], run_id: str):
-        df = self._get_embedding_df(embeddings, run_id)
-        self.client.ingest(self.table, df)
+    def store(self, data: List[Embedding]):
+        df = self._get_data_df(data)
+        self._feast_table.client.ingest(self._embedding_table, df)
 
-    def _get_embedding_df(
-        self,
-        embeddings: List[Embedding],
-        run_id: str,
-    ) -> pd.DataFrame:
+    def _get_data_df(self, embeddings: List[Embedding]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
                 {
                     "spectrum_id": embedding.spectrum_id,
                     "embedding": embedding.vector,
-                    "run_id": run_id,
+                    "run_id": self.run_id,
                     "event_timestamp": datetime.now(),
                     "create_timestamp": datetime.now(),
                 }

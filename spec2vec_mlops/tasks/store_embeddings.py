@@ -15,6 +15,9 @@ def store_embeddings_task(
     feast_core_url: str,
 ):
     storer = EmbeddingStorer(
-        out_dir, feast_core_url, feature_table_name="embedding_info"
+        out_dir=out_dir,
+        feast_core_url=feast_core_url,
+        run_id=run_id,
+        feature_table_name="embedding_info",
     )
-    storer.store_embeddings(embeddings, run_id)
+    storer.store(embeddings)

@@ -12,4 +12,4 @@ def store_documents_task(
     data: List[SpectrumDocument], out_dir: str, feast_core_url: str
 ):
     storer = DocumentStorer(out_dir, feast_core_url, feature_table_name="document_info")
-    storer.store_documents(data)
+    storer.store(data)
