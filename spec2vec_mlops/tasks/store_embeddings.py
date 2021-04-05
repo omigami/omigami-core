@@ -1,17 +1,15 @@
 import datetime
 from typing import List
 
-import numpy as np
 from prefect import task
-from spec2vec import SpectrumDocument
 
-from spec2vec_mlops.helper_classes.data_storer import EmbeddingStorer
+from spec2vec_mlops.helper_classes.embedding import Embedding
+from spec2vec_mlops.helper_classes.storer_classes import EmbeddingStorer
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
 def store_embeddings_task(
-    data: List[SpectrumDocument],
-    embeddings: List[np.ndarray],
+    embeddings: List[Embedding],
     run_id: str,
     out_dir: str,
     feast_core_url: str,
@@ -19,4 +17,4 @@ def store_embeddings_task(
     storer = EmbeddingStorer(
         out_dir, feast_core_url, feature_table_name="embedding_info"
     )
-    storer.store_embeddings(data, embeddings, run_id)
+    storer.store_embeddings(embeddings, run_id)

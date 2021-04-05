@@ -2,7 +2,7 @@ import pytest
 from feast import ValueType, FeatureTable
 
 from spec2vec_mlops import config
-from spec2vec_mlops.helper_classes.data_storer import (
+from spec2vec_mlops.helper_classes.storer_classes import (
     DocumentStorer,
     EmbeddingStorer,
     Storer,
@@ -76,7 +76,11 @@ def test_storer_create_document_info_table(tmpdir):
         out_dir=f"file://{tmpdir}",
         feast_core_url=FEAST_CORE_URL,
         feature_table_name="document_info",
-        **{"words": ValueType.DOUBLE_LIST, "losses": ValueType.DOUBLE_LIST, "weights": ValueType.DOUBLE_LIST,},
+        **{
+            "words": ValueType.DOUBLE_LIST,
+            "losses": ValueType.DOUBLE_LIST,
+            "weights": ValueType.DOUBLE_LIST,
+        },
     )
     table = storer.get_or_create_table("spectrum_id", "Document identifier")
     existing_tables = [table.name for table in storer.client.list_feature_tables()]
@@ -122,9 +126,7 @@ def test_document_storer_store_documents(document_storer, documents_data):
 def test_embedding_storer_get_embedding_df(
     embedding_storer, documents_data, embeddings
 ):
-    embedding_df = embedding_storer._get_embedding_df(
-        documents_data, embeddings, "run_id"
-    )
+    embedding_df = embedding_storer._get_embedding_df(embeddings, "run_id")
     assert len(embedding_df) == len(documents_data)
     assert set(embedding_df.columns) == {
         "spectrum_id",
@@ -141,4 +143,4 @@ def test_embedding_storer_get_embedding_df(
 def test_embedding_storer_store_embeddings(
     embedding_storer, documents_data, embeddings
 ):
-    embedding_storer.store_embeddings(documents_data, embeddings, "1")
+    embedding_storer.store_embeddings(embeddings, "1")

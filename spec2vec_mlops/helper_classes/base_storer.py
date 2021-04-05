@@ -5,7 +5,9 @@ from feast import FeatureTable
 
 class BaseStorer(ABC):
     @abstractmethod
-    def get_or_create_table(self, entity_name: str, entity_description: str) -> FeatureTable:
+    def get_or_create_table(
+        self, entity_name: str, entity_description: str
+    ) -> FeatureTable:
         pass
 
     @abstractmethod

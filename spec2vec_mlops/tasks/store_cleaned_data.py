@@ -4,7 +4,7 @@ from typing import List
 from matchms import Spectrum
 from prefect import task
 
-from spec2vec_mlops.helper_classes.data_storer import SpectrumStorer
+from spec2vec_mlops.helper_classes.storer_classes import SpectrumStorer
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))

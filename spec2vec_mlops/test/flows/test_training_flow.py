@@ -60,7 +60,7 @@ def spec2vec_train_pipeline_local(
             unmapped(allowed_missing_percentage),
         )
         store_embeddings_task(
-            documents, embeddings, run_id, feast_source_dir, feast_core_url
+            embeddings, run_id, feast_source_dir, feast_core_url
         )
     state = flow.run()
     return state

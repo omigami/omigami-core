@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import List
 
-import numpy as np
 import pandas as pd
 from feast import ValueType, Client, FeatureTable, Entity, Feature, FileSource
 from feast.data_format import ParquetFormat
@@ -81,7 +80,7 @@ class SpectrumStorer(Storer):
             feast_core_url,
             feature_table_name,
             **string_features2types,
-            **not_string_features2types
+            **not_string_features2types,
         )
         self.table = self.get_or_create_table(
             entity_name="spectrum_id", entity_description="Spectrum identifier"
@@ -126,7 +125,11 @@ class DocumentStorer(Storer):
             out_dir,
             feast_core_url,
             feature_table_name,
-            **{"words": ValueType.DOUBLE_LIST, "losses": ValueType.DOUBLE_LIST, "weights": ValueType.DOUBLE_LIST,},
+            **{
+                "words": ValueType.DOUBLE_LIST,
+                "losses": ValueType.DOUBLE_LIST,
+                "weights": ValueType.DOUBLE_LIST,
+            },
         )
         self.table = self.get_or_create_table(
             entity_name="spectrum_id", entity_description="Document identifier"
@@ -166,21 +169,18 @@ class EmbeddingStorer(Storer):
             out_dir,
             feast_core_url,
             feature_table_name,
-            **{"run_id": ValueType.STRING, "embedding": ValueType.DOUBLE_LIST}
+            **{"run_id": ValueType.STRING, "embedding": ValueType.DOUBLE_LIST},
         )
         self.table = self.get_or_create_table(
             entity_name="spectrum_id", entity_description="Embedding identifier"
         )
 
-    def store_embeddings(
-        self, data: List[SpectrumDocument], embeddings: List[Embedding], run_id: str
-    ):
-        df = self._get_embedding_df(data, embeddings, run_id)
+    def store_embeddings(self, embeddings: List[Embedding], run_id: str):
+        df = self._get_embedding_df(embeddings, run_id)
         self.client.ingest(self.table, df)
 
     def _get_embedding_df(
         self,
-        documents: List[SpectrumDocument],
         embeddings: List[Embedding],
         run_id: str,
     ) -> pd.DataFrame:
@@ -193,6 +193,6 @@ class EmbeddingStorer(Storer):
                     "event_timestamp": datetime.now(),
                     "create_timestamp": datetime.now(),
                 }
-                for document, embedding in zip(documents, embeddings)
+                for embedding in embeddings
             ]
         )
