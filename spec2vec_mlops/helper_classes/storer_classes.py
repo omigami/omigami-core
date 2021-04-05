@@ -89,6 +89,12 @@ class SpectrumIDStorer(BaseStorer):
             ]
         )
 
+    @staticmethod
+    def _wait_for_job(job: RetrievalJob):
+        while job.get_status().name not in ("FAILED", "COMPLETED"):
+            print(".", end="")
+            time.sleep(0.5)
+
 
 class SpectrumStorer(BaseStorer):
     def __init__(self, out_dir: str, feast_core_url: str, feature_table_name: str):
