@@ -38,7 +38,7 @@ class SpectrumStorer(BaseStorer):
             **not_string_features2types,
         )
         self._spectrum_table = self._feast_table.get_or_create_table(
-            entity_description="Spectrum identifier"
+            entity_description="spectrum_identifier"
         )
 
     def store(self, data: List[Spectrum]):
@@ -88,7 +88,7 @@ class DocumentStorer(BaseStorer):
             },
         )
         self._document_table = self._feast_table.get_or_create_table(
-            entity_description="Document identifier"
+            entity_description="document_identifier"
         )
 
     def store(self, data: List[SpectrumDocument]):
@@ -131,7 +131,7 @@ class EmbeddingStorer(BaseStorer):
         )
         self.run_id = run_id
         self._embedding_table = self._feast_table.get_or_create_table(
-            entity_description="Embedding identifier"
+            entity_description="embedding_identifier"
         )
 
     def store(self, data: List[Embedding]):
