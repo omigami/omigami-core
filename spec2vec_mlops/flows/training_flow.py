@@ -15,6 +15,7 @@ from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
+from spec2vec_mlops.tasks.store_embeddings import store_embeddings_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 
 logging.basicConfig(level=logging.DEBUG)
@@ -32,7 +33,7 @@ MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-spec2vec-embeddings",
+    project_name: str = "spec2vec-mlops-project-spec2vec-store-embeddings",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/feast",
     feast_core_url: str = FEAST_CORE_URL_REMOTE,
     n_decimals: int = 2,
@@ -69,7 +70,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.9ea7556",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b3b114d",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),
@@ -86,7 +87,7 @@ def spec2vec_train_pipeline_distributed(
         documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
         store_documents_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(documents, iterations, window)
-        register_model_task(
+        run_id = register_model_task(
             mlflow_server_uri,
             model,
             project_name,
@@ -102,6 +103,7 @@ def spec2vec_train_pipeline_distributed(
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
         )
+        store_embeddings_task(embeddings, run_id, feast_source_dir, feast_core_url)
     client = Client(api_server=api_server)
     client.create_project(project_name)
     training_flow_id = client.register(

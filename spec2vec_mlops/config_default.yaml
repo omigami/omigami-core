@@ -55,7 +55,6 @@ cleaned_data:
     - "inchikey_inchi"
     - "formula_smiles"
     - "formula_inchi"
-    - "create_time"
 feast:
   url:
     remote: "feast-feast-core.feast:6565"
