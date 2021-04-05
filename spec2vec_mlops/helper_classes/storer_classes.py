@@ -82,8 +82,8 @@ class DocumentStorer(BaseStorer):
             feast_core_url,
             feature_table_name,
             **{
-                "words": ValueType.DOUBLE_LIST,
-                "losses": ValueType.DOUBLE_LIST,
+                "words": ValueType.STRING_LIST,
+                "losses": ValueType.STRING_LIST,
                 "weights": ValueType.DOUBLE_LIST,
             },
         )
