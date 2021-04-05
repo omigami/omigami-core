@@ -102,7 +102,7 @@ def test_document_storer_get_data_df(document_storer, documents_data):
         "losses",
         "weights",
         "event_timestamp",
-        "create_timestamp",
+        "created_timestamp",
     }
     assert not documents_df.spectrum_id.isnull().any()
     assert not documents_df.words.isnull().any()
@@ -121,7 +121,7 @@ def test_embedding_storer_get_data_df(embedding_storer, documents_data, embeddin
         "embedding",
         "run_id",
         "event_timestamp",
-        "create_timestamp",
+        "created_timestamp",
     }
     assert not embedding_df.spectrum_id.isnull().any()
     assert not embedding_df.embedding.isnull().any()

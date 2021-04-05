@@ -278,7 +278,7 @@ class EmbeddingStorer(BaseStorer):
                     "embedding": embedding.vector,
                     "run_id": self.run_id,
                     "event_timestamp": datetime.now(),
-                    "create_timestamp": datetime.now(),
+                    "created_timestamp": datetime.now(),
                 }
                 for embedding in embeddings
             ]
