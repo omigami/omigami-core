@@ -1,13 +1,20 @@
 from abc import ABC, abstractmethod
+from typing import List, Union
 
-from feast import FeatureTable
+import pandas as pd
+from matchms import Spectrum
+from spec2vec import SpectrumDocument
+
+from spec2vec_mlops.helper_classes.embedding import Embedding
 
 
 class BaseStorer(ABC):
     @abstractmethod
-    def get_or_create_table(self, entity_name: str, entity_description: str) -> FeatureTable:
+    def store(self, data: List[Union[Spectrum, SpectrumDocument, Embedding]]):
         pass
 
     @abstractmethod
-    def _create_table(self, entity_name: str, entity_description: str) -> FeatureTable:
+    def _get_data_df(
+        self, data: List[Union[Spectrum, SpectrumDocument, Embedding]]
+    ) -> pd.DataFrame:
         pass
