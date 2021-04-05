@@ -275,6 +275,31 @@ class EmbeddingStorer(BaseStorer):
         df = self._get_data_df(data)
         self._feast_table.client.ingest(self._embedding_table, df)
 
+    def read(self, ids: List[str]) -> List[Embedding]:
+        entities_of_interest = pd.DataFrame(
+            {
+                "spectrum_id": ids,
+                "event_timestamp": [datetime.now()] * len(ids),
+            }
+        )
+        job = self._feast_table.client.get_historical_features(
+            [
+                f"{self._feast_table.feature_table_name}:embedding",
+                f"{self._feast_table.feature_table_name}:run_id",
+            ],
+            entity_source=entities_of_interest,
+            output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
+        )
+        self._wait_for_job(job)
+        if job.get_status().name == "FAILED":
+            raise StorerLoadError
+        df = pd.read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = df.set_index("spectrum_id")
+        embeddings = []
+        for spectrum_id, record in df.iterrows():
+            embeddings.append(record["embedding_info__embedding"])
+        return embeddings
+
     def _get_data_df(self, embeddings: List[Embedding]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
             [
