@@ -20,7 +20,7 @@ class FeastTable:
         if self.feature_table_name in existing_tables:
             feature_table = self.client.get_feature_table(self.feature_table_name)
         else:
-            feature_table = self._create_table(entity_name, entity_description)
+            feature_table = self._create_table(entity_description, entity_name)
         return feature_table
 
     def _create_table(
@@ -31,7 +31,7 @@ class FeastTable:
         entity = Entity(
             name=entity_name,
             description=entity_description,
-            value_type=ValueType.INT64,
+            value_type=ValueType.STRING,
         )
         features = [
             Feature(feature, dtype=feature_type)

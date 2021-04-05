@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from feast import ValueType, FeatureTable
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
@@ -8,12 +10,24 @@ from spec2vec_mlops.helper_classes.storer_classes import (
     DocumentStorer,
     EmbeddingStorer,
     SpectrumStorer,
+    SpectrumIDStorer,
 )
 
 FEAST_CORE_URL = config["feast"]["url"]["local"].get(str)
 
+pytestmark = pytest.mark.skipif(
+    os.getenv("SKIP_FEAST_TEST", True),
+    reason="It can only be run if the Feast docker-compose is up",
+)
 
-pytestmark = pytest.mark.skip("It can only be run if the Feast docker-compose is up")
+
+@pytest.fixture()
+def spectrum_ids_storer(tmpdir):
+    return SpectrumIDStorer(
+        out_dir=f"file://{tmpdir}",
+        feast_core_url=FEAST_CORE_URL,
+        feature_table_name="spectrum_ids_info",
+    )
 
 
 @pytest.fixture()
@@ -51,10 +65,15 @@ def test_feast_table_get_or_create_table(tmpdir):
         feature_table_name="test_table_info",
         **{"column1": ValueType.DOUBLE_LIST, "column2": ValueType.STRING},
     )
-    table = feast_table.get_or_create_table("some_id", "Test_table identifier")
+    table = feast_table.get_or_create_table("Test_table identifier", "some_id")
     existing_tables = [table.name for table in feast_table.client.list_feature_tables()]
     assert isinstance(table, FeatureTable)
     assert feast_table.feature_table_name in existing_tables
+
+
+def test_spectrum_ids_storer_store_spectrum_ids(spectrum_ids_storer, cleaned_data):
+    spectrum_ids = [spectrum.metadata["spectrum_id"] for spectrum in cleaned_data]
+    spectrum_ids_storer.store(spectrum_ids)
 
 
 def test_spectrum_storer_get_data_df(spectrum_storer, cleaned_data):
@@ -83,6 +102,7 @@ def test_document_storer_get_data_df(document_storer, documents_data):
         "losses",
         "weights",
         "event_timestamp",
+        "create_timestamp",
     }
     assert not documents_df.spectrum_id.isnull().any()
     assert not documents_df.words.isnull().any()
