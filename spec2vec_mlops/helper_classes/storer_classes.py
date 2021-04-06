@@ -69,7 +69,12 @@ class SpectrumIDStorer(BaseStorer):
         )
 
     def store(self, data: List[str]):
-        data_df = self._get_data_df(data)
+        try:
+            existing_ids = self.read()
+        except StorerLoadError:
+            existing_ids = []
+        all_ids = [*existing_ids, *data]
+        data_df = self._get_data_df(all_ids)
         self._feast_table.client.ingest(self._spectrum_table, data_df)
 
     def read(self) -> List[str]:
@@ -137,6 +142,7 @@ class SpectrumStorer(BaseStorer):
             [
                 f"{self._feast_table.feature_table_name}:mz_list",
                 f"{self._feast_table.feature_table_name}:intensity_list",
+                f"{self._feast_table.feature_table_name}:losses",
             ],
             entity_source=entities_of_interest,
             output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
@@ -158,6 +164,7 @@ class SpectrumStorer(BaseStorer):
                     ),
                 },
             )
+            spectrum.losses = record["spectrum_info__losses"]
             spectra.append(spectrum)
         return spectra
 

@@ -67,7 +67,7 @@ def embeddings_stored(embedding_storer, documents_data, embeddings):
 
 def test_load_all_spectrum_ids(spectrum_ids_storer, target_spectrum_ids):
     all_spectrum_ids = spectrum_ids_storer.read()
-    assert len(all_spectrum_ids) == len(target_spectrum_ids)
+    assert all(id in all_spectrum_ids for id in target_spectrum_ids)
 
 
 def test_load_spectrum(spectrum_storer, spectrum_stored, target_spectrum_ids):

@@ -2,7 +2,7 @@ import os
 from typing import Union
 
 import pytest
-from prefect import Flow
+from prefect import Flow, unmapped
 from prefect.engine.state import State
 
 from spec2vec_mlops.tasks.clean_data import clean_data_task
@@ -10,6 +10,8 @@ from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
+from spec2vec_mlops.tasks.load_data import load_data_task
+from spec2vec_mlops.tasks.load_spectrum_ids import load_spectrum_ids_task
 
 pytestmark = pytest.mark.skipif(
     os.getenv("SKIP_SPARK_TEST", True),
@@ -29,8 +31,10 @@ def spec2vec_train_pipeline_local(
     allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> State:
     with Flow("flow") as flow:
-        clean_data_task(source_uri)
-        convert_to_documents_task(n_decimals=2)
+        raw = load_data_task(source_uri)
+        clean_data_task.map(raw)
+        all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
+        convert_to_documents_task.map(all_spectrum_ids_chunks, n_decimals=unmapped(2))
         model = train_model_task(iterations, window)
         run_id = register_model_task(
             mlflow_server_uri,
@@ -41,11 +45,11 @@ def spec2vec_train_pipeline_local(
             intensity_weighting_power,
             allowed_missing_percentage,
         )
-        make_embeddings_task(
+        make_embeddings_task.map(
             model,
             run_id,
-            intensity_weighting_power,
-            allowed_missing_percentage,
+            unmapped(intensity_weighting_power),
+            unmapped(allowed_missing_percentage),
         )
     state = flow.run()
     return state
