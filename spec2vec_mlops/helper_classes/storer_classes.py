@@ -13,6 +13,7 @@ from spec2vec import SpectrumDocument, Document
 from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.base_storer import BaseStorer
 from spec2vec_mlops.helper_classes.embedding import Embedding
+from spec2vec_mlops.helper_classes.exception import StorerLoadError
 from spec2vec_mlops.helper_classes.feast_table import FeastTableGenerator
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
@@ -35,10 +36,6 @@ string_features2types = {
     for key in KEYS
     if key.lower() not in not_string_features2types.keys()
 }
-
-
-class StorerLoadError(Exception):
-    pass
 
 
 class FeastSpectrumDocument(Document):
