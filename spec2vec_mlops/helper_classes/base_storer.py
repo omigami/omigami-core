@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import List, Union, Optional
+from typing import List, Union
 
 import pandas as pd
 from feast.pyspark.abc import RetrievalJob
 from matchms import Spectrum
 from spec2vec import SpectrumDocument
 
-from spec2vec_mlops.helper_classes.embedding import Embedding
+from spec2vec_mlops.entities.embedding import Embedding
 
 
 class BaseStorer(ABC):

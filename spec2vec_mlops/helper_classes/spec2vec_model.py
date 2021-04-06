@@ -4,10 +4,10 @@ from gensim.models import Word2Vec
 from matchms import calculate_scores
 from mlflow.pyfunc import PythonModel
 
+from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
 from spec2vec_mlops.helper_classes.document_converter import DocumentConverter
-from spec2vec_mlops.helper_classes.embedding import Embedding
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 

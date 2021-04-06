@@ -4,10 +4,9 @@ from typing import Union, List
 from gensim.models import Word2Vec
 from prefect import task
 
-from spec2vec_mlops.helper_classes.embedding import Embedding
+from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.storer_classes import (
-    SpectrumIDStorer,
     DocumentStorer,
     EmbeddingStorer,
 )
