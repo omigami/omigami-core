@@ -19,7 +19,7 @@ def test_check_n_decimals_fail(documents_data):
 
 
 def test_make_embeddings(documents_data, word2vec_model):
-    em = EmbeddingMaker()
+    em = EmbeddingMaker(n_decimals=1)
 
     res = em.make_embedding(
         model=word2vec_model,

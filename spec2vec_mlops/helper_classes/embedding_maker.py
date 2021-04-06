@@ -12,20 +12,21 @@ class EmbeddingMaker:
     def __init__(self, n_decimals: int = 2):
         self.n_decimals = n_decimals
 
-    @staticmethod
     def make_embedding(
+        self,
         model: Word2Vec,
         document: SpectrumDocument,
         intensity_weighting_power: Union[float, int] = None,
         allowed_missing_percentage: Union[float, int] = None,
     ) -> Embedding:
+        self._check_n_decimals(document)
         vector = calc_vector(
             model=model,
             document=document,
             intensity_weighting_power=intensity_weighting_power,
             allowed_missing_percentage=allowed_missing_percentage,
         )
-        return Embedding(vector, document.metadata["spectrum_id"])
+        return Embedding(vector, document.metadata["spectrum_id"], self.n_decimals)
 
     def _check_n_decimals(
         self,
