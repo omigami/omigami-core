@@ -1,7 +1,7 @@
 import os
 import time
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -12,6 +12,7 @@ from spec2vec import SpectrumDocument, Document
 
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
+from spec2vec_mlops.entities.feast_spectrum_document import FeastSpectrumDocument
 from spec2vec_mlops.helper_classes.base_storer import BaseStorer
 from spec2vec_mlops.helper_classes.exception import StorerLoadError
 from spec2vec_mlops.helper_classes.feast_table import FeastTableGenerator
@@ -36,22 +37,6 @@ string_features2types = {
     for key in KEYS
     if key.lower() not in not_string_features2types.keys()
 }
-
-
-class FeastSpectrumDocument(Document):
-    """Document as output from data stored in Feast."""
-
-    def __init__(self, feast_data: Dict[str, List[Any]]):
-        super().__init__(obj=feast_data)
-        self.weights = feast_data["weights"]
-        self.losses = feast_data["losses"]
-        self.metadata = feast_data["metadata"]
-        self.n_decimals = feast_data["n_decimals"]
-
-    def _make_words(self):
-        """Create word from Feast data."""
-        self.words = self._obj["words"]
-        return self
 
 
 class SpectrumIDStorer(BaseStorer):

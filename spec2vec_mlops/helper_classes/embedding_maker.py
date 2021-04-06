@@ -4,7 +4,7 @@ from gensim.models import Word2Vec
 from spec2vec.vector_operations import calc_vector
 
 from spec2vec_mlops.entities.embedding import Embedding
-from spec2vec_mlops.helper_classes.storer_classes import FeastSpectrumDocument
+from spec2vec_mlops.entities.feast_spectrum_document import FeastSpectrumDocument
 from spec2vec_mlops.helper_classes.exception import EmbeddingMakerError
 
 
