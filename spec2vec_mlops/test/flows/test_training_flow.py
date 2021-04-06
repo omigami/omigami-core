@@ -31,8 +31,8 @@ def spec2vec_train_pipeline_local(
     allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> State:
     with Flow("flow") as flow:
-        raw = load_data_task(source_uri)
-        clean_data_task.map(raw)
+        raw_chunks = load_data_task(source_uri, chunksize=1000)
+        clean_data_task.map(raw_chunks)
         all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
         convert_to_documents_task.map(all_spectrum_ids_chunks, n_decimals=unmapped(2))
         model = train_model_task(iterations, window)

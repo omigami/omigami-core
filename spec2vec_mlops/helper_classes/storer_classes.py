@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 from typing import List, Dict, Any
 
+import numpy as np
 import pandas as pd
 from feast import ValueType
 from feast.pyspark.abc import RetrievalJob
@@ -48,6 +49,7 @@ class FeastSpectrumDocument(Document):
         self.weights = feast_data["weights"]
         self.losses = feast_data["losses"]
         self.metadata = feast_data["metadata"]
+        self.n_decimals = feast_data["n_decimals"]
 
     def _make_words(self):
         """Create word from Feast data."""
@@ -164,7 +166,10 @@ class SpectrumStorer(BaseStorer):
                     ),
                 },
             )
-            spectrum.losses = record["spectrum_info__losses"]
+            if record["spectrum_info__losses"] == [np.inf]:
+                spectrum.losses = None
+            else:
+                spectrum.losses = record["spectrum_info__losses"]
             spectra.append(spectrum)
         return spectra
 
@@ -175,7 +180,8 @@ class SpectrumStorer(BaseStorer):
                     "spectrum_id": spectrum.metadata["spectrum_id"],
                     "mz_list": spectrum.peaks.mz,
                     "intensity_list": spectrum.peaks.intensities,
-                    "losses": spectrum.losses,
+                    "losses": spectrum.losses
+                    or [np.inf],  # need this to maintain the correct type in Spark
                     **{
                         key: spectrum.metadata[key]
                         for key in self._feast_table.features2types.keys()
@@ -212,6 +218,7 @@ class DocumentStorer(BaseStorer):
                 "words": ValueType.STRING_LIST,
                 "losses": ValueType.STRING_LIST,
                 "weights": ValueType.DOUBLE_LIST,
+                "n_decimals": ValueType.INT64,
             },
         )
         self._document_table = self._feast_table.get_or_create_table(
@@ -234,6 +241,7 @@ class DocumentStorer(BaseStorer):
                 f"{self._feast_table.feature_table_name}:words",
                 f"{self._feast_table.feature_table_name}:losses",
                 f"{self._feast_table.feature_table_name}:weights",
+                f"{self._feast_table.feature_table_name}:n_decimals",
             ],
             entity_source=entities_of_interest,
             output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
@@ -250,6 +258,7 @@ class DocumentStorer(BaseStorer):
                     "words": record["document_info__words"],
                     "losses": record["document_info__losses"],
                     "weights": record["document_info__weights"],
+                    "n_decimals": record["document_info__n_decimals"],
                     "metadata": {"spectrum_id": spectrum_id},
                 }
             )
@@ -268,6 +277,7 @@ class DocumentStorer(BaseStorer):
                         document.words
                     ),  # needed to maintain the correct type in Spark
                     "weights": document.weights,
+                    "n_decimals": document.n_decimals,
                     "event_timestamp": self._convert_create_time(
                         document.metadata.get("create_time")
                     ),

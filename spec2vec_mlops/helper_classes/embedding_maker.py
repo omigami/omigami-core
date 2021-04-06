@@ -30,7 +30,7 @@ class EmbeddingMaker:
 
     def _check_n_decimals(
         self,
-        document: SpectrumDocument,
+        document: FeastSpectrumDocument,
     ):
         if self.n_decimals != document.n_decimals:
             raise EmbeddingMakerError(
