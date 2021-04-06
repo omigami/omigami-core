@@ -46,7 +46,9 @@ seldon_deployment = """
 """
 
 CUSTOM_RESOURCE_INFO = dict(
-    group="machinelearning.seldon.io", version="v1alpha2", plural="seldondeployments",
+    group="machinelearning.seldon.io",
+    version="v1alpha2",
+    plural="seldondeployments",
 )
 
 
@@ -67,14 +69,18 @@ def deploy_model_task(run_id: str, namespace: str = "default"):
 
     try:
         resp = custom_api.create_namespaced_custom_object(
-            **CUSTOM_RESOURCE_INFO, namespace=namespace, body=dep,
+            **CUSTOM_RESOURCE_INFO,
+            namespace=namespace,
+            body=dep,
         )
 
         logger.info("Deployment created. status='%s'" % resp["status"]["state"])
     except:
         logger.info("Updating existing model")
         existent_deployment = custom_api.get_namespaced_custom_object(
-            **CUSTOM_RESOURCE_INFO, namespace=namespace, name=dep["metadata"]["name"],
+            **CUSTOM_RESOURCE_INFO,
+            namespace=namespace,
+            name=dep["metadata"]["name"],
         )
         existent_deployment["spec"]["predictors"][0]["graph"]["modelUri"] = model_uri
 
