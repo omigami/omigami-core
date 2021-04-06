@@ -2,17 +2,19 @@ import logging
 from typing import Union
 
 import click
-from prefect import Flow, Parameter, Client
+from prefect import Flow, Parameter, Client, unmapped
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.clean_data import clean_data_task
-from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
-from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
+from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
+from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
+from spec2vec_mlops.tasks.load_data import load_data_task
+from spec2vec_mlops.tasks.load_spectrum_ids import load_spectrum_ids_task
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -29,7 +31,7 @@ MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-spec2vec-store-embeddings",
+    project_name: str = "spec2vec-mlops-project-spec2vec-use-feast-1",
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
@@ -77,11 +79,15 @@ def spec2vec_train_pipeline_distributed(
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
-        clean_data_task(uri)
+        raw_chunks = load_data_task(uri, chunksize=1000)
+        logger.info("Data loading is complete.")
+
+        clean_data_task.map(raw_chunks)
         logger.info("Data cleaning is complete.")
 
-        convert_to_documents_task(n_decimals=2)
-        logger.info("Document convertion is complete.")
+        all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
+        convert_to_documents_task.map(all_spectrum_ids_chunks, n_decimals=unmapped(2))
+        logger.info("Document conversion is complete.")
 
         model = train_model_task(iterations, window)
         run_id = register_model_task(
@@ -92,14 +98,18 @@ def spec2vec_train_pipeline_distributed(
             n_decimals,
             intensity_weighting_power,
             allowed_missing_percentage,
-            conda_env_path,
         )
-        make_embeddings_task(
-            model,
-            run_id,
-            intensity_weighting_power,
-            allowed_missing_percentage,
+        logger.info("Model training is complete.")
+
+        make_embeddings_task.map(
+            unmapped(model),
+            all_spectrum_ids_chunks,
+            unmapped(run_id),
+            unmapped(n_decimals),
+            unmapped(intensity_weighting_power),
+            unmapped(allowed_missing_percentage),
         )
+        logger.info("Saving embedding is complete.")
     client = Client(api_server=api_server)
     client.create_project(project_name)
     training_flow_id = client.register(
