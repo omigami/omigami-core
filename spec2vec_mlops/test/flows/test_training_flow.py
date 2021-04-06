@@ -46,8 +46,9 @@ def spec2vec_train_pipeline_local(
             allowed_missing_percentage,
         )
         make_embeddings_task.map(
-            model,
-            run_id,
+            unmapped(model),
+            all_spectrum_ids_chunks,
+            unmapped(run_id),
             unmapped(n_decimals),
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
