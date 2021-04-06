@@ -33,7 +33,7 @@ MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-spec2vec-store-embeddings",
+    project_name: str = "spec2vec-mlops-project-spec2vec-check-n-decimals",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/feast",
     feast_core_url: str = FEAST_CORE_URL_REMOTE,
     n_decimals: int = 2,
@@ -70,7 +70,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b3b114d",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f7487d6",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),
@@ -84,7 +84,7 @@ def spec2vec_train_pipeline_distributed(
         cleaned = clean_data_task.map(raw)
         logger.info("Data cleaning is complete.")
         store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
-        documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
+        documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(n_decimals))
         store_documents_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(documents, iterations, window)
         run_id = register_model_task(
@@ -100,6 +100,7 @@ def spec2vec_train_pipeline_distributed(
         embeddings = make_embeddings_task.map(
             unmapped(model),
             documents,
+            unmapped(n_decimals),
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
         )
