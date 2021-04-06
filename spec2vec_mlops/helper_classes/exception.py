@@ -1,0 +1,2 @@
+class EmbeddingMakerError(Exception):
+    pass

@@ -27,7 +27,7 @@ class Model(PythonModel):
         self.data_loader = DataLoader()
         self.data_cleaner = DataCleaner()
         self.document_converter = DocumentConverter()
-        self.embedding_maker = EmbeddingMaker()
+        self.embedding_maker = EmbeddingMaker(self.n_decimals)
 
     def predict(self, context, model_input: str) -> List[Dict]:
         embeddings = self._pre_process_data(model_input)
