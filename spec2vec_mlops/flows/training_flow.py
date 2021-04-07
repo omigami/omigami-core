@@ -2,12 +2,14 @@ import logging
 from typing import Union
 
 import click
-from prefect import Flow, Parameter, Client, unmapped
+from prefect import Flow, Parameter, Client, unmapped, case
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
 from spec2vec_mlops import config
+
+from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.deploy_model import deploy_model_task
 from spec2vec_mlops.tasks.register_model import register_model_task
@@ -69,7 +71,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops_spark-SNAPSHOT.7984a6",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.8490f5",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
@@ -90,25 +92,29 @@ def spec2vec_train_pipeline_distributed(
         raw_chunks = load_data_task(uri, chunksize=1000)
         logger.info("Data loading is complete.")
 
-        clean_data_task.map(raw_chunks)
+        spectrum_ids_saved = clean_data_task.map(raw_chunks)
         logger.info("Data cleaning is complete.")
 
-        all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
-        convert_to_documents_task.map(all_spectrum_ids_chunks, n_decimals=unmapped(2))
-        logger.info("Document conversion is complete.")
+        with case(check_condition(spectrum_ids_saved), True):
+            all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
+            all_spectrum_ids_chunks = convert_to_documents_task.map(
+                all_spectrum_ids_chunks, n_decimals=unmapped(2)
+            )
+            logger.info("Document conversion is complete.")
 
-        model = train_model_task(iterations, window)
-        run_id = register_model_task(
-            mlflow_server_uri,
-            model,
-            project_name,
-            save_model_path,
-            n_decimals,
-            intensity_weighting_power,
-            allowed_missing_percentage,
-            conda_env_path,
-        )
-        logger.info("Model training is complete.")
+        with case(check_condition(all_spectrum_ids_chunks), True):
+            model = train_model_task(iterations, window)
+            run_id = register_model_task(
+                mlflow_server_uri,
+                model,
+                project_name,
+                save_model_path,
+                n_decimals,
+                intensity_weighting_power,
+                allowed_missing_percentage,
+                conda_env_path,
+            )
+            logger.info("Model training is complete.")
 
         make_embeddings_task.map(
             unmapped(model),
