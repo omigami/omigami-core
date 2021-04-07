@@ -3,8 +3,6 @@ from pathlib import Path
 import pytest
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
 
-from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
-
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -21,7 +19,7 @@ def pytest_configure(config):
         setattr(config.option, "markexpr", "not longrun")
 
 
-@pytest.fixture
+@pytest.fixture()
 def assets_dir():
     return Path(__file__).parents[0] / "assets"
 
@@ -38,7 +36,7 @@ def loaded_data(gnps_small_json):
     return dl.load_gnps_json(gnps_small_json)
 
 
-@pytest.fixture
+@pytest.fixture()
 def cleaned_data(assets_dir):
     path = str(assets_dir / "SMALL_GNPS_cleaned.pickle")
     with open(path, "rb") as handle:
@@ -46,7 +44,7 @@ def cleaned_data(assets_dir):
     return cleaned_data
 
 
-@pytest.fixture
+@pytest.fixture()
 def documents_data(assets_dir):
     path = str(assets_dir / "SMALL_GNPS_as_documents.pickle")
     with open(path, "rb") as handle:
@@ -54,7 +52,7 @@ def documents_data(assets_dir):
     return documents_data
 
 
-@pytest.fixture
+@pytest.fixture()
 def word2vec_model(assets_dir):
     path = str(assets_dir / "model.pickle")
     with open(path, "rb") as handle:
@@ -63,16 +61,8 @@ def word2vec_model(assets_dir):
 
 
 @pytest.fixture()
-def embeddings(documents_data, word2vec_model):
-    em = EmbeddingMaker()
-    res = []
-    for document in documents_data:
-        res.append(
-            em.make_embedding(
-                model=word2vec_model,
-                document=document,
-                intensity_weighting_power=0.5,
-                allowed_missing_percentage=5.0,
-            )
-        )
-    return res
+def embeddings(assets_dir):
+    path = str(assets_dir / "embeddings.pickle")
+    with open(path, "rb") as handle:
+        embeddings = pickle.load(handle)
+    return embeddings

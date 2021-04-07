@@ -41,7 +41,7 @@ def model(word2vec_model):
 def test_pre_process_data(word2vec_model, gnps_small_json, model, documents_data):
     embeddings_from_model = model._pre_process_data(gnps_small_json)
 
-    em = EmbeddingMaker()
+    em = EmbeddingMaker(n_decimals=1)
     embedding_from_flow = em.make_embedding(
         model=word2vec_model,
         document=documents_data[0],

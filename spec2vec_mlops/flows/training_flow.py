@@ -16,6 +16,7 @@ from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
+from spec2vec_mlops.tasks.store_embeddings import store_embeddings_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 
 logging.basicConfig(level=logging.DEBUG)
@@ -84,15 +85,9 @@ def spec2vec_train_pipeline_distributed(
         cleaned = clean_data_task.map(raw)
         logger.info("Data cleaning is complete.")
         store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
-        documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(2))
+        documents = convert_to_documents_task.map(cleaned, n_decimals=unmapped(n_decimals))
         store_documents_task(documents, feast_source_dir, feast_core_url)
         model = train_model_task(documents, iterations, window)
-        embeddings = make_embeddings_task.map(
-            unmapped(model),
-            documents,
-            unmapped(intensity_weighting_power),
-            unmapped(allowed_missing_percentage),
-        )
         run_id = register_model_task(
             mlflow_server_uri,
             model,
@@ -103,6 +98,14 @@ def spec2vec_train_pipeline_distributed(
             allowed_missing_percentage,
             conda_env_path,
         )
+        embeddings = make_embeddings_task.map(
+            unmapped(model),
+            documents,
+            unmapped(n_decimals),
+            unmapped(intensity_weighting_power),
+            unmapped(allowed_missing_percentage),
+        )
+        store_embeddings_task(embeddings, run_id, feast_source_dir, feast_core_url)
         deploy_model_task(run_id, "seldon")
     client = Client(api_server=api_server)
     client.create_project(project_name)
