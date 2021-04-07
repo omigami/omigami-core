@@ -98,6 +98,7 @@ def spec2vec_train_pipeline_distributed(
             n_decimals,
             intensity_weighting_power,
             allowed_missing_percentage,
+            conda_env_path,
         )
         logger.info("Model training is complete.")
 
