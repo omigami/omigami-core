@@ -3,7 +3,7 @@ import pytest
 from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
 
-KEYS = config["gnps_json"]["necessary_keys"].get(list)
+KEYS = config["gnps_json"]["necessary_keys"]
 
 
 @pytest.mark.longrun

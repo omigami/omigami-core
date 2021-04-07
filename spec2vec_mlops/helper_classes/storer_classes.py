@@ -18,7 +18,7 @@ from spec2vec_mlops.helper_classes.exception import StorerLoadError
 from spec2vec_mlops.helper_classes.feast_table import FeastTableGenerator
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-KEYS = config["cleaned_data"]["necessary_keys"].get(list)
+KEYS = config["cleaned_data"]["necessary_keys"]
 FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION = os.getenv(
     "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION",
     config["feast"]["spark"]["output_location"].get(str),
