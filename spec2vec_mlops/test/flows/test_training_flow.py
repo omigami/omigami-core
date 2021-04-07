@@ -2,9 +2,10 @@ import os
 from typing import Union
 
 import pytest
-from prefect import Flow, unmapped
+from prefect import Flow, unmapped, case
 from prefect.engine.state import State
 
+from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
@@ -32,19 +33,26 @@ def spec2vec_train_pipeline_local(
 ) -> State:
     with Flow("flow") as flow:
         raw_chunks = load_data_task(source_uri, chunksize=1000)
-        clean_data_task.map(raw_chunks)
-        all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
-        convert_to_documents_task.map(all_spectrum_ids_chunks, n_decimals=unmapped(2))
-        model = train_model_task(iterations, window)
-        run_id = register_model_task(
-            mlflow_server_uri,
-            model,
-            experiment_name,
-            save_model_path,
-            n_decimals,
-            intensity_weighting_power,
-            allowed_missing_percentage,
-        )
+        spectrum_ids_saved = clean_data_task.map(raw_chunks)
+
+        with case(check_condition(spectrum_ids_saved), True):
+            all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
+            all_spectrum_ids_chunks = convert_to_documents_task.map(
+                all_spectrum_ids_chunks, n_decimals=unmapped(2)
+            )
+
+        with case(check_condition(all_spectrum_ids_chunks), True):
+            model = train_model_task(iterations, window)
+            run_id = register_model_task(
+                mlflow_server_uri,
+                model,
+                experiment_name,
+                save_model_path,
+                n_decimals,
+                intensity_weighting_power,
+                allowed_missing_percentage,
+            )
+
         make_embeddings_task.map(
             unmapped(model),
             all_spectrum_ids_chunks,
