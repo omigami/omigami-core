@@ -45,6 +45,7 @@ def spec2vec_train_pipeline_distributed(
     window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
+    seldon_deployment_path: str = "spec2vec_mlops/seldon_deployment.yaml",
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -58,11 +59,14 @@ def spec2vec_train_pipeline_distributed(
     feast_core_url: url where to connect to Feast server
     n_decimals: peak positions are converted to strings with n_decimal decimals
     save_model_path: path to save the trained model with MLFlow to
+    mlflow_server_uri: url of MLFlow server
+    conda_env_path: path to the conda environment requirements
     iterations: number of training iterations.
     window: window size for context words
     intensity_weighting_power: exponent used to scale intensity weights for each word
     allowed_missing_percentage: number of what percentage of a spectrum is allowed
         to be unknown to the model
+    seldon_deployment_path: path to the seldon deployment configuration file
 
     Returns
     -------
@@ -108,7 +112,7 @@ def spec2vec_train_pipeline_distributed(
             unmapped(allowed_missing_percentage),
         )
         store_embeddings_task(embeddings, run_id, feast_source_dir, feast_core_url)
-        deploy_model_task(run_id, "seldon")
+        deploy_model_task(run_id, seldon_deployment_path, "seldon")
     client = Client(api_server=api_server)
     client.create_project(project_name)
     training_flow_id = client.register(
