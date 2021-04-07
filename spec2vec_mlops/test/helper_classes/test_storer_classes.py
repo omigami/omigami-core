@@ -10,7 +10,7 @@ from spec2vec_mlops.helper_classes.storer_classes import (
     SpectrumStorer,
 )
 
-FEAST_CORE_URL = config["feast"]["url"]["local"].get(str)
+FEAST_CORE_URL = config["feast"]["url"]["local"]
 
 
 pytestmark = pytest.mark.skip("It can only be run if the Feast docker-compose is up")

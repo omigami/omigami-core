@@ -11,7 +11,7 @@ from spec2vec_mlops.helper_classes.base_storer import BaseStorer
 from spec2vec_mlops.helper_classes.embedding import Embedding
 from spec2vec_mlops.helper_classes.feast_table import FeastTable
 
-KEYS = config["cleaned_data"]["necessary_keys"].get(list)
+KEYS = config["cleaned_data"]["necessary_keys"]
 
 not_string_features2types = {
     "mz_list": ValueType.DOUBLE_LIST,

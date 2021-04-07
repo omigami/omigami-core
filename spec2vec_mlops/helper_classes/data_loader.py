@@ -6,7 +6,7 @@ import ijson
 
 from spec2vec_mlops import config
 
-KEYS = config["gnps_json"]["necessary_keys"].get(list)
+KEYS = config["gnps_json"]["necessary_keys"]
 
 
 logging.basicConfig(level=logging.DEBUG)
