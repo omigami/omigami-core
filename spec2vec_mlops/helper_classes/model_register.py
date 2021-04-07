@@ -35,7 +35,7 @@ class ModelRegister:
                         "spec2vec_mlops/helper_classes/data_loader.py",
                         "spec2vec_mlops/helper_classes/data_cleaner.py",
                         "spec2vec_mlops/helper_classes/document_converter.py",
-                        "spec2vec_mlops/helper_classes/embedding.py",
+                        "spec2vec_mlops/entities/embedding.py",
                         "spec2vec_mlops/helper_classes/embedding_maker.py",
                         "spec2vec_mlops/helper_classes/spec2vec_embeddings.py",
                     ],

@@ -90,6 +90,7 @@ def test_document_storer_get_data_df(document_storer, documents_data):
         "weights",
         "event_timestamp",
         "created_timestamp",
+        "n_decimals",
     }
     assert not documents_df.spectrum_id.isnull().any()
     assert not documents_df.words.isnull().any()
