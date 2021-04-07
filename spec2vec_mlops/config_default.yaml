@@ -66,3 +66,9 @@ prefect_flow_registration:
 mlflow:
   url:
     remote: "http://mlflow.mlflow:5000"
+k8s:
+  custom_seldon_resource:
+    group: "machinelearning.seldon.io"
+    version: "v1alpha2"
+    plural: "seldondeployments"
+    namespace: "seldon"
