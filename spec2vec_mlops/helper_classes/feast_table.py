@@ -1,4 +1,5 @@
 import os
+
 from feast import ValueType, Client, FeatureTable, Entity, Feature, FileSource
 from feast.data_format import ParquetFormat
 
@@ -6,11 +7,11 @@ from spec2vec_mlops import config
 
 FEAST_CORE_URL = os.getenv(
     "FEAST_CORE_URL",
-    config["feast"]["url"]["local"].get(str),
+    config["feast"]["url"]["local"],
 )
 FEAST_BASE_SOURCE_LOCATION = os.getenv(
     "FEAST_BASE_SOURCE_LOCATION",
-    config["feast"]["spark"]["base_source_location"].get(str),
+    config["feast"]["spark"]["base_source_location"],
 )
 
 
