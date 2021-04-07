@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Union
 
 import pytest
@@ -17,6 +18,8 @@ pytestmark = pytest.mark.skipif(
     os.getenv("SKIP_SPARK_TEST", True),
     reason="It can only be run if the Feast docker-compose is up and with Spark",
 )
+
+os.chdir(Path(__file__).parents[3])
 
 
 def spec2vec_train_pipeline_local(

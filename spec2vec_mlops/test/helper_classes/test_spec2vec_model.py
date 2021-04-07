@@ -38,8 +38,8 @@ def model(word2vec_model):
     )
 
 
-def test_pre_process_data(word2vec_model, gnps_small_json, model, documents_data):
-    embeddings_from_model = model._pre_process_data(gnps_small_json)
+def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
+    embeddings_from_model = model._pre_process_data(loaded_data)
 
     em = EmbeddingMaker(n_decimals=1)
     embedding_from_flow = em.make_embedding(
@@ -58,10 +58,10 @@ def test_get_best_matches(model, embeddings):
     )
 
 
-def test_predict_from_saved_model(saved_model_run_id, gnps_small_json):
+def test_predict_from_saved_model(saved_model_run_id, loaded_data):
     run = mlflow.get_run(saved_model_run_id)
     modelpath = f"{run.info.artifact_uri}/model/"
     model = mlflow.pyfunc.load_model(modelpath)
-    best_matches = model.predict(gnps_small_json)
+    best_matches = model.predict(loaded_data)
     for spectrum in best_matches:
         assert spectrum["best_match_id"] is not None
