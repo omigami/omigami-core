@@ -87,5 +87,5 @@ def test_load_documents(document_storer, documents_stored, target_spectrum_ids):
 
 
 def test_load_embeddings(embedding_storer, embeddings_stored, target_spectrum_ids):
-    embeddings = embedding_storer.read(target_spectrum_ids)
+    embeddings = embedding_storer.read(target_spectrum_ids, "1")
     assert len(embeddings) == len(target_spectrum_ids)

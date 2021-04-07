@@ -31,7 +31,7 @@ MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-spec2vec-use-feast-1",
+    project_name: str = "spec2vec-mlops-project-spec2vec-use-feast-2",
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
@@ -66,12 +66,17 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.30b68c1",
+            image="drtools/prefect:spec2vec_mlops_spark-SNAPSHOT.7984a6",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
                 "FEAST_BASE_SOURCE_LOCATION": "s3://dr-prefect/spec2vec-training-flow/feast",
                 "FEAST_CORE_URL": FEAST_CORE_URL_REMOTE,
+                "FEAST_SPARK_STAGING_LOCATION": "file:///tmp/staging",
+                "FEAST_SPARK_LAUNCHER": "standalone",
+                "FEAST_HISTORICAL_FEATURE_OUTPUT_FORMAT": "parquet",
+                "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION": "/tmp/output.parquet",
+                "FEAST_SPARK_HOME": "/opt/conda/lib/python3.7/site-packages/pyspark",
             },
         ),
         "storage": S3("dr-prefect"),
