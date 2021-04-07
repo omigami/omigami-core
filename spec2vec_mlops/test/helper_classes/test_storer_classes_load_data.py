@@ -61,7 +61,7 @@ def documents_stored(document_storer, documents_data):
 
 
 @pytest.fixture()
-def embeddings_stored(embedding_storer, documents_data, embeddings):
+def embeddings_stored(embedding_storer, embeddings):
     embedding_storer.store(embeddings)
 
 
