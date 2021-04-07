@@ -29,15 +29,14 @@ class Model(PythonModel):
         self.document_converter = DocumentConverter()
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
 
-    def predict(self, context, model_input: str) -> List[Dict]:
+    def predict(self, context, model_input: List[Dict]) -> List[Dict]:
         embeddings = self._pre_process_data(model_input)
         # get library embeddings from feast
         # for now going to use the calculated ones
         best_matches = self._get_best_matches(embeddings, embeddings)
         return best_matches
 
-    def _pre_process_data(self, model_input: str):
-        # loaded_data = self.data_loader.load_gnps_json(model_input)
+    def _pre_process_data(self, model_input: List[Dict]) -> List[Embedding]:
         cleaned_data = [self.data_cleaner.clean_data(data) for data in model_input]
         documents = [
             self.document_converter.convert_to_document(spectrum, self.n_decimals)
