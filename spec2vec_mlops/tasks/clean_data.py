@@ -19,5 +19,5 @@ def clean_data_task(spectra_data_chunks: List[Dict]) -> List[str]:
     storer = SpectrumStorer("spectrum_info")
     spectrum_ids = storer.store(cleaned_data)
     ids_storer = SpectrumIDStorer("spectrum_ids_info")
-    all_spectrum_ids = ids_storer.store(spectrum_ids)
-    return all_spectrum_ids
+    ids_storer.store(spectrum_ids)
+    return spectrum_ids

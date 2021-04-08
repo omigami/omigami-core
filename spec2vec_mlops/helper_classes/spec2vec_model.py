@@ -71,7 +71,7 @@ class Model(PythonModel):
             best_match = scores.scores_by_query(query)[0]
             best_matches.append(
                 {
-                    "spectrum_id": i,
+                    "spectrum_number": i,
                     "best_match_id": best_match[0].spectrum_id,
                     "score": best_match[1],
                 }

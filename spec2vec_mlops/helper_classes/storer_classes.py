@@ -57,7 +57,8 @@ class SpectrumIDStorer(BaseStorer):
             existing_ids = self.read()
         except StorerLoadError:
             existing_ids = []
-        all_ids = [*existing_ids, *data]
+        new_ids = list(set(data).difference(existing_ids))
+        all_ids = [*existing_ids, *new_ids]
         data_df = self._get_data_df(all_ids)
         self._feast_table.client.ingest(self._spectrum_table, data_df)
 
@@ -298,17 +299,17 @@ class EmbeddingStorer(BaseStorer):
         df = self._get_data_df(data)
         self._feast_table.client.ingest(self._embedding_table, df)
 
-    def read(self, ids: List[str]) -> List[Embedding]:
+    def read(self, ids: List[str], run_id: str) -> List[Embedding]:
         entities_of_interest = pd.DataFrame(
             {
                 "spectrum_id": ids,
+                "run_id": [run_id] * len(ids),
                 "event_timestamp": [datetime.now()] * len(ids),
             }
         )
         job = self._feast_table.client.get_historical_features(
             [
                 f"{self._feast_table.feature_table_name}:embedding",
-                f"{self._feast_table.feature_table_name}:run_id",
             ],
             entity_source=entities_of_interest,
             output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",

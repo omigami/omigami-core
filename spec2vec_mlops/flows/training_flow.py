@@ -2,15 +2,17 @@ import logging
 from typing import Union
 
 import click
-from prefect import Flow, Parameter, Client, unmapped
+from prefect import Flow, Parameter, Client, unmapped, case
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
 from spec2vec_mlops import config
+
+from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
-from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.deploy_model import deploy_model_task
+from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.train_model import train_model_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
@@ -51,8 +53,6 @@ def spec2vec_train_pipeline_distributed(
     api_server: api_server to instantiate Client object
         when set to API_SERVER_LOCAL port-forwarding is required.
     project_name: name to register project in Prefect
-    feast_source_dir: location to save the file source of Feast
-    feast_core_url: url where to connect to Feast server
     n_decimals: peak positions are converted to strings with n_decimal decimals
     save_model_path: path to save the trained model with MLFlow to
     mlflow_server_uri: url of MLFlow server
@@ -77,6 +77,11 @@ def spec2vec_train_pipeline_distributed(
             env={
                 "FEAST_BASE_SOURCE_LOCATION": "s3://dr-prefect/spec2vec-training-flow/feast",
                 "FEAST_CORE_URL": FEAST_CORE_URL_REMOTE,
+                "FEAST_SPARK_STAGING_LOCATION": "file:///tmp/staging",
+                "FEAST_SPARK_LAUNCHER": "standalone",
+                "FEAST_HISTORICAL_FEATURE_OUTPUT_FORMAT": "parquet",
+                "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION": "/tmp/output.parquet",
+                "FEAST_SPARK_HOME": "/opt/conda/lib/python3.7/site-packages/pyspark",
             },
         ),
         "storage": S3("dr-prefect"),
@@ -87,15 +92,19 @@ def spec2vec_train_pipeline_distributed(
         raw_chunks = load_data_task(uri, chunksize=1000)
         logger.info("Data loading is complete.")
 
-        clean_data_task.map(raw_chunks)
+        spectrum_ids_saved = clean_data_task.map(raw_chunks)
         logger.info("Data cleaning is complete.")
 
-        all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
-        convert_to_documents_task.map(all_spectrum_ids_chunks, n_decimals=unmapped(2))
-        logger.info("Document conversion is complete.")
+        with case(check_condition(spectrum_ids_saved), True):
+            all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
+            all_spectrum_ids_chunks = convert_to_documents_task.map(
+                all_spectrum_ids_chunks, n_decimals=unmapped(2)
+            )
+            logger.info("Document conversion is complete.")
 
-        model = train_model_task(iterations, window)
-        run_id = register_model_task(
+        with case(check_condition(all_spectrum_ids_chunks), True):
+            model = train_model_task(iterations, window)
+            run_id = register_model_task(
             mlflow_server_uri,
             model,
             project_name,

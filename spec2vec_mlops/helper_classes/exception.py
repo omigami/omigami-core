@@ -4,3 +4,7 @@ class EmbeddingMakerError(Exception):
 
 class StorerLoadError(Exception):
     pass
+
+
+class DeployingError(Exception):
+    pass

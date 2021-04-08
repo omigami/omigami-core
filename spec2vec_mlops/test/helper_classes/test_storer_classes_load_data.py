@@ -61,13 +61,19 @@ def documents_stored(document_storer, documents_data):
 
 
 @pytest.fixture()
-def embeddings_stored(embedding_storer, documents_data, embeddings):
+def embeddings_stored(embedding_storer, embeddings):
     embedding_storer.store(embeddings)
 
 
 def test_load_all_spectrum_ids(spectrum_ids_storer, target_spectrum_ids):
     all_spectrum_ids = spectrum_ids_storer.read()
     assert all(id in all_spectrum_ids for id in target_spectrum_ids)
+
+    # ingest it again and assert that there is no duplicate
+    target_id = target_spectrum_ids[0]
+    spectrum_ids_storer.store([target_id])
+    updated_spectrum_ids = spectrum_ids_storer.read()
+    assert list(updated_spectrum_ids).count(target_id) == 1
 
 
 def test_load_spectrum(spectrum_storer, spectrum_stored, target_spectrum_ids):
@@ -81,5 +87,5 @@ def test_load_documents(document_storer, documents_stored, target_spectrum_ids):
 
 
 def test_load_embeddings(embedding_storer, embeddings_stored, target_spectrum_ids):
-    embeddings = embedding_storer.read(target_spectrum_ids)
+    embeddings = embedding_storer.read(target_spectrum_ids, "1")
     assert len(embeddings) == len(target_spectrum_ids)
