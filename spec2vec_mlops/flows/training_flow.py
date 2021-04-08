@@ -8,16 +8,15 @@ from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
 from spec2vec_mlops import config
-
 from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
-from spec2vec_mlops.tasks.deploy_model import deploy_model_task
-from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
-from spec2vec_mlops.tasks.train_model import train_model_task
-from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
+from spec2vec_mlops.tasks.deploy_model import deploy_model_task
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.load_spectrum_ids import load_spectrum_ids_task
+from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
+from spec2vec_mlops.tasks.register_model import register_model_task
+from spec2vec_mlops.tasks.train_model import train_model_task
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -105,15 +104,15 @@ def spec2vec_train_pipeline_distributed(
         with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)
             run_id = register_model_task(
-            mlflow_server_uri,
-            model,
-            project_name,
-            save_model_path,
-            n_decimals,
-            intensity_weighting_power,
-            allowed_missing_percentage,
-            conda_env_path,
-        )
+                mlflow_server_uri,
+                model,
+                project_name,
+                save_model_path,
+                n_decimals,
+                intensity_weighting_power,
+                allowed_missing_percentage,
+                conda_env_path,
+            )
         logger.info("Model training is complete.")
 
         make_embeddings_task.map(
