@@ -71,11 +71,11 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.8490f5",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.32e7d6b",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
-                "FEAST_BASE_SOURCE_LOCATION": "s3://dr-prefect/spec2vec-training-flow/feast",
+                "FEAST_BASE_SOURCE_LOCATION": "s3a://dr-prefect/spec2vec-training-flow/feast",
                 "FEAST_CORE_URL": FEAST_CORE_URL_REMOTE,
                 "FEAST_SPARK_STAGING_LOCATION": "file:///tmp/staging",
                 "FEAST_SPARK_LAUNCHER": "standalone",

@@ -16,7 +16,7 @@ dependencies:
   - numpy=1.19.*
   - openjdk=8.0.*
   - pandas=1.2.*
-  - pyspark=3.1.*
+  - pyspark=3.0.*
   - pip:
       - matchms==0.8.*
       - feast==0.9.*

@@ -21,7 +21,7 @@ TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 KEYS = config["cleaned_data"]["necessary_keys"]
 FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION = os.getenv(
     "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION",
-    config["feast"]["spark"]["output_location"].get(str),
+    config["feast"]["spark"]["output_location"],
 )
 
 not_string_features2types = {

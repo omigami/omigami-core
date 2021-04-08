@@ -12,10 +12,10 @@ RUN /opt/conda/bin/conda env update --file environment-docker.yml \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
 RUN apt-get install -y curl
-RUN curl "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.0/hadoop-aws-3.3.0.jar" \
-    > "/opt/conda/lib/python3.7/site-packages/pyspark/jars/hadoop-aws-3.3.0.jar"
-RUN curl "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.11.993/aws-java-sdk-1.11.993.jar" \
-    > "/opt/conda/lib/python3.7/site-packages/pyspark/jars/aws-java-sdk-1.11.993.jar"
+RUN curl "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.4/hadoop-aws-2.7.4.jar" \
+    > "/opt/conda/lib/python3.7/site-packages/pyspark/jars/hadoop-aws-2.7.4.jar"
+RUN curl "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar" \
+    > "/opt/conda/lib/python3.7/site-packages/pyspark/jars/aws-java-sdk-1.7.4.jar"
 
 COPY . /opt/spec2vec_mlops
 RUN pip install -e /opt/spec2vec_mlops
