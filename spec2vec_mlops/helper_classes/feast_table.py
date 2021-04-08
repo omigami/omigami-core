@@ -4,9 +4,14 @@ from feast.data_format import ParquetFormat
 
 from spec2vec_mlops import config
 
+FEAST_JOB_SERVICE_URL = os.getenv("FEAST_JOB_SERVICE_URL", None)
 FEAST_CORE_URL = os.getenv(
     "FEAST_CORE_URL",
     config["feast"]["url"]["local"],
+)
+FEAST_SERVE_URL = os.getenv(
+    "FEAST_SERVE_URL",
+    config["feast"]["serving_url"]["local"],
 )
 FEAST_BASE_SOURCE_LOCATION = os.getenv(
     "FEAST_BASE_SOURCE_LOCATION",
@@ -16,7 +21,19 @@ FEAST_BASE_SOURCE_LOCATION = os.getenv(
 
 class FeastTableGenerator:
     def __init__(self, feature_table_name: str, **kwargs):
-        self.client = Client(core_url=FEAST_CORE_URL, telemetry=False)
+        if FEAST_JOB_SERVICE_URL:
+            self.client = Client(
+                core_url=FEAST_CORE_URL,
+                serving_url=FEAST_SERVE_URL,
+                job_service_url=FEAST_JOB_SERVICE_URL,
+                telemetry=False,
+            )
+        else:
+            self.client = Client(
+                core_url=FEAST_CORE_URL,
+                serving_url=FEAST_SERVE_URL,
+                telemetry=False,
+            )
         self.feature_table_name = feature_table_name
         self.features2types = {**kwargs}
 
