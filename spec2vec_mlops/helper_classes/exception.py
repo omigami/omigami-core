@@ -24,7 +24,7 @@ class ValidateInputException(Exception):
 
 class IncorrectInputTypeError(ValidateInputException):
     def __init__(self, message, application_error_code, http_status_code):
-        super.__init__(message, application_error_code, http_status_code)
+        super().__init__(message, application_error_code, http_status_code)
 
 
 class MandatoryKeyMissingError(ValidateInputException):
