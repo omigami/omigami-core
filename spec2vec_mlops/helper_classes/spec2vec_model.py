@@ -53,9 +53,8 @@ class Model(PythonModel):
         best_matches = self._get_best_matches(embeddings, embeddings)
         return best_matches
 
-    @staticmethod
     @model_error_handler.app_errorhandler(ValidateInputException)
-    def handleCustomError(error):
+    def handleCustomError(self, error):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
@@ -92,7 +91,7 @@ class Model(PythonModel):
         )
         best_matches = []
         for i, query in enumerate(queries):
-            best_match = scores.scores_by_query(query)[0]
+            best_match = scores.scores_by_query(query, sort=True)[0]
             best_matches.append(
                 {
                     "spectrum_number": i,
