@@ -15,7 +15,6 @@ from spec2vec_mlops.helper_classes.embedding import Embedding
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
     MandatoryKeyMissingError,
-    IncorrectInputTypeError,
     IncorrectPeaksJsonTypeError,
     IncorrectFloatFieldTypeError,
     IncorrectStringFieldTypeError,
@@ -105,7 +104,7 @@ class Model(PythonModel):
     def _validate_input(model_input: List[Dict]):
         for spectrum in model_input:
             if not isinstance(spectrum, Dict):
-                raise IncorrectInputTypeError("Input data must be a dictionary", 1, 400)
+                raise ValidateInputException("Input data must be a dictionary", 1, 400)
 
             mandatory_keys = ["peaks_json", "Precursor_MZ"]
             if any(key not in spectrum.keys() for key in mandatory_keys):
