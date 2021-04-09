@@ -7,7 +7,8 @@ class DeployingError(Exception):
 
 
 class ValidateInputException(Exception):
-    status_code = 400
+
+    status_code = 404
 
     def __init__(self, message, application_error_code, http_status_code):
         Exception.__init__(self)

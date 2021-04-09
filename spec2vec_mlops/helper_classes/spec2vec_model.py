@@ -53,7 +53,7 @@ class Model(PythonModel):
         return best_matches
 
     @model_error_handler.app_errorhandler(ValidateInputException)
-    def handleCustomError(self, error):
+    def handleCustomError(error):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
@@ -104,7 +104,7 @@ class Model(PythonModel):
     def _validate_input(model_input: List[Dict]):
         for spectrum in model_input:
             if not isinstance(spectrum, Dict):
-                raise ValidateInputException("Input data must be a dictionary", 1, 400)
+                raise ValidateInputException("Input data must be a dictionary", 1402, 402)
 
             mandatory_keys = ["peaks_json", "Precursor_MZ"]
             if any(key not in spectrum.keys() for key in mandatory_keys):
