@@ -5,6 +5,13 @@ import mlflow
 import pytest
 
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
+from spec2vec_mlops.helper_classes.exception import (
+    MandatoryKeyMissingError,
+    IncorrectInputTypeError,
+    IncorrectPeaksJsonTypeError,
+    IncorrectFloatFieldTypeError,
+    IncorrectStringFieldTypeError,
+)
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
@@ -38,6 +45,31 @@ def model(word2vec_model):
     )
 
 
+@pytest.mark.parametrize(
+    "input_data, exception",
+    [
+        ([[]], IncorrectInputTypeError),
+        ([{"peaks_json": ""}], MandatoryKeyMissingError),
+        ([{"peaks_json": "peaks", "Precursor_MZ": "1.0"}], IncorrectPeaksJsonTypeError),
+        ([{"peaks_json": {}, "Precursor_MZ": "1.0"}], IncorrectPeaksJsonTypeError),
+        ([{"peaks_json": [], "Precursor_MZ": "some_mz"}], IncorrectFloatFieldTypeError),
+        (
+            [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": 1}],
+            IncorrectStringFieldTypeError,
+        ),
+    ],
+)
+def test_validate_input_raised_expections(input_data, exception, model):
+    with pytest.raises(exception):
+        model._validate_input(input_data)
+
+
+def test_validate_input_valid(model):
+    model._validate_input(
+        [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": "some_key"}]
+    )
+
+
 def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
     embeddings_from_model = model._pre_process_data(loaded_data)
 
@@ -54,7 +86,7 @@ def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
 def test_get_best_matches(model, embeddings):
     best_matches = model._get_best_matches(embeddings[:50], embeddings[50:])
     assert all(
-        key in best_matches[0] for key in ["spectrum_id", "best_match_id", "score"]
+        key in best_matches[0] for key in ["spectrum_number", "best_match_id", "score"]
     )
 
 

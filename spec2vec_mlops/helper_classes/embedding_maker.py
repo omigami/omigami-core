@@ -26,7 +26,7 @@ class EmbeddingMaker:
             intensity_weighting_power=intensity_weighting_power,
             allowed_missing_percentage=allowed_missing_percentage,
         )
-        return Embedding(vector, document.metadata["spectrum_id"], self.n_decimals)
+        return Embedding(vector, document.metadata.get("spectrum_id"), self.n_decimals)
 
     def _check_n_decimals(
         self,
