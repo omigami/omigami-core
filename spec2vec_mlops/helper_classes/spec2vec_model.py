@@ -24,6 +24,25 @@ from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
 KEYS = config["gnps_json"]["necessary_keys"]
 
+"""
+User Defined Exception
+"""
+class UserCustomException(Exception):
+
+    status_code = 404
+
+    def __init__(self, message, application_error_code,http_status_code):
+        Exception.__init__(self)
+        self.message = message
+        if http_status_code is not None:
+            self.status_code = http_status_code
+        self.application_error_code = application_error_code
+
+    def to_dict(self):
+        rv = {"status": {"status": self.status_code, "message": self.message,
+                         "app_code": self.application_error_code}}
+        return rv
+
 
 class Model(PythonModel):
     model_error_handler = flask.Blueprint("error_handlers", __name__)
@@ -44,19 +63,20 @@ class Model(PythonModel):
         self.document_converter = DocumentConverter()
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
 
+    @model_error_handler.app_errorhandler(UserCustomException)
+    def handleCustomError(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
+
     def predict(self, context, model_input: List[Dict]) -> List[Dict]:
+        raise UserCustomException('Test-Error-Msg',1402,402)
         self._validate_input(model_input)
         embeddings = self._pre_process_data(model_input)
         # get library embeddings from feast
         # for now going to use the calculated ones
         best_matches = self._get_best_matches(embeddings, embeddings)
         return best_matches
-
-    @model_error_handler.app_errorhandler(ValidateInputException)
-    def handleCustomError(error):
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
 
     def _pre_process_data(self, model_input: List[Dict]) -> List[Embedding]:
         cleaned_data = [self.data_cleaner.clean_data(data) for data in model_input]
