@@ -24,7 +24,10 @@ FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION = os.getenv(
     "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION",
     config["feast"]["spark"]["output_location"],
 )
-
+FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION = os.getenv(
+    "FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION",
+    config["feast"]["spark"]["output_location"],
+)
 not_string_features2types = {
     "mz_list": ValueType.DOUBLE_LIST,
     "intensity_list": ValueType.DOUBLE_LIST,
@@ -78,7 +81,7 @@ class SpectrumIDStorer(BaseStorer):
         self._wait_for_job(job)
         if job.get_status().name == "FAILED":
             raise StorerLoadError
-        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
         return df[f"{self._feast_table.feature_table_name}__all_spectrum_ids"].iloc[0]
 
     def _get_data_df(self, data: List[str]) -> pd.DataFrame:
@@ -136,7 +139,7 @@ class SpectrumStorer(BaseStorer):
         self._wait_for_job(job)
         if job.get_status().name == "FAILED":
             raise StorerLoadError
-        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
         df = df.set_index("spectrum_id")
         spectra = []
         for spectrum_id, record in df.iterrows():
@@ -233,7 +236,7 @@ class DocumentStorer(BaseStorer):
         self._wait_for_job(job)
         if job.get_status().name == "FAILED":
             raise StorerLoadError
-        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
         df = df.set_index("spectrum_id")
         documents = []
         for spectrum_id, record in df.iterrows():
@@ -318,7 +321,7 @@ class EmbeddingStorer(BaseStorer):
         self._wait_for_job(job)
         if job.get_status().name == "FAILED":
             raise StorerLoadError
-        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
         df = df.set_index("spectrum_id")
         embeddings = []
         for spectrum_id, record in df.iterrows():
