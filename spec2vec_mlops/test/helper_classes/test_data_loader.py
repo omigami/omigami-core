@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
@@ -46,6 +47,7 @@ def test_save_web_uri(uri, tmpdir):
 
     assert isinstance(res, str)
     assert res.split(".")[1] == "json"
+    assert Path(res).exists()
 
 
 @pytest.mark.longrun
@@ -58,23 +60,6 @@ def test_save_web_uri(uri, tmpdir):
 )
 def test_load_web_uri(uri, tmpdir):
     dl = DataLoader(uri=uri)
-
-    for res in dl.load(out_dir=tmpdir):
-        assert isinstance(res, dict)
-        for k in KEYS:
-            assert k in res
-
-
-def test_save_local_uri(gnps_small_json, tmpdir):
-    dl = DataLoader(uri=gnps_small_json)
-    res = dl._save(out_dir=tmpdir)
-
-    assert isinstance(res, str)
-    assert res.split(".")[1] == "json"
-
-
-def test_load_local_uri(gnps_small_json, tmpdir):
-    dl = DataLoader(uri=gnps_small_json)
 
     for res in dl.load(out_dir=tmpdir):
         assert isinstance(res, dict)

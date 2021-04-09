@@ -6,9 +6,9 @@ import ijson
 
 from spec2vec_mlops import config
 from pathlib import Path
-from urlgrabber.grabber import URLGrabber
 from drfs.filesystems import get_fs
 from uuid import uuid4
+import requests
 
 KEYS = config["gnps_json"]["necessary_keys"].get(list)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"].get(str)
@@ -29,14 +29,18 @@ class DataLoader:
         results = [{k: item[k] for k in KEYS} for item in items]
         return results
 
-    def _save(self, out_dir: Path = None):
-        g = URLGrabber(retry=0, reget="simple")  # 0 retry until you get the file, reget is to resume the download
-        logger.info(f"Loading data from {self.uri}... This might take a while.")
+    def _save(self,  out_dir: Path = None):
+        # solution is from https://stackoverflow.com/a/16696317/15485553
         if out_dir is None:
             out_dir = "s3://dr-prefect/spec2vec-data/"  # TODO: change this to prod bucket
         file_id = str(uuid4())
         filename = f"{str(out_dir)}/{file_id}.json"
-        filename = g.urlgrab(url=self.uri, filename=filename)
+        logger.info(f"Loading data from {self.uri}... This might take a while.")
+        with requests.get(self.uri, stream=True) as r:
+            r.raise_for_status()
+            with open(filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=536870912):  # 512 MBs of chunks
+                    f.write(chunk)
         return filename
 
     def load(self, out_dir: Path = None):
