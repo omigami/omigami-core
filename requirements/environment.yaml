@@ -14,7 +14,7 @@ dependencies:
   - boto3=1.17.*
   - ijson=3.1.*
   - numpy=1.19.*
-  - openjdk=8.0.*
+  - openjdk=11.0.*
   - pandas=1.2.*
   - pyspark=3.0.*
   - pip:
