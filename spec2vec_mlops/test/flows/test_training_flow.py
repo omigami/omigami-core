@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from typing import Union
 
 import pytest
@@ -16,9 +18,12 @@ from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.store_embeddings import store_embeddings_task
 
 FEAST_CORE_URL_LOCAL = config["feast"]["url"]["local"].get(str)
+SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"].get(str)
+os.chdir(Path(__file__).parents[3])
+
 
 pytestmark = pytest.mark.skip(
-    "This test can only be run if the Feast docker-compose is up"
+    "This test can only be run if the Feast docker-compose is up. Also it requires internet connection."
 )
 
 
@@ -34,9 +39,10 @@ def spec2vec_train_pipeline_local(
     window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
+    out_dir: Path = None,
 ) -> State:
     with Flow("flow") as flow:
-        raw = load_data_task(source_uri)
+        raw = load_data_task(source_uri, out_dir)
         cleaned = clean_data_task.map(raw)
         store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
         documents = convert_to_documents_task.map(
@@ -65,9 +71,9 @@ def spec2vec_train_pipeline_local(
     return state
 
 
-def test_spec2vec_train_pipeline_local(gnps_small_json, tmpdir):
+def test_spec2vec_train_pipeline_local(tmpdir):
     state = spec2vec_train_pipeline_local(
-        source_uri=gnps_small_json,
+        source_uri=SOURCE_URI_PARTIAL_GNPS,
         feast_source_dir=f"file://{tmpdir}",
         feast_core_url=FEAST_CORE_URL_LOCAL,
         n_decimals=2,
@@ -76,5 +82,6 @@ def test_spec2vec_train_pipeline_local(gnps_small_json, tmpdir):
         save_model_path=f"{tmpdir}/mflow",
         mlflow_server_uri=f"{tmpdir}/mlflow/",
         experiment_name="experiment",
+        out_dir=tmpdir,
     )
     assert state.is_successful()
