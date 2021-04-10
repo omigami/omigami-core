@@ -6,7 +6,10 @@ from uuid import uuid4
 
 import ijson
 import requests
-from drfs.filesystems import get_fs
+from drfs.filesystems.base import FileSystemBase
+from drfs.filesystems.local import LocalFileSystem
+from drfs.filesystems.s3 import S3FileSystem
+from drfs.path import RemotePath
 
 from spec2vec_mlops import config
 
@@ -18,6 +21,14 @@ logger = logging.getLogger(__name__)
 
 
 class DataLoader:
+    def __init__(
+        self,
+        remote_fs: Optional[FileSystemBase] = None,
+        local_fs: Optional[FileSystemBase] = None,
+    ):
+        self.remote_fs = remote_fs or S3FileSystem()
+        self.local_fs = local_fs or LocalFileSystem()
+
     def load_gnps_json(self, uri: str) -> List[Dict]:
         logger.info(f"Loading data from {uri}... This might take a while.")
         response = urlopen(uri)
@@ -27,13 +38,12 @@ class DataLoader:
 
     def _save(self, uri: str, out_dir: Optional[Path]) -> str:
         # solution is from https://stackoverflow.com/a/16696317/15485553
-        file_path = self._make_path(out_dir)
-        fs = get_fs(file_path)
-        path = Path(file_path)
+        file_path: str = self._make_path(out_dir)
+        fs = self.remote_fs if out_dir is None else self.local_fs
         logger.info(f"Loading data from {uri}... This might take a while.")
         with requests.get(uri, stream=True) as r:
             r.raise_for_status()
-            with fs.open(path, "wb") as f:
+            with fs.open(file_path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=536870912):  # 512 MBs of chunks
                     f.write(chunk)
         return file_path
@@ -42,7 +52,7 @@ class DataLoader:
     def _make_path(out_dir: Optional[Path]) -> str:
         if out_dir is None:
             out_dir = (
-                "s3://dr-prefect/spec2vec-data"
+                RemotePath("s3://dr-prefect/spec2vec-data")
                 # TODO: change this to prod bucket
             )
         file_id = str(uuid4())
@@ -50,9 +60,8 @@ class DataLoader:
         return path
 
     def load(self, uri: str, out_dir: Optional[Path] = None) -> List[Dict[str, str]]:
-        in_file = self._save(uri, out_dir)
-        fs = get_fs(in_file)
-        in_file = Path(in_file)
+        in_file: str = self._save(uri, out_dir)
+        fs = self.remote_fs if out_dir is None else self.local_fs
         with fs.open(in_file, "rb") as f:
             items = ijson.items(f, "item", multiple_values=True)
             results = [{k: item[k] for k in KEYS} for item in items]

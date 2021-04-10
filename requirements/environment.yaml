@@ -19,4 +19,5 @@ dependencies:
       - matchms==0.8.*
       - feast==0.9.*
       - mlflow==1.14.*
+      - s3fs==0.6.*
       - git+https://github.com/datarevenue-berlin/drfs
