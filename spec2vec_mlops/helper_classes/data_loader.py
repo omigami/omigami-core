@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from urllib.request import urlopen
 from uuid import uuid4
 
@@ -26,11 +26,11 @@ class DataLoader:
         return results
 
     @staticmethod
-    def _save(uri: str, out_dir: Path = None):
+    def _save(uri: str, out_dir: Optional[Path] = None):
         # solution is from https://stackoverflow.com/a/16696317/15485553
         if out_dir is None:
             out_dir = (
-                "s3://dr-prefect/spec2vec-data/"  # TODO: change this to prod bucket
+                "s3://dr-prefect/spec2vec-data"  # TODO: change this to prod bucket
             )
         file_id = str(uuid4())
         filename = f"{str(out_dir)}/{file_id}.json"
