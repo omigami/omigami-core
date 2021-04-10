@@ -33,6 +33,7 @@ def test_load_gnps_json_with_local_uri(gnps_small_json):
         for k in KEYS:
             assert k in res
 
+
 @pytest.mark.longrun
 @pytest.mark.parametrize(
     "uri",
@@ -45,9 +46,16 @@ def test_save_web_uri(uri, tmpdir):
     dl = DataLoader()
     res = dl._save(uri=uri, out_dir=tmpdir)
 
+    assert Path(res).exists()
+
+
+def test_make_path(tmpdir):
+    dl = DataLoader()
+
+    res = dl._make_path(tmpdir)
+
     assert isinstance(res, str)
     assert res.split(".")[1] == "json"
-    assert Path(res).exists()
 
 
 @pytest.mark.longrun

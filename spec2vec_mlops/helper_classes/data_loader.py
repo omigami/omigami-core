@@ -25,26 +25,34 @@ class DataLoader:
         results = [{k: item[k] for k in KEYS} for item in items]
         return results
 
-    @staticmethod
-    def _save(uri: str, out_dir: Optional[Path] = None):
+    def _save(self, uri: str, out_dir: Optional[Path]) -> str:
         # solution is from https://stackoverflow.com/a/16696317/15485553
-        if out_dir is None:
-            out_dir = (
-                "s3://dr-prefect/spec2vec-data"  # TODO: change this to prod bucket
-            )
-        file_id = str(uuid4())
-        filename = f"{str(out_dir)}/{file_id}.json"
+        file_path = self._make_path(out_dir)
+        fs = get_fs(file_path)
+        path = Path(file_path)
         logger.info(f"Loading data from {uri}... This might take a while.")
         with requests.get(uri, stream=True) as r:
             r.raise_for_status()
-            with open(filename, "wb") as f:
+            with fs.open(path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=536870912):  # 512 MBs of chunks
                     f.write(chunk)
-        return filename
+        return file_path
 
-    def load(self, uri: str, out_dir: Path = None):
+    @staticmethod
+    def _make_path(out_dir: Optional[Path]) -> str:
+        if out_dir is None:
+            out_dir = (
+                "s3://dr-prefect/spec2vec-data"
+                # TODO: change this to prod bucket
+            )
+        file_id = str(uuid4())
+        path = f"{str(out_dir)}/{file_id}.json"
+        return path
+
+    def load(self, uri: str, out_dir: Optional[Path] = None) -> List[Dict[str, str]]:
         in_file = self._save(uri, out_dir)
         fs = get_fs(in_file)
+        in_file = Path(in_file)
         with fs.open(in_file, "rb") as f:
             items = ijson.items(f, "item", multiple_values=True)
             results = [{k: item[k] for k in KEYS} for item in items]
