@@ -44,7 +44,7 @@ def test_load_gnps_json_with_local_uri(gnps_small_json):
 )
 def test_save_web_uri(uri, tmpdir):
     dl = DataLoader()
-    res = dl._save(uri=uri, out_dir=tmpdir)
+    res = dl._download_and_serialize(uri=uri, out_dir=tmpdir)
 
     assert Path(res).exists()
 
