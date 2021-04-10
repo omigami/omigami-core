@@ -42,8 +42,8 @@ def test_load_gnps_json_with_local_uri(gnps_small_json):
     ],
 )
 def test_save_web_uri(uri, tmpdir):
-    dl = DataLoader(uri=uri)
-    res = dl._save(out_dir=tmpdir)
+    dl = DataLoader()
+    res = dl._save(uri=uri, out_dir=tmpdir)
 
     assert isinstance(res, str)
     assert res.split(".")[1] == "json"
@@ -59,18 +59,9 @@ def test_save_web_uri(uri, tmpdir):
     ],
 )
 def test_load_web_uri(uri, tmpdir):
-    dl = DataLoader(uri=uri)
+    dl = DataLoader()
 
-    for res in dl.load(out_dir=tmpdir):
-        assert isinstance(res, dict)
-        for k in KEYS:
-            assert k in res
-
-
-def test_load_local_uri_save_to_s3(gnps_small_json):
-    dl = DataLoader(uri=gnps_small_json)
-
-    for res in dl.load():
+    for res in dl.load(uri=uri, out_dir=tmpdir):
         assert isinstance(res, dict)
         for k in KEYS:
             assert k in res
