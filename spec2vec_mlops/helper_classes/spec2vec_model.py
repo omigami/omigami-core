@@ -69,7 +69,7 @@ class Model(PythonModel):
             feature_table_name="embedding_info",
             run_id=self.run_id,
         )
-        all_spectrum_ids = spectrum_id_storer.read()
+        all_spectrum_ids = spectrum_id_storer.read_online()
         embeddings = embedding_storer.read(all_spectrum_ids)
         return embeddings
 

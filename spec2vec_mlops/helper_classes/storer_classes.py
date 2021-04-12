@@ -1,6 +1,6 @@
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 import numpy as np
@@ -66,6 +66,16 @@ class SpectrumIDStorer(BaseStorer):
         data_df = self._get_data_df(all_ids)
         self._feast_table.client.ingest(self._spectrum_table, data_df)
 
+    def store_online(self):
+        today = datetime.now()
+        yesterday = today - timedelta(1)
+        job = self._feast_table.client.start_offline_to_online_ingestion(
+            self._spectrum_table, yesterday, today
+        )
+        self._wait_for_job(job)
+        if job.get_status().name == "FAILED":
+            raise StorerLoadError
+
     def read(self) -> List[str]:
         entities_of_interest = pd.DataFrame(
             {
@@ -83,6 +93,14 @@ class SpectrumIDStorer(BaseStorer):
             raise StorerLoadError
         df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
         return df[f"{self._feast_table.feature_table_name}__all_spectrum_ids"].iloc[0]
+
+    def read_online(self) -> List[str]:
+        response = self._feast_table.client.get_online_features(
+            feature_refs=[f"{self._feast_table.feature_table_name}:all_spectrum_ids"],
+            entity_rows=[{"spectrum_ids_id": "1"}],
+        )
+        d = response.to_dict()
+        return d[f"{self._feast_table.feature_table_name}:all_spectrum_ids"][0]
 
     def _get_data_df(self, data: List[str]) -> pd.DataFrame:
         return pd.DataFrame.from_records(

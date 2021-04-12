@@ -31,6 +31,7 @@ def document_storer(tmpdir):
 def target_spectrum_ids(spectrum_ids_storer, cleaned_data):
     ids = [cleaned_data[0].metadata["spectrum_id"]]
     spectrum_ids_storer.store(ids)
+    spectrum_ids_storer.store_online()
     return ids
 
 
@@ -73,3 +74,8 @@ def test_load_documents(document_storer, documents_stored, target_spectrum_ids):
 def test_load_embeddings(embedding_storer, embeddings_stored, target_spectrum_ids):
     embeddings = embedding_storer.read(target_spectrum_ids)
     assert len(embeddings) == len(target_spectrum_ids)
+
+
+def test_load_all_spectrum_ids_online(spectrum_ids_storer, target_spectrum_ids):
+    all_spectrum_ids = spectrum_ids_storer.read_online()
+    assert all(id in all_spectrum_ids for id in target_spectrum_ids)
