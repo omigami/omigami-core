@@ -20,4 +20,5 @@ def clean_data_task(spectra_data_chunks: List[Dict]) -> List[str]:
     spectrum_ids = storer.store(cleaned_data)
     ids_storer = SpectrumIDStorer("spectrum_ids_info")
     ids_storer.store(spectrum_ids)
+    ids_storer.store_online()
     return spectrum_ids
