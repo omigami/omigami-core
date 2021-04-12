@@ -28,7 +28,9 @@ class DataLoader:
         self.remote_fs = remote_fs or S3FileSystem()
         self.local_fs = local_fs or LocalFileSystem()
 
-    def load_gnps_json(self, uri: str, out_dir: Optional[Path] = None) -> List[Dict[str, str]]:
+    def load_gnps_json(
+        self, uri: str, out_dir: Optional[Path] = None
+    ) -> List[Dict[str, str]]:
         fs = self.remote_fs if out_dir is None else self.local_fs
         in_file: str = self._download_and_serialize(uri, fs, out_dir)
         return self.parse_json(fs, in_file)

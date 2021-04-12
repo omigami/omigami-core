@@ -52,6 +52,7 @@ def test_download_and_serialize_web_uri(uri, tmpdir):
 
     assert Path(res).exists()
 
+
 @pytest.mark.longrun
 @pytest.mark.parametrize(
     "uri",

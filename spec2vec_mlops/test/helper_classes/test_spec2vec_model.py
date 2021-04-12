@@ -38,7 +38,7 @@ def model(word2vec_model):
     )
 
 
-# @pytest.mark.skip("This test requires internet connection to load data from web")
+@pytest.mark.skip("This test requires internet connection to load data from web")
 @pytest.mark.parametrize(
     "uri",
     [
@@ -65,7 +65,7 @@ def test_get_best_matches(model, embeddings):
     )
 
 
-# @pytest.mark.skip("This test requires internet connection to load data from web")
+@pytest.mark.skip("This test requires internet connection to load data from web")
 @pytest.mark.parametrize(
     "uri",
     [
