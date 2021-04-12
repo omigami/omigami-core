@@ -79,3 +79,10 @@ def test_load_embeddings(embedding_storer, embeddings_stored, target_spectrum_id
 def test_load_all_spectrum_ids_online(spectrum_ids_storer, target_spectrum_ids):
     all_spectrum_ids = spectrum_ids_storer.read_online()
     assert all(id in all_spectrum_ids for id in target_spectrum_ids)
+
+
+def test_load_embeddings_online(
+    embedding_storer, embeddings_stored, target_spectrum_ids
+):
+    embeddings = embedding_storer.read_online(target_spectrum_ids)
+    assert len(embeddings) == len(target_spectrum_ids)

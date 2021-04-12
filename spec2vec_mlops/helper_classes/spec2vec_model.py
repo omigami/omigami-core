@@ -70,7 +70,7 @@ class Model(PythonModel):
             run_id=self.run_id,
         )
         all_spectrum_ids = spectrum_id_storer.read_online()
-        embeddings = embedding_storer.read(all_spectrum_ids)
+        embeddings = embedding_storer.read_online(all_spectrum_ids)
         return embeddings
 
     def _get_best_matches(

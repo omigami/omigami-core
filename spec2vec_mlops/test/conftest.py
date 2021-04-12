@@ -99,3 +99,4 @@ def embedding_storer(tmpdir):
 @pytest.fixture()
 def embeddings_stored(embedding_storer, embeddings):
     embedding_storer.store(embeddings)
+    embedding_storer.store_online()

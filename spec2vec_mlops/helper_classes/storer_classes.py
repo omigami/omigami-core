@@ -321,6 +321,16 @@ class EmbeddingStorer(BaseStorer):
         df = self._get_data_df(data)
         self._feast_table.client.ingest(self._embedding_table, df)
 
+    def store_online(self):
+        today = datetime.now()
+        yesterday = today - timedelta(1)
+        job = self._feast_table.client.start_offline_to_online_ingestion(
+            self._embedding_table, yesterday, today
+        )
+        self._wait_for_job(job)
+        if job.get_status().name == "FAILED":
+            raise StorerLoadError
+
     def read(self, ids: List[str]) -> List[Embedding]:
         entities_of_interest = pd.DataFrame(
             {
@@ -349,6 +359,15 @@ class EmbeddingStorer(BaseStorer):
                 )
             )
         return embeddings
+
+    def read_online(self, ids: List[str]) -> List[Embedding]:
+        response = self._feast_table.client.get_online_features(
+            feature_refs=[f"{self._feast_table.feature_table_name}:embedding"],
+            entity_rows=[{"spectrum_id": id} for id in ids],
+        )
+        d = response.to_dict()
+        print(d)
+        return d[f"{self._feast_table.feature_table_name}:embedding"]
 
     def _get_data_df(self, embeddings: List[Embedding]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
