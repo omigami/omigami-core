@@ -33,7 +33,7 @@ MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"].get(str)
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-spec2vec-load-small-data-4",
+    project_name: str = "spec2vec-mlops-project-spec2vec-load-small-data-5",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/feast",
     feast_core_url: str = FEAST_CORE_URL_REMOTE,
     n_decimals: int = 2,
@@ -70,7 +70,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.8f1b53e",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.ba87b6d",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),
