@@ -18,6 +18,7 @@ from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
 from spec2vec_mlops.tasks.store_embeddings import store_embeddings_task
 from spec2vec_mlops.tasks.train_model import train_model_task
+from spec2vec_mlops.utility.authenticator import KratosAuthenticator
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -46,6 +47,7 @@ def spec2vec_train_pipeline_distributed(
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     seldon_deployment_path: str = "spec2vec_mlops/seldon_deployment.yaml",
+    session_token: str = None,
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -114,6 +116,8 @@ def spec2vec_train_pipeline_distributed(
         store_embeddings_task(embeddings, run_id, feast_source_dir, feast_core_url)
         deploy_model_task(run_id, seldon_deployment_path, "seldon")
     client = Client(api_server=api_server)
+    if session_token:
+        client.attach_headers({"Authorization": f"Bearer {session_token}"})
     client.create_project(project_name)
     training_flow_id = client.register(
         training_flow,
@@ -133,7 +137,15 @@ def cli():
 
 
 @cli.command(name="register-train-pipeline")
-def register_train_pipeline_cli(*args, **kwargs):
+@cli.option("--auth", default=False, help="Enable authentication")
+@cli.option("--auth_url", default=None, help="Kratos Public URI")
+@cli.option("--username", default=None, help="Login username")
+@cli.option("--password", default=None, help="Login password")
+def register_train_pipeline_cli(auth, uri, username, password, *args, **kwargs):
+    if auth:
+        authenticator = KratosAuthenticator(uri, username, password)
+        session_token = authenticator.authenticate()
+        kwargs["session_token"] = session_token
     spec2vec_train_pipeline_distributed(*args, **kwargs)
 
 
