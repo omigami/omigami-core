@@ -70,7 +70,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.15efd5b",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.1eecbe6",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
@@ -82,6 +82,7 @@ def spec2vec_train_pipeline_distributed(
                 "FEAST_HISTORICAL_FEATURE_OUTPUT_FORMAT": "parquet",
                 "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION": "s3a://dr-prefect/spec2vec-training-flow/feast/output.parquet",
                 "FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION": "s3://dr-prefect/spec2vec-training-flow/feast/output.parquet",
+                "FEAST_REDIS_HOST": "feast-redis-master.feast",
             },
         ),
         "storage": S3("dr-prefect"),
