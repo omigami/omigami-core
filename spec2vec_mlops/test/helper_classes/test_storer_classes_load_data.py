@@ -1,11 +1,10 @@
 import os
 
 import pytest
+
 from spec2vec_mlops.helper_classes.storer_classes import (
-    SpectrumIDStorer,
     SpectrumStorer,
     DocumentStorer,
-    EmbeddingStorer,
 )
 
 pytestmark = pytest.mark.skipif(
@@ -15,24 +14,9 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.fixture()
-def spectrum_ids_storer(tmpdir):
-    return SpectrumIDStorer(
-        feature_table_name="spectrum_ids_info",
-    )
-
-
-@pytest.fixture()
 def spectrum_storer(tmpdir):
     return SpectrumStorer(
         feature_table_name="spectrum_info",
-    )
-
-
-@pytest.fixture()
-def embedding_storer(tmpdir):
-    return EmbeddingStorer(
-        feature_table_name="embedding_info",
-        run_id="1",
     )
 
 
@@ -87,5 +71,5 @@ def test_load_documents(document_storer, documents_stored, target_spectrum_ids):
 
 
 def test_load_embeddings(embedding_storer, embeddings_stored, target_spectrum_ids):
-    embeddings = embedding_storer.read(target_spectrum_ids, "1")
+    embeddings = embedding_storer.read(target_spectrum_ids)
     assert len(embeddings) == len(target_spectrum_ids)

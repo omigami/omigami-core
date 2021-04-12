@@ -1,4 +1,5 @@
 import os
+
 from feast import ValueType, Client, FeatureTable, Entity, Feature, FileSource
 from feast.data_format import ParquetFormat
 

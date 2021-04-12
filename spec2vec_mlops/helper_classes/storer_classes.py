@@ -216,7 +216,7 @@ class DocumentStorer(BaseStorer):
         data_df = self._get_data_df(data)
         self._feast_table.client.ingest(self._document_table, data_df)
 
-    def read(self, ids: List[str]) -> List[Document]:
+    def read(self, ids: List[str]) -> List[FeastSpectrumDocument]:
         entities_of_interest = pd.DataFrame(
             {
                 "spectrum_id": ids,
@@ -303,11 +303,11 @@ class EmbeddingStorer(BaseStorer):
         df = self._get_data_df(data)
         self._feast_table.client.ingest(self._embedding_table, df)
 
-    def read(self, ids: List[str], run_id: str) -> List[Embedding]:
+    def read(self, ids: List[str]) -> List[Embedding]:
         entities_of_interest = pd.DataFrame(
             {
                 "spectrum_id": ids,
-                "run_id": [run_id] * len(ids),
+                "run_id": [self.run_id] * len(ids),
                 "event_timestamp": [datetime.now()] * len(ids),
             }
         )
@@ -325,7 +325,11 @@ class EmbeddingStorer(BaseStorer):
         df = df.set_index("spectrum_id")
         embeddings = []
         for spectrum_id, record in df.iterrows():
-            embeddings.append(record["embedding_info__embedding"])
+            embeddings.append(
+                Embedding(
+                    vector=record["embedding_info__embedding"], spectrum_id=spectrum_id
+                )
+            )
         return embeddings
 
     def _get_data_df(self, embeddings: List[Embedding]) -> pd.DataFrame:

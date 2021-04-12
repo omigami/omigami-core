@@ -1,6 +1,7 @@
 from typing import Union
 
 from gensim.models import Word2Vec
+from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 
 from spec2vec_mlops.entities.embedding import Embedding
@@ -15,7 +16,7 @@ class EmbeddingMaker:
     def make_embedding(
         self,
         model: Word2Vec,
-        document: FeastSpectrumDocument,
+        document: Union[FeastSpectrumDocument, SpectrumDocument],
         intensity_weighting_power: Union[float, int] = None,
         allowed_missing_percentage: Union[float, int] = None,
     ) -> Embedding:
