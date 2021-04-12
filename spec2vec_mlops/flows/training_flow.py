@@ -71,7 +71,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.3357fbd",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.295c13e",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
@@ -126,7 +126,7 @@ def spec2vec_train_pipeline_distributed(
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        deploy_model_task(run_id, seldon_deployment_path, "seldon")
+        deploy_model_task(run_id, seldon_deployment_path)
     client = Client(api_server=api_server)
     client.create_project(project_name)
     training_flow_id = client.register(
