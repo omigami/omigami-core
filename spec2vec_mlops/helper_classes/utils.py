@@ -1,8 +1,10 @@
 import pandas as pd
-from drfs.filesystems import get_fs
+from pyarrow.fs import FileSystem
+from pyarrow.parquet import ParquetDataset
 
 
 def read_parquet(uri) -> pd.DataFrame:
-    fs = get_fs(uri)
-    with fs.open(uri, "rb") as f:
-        return pd.read_parquet(f)
+    fs, path = FileSystem.from_uri(uri)
+    dataset = ParquetDataset(path_or_paths=path, filesystem=fs)
+    table = dataset.read()
+    return table.to_pandas()
