@@ -51,6 +51,26 @@ def test_download_and_serialize_web_uri(uri, tmpdir):
 
     assert Path(res).exists()
 
+@pytest.mark.longrun
+@pytest.mark.parametrize(
+    "uri",
+    [
+        "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json",
+    ],
+)
+def test_resume_download(tmpdir, uri):
+    path = Path(__file__).parents[1] / "assets" / "SMALL_GNPS.json"
+    existing_file_size = path.stat().st_size
+    fs = LocalFileSystem()
+    new_path = f"{tmpdir}/SMALL_GNPS_remaining.json"
+
+    dl = DataLoader()
+    dl._resume_download(existing_file_size, uri, fs, new_path)
+
+    updated_file_size = Path(new_path).stat().st_size
+
+    assert updated_file_size
+
 
 def test_make_path(tmpdir):
     dl = DataLoader()
