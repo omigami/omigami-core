@@ -16,6 +16,7 @@ from spec2vec_mlops.entities.feast_spectrum_document import FeastSpectrumDocumen
 from spec2vec_mlops.helper_classes.base_storer import BaseStorer
 from spec2vec_mlops.helper_classes.exception import StorerLoadError
 from spec2vec_mlops.helper_classes.feast_table import FeastTableGenerator
+from spec2vec_mlops.helper_classes.utils import read_parquet
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 KEYS = config["cleaned_data"]["necessary_keys"]
@@ -23,7 +24,10 @@ FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION = os.getenv(
     "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION",
     config["feast"]["spark"]["output_location"],
 )
-
+FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION = os.getenv(
+    "FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION",
+    config["feast"]["spark"]["output_location"],
+)
 not_string_features2types = {
     "mz_list": ValueType.DOUBLE_LIST,
     "intensity_list": ValueType.DOUBLE_LIST,
@@ -72,12 +76,12 @@ class SpectrumIDStorer(BaseStorer):
         job = self._feast_table.client.get_historical_features(
             [f"{self._feast_table.feature_table_name}:all_spectrum_ids"],
             entity_source=entities_of_interest,
-            output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
+            output_location=FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION,
         )
         self._wait_for_job(job)
         if job.get_status().name == "FAILED":
             raise StorerLoadError
-        df = pd.read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
         return df[f"{self._feast_table.feature_table_name}__all_spectrum_ids"].iloc[0]
 
     def _get_data_df(self, data: List[str]) -> pd.DataFrame:
@@ -130,12 +134,12 @@ class SpectrumStorer(BaseStorer):
                 f"{self._feast_table.feature_table_name}:losses",
             ],
             entity_source=entities_of_interest,
-            output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
+            output_location=FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION,
         )
         self._wait_for_job(job)
         if job.get_status().name == "FAILED":
             raise StorerLoadError
-        df = pd.read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
         df = df.set_index("spectrum_id")
         spectra = []
         for spectrum_id, record in df.iterrows():
@@ -212,7 +216,7 @@ class DocumentStorer(BaseStorer):
         data_df = self._get_data_df(data)
         self._feast_table.client.ingest(self._document_table, data_df)
 
-    def read(self, ids: List[str]) -> List[Document]:
+    def read(self, ids: List[str]) -> List[FeastSpectrumDocument]:
         entities_of_interest = pd.DataFrame(
             {
                 "spectrum_id": ids,
@@ -227,12 +231,12 @@ class DocumentStorer(BaseStorer):
                 f"{self._feast_table.feature_table_name}:n_decimals",
             ],
             entity_source=entities_of_interest,
-            output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
+            output_location=FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION,
         )
         self._wait_for_job(job)
         if job.get_status().name == "FAILED":
             raise StorerLoadError
-        df = pd.read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
         df = df.set_index("spectrum_id")
         documents = []
         for spectrum_id, record in df.iterrows():
@@ -312,12 +316,12 @@ class EmbeddingStorer(BaseStorer):
                 f"{self._feast_table.feature_table_name}:embedding",
             ],
             entity_source=entities_of_interest,
-            output_location=f"file://{FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION}",
+            output_location=FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION,
         )
         self._wait_for_job(job)
         if job.get_status().name == "FAILED":
             raise StorerLoadError
-        df = pd.read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION)
+        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
         df = df.set_index("spectrum_id")
         embeddings = []
         for spectrum_id, record in df.iterrows():
