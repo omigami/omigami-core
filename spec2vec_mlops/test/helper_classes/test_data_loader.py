@@ -1,5 +1,7 @@
-import pytest
 from pathlib import Path
+
+import pytest
+from drfs.filesystems.local import LocalFileSystem
 
 from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
@@ -42,9 +44,10 @@ def test_load_gnps_json_with_local_uri(gnps_small_json):
         "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json",
     ],
 )
-def test_save_web_uri(uri, tmpdir):
+def test_download_and_serialize_web_uri(uri, tmpdir):
     dl = DataLoader()
-    res = dl._download_and_serialize(uri=uri, out_dir=tmpdir)
+    fs = LocalFileSystem()
+    res = dl._download_and_serialize(uri=uri, fs=fs, out_dir=tmpdir)
 
     assert Path(res).exists()
 
