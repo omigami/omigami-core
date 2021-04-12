@@ -1,7 +1,6 @@
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional
-from urllib.request import urlopen
 from uuid import uuid4
 
 import ijson
@@ -29,11 +28,16 @@ class DataLoader:
         self.remote_fs = remote_fs or S3FileSystem()
         self.local_fs = local_fs or LocalFileSystem()
 
-    def load_gnps_json(self, uri: str) -> List[Dict]:
-        logger.info(f"Loading data from {uri}... This might take a while.")
-        response = urlopen(uri)
-        items = ijson.items(response, "item", multiple_values=True)
-        results = [{k: item[k] for k in KEYS} for item in items]
+    def load_gnps_json(self, uri: str, out_dir: Optional[Path] = None) -> List[Dict[str, str]]:
+        fs = self.remote_fs if out_dir is None else self.local_fs
+        in_file: str = self._download_and_serialize(uri, fs, out_dir)
+        return self.parse_json(fs, in_file)
+
+    @staticmethod
+    def parse_json(fs: FileSystemBase, path: str) -> List[Dict[str, str]]:
+        with fs.open(path, "rb") as f:
+            items = ijson.items(f, "item", multiple_values=True)
+            results = [{k: item[k] for k in KEYS} for item in items]
         return results
 
     def _download_and_serialize(
@@ -84,11 +88,3 @@ class DataLoader:
         file_id = str(uuid4())
         path = f"{str(out_dir)}/{file_id}.json"
         return path
-
-    def load(self, uri: str, out_dir: Optional[Path] = None) -> List[Dict[str, str]]:
-        fs = self.remote_fs if out_dir is None else self.local_fs
-        in_file: str = self._download_and_serialize(uri, fs, out_dir)
-        with fs.open(in_file, "rb") as f:
-            items = ijson.items(f, "item", multiple_values=True)
-            results = [{k: item[k] for k in KEYS} for item in items]
-        return results
