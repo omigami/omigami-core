@@ -13,7 +13,7 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectStringFieldTypeError,
 )
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
-from spec2vec_mlops.helper_classes.spec2vec_model import Model
+from spec2vec_mlops.helper_classes.spec2vec_model import Model, MyModel
 
 os.chdir(Path(__file__).parents[3])
 
@@ -97,3 +97,8 @@ def test_predict_from_saved_model(saved_model_run_id, loaded_data):
     best_matches = model.predict(loaded_data)
     for spectrum in best_matches:
         assert spectrum["best_match_id"] is not None
+
+
+def test():
+    model = MyModel()
+    model.predict([], "la")
