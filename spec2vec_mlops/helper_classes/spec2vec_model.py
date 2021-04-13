@@ -1,5 +1,8 @@
+from typing import Union
+
 import flask
 from flask import jsonify
+from gensim.models import Word2Vec
 from mlflow.pyfunc import PythonModel
 
 from spec2vec_mlops import config
@@ -188,7 +191,11 @@ class Model(PythonModel):
         response.status_code = error.status_code
         return response
 
-    def __init__(self, **kwargs):
+    def __init__(self,
+        model: Word2Vec,
+        n_decimals: int,
+        intensity_weighting_power: Union[float, int],
+        allowed_missing_percentage: Union[float, int],):
         pass
 
     def predict(self, X, features_names, **kwargs):
