@@ -13,7 +13,7 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectStringFieldTypeError,
 )
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
-from spec2vec_mlops.helper_classes.spec2vec_model import Model, MyModel
+from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
 os.chdir(Path(__file__).parents[3])
 
@@ -100,5 +100,5 @@ def test_predict_from_saved_model(saved_model_run_id, loaded_data):
 
 
 def test():
-    model = MyModel()
+    model = Model(None, None, None, None)
     model.predict([], "la")
