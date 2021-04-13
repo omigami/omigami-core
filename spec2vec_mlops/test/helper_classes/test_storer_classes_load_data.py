@@ -38,16 +38,13 @@ def target_spectrum_ids(spectrum_ids_storer, cleaned_data):
 @pytest.fixture()
 def spectrum_stored(spectrum_storer, cleaned_data):
     spectrum_storer.store(cleaned_data)
+    spectrum_storer.store_online()
 
 
 @pytest.fixture()
 def documents_stored(document_storer, documents_data):
     document_storer.store(documents_data)
-
-
-@pytest.fixture()
-def embeddings_stored(embedding_storer, embeddings):
-    embedding_storer.store(embeddings)
+    document_storer.store_online()
 
 
 def test_load_all_spectrum_ids(spectrum_ids_storer, target_spectrum_ids):
@@ -79,6 +76,16 @@ def test_load_embeddings(embedding_storer, embeddings_stored, target_spectrum_id
 def test_load_all_spectrum_ids_online(spectrum_ids_storer, target_spectrum_ids):
     all_spectrum_ids = spectrum_ids_storer.read_online()
     assert all(id in all_spectrum_ids for id in target_spectrum_ids)
+
+
+def test_load_spectrum_online(spectrum_storer, spectrum_stored, target_spectrum_ids):
+    documents = document_storer.read_online(target_spectrum_ids)
+    assert len(documents) == len(target_spectrum_ids)
+
+
+def test_load_documents_online(document_storer, documents_stored, target_spectrum_ids):
+    documents = document_storer.read_online(target_spectrum_ids)
+    assert len(documents) == len(target_spectrum_ids)
 
 
 def test_load_embeddings_online(

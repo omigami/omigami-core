@@ -138,6 +138,16 @@ class SpectrumStorer(BaseStorer):
         spectrum_ids_stored = data_df["spectrum_id"].tolist()
         return spectrum_ids_stored
 
+    def store_online(self):
+        today = datetime.now()
+        yesterday = today - timedelta(1)
+        job = self._feast_table.client.start_offline_to_online_ingestion(
+            self._spectrum_table, yesterday, today
+        )
+        self._wait_for_job(job)
+        if job.get_status().name == "FAILED":
+            raise StorerLoadError
+
     def read(self, ids: List[str]) -> List[Spectrum]:
         entities_of_interest = pd.DataFrame(
             {
@@ -175,6 +185,39 @@ class SpectrumStorer(BaseStorer):
                 spectrum.losses = None
             else:
                 spectrum.losses = record["spectrum_info__losses"]
+            spectra.append(spectrum)
+        return spectra
+
+    def read_online(self, ids: List[str]) -> List[Spectrum]:
+        response = self._feast_table.client.get_online_features(
+            feature_refs=[
+                f"{self._feast_table.feature_table_name}:mz_list",
+                f"{self._feast_table.feature_table_name}:intensity_list",
+                f"{self._feast_table.feature_table_name}:losses",
+                f"{self._feast_table.feature_table_name}:event_timestamp",
+            ],
+            entity_rows=[{"spectrum_id": id} for id in ids],
+        )
+        d = response.to_dict()
+        spectra = []
+        for i, spectrum_id in enumerate(d["spectrum_id"]):
+            spectrum = Spectrum(
+                mz=d[f"{self._feast_table.feature_table_name}:mz_list"][i],
+                intensities=d[f"{self._feast_table.feature_table_name}:intensity_list"][
+                    i
+                ],
+                metadata={
+                    "spectrum_id": spectrum_id,
+                    "create_time": datetime.strftime(
+                        d[f"{self._feast_table.feature_table_name}:event_timestamp"][i],
+                        TIME_FORMAT,
+                    ),
+                },
+            )
+            if d[f"{self._feast_table.feature_table_name}:losses"] == [np.inf]:
+                spectrum.losses = None
+            else:
+                spectrum.losses = d[f"{self._feast_table.feature_table_name}:losses"]
             spectra.append(spectrum)
         return spectra
 
@@ -234,6 +277,16 @@ class DocumentStorer(BaseStorer):
         data_df = self._get_data_df(data)
         self._feast_table.client.ingest(self._document_table, data_df)
 
+    def store_online(self):
+        today = datetime.now()
+        yesterday = today - timedelta(1)
+        job = self._feast_table.client.start_offline_to_online_ingestion(
+            self._document_table, yesterday, today
+        )
+        self._wait_for_job(job)
+        if job.get_status().name == "FAILED":
+            raise StorerLoadError
+
     def read(self, ids: List[str]) -> List[FeastSpectrumDocument]:
         entities_of_interest = pd.DataFrame(
             {
@@ -264,6 +317,33 @@ class DocumentStorer(BaseStorer):
                     "losses": record["document_info__losses"],
                     "weights": record["document_info__weights"],
                     "n_decimals": record["document_info__n_decimals"],
+                    "metadata": {"spectrum_id": spectrum_id},
+                }
+            )
+            documents.append(doc)
+        return documents
+
+    def read_online(self, ids: List[str]) -> List[FeastSpectrumDocument]:
+        response = self._feast_table.client.get_online_features(
+            feature_refs=[
+                f"{self._feast_table.feature_table_name}:words",
+                f"{self._feast_table.feature_table_name}:losses",
+                f"{self._feast_table.feature_table_name}:weights",
+                f"{self._feast_table.feature_table_name}:n_decimals",
+            ],
+            entity_rows=[{"spectrum_id": id} for id in ids],
+        )
+        d = response.to_dict()
+        documents = []
+        for i, spectrum_id in enumerate(d["spectrum_id"]):
+            doc = FeastSpectrumDocument(
+                {
+                    "words": d[f"{self._feast_table.feature_table_name}:words"][i],
+                    "losses": d[f"{self._feast_table.feature_table_name}:losses"][i],
+                    "weights": d[f"{self._feast_table.feature_table_name}:weights"][i],
+                    "n_decimals": d[
+                        f"{self._feast_table.feature_table_name}:n_decimals"
+                    ],
                     "metadata": {"spectrum_id": spectrum_id},
                 }
             )
@@ -366,8 +446,15 @@ class EmbeddingStorer(BaseStorer):
             entity_rows=[{"spectrum_id": id} for id in ids],
         )
         d = response.to_dict()
-        print(d)
-        return d[f"{self._feast_table.feature_table_name}:embedding"]
+        embeddings = []
+        for i, spectrum_id in enumerate(d["spectrum_id"]):
+            embeddings.append(
+                Embedding(
+                    vector=d[f"{self._feast_table.feature_table_name}:embedding"][i],
+                    spectrum_id=spectrum_id,
+                )
+            )
+        return embeddings
 
     def _get_data_df(self, embeddings: List[Embedding]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
