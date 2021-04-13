@@ -31,7 +31,7 @@ class UserCustomException(Exception):
 
     status_code = 404
 
-    def __init__(self, message, application_error_code,http_status_code):
+    def __init__(self, message, application_error_code, http_status_code):
         Exception.__init__(self)
         self.message = message
         if http_status_code is not None:
@@ -46,6 +46,12 @@ class UserCustomException(Exception):
 
 class Model(PythonModel):
     model_error_handler = flask.Blueprint("error_handlers", __name__)
+
+    @model_error_handler.app_errorhandler(UserCustomException)
+    def handleCustomError(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
 
     def __init__(
         self,
@@ -63,11 +69,6 @@ class Model(PythonModel):
         self.document_converter = DocumentConverter()
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
 
-    @model_error_handler.app_errorhandler(UserCustomException)
-    def handleCustomError(error):
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
 
     def predict(self, context, model_input: List[Dict]) -> List[Dict]:
         raise UserCustomException('Test-Error-Msg',1402,402)
