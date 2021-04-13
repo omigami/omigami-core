@@ -196,7 +196,11 @@ class Model(PythonModel):
         n_decimals: int,
         intensity_weighting_power: Union[float, int],
         allowed_missing_percentage: Union[float, int],):
-        pass
+
+        self.model = model
+        self.n_decimals = n_decimals
+        self.intensity_weighting_power = intensity_weighting_power
+        self.allowed_missing_percentage = allowed_missing_percentage
 
     def predict(self, X, features_names, **kwargs):
         raise UserCustomException('Test-Error-Msg',1402,402)
