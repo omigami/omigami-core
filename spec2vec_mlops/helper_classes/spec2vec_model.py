@@ -2,7 +2,6 @@ import ast
 from typing import List, Dict, Union
 
 import flask
-from flask import jsonify
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from mlflow.pyfunc import PythonModel
@@ -31,27 +30,24 @@ class UserCustomException(Exception):
 
     status_code = 404
 
-    def __init__(self, message, application_error_code, http_status_code):
+    def __init__(self, message, http_status_code):
         Exception.__init__(self)
         self.message = message
-        if http_status_code is not None:
-            self.status_code = http_status_code
-        self.application_error_code = application_error_code
-
-    def to_dict(self):
-        rv = {"status": {"status": self.status_code, "message": self.message,
-                         "app_code": self.application_error_code}}
-        return rv
+        self.status_code = http_status_code
 
 
 class Model(PythonModel):
     model_error_handler = flask.Blueprint("error_handlers", __name__)
 
+    #@model_error_handler.app_errorhandler(UserCustomException.status_code)
+    # def handleCustomError(reror):
+    #     response = jsonify(error.to_dict())
+    #     response.status_code = error.status_code
+    #     return response
+
     @model_error_handler.app_errorhandler(UserCustomException)
-    def handleCustomError(error):
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
+    def special_exception_handler(self, error):
+        return error.message, error.status_code
 
     def __init__(
         self,
@@ -71,7 +67,7 @@ class Model(PythonModel):
 
 
     def predict(self, context, model_input: List[Dict]) -> List[Dict]:
-        raise UserCustomException('Test-Error-Msg',1402,402)
+        raise UserCustomException('Test-Error-Msg',402)
         self._validate_input(model_input)
         embeddings = self._pre_process_data(model_input)
         # get library embeddings from feast
