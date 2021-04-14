@@ -9,30 +9,34 @@ class DeployingError(Exception):
     pass
 
 
-class ValidateInputException(SeldonMicroserviceException):
+class InvalidInputException(SeldonMicroserviceException):
     def __init__(self, message, status_code=400, payload=None, reason=""):
         super().__init__(message, status_code, payload, reason)
 
 
-class IncorrectSpectrumNameTypeError(ValidateInputException):
+class IncorrectDataLengthException(InvalidInputException):
     pass
 
 
-class IncorrectSpectrumDataTypeError(ValidateInputException):
+class IncorrectSpectrumNameTypeException(InvalidInputException):
     pass
 
 
-class MandatoryKeyMissingError(ValidateInputException):
+class IncorrectSpectrumDataTypeException(InvalidInputException):
     pass
 
 
-class IncorrectPeaksJsonTypeError(ValidateInputException):
+class MandatoryKeyMissingException(InvalidInputException):
     pass
 
 
-class IncorrectFloatFieldTypeError(ValidateInputException):
+class IncorrectPeaksJsonTypeException(InvalidInputException):
     pass
 
 
-class IncorrectStringFieldTypeError(ValidateInputException):
+class IncorrectFloatFieldTypeException(InvalidInputException):
+    pass
+
+
+class IncorrectStringFieldTypeException(InvalidInputException):
     pass

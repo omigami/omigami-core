@@ -9,12 +9,13 @@ from seldon_core.wrapper import get_rest_microservice
 
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
-    MandatoryKeyMissingError,
-    IncorrectSpectrumDataTypeError,
-    IncorrectPeaksJsonTypeError,
-    IncorrectFloatFieldTypeError,
-    IncorrectStringFieldTypeError,
-    IncorrectSpectrumNameTypeError,
+    MandatoryKeyMissingException,
+    IncorrectSpectrumDataTypeException,
+    IncorrectPeaksJsonTypeException,
+    IncorrectFloatFieldTypeException,
+    IncorrectStringFieldTypeException,
+    IncorrectSpectrumNameTypeException,
+    IncorrectDataLengthException,
 )
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
@@ -53,31 +54,36 @@ def model(word2vec_model):
     "context, input_data, exception",
     [
         (
+            ["1", "2"],
+            [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": "some_key"}],
+            IncorrectDataLengthException,
+        ),
+        (
             [1],
             [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": "some_key"}],
-            IncorrectSpectrumNameTypeError,
+            IncorrectSpectrumNameTypeException,
         ),
-        (["spectrum"], [[]], IncorrectSpectrumDataTypeError),
-        (["spectrum"], [{"peaks_json": ""}], MandatoryKeyMissingError),
+        (["spectrum"], [[]], IncorrectSpectrumDataTypeException),
+        (["spectrum"], [{"peaks_json": ""}], MandatoryKeyMissingException),
         (
             ["spectrum"],
             [{"peaks_json": "peaks", "Precursor_MZ": "1.0"}],
-            IncorrectPeaksJsonTypeError,
+            IncorrectPeaksJsonTypeException,
         ),
         (
             ["spectrum"],
             [{"peaks_json": {}, "Precursor_MZ": "1.0"}],
-            IncorrectPeaksJsonTypeError,
+            IncorrectPeaksJsonTypeException,
         ),
         (
-            ["spectrum"],
+            None,
             [{"peaks_json": [], "Precursor_MZ": "some_mz"}],
-            IncorrectFloatFieldTypeError,
+            IncorrectFloatFieldTypeException,
         ),
         (
-            ["spectrum"],
+            None,
             [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": 1}],
-            IncorrectStringFieldTypeError,
+            IncorrectStringFieldTypeException,
         ),
     ],
 )
@@ -107,9 +113,11 @@ def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
 
 
 def test_get_best_matches(model, embeddings):
-    best_matches = model._get_best_matches(embeddings[:50], embeddings[50:])
+    best_matches = model._get_best_matches(
+        embeddings[:50], embeddings[50:], ["spectrum_name"] * 50
+    )
     assert all(
-        key in best_matches[0] for key in ["spectrum_number", "best_match_id", "score"]
+        key in best_matches[0] for key in ["spectrum_name", "best_match_id", "score"]
     )
 
 

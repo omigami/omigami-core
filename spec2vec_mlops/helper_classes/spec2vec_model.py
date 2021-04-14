@@ -1,5 +1,5 @@
 import ast
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Optional
 
 from gensim.models import Word2Vec
 from matchms import calculate_scores
@@ -12,12 +12,13 @@ from spec2vec_mlops.helper_classes.document_converter import DocumentConverter
 from spec2vec_mlops.helper_classes.embedding import Embedding
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
-    MandatoryKeyMissingError,
-    IncorrectPeaksJsonTypeError,
-    IncorrectFloatFieldTypeError,
-    IncorrectStringFieldTypeError,
-    IncorrectSpectrumDataTypeError,
-    IncorrectSpectrumNameTypeError,
+    MandatoryKeyMissingException,
+    IncorrectPeaksJsonTypeException,
+    IncorrectFloatFieldTypeException,
+    IncorrectStringFieldTypeException,
+    IncorrectSpectrumDataTypeException,
+    IncorrectSpectrumNameTypeException,
+    IncorrectDataLengthException,
 )
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
@@ -41,7 +42,9 @@ class Model(PythonModel):
         self.document_converter = DocumentConverter()
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
 
-    def predict(self, context: List[str], model_input: List[Dict]) -> List[Dict]:
+    def predict(
+        self, context: Optional[List[str]], model_input: List[Dict]
+    ) -> List[Dict]:
         self._validate_input(context, model_input)
         embeddings = self._pre_process_data(model_input)
         # get library embeddings from feast
@@ -84,7 +87,7 @@ class Model(PythonModel):
             best_match = scores.scores_by_query(query, sort=True)[0]
             best_matches.append(
                 {
-                    "spectrum_name": context[i],
+                    "spectrum_name": context[i] if isinstance(context, list) else i,
                     "best_match_id": best_match[0].spectrum_id,
                     "score": best_match[1],
                 }
@@ -92,21 +95,28 @@ class Model(PythonModel):
         return best_matches
 
     @staticmethod
-    def _validate_input(context: List[str], model_input: List[Dict]):
-        for spectrum_name, spectrum in zip(context, model_input):
-            if not isinstance(spectrum_name, str):
-                raise IncorrectSpectrumNameTypeError(
-                    "Spectrum name must be a string", 400
+    def _validate_input(context: Optional[List[str]], model_input: List[Dict]):
+        if isinstance(context, list):
+            if len(context) != len(model_input):
+                raise IncorrectDataLengthException(
+                    "Names and ndarray must have the same length", 400
                 )
 
+        for i, spectrum in enumerate(model_input):
+            if isinstance(context, list):
+                if not isinstance(context[i], str):
+                    raise IncorrectSpectrumNameTypeException(
+                        "Spectrum name must be a string", 400
+                    )
+
             if not isinstance(spectrum, Dict):
-                raise IncorrectSpectrumDataTypeError(
+                raise IncorrectSpectrumDataTypeException(
                     "Spectrum data must be a dictionary", 400
                 )
 
             mandatory_keys = ["peaks_json", "Precursor_MZ"]
             if any(key not in spectrum.keys() for key in mandatory_keys):
-                raise MandatoryKeyMissingError(
+                raise MandatoryKeyMissingException(
                     f"Please include all the mandatory keys in your input data. "
                     f"The mandatory keys are {mandatory_keys}",
                     400,
@@ -116,12 +126,12 @@ class Model(PythonModel):
                 try:
                     ast.literal_eval(spectrum["peaks_json"])
                 except ValueError:
-                    raise IncorrectPeaksJsonTypeError(
+                    raise IncorrectPeaksJsonTypeException(
                         "peaks_json needs to be a string representation of a list or a list",
                         400,
                     )
             elif not isinstance(spectrum["peaks_json"], list):
-                raise IncorrectPeaksJsonTypeError(
+                raise IncorrectPeaksJsonTypeException(
                     "peaks_json needs to be a string representation of a list or a list",
                     400,
                 )
@@ -132,7 +142,7 @@ class Model(PythonModel):
                     try:
                         float(spectrum[key])
                     except ValueError:
-                        raise IncorrectFloatFieldTypeError(
+                        raise IncorrectFloatFieldTypeException(
                             f"{key} needs to be a string representation of a float",
                             400,
                         )
@@ -140,6 +150,6 @@ class Model(PythonModel):
             for key in KEYS:
                 if key not in float_keys + mandatory_keys:
                     if not isinstance(spectrum.get(key, ""), str):
-                        raise IncorrectStringFieldTypeError(
+                        raise IncorrectStringFieldTypeException(
                             f"{key} needs to be a string", 400
                         )
