@@ -102,17 +102,14 @@ def test_predict_from_saved_model(saved_model_run_id, loaded_data):
         assert spectrum["best_match_id"] is not None
 
 
-def test():
-    model = Model(None, None, None, None)
-    model.predict([], "la")
-
-
-def test_raise_exception():
-    user_object = Model(None, None, None, None)
+def test_raise_api_exception(model):
+    user_object = Model(
+        model, n_decimals=1, intensity_weighting_power=0.5, allowed_missing_percentage=5
+    )
     seldon_metrics = SeldonMetrics()
     app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
-    assert rv.status_code == 402
-    assert j["status"]["app_code"] == 1402
+    assert rv.status_code == 400
+    assert j["status"]["info"] == "Input data must be a dictionary"

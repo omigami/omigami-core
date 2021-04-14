@@ -4,16 +4,12 @@ metadata:
   name: spec2vec
 spec:
   name: spec2vec
-  protocol: seldon
-  transport: rest
   predictors:
   - graph:
       children: []
       implementation: MLFLOW_SERVER
       modelUri: dummy
       name: spec2vec
-      endpoint:
-        type: REST
     name: default
     replicas: 1
     traffic: 100
