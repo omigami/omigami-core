@@ -16,7 +16,8 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectPeaksJsonTypeError,
     IncorrectFloatFieldTypeError,
     IncorrectStringFieldTypeError,
-    IncorrectInputTypeError,
+    IncorrectSpectrumDataTypeError,
+    IncorrectSpectrumNameTypeError,
 )
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
@@ -40,12 +41,12 @@ class Model(PythonModel):
         self.document_converter = DocumentConverter()
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
 
-    def predict(self, context, model_input: List[Dict]) -> List[Dict]:
-        self._validate_input(model_input)
+    def predict(self, context: List[str], model_input: List[Dict]) -> List[Dict]:
+        self._validate_input(context, model_input)
         embeddings = self._pre_process_data(model_input)
         # get library embeddings from feast
         # for now going to use the calculated ones
-        best_matches = self._get_best_matches(embeddings, embeddings)
+        best_matches = self._get_best_matches(embeddings, embeddings, context)
         return best_matches
 
     def _pre_process_data(self, model_input: List[Dict]) -> List[Embedding]:
@@ -66,7 +67,7 @@ class Model(PythonModel):
         return embeddings
 
     def _get_best_matches(
-        self, references: List[Embedding], queries: List[Embedding]
+        self, references: List[Embedding], queries: List[Embedding], context: List[str]
     ) -> List[Dict]:
         spec2vec_embeddings_similarity = Spec2VecEmbeddings(
             model=self.model,
@@ -83,7 +84,7 @@ class Model(PythonModel):
             best_match = scores.scores_by_query(query, sort=True)[0]
             best_matches.append(
                 {
-                    "spectrum_number": i,
+                    "spectrum_name": context[i],
                     "best_match_id": best_match[0].spectrum_id,
                     "score": best_match[1],
                 }
@@ -91,10 +92,17 @@ class Model(PythonModel):
         return best_matches
 
     @staticmethod
-    def _validate_input(model_input: List[Dict]):
-        for spectrum in model_input:
+    def _validate_input(context: List[str], model_input: List[Dict]):
+        for spectrum_name, spectrum in zip(context, model_input):
+            if not isinstance(spectrum_name, str):
+                raise IncorrectSpectrumNameTypeError(
+                    "Spectrum name must be a string", 400
+                )
+
             if not isinstance(spectrum, Dict):
-                raise IncorrectInputTypeError("Input data must be a dictionary", 400)
+                raise IncorrectSpectrumDataTypeError(
+                    "Spectrum data must be a dictionary", 400
+                )
 
             mandatory_keys = ["peaks_json", "Precursor_MZ"]
             if any(key not in spectrum.keys() for key in mandatory_keys):

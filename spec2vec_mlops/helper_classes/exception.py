@@ -14,7 +14,11 @@ class ValidateInputException(SeldonMicroserviceException):
         super().__init__(message, status_code, payload, reason)
 
 
-class IncorrectInputTypeError(ValidateInputException):
+class IncorrectSpectrumNameTypeError(ValidateInputException):
+    pass
+
+
+class IncorrectSpectrumDataTypeError(ValidateInputException):
     pass
 
 
