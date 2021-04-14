@@ -137,13 +137,13 @@ def cli():
 
 
 @cli.command(name="register-train-pipeline")
-@cli.option("--auth", default=False, help="Enable authentication")
-@cli.option("--auth_url", default=None, help="Kratos Public URI")
-@cli.option("--username", default=None, help="Login username")
-@cli.option("--password", default=None, help="Login password")
-def register_train_pipeline_cli(auth, uri, username, password, *args, **kwargs):
+@click.option("--auth", default=False, help="Enable authentication")
+@click.option("--auth_url", default=None, help="Kratos Public URI")
+@click.option("--username", default=None, help="Login username")
+@click.option("--password", default=None, help="Login password")
+def register_train_pipeline_cli(auth, auth_url, username, password, *args, **kwargs):
     if auth:
-        authenticator = KratosAuthenticator(uri, username, password)
+        authenticator = KratosAuthenticator(auth_url, username, password)
         session_token = authenticator.authenticate()
         kwargs["session_token"] = session_token
     spec2vec_train_pipeline_distributed(*args, **kwargs)

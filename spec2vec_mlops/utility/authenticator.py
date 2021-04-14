@@ -53,8 +53,8 @@ class KratosAuthenticator(Authenticator):
     def _get_session_token(self, action_url):
         """Authenticate the user using the provided credentials"""
         data = {"identifier": self._username, "password": self._password}
-        headers = {"Content-type": "application/json"}
-        r = requests.post(action_url, data=data, headers=headers)
+        headers = {"Accept": "application/json", "Content-Type": "application/json"}
+        r = requests.post(action_url, json=data, headers=headers)
         json = r.json()
         try:
             session_token = json["session_token"]
