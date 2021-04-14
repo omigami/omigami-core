@@ -47,6 +47,7 @@ def model(word2vec_model):
         n_decimals=1,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
+        run_id="1",
     )
 
 
@@ -113,21 +114,23 @@ def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
 
 
 def test_get_best_matches(model, embeddings):
-    best_matches = model._get_best_matches(
-        embeddings[:50], embeddings[50:], ["spectrum_name"] * 50
-    )
-    assert all(
-        key in best_matches[0] for key in ["spectrum_name", "best_match_id", "score"]
-    )
+    best_matches = model._get_best_matches(embeddings, embeddings)
+    for query, best_match in zip(embeddings, best_matches):
+        assert query.spectrum_id == best_match["best_match_id"]
 
 
-def test_predict_from_saved_model(saved_model_run_id, loaded_data):
+def test_get_reference_embeddings(model, all_spectrum_ids, embeddings_stored):
+    embeddings = model._get_reference_embeddings()
+    assert len(embeddings) == len(all_spectrum_ids)
+
+
+def test_predict_from_saved_model(saved_model_run_id, loaded_data, embeddings_stored):
     run = mlflow.get_run(saved_model_run_id)
-    modelpath = f"{run.info.artifact_uri}/model/"
-    model = mlflow.pyfunc.load_model(modelpath)
+    model_path = f"{run.info.artifact_uri}/model/"
+    model = mlflow.pyfunc.load_model(model_path)
     best_matches = model.predict(loaded_data)
-    for spectrum in best_matches:
-        assert spectrum["best_match_id"] is not None
+    for spectrum, best_match in zip(loaded_data, best_matches):
+        assert best_match["best_match_id"] == spectrum["spectrum_id"]
 
 
 def test_raise_api_exception(model):

@@ -1,14 +1,16 @@
-from typing import List
+from typing import List, Union
 
 from gensim.models import Word2Vec
 from spec2vec import SpectrumDocument
 from spec2vec.model_building import train_new_word2vec_model
 
+from spec2vec_mlops.entities.feast_spectrum_document import FeastSpectrumDocument
+
 
 class ModelTrainer:
     @staticmethod
     def train_model(
-        documents: List[SpectrumDocument],
+        documents: List[Union[SpectrumDocument, FeastSpectrumDocument]],
         iterations: int = None,
         window: int = None,
     ) -> Word2Vec:
