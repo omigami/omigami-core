@@ -1,9 +1,11 @@
 from typing import Union
 
-import flask
+from flask import Flask
+from flask_cors import CORS
 from gensim.models import Word2Vec
 from mlflow.pyfunc import PythonModel
 from seldon_core.flask_utils import jsonify
+from seldon_core.wrapper import _set_flask_app_configs
 
 from spec2vec_mlops import config
 
@@ -170,10 +172,13 @@ class UserCustomException(Exception):
 
 
 class Model(PythonModel):
-    model_error_handler = flask.Blueprint('error_handlers', __name__)
+    app = Flask(__name__, static_url_path="")
+    CORS(app)
 
-    @model_error_handler.app_errorhandler(UserCustomException)
-    def handleCustomError(error):
+    _set_flask_app_configs(app)
+
+    @app.errorhandler(UserCustomException)
+    def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
