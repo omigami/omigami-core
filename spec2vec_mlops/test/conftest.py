@@ -1,7 +1,13 @@
 import pickle
 from pathlib import Path
+
 import pytest
+
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
+from spec2vec_mlops.helper_classes.storer_classes import (
+    EmbeddingStorer,
+    SpectrumIDStorer,
+)
 
 
 def pytest_addoption(parser):
@@ -62,7 +68,34 @@ def word2vec_model(assets_dir):
 
 @pytest.fixture()
 def embeddings(assets_dir):
-    path = str(assets_dir / "embeddings.pickle")
+    path = str(assets_dir / "SMALL_GNPS_as_embeddings.pickle")
     with open(path, "rb") as handle:
         embeddings = pickle.load(handle)
     return embeddings
+
+
+@pytest.fixture()
+def spectrum_ids_storer(tmpdir):
+    return SpectrumIDStorer(
+        feature_table_name="spectrum_ids_info",
+    )
+
+
+@pytest.fixture()
+def all_spectrum_ids(spectrum_ids_storer, cleaned_data):
+    ids = [spectrum.metadata["spectrum_id"] for spectrum in cleaned_data]
+    spectrum_ids_storer.store(ids)
+    return ids
+
+
+@pytest.fixture()
+def embedding_storer(tmpdir):
+    return EmbeddingStorer(
+        feature_table_name="embedding_info",
+        run_id="1",
+    )
+
+
+@pytest.fixture()
+def embeddings_stored(embedding_storer, embeddings):
+    embedding_storer.store(embeddings)
