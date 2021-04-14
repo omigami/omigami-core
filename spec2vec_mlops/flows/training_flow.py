@@ -115,9 +115,10 @@ def spec2vec_train_pipeline_distributed(
         )
         store_embeddings_task(embeddings, run_id, feast_source_dir, feast_core_url)
         deploy_model_task(run_id, seldon_deployment_path, "seldon")
-    client = Client(api_server=api_server)
     if session_token:
-        client.attach_headers({"Authorization": f"Bearer {session_token}"})
+        client = Client(api_server=api_server, api_token=session_token)
+    else:
+        client = Client(api_server=api_server)
     client.create_project(project_name)
     training_flow_id = client.register(
         training_flow,
