@@ -20,4 +20,4 @@ dependencies:
       - matchms==0.8.*
       - feast==0.9.*
       - mlflow==1.14.*
-      - seldon-core==1.7.*
+      - seldon-core==1.6.*
