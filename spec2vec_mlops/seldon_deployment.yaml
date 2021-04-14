@@ -4,6 +4,7 @@ metadata:
   name: spec2vec
 spec:
   name: spec2vec
+  transport: rest
   predictors:
   - graph:
       children: []

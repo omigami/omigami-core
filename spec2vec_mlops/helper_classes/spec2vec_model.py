@@ -1,11 +1,9 @@
 from typing import Union
 
-from flask import Flask
-from flask_cors import CORS
+import flask
 from gensim.models import Word2Vec
 from mlflow.pyfunc import PythonModel
 from seldon_core.flask_utils import jsonify
-from seldon_core.wrapper import _set_flask_app_configs
 
 from spec2vec_mlops import config
 
@@ -155,10 +153,9 @@ KEYS = config["gnps_json"]["necessary_keys"]
 
 
 class UserCustomException(Exception):
-
     status_code = 404
 
-    def __init__(self, message, application_error_code,http_status_code):
+    def __init__(self, message, application_error_code, http_status_code):
         Exception.__init__(self)
         self.message = message
         if http_status_code is not None:
@@ -166,19 +163,21 @@ class UserCustomException(Exception):
         self.application_error_code = application_error_code
 
     def to_dict(self):
-        rv = {"status": {"status": self.status_code, "message": self.message,
-                         "app_code": self.application_error_code}}
+        rv = {
+            "status": {
+                "status": self.status_code,
+                "message": self.message,
+                "app_code": self.application_error_code,
+            }
+        }
         return rv
 
 
 class Model(PythonModel):
-    app = Flask(__name__, static_url_path="")
-    CORS(app)
+    model_error_handler = flask.Blueprint("error_handlers", __name__)
 
-    _set_flask_app_configs(app)
-
-    @app.errorhandler(UserCustomException)
-    def handle_invalid_usage(error):
+    @model_error_handler.app_errorhandler(UserCustomException)
+    def handleCustomError(error):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
@@ -194,6 +193,6 @@ class Model(PythonModel):
         self.intensity_weighting_power = intensity_weighting_power
         self.allowed_missing_percentage = allowed_missing_percentage
 
-    def predict(self, X, features_names, **kwargs):
+    def predict(self, X, features_names, **kwargs) -> object:
         raise UserCustomException('Test-Error-Msg',1402,402)
         return X

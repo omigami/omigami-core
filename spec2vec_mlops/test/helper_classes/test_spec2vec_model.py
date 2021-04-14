@@ -1,8 +1,11 @@
+import json
 import os
 from pathlib import Path
 
 import mlflow
 import pytest
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.wrapper import get_rest_microservice
 
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
@@ -102,3 +105,14 @@ def test_predict_from_saved_model(saved_model_run_id, loaded_data):
 def test():
     model = Model(None, None, None, None)
     model.predict([], "la")
+
+
+def test_raise_exception():
+    user_object = Model(None, None, None, None)
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    rv = client.get('/predict?json={"data":{"names":["a","b"],"ndarray":[[1,2]]}}')
+    j = json.loads(rv.data)
+    assert rv.status_code == 402
+    assert j["status"]["app_code"] == 1402
