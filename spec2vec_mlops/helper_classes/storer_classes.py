@@ -20,9 +20,9 @@ not_string_features2types = {
     "mz_list": ValueType.DOUBLE_LIST,
     "intensity_list": ValueType.DOUBLE_LIST,
     "losses": ValueType.DOUBLE_LIST,
-    "precursor_mz": ValueType.FLOAT,
+    "precursor_mz": ValueType.DOUBLE,
     "charge": ValueType.INT64,
-    "parent_mass": ValueType.FLOAT,
+    "parent_mass": ValueType.DOUBLE,
 }
 string_features2types = {
     key.lower(): ValueType.STRING
@@ -303,7 +303,7 @@ class EmbeddingStorer(BaseStorer):
         }
         df = self._dgw.read_offline(feature_list, entity_dict)
         df = df.set_index("spectrum_id")
-        return self._get_output(df, sep=":")
+        return self._get_output(df, sep="__")
 
     def read_online(self, ids: List[str]) -> List[Embedding]:
         feature_list = [

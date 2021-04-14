@@ -49,8 +49,8 @@ def test_load_all_spectrum_ids_online(spectrum_ids_storer, target_spectrum_ids):
 
 
 def test_load_spectrum_online(spectrum_storer, spectrum_stored, target_spectrum_ids):
-    documents = document_storer.read_online(target_spectrum_ids)
-    assert len(documents) == len(target_spectrum_ids)
+    spectra = spectrum_storer.read_online(target_spectrum_ids)
+    assert len(spectra) == len(target_spectrum_ids)
 
 
 def test_load_documents_online(document_storer, documents_stored, target_spectrum_ids):
