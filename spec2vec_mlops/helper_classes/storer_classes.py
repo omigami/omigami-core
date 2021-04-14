@@ -32,9 +32,9 @@ not_string_features2types = {
     "mz_list": ValueType.DOUBLE_LIST,
     "intensity_list": ValueType.DOUBLE_LIST,
     "losses": ValueType.DOUBLE_LIST,
-    "precursor_mz": ValueType.FLOAT,
+    "precursor_mz": ValueType.DOUBLE,
     "charge": ValueType.INT64,
-    "parent_mass": ValueType.FLOAT,
+    "parent_mass": ValueType.DOUBLE,
 }
 string_features2types = {
     key.lower(): ValueType.STRING
