@@ -55,24 +55,24 @@ def model(word2vec_model):
     [
         (
             ["1", "2"],
-            [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": "some_key"}],
+            [{"peaks_json": []}],
             IncorrectDataLengthException,
         ),
         (
             [1],
-            [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": "some_key"}],
+            [{"peaks_json": []}],
             IncorrectSpectrumNameTypeException,
         ),
         (["spectrum"], [[]], IncorrectSpectrumDataTypeException),
-        (["spectrum"], [{"peaks_json": ""}], MandatoryKeyMissingException),
+        (["spectrum"], [{}], MandatoryKeyMissingException),
         (
             ["spectrum"],
-            [{"peaks_json": "peaks", "Precursor_MZ": "1.0"}],
+            [{"peaks_json": "peaks"}],
             IncorrectPeaksJsonTypeException,
         ),
         (
             ["spectrum"],
-            [{"peaks_json": {}, "Precursor_MZ": "1.0"}],
+            [{"peaks_json": {}}],
             IncorrectPeaksJsonTypeException,
         ),
         (
@@ -95,7 +95,7 @@ def test_validate_input_raised_expections(context, input_data, exception, model)
 def test_validate_input_valid(model):
     model._validate_input(
         ["spectrum_name"],
-        [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": "some_key"}],
+        [{"peaks_json": [], "INCHI": "some_key"}],
     )
 
 

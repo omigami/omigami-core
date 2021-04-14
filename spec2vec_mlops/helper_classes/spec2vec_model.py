@@ -114,7 +114,7 @@ class Model(PythonModel):
                     "Spectrum data must be a dictionary", 400
                 )
 
-            mandatory_keys = ["peaks_json", "Precursor_MZ"]
+            mandatory_keys = ["peaks_json"]
             if any(key not in spectrum.keys() for key in mandatory_keys):
                 raise MandatoryKeyMissingException(
                     f"Please include all the mandatory keys in your input data. "
