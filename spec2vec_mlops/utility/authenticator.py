@@ -41,6 +41,10 @@ class KratosAuthenticator(Authenticator):
     def _get_login_flow_url(self):
         """Sends a request to Krato's Public endpoint to get the Login Flow URL + UID"""
         r = requests.get(f"{self.url}self-service/login/api")
+        if r.status_code != 200:
+            logger.error("Authentication Failed")
+            logger.error(r.text)
+            r.raise_for_status()
         json = r.json()
         try:
             action_url = json["methods"]["password"]["config"]["action"]
