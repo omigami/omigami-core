@@ -289,6 +289,7 @@ class EmbeddingStorer(BaseStorer):
             features2types={
                 "run_id": ValueType.STRING,
                 "embedding": ValueType.DOUBLE_LIST,
+                "n_decimals": ValueType.INT64,
             },
         )
 
@@ -300,6 +301,7 @@ class EmbeddingStorer(BaseStorer):
     def read_offline(self, ids: List[str]) -> List[Embedding]:
         feature_list = [
             f"{self._table.name}:embedding",
+            f"{self._table.name}:n_decimals",
         ]
         entity_dict = {
             "spectrum_id": ids,
@@ -313,6 +315,7 @@ class EmbeddingStorer(BaseStorer):
     def read_online(self, ids: List[str]) -> List[Embedding]:
         feature_list = [
             f"{self._table.name}:embedding",
+            f"{self._table.name}:n_decimals",
         ]
         entity_rows = [{"spectrum_id": id} for id in ids]
         df = self._dgw.read_online(feature_list, entity_rows)
@@ -326,6 +329,7 @@ class EmbeddingStorer(BaseStorer):
                     "spectrum_id": embedding.spectrum_id,
                     "embedding": embedding.vector,
                     "run_id": self.run_id,
+                    "n_decimals": embedding.n_decimals,
                     "event_timestamp": datetime.now(),
                     "created_timestamp": datetime.now(),
                 }
@@ -341,6 +345,7 @@ class EmbeddingStorer(BaseStorer):
                 Embedding(
                     vector=record[f"embedding_info{sep}embedding"],
                     spectrum_id=spectrum_id,
+                    n_decimals=record[f"embedding_info{sep}n_decimals"],
                 )
             )
         return embeddings
