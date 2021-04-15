@@ -7,15 +7,16 @@ from prefect import Flow, unmapped
 from prefect.engine.state import State
 
 from spec2vec_mlops import config
-from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.clean_data import clean_data_task
+from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
+from spec2vec_mlops.tasks.download_data import download_data_task
+from spec2vec_mlops.tasks.load_data import load_data_task
+from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.store_cleaned_data import store_cleaned_data_task
 from spec2vec_mlops.tasks.store_documents import store_documents_task
-from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
-from spec2vec_mlops.tasks.train_model import train_model_task
-from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.store_embeddings import store_embeddings_task
+from spec2vec_mlops.tasks.train_model import train_model_task
 
 FEAST_CORE_URL_LOCAL = config["feast"]["url"]["local"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"].get(str)
@@ -29,6 +30,7 @@ pytestmark = pytest.mark.skip(
 
 def spec2vec_train_pipeline_local(
     source_uri: str,
+    download_out_dir: Path,
     feast_source_dir: str,
     feast_core_url: str,
     n_decimals: int,
@@ -39,10 +41,10 @@ def spec2vec_train_pipeline_local(
     window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
-    out_dir: Path = None,
 ) -> State:
     with Flow("flow") as flow:
-        raw = load_data_task(source_uri, out_dir)
+        file_path = download_data_task(source_uri, download_out_dir)
+        raw = load_data_task(file_path)
         cleaned = clean_data_task.map(raw)
         store_cleaned_data_task(cleaned, feast_source_dir, feast_core_url)
         documents = convert_to_documents_task.map(
@@ -74,6 +76,7 @@ def spec2vec_train_pipeline_local(
 def test_spec2vec_train_pipeline_local(tmpdir):
     state = spec2vec_train_pipeline_local(
         source_uri=SOURCE_URI_PARTIAL_GNPS,
+        download_out_dir=tmpdir,
         feast_source_dir=f"file://{tmpdir}",
         feast_core_url=FEAST_CORE_URL_LOCAL,
         n_decimals=2,
@@ -82,6 +85,5 @@ def test_spec2vec_train_pipeline_local(tmpdir):
         save_model_path=f"{tmpdir}/mflow",
         mlflow_server_uri=f"{tmpdir}/mlflow/",
         experiment_name="experiment",
-        out_dir=tmpdir,
     )
     assert state.is_successful()

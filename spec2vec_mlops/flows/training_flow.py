@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Union
 
 import click
@@ -10,6 +11,7 @@ from prefect.storage import S3
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
+from spec2vec_mlops.tasks.download_data import download_data_task
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
@@ -34,6 +36,7 @@ def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-spec2vec-load-small-data-5",
+    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets",
     feast_source_dir: str = "s3://dr-prefect/spec2vec-training-flow/feast",
     feast_core_url: str = FEAST_CORE_URL_REMOTE,
     n_decimals: int = 2,
@@ -53,6 +56,7 @@ def spec2vec_train_pipeline_distributed(
     api_server: api_server to instantiate Client object
         when set to API_SERVER_LOCAL port-forwarding is required.
     project_name: name to register project in Prefect
+    download_out_dir: location to save the downloaded datasets
     feast_source_dir: location to save the file source of Feast
     feast_core_url: url where to connect to Feast server
     n_decimals: peak positions are converted to strings with n_decimal decimals
@@ -79,7 +83,8 @@ def spec2vec_train_pipeline_distributed(
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
-        raw = load_data_task(uri)
+        file_path = download_data_task(uri, Path(download_out_dir))
+        raw = load_data_task(file_path)
         logger.info("Data loading is complete.")
         cleaned = clean_data_task.map(raw)
         logger.info("Data cleaning is complete.")
