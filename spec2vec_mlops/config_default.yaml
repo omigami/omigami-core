@@ -64,7 +64,8 @@ feast:
     local: "0.0.0.0:6566"
   spark:
     base_source_location: "file:///tmp/base_source"
-    output_location: "file:///tmp/historical_feature_output"
+    output_location: "file:///tmp/output.parquet"
+    output_read_location: "/tmp/output.parquet"
 prefect_flow_registration:
   api_server:
     remote: "https://prefect.mlops.datarevenue.com/graphql"
