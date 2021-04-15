@@ -28,8 +28,6 @@ pytestmark = pytest.mark.skipif(
 def spec2vec_train_pipeline_local(
     source_uri: str,
     download_out_dir: Path,
-    feast_source_dir: str,
-    feast_core_url: str,
     n_decimals: int,
     save_model_path: str,
     mlflow_server_uri: str,
@@ -74,9 +72,9 @@ def spec2vec_train_pipeline_local(
     return state
 
 
-def test_spec2vec_train_pipeline_local(tmpdir):
+def test_spec2vec_train_pipeline_local(tmpdir, gnps_small_json):
     state = spec2vec_train_pipeline_local(
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        source_uri=gnps_small_json,
         download_out_dir=tmpdir,
         n_decimals=2,
         iterations=10,
