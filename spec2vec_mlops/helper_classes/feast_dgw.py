@@ -59,11 +59,20 @@ class FeastDataGateway:
         """Write data to offline store."""
         self.client.ingest(table, data_df)
 
-    def store_online(self, table: FeatureTable):
-        """Write data from offline to online store daily."""
-        today = datetime.now()
-        yesterday = today - timedelta(1)
-        job = self.client.start_offline_to_online_ingestion(table, yesterday, today)
+    def store_online(self, table: FeatureTable, all=True):
+        """Write data from offline to online store.
+
+        Parameters
+        ----------
+        table: FeatureTable
+            Feature table to be stored online
+        all: bool
+            If True, write all values.
+            If False, write only data with event_timestamp from yesterday to today.
+        """
+        end = datetime.now()
+        start = datetime.fromtimestamp(0) if all else end - timedelta(1)
+        job = self.client.start_offline_to_online_ingestion(table, start, end)
         FeastUtils.wait_for_job(job)
 
     def read_offline(
