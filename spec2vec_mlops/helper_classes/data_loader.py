@@ -7,7 +7,7 @@ from drfs.filesystems import get_fs
 
 from spec2vec_mlops import config
 
-KEYS = config["gnps_json"]["necessary_keys"].get(list)
+KEYS = config["gnps_json"]["necessary_keys"]
 
 
 logging.basicConfig(level=logging.DEBUG)

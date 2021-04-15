@@ -25,6 +25,8 @@ class ModelRegister:
                 "window": model.model.window,
             }
             mlflow.log_params(params)
+            run_id = run.info.run_id
+            model.set_run_id(run_id)
             try:
                 mlflow.pyfunc.log_model(
                     "model",
@@ -32,12 +34,7 @@ class ModelRegister:
                     registered_model_name=experiment_name,
                     conda_env=conda_env_path,
                     code_path=[
-                        "spec2vec_mlops/helper_classes/data_loader.py",
-                        "spec2vec_mlops/helper_classes/data_cleaner.py",
-                        "spec2vec_mlops/helper_classes/document_converter.py",
-                        "spec2vec_mlops/helper_classes/embedding.py",
-                        "spec2vec_mlops/helper_classes/embedding_maker.py",
-                        "spec2vec_mlops/helper_classes/spec2vec_embeddings.py",
+                        "spec2vec_mlops",
                     ],
                 )
             # This is need to run the flow locally. mlflow.pyfunc.log_model is not supported without a database
@@ -47,14 +44,11 @@ class ModelRegister:
                     python_model=model,
                     conda_env=conda_env_path,
                     code_path=[
-                        "spec2vec_mlops/helper_classes/data_loader.py",
-                        "spec2vec_mlops/helper_classes/data_cleaner.py",
-                        "spec2vec_mlops/helper_classes/document_converter.py",
-                        "spec2vec_mlops/helper_classes/embedding_maker.py",
+                        "spec2vec_mlops",
                     ],
                 )
             mlflow.log_metric("alpha", model.model.alpha)
-            return run.info.run_id
+            return run_id
 
     @staticmethod
     def _get_or_create_experiment_id(experiment_name: str, path: str) -> str:
