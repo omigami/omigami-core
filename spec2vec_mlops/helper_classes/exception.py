@@ -18,14 +18,6 @@ class InvalidInputException(SeldonMicroserviceException):
         super().__init__(message, status_code, payload, reason)
 
 
-class IncorrectDataLengthException(InvalidInputException):
-    pass
-
-
-class IncorrectSpectrumNameTypeException(InvalidInputException):
-    pass
-
-
 class IncorrectSpectrumDataTypeException(InvalidInputException):
     pass
 

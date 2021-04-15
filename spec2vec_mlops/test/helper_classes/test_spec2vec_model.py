@@ -14,8 +14,6 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectPeaksJsonTypeException,
     IncorrectFloatFieldTypeException,
     IncorrectStringFieldTypeException,
-    IncorrectSpectrumNameTypeException,
-    IncorrectDataLengthException,
 )
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
@@ -52,50 +50,35 @@ def model(word2vec_model):
 
 
 @pytest.mark.parametrize(
-    "context, input_data, exception",
+    "input_data, exception",
     [
+        ([[]], IncorrectSpectrumDataTypeException),
+        ([{}], MandatoryKeyMissingException),
         (
-            ["1", "2"],
-            [{"peaks_json": []}],
-            IncorrectDataLengthException,
-        ),
-        (
-            [1],
-            [{"peaks_json": []}],
-            IncorrectSpectrumNameTypeException,
-        ),
-        (["spectrum"], [[]], IncorrectSpectrumDataTypeException),
-        (["spectrum"], [{}], MandatoryKeyMissingException),
-        (
-            ["spectrum"],
             [{"peaks_json": "peaks"}],
             IncorrectPeaksJsonTypeException,
         ),
         (
-            ["spectrum"],
             [{"peaks_json": {}}],
             IncorrectPeaksJsonTypeException,
         ),
         (
-            None,
             [{"peaks_json": [], "Precursor_MZ": "some_mz"}],
             IncorrectFloatFieldTypeException,
         ),
         (
-            None,
             [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": 1}],
             IncorrectStringFieldTypeException,
         ),
     ],
 )
-def test_validate_input_raised_expections(context, input_data, exception, model):
+def test_validate_input_raised_expections(input_data, exception, model):
     with pytest.raises(exception):
-        model._validate_input(context, input_data)
+        model._validate_input(input_data)
 
 
 def test_validate_input_valid(model):
     model._validate_input(
-        ["spectrum_name"],
         [{"peaks_json": [], "INCHI": "some_key"}],
     )
 
@@ -140,9 +123,7 @@ def test_raise_api_exception(model):
     seldon_metrics = SeldonMetrics()
     app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
-    rv = client.get(
-        '/predict?json={"data":{"names":["spectrum1","spectrum2"],"ndarray":[[1,2]]}}'
-    )
+    rv = client.get('/predict?json={"data":{"ndarray":[[1,2]]}}')
     j = json.loads(rv.data)
     assert rv.status_code == 400
     assert j["status"]["info"] == "Spectrum data must be a dictionary"

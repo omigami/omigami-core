@@ -1,12 +1,12 @@
 import ast
-from typing import Union, List, Dict, Optional
+from typing import Union, List, Dict
 
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from mlflow.pyfunc import PythonModel
 
-from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops import config
+from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
 from spec2vec_mlops.helper_classes.document_converter import DocumentConverter
@@ -17,8 +17,6 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectFloatFieldTypeException,
     IncorrectStringFieldTypeException,
     IncorrectSpectrumDataTypeException,
-    IncorrectSpectrumNameTypeException,
-    IncorrectDataLengthException,
 )
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 from spec2vec_mlops.helper_classes.storer_classes import (
@@ -48,13 +46,11 @@ class Model(PythonModel):
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
 
-    def predict(
-        self, context: Optional[List[str]], model_input: List[Dict]
-    ) -> List[Dict]:
-        self._validate_input(context, model_input)
+    def predict(self, context, model_input: List[Dict]) -> List[Dict]:
+        self._validate_input(model_input)
         embeddings = self._pre_process_data(model_input)
         reference_embeddings = self._get_reference_embeddings()
-        best_matches = self._get_best_matches(reference_embeddings, embeddings, context)
+        best_matches = self._get_best_matches(reference_embeddings, embeddings)
         return best_matches
 
     def set_run_id(self, run_id: str):
@@ -90,7 +86,9 @@ class Model(PythonModel):
         return embeddings
 
     def _get_best_matches(
-        self, references: List[Embedding], queries: List[Embedding], context: List[str]
+        self,
+        references: List[Embedding],
+        queries: List[Embedding],
     ) -> List[Dict]:
         spec2vec_embeddings_similarity = Spec2VecEmbeddings(
             model=self.model,
@@ -107,7 +105,7 @@ class Model(PythonModel):
             best_match = scores.scores_by_query(query, sort=True)[0]
             best_matches.append(
                 {
-                    "spectrum_name": context[i] if isinstance(context, list) else i,
+                    "spectrum_name": i,
                     "best_match_id": best_match[0].spectrum_id,
                     "score": best_match[1],
                 }
@@ -115,23 +113,11 @@ class Model(PythonModel):
         return best_matches
 
     @staticmethod
-    def _validate_input(context: Optional[List[str]], model_input: List[Dict]):
-        if isinstance(context, list):
-            if len(context) != len(model_input):
-                raise IncorrectDataLengthException(
-                    "Names and ndarray must have the same length", 400
-                )
-
+    def _validate_input(model_input: List[Dict]):
         for i, spectrum in enumerate(model_input):
-            if isinstance(context, list):
-                if not isinstance(context[i], str):
-                    raise IncorrectSpectrumNameTypeException(
-                        "Spectrum name must be a string", 400
-                    )
-
             if not isinstance(spectrum, Dict):
                 raise IncorrectSpectrumDataTypeException(
-                    "Spectrum data must be a dictionary", 400
+                    f"Spectrum data must be a dictionary", 400
                 )
 
             mandatory_keys = ["peaks_json"]
