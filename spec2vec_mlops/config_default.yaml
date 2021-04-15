@@ -59,6 +59,13 @@ feast:
   url:
     remote: "feast-feast-core.feast:6565"
     local: "0.0.0.0:6565"
+  serving_url:
+    remote: "feast-feast-online-serving.feast:6566"
+    local: "0.0.0.0:6566"
+  spark:
+    base_source_location: "file:///tmp/base_source"
+    output_location: "file:///tmp/output.parquet"
+    output_read_location: "/tmp/output.parquet"
 prefect_flow_registration:
   api_server:
     remote: "https://prefect.mlops.datarevenue.com/graphql"
