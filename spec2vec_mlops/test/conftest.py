@@ -7,6 +7,8 @@ from spec2vec_mlops.helper_classes.data_loader import DataLoader
 from spec2vec_mlops.helper_classes.storer_classes import (
     EmbeddingStorer,
     SpectrumIDStorer,
+    SpectrumStorer,
+    DocumentStorer,
 )
 
 
@@ -25,24 +27,24 @@ def pytest_configure(config):
         setattr(config.option, "markexpr", "not longrun")
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def assets_dir():
     return Path(__file__).parents[0] / "assets"
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def gnps_small_json(assets_dir):
     path = str(assets_dir / "SMALL_GNPS.json")
     return f"file://{path}"
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def loaded_data(gnps_small_json):
     dl = DataLoader()
     return dl.load_gnps_json(gnps_small_json)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def cleaned_data(assets_dir):
     path = str(assets_dir / "SMALL_GNPS_cleaned.pickle")
     with open(path, "rb") as handle:
@@ -50,7 +52,7 @@ def cleaned_data(assets_dir):
     return cleaned_data
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def documents_data(assets_dir):
     path = str(assets_dir / "SMALL_GNPS_as_documents.pickle")
     with open(path, "rb") as handle:
@@ -58,7 +60,7 @@ def documents_data(assets_dir):
     return documents_data
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def word2vec_model(assets_dir):
     path = str(assets_dir / "model.pickle")
     with open(path, "rb") as handle:
@@ -66,7 +68,7 @@ def word2vec_model(assets_dir):
     return model
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def embeddings(assets_dir):
     path = str(assets_dir / "SMALL_GNPS_as_embeddings.pickle")
     with open(path, "rb") as handle:
@@ -74,29 +76,52 @@ def embeddings(assets_dir):
     return embeddings
 
 
-@pytest.fixture()
-def spectrum_ids_storer(tmpdir):
+@pytest.fixture(scope="module")
+def spectrum_ids_storer():
     return SpectrumIDStorer(
         feature_table_name="spectrum_ids_info",
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def all_spectrum_ids(spectrum_ids_storer, cleaned_data):
     ids = [spectrum.metadata["spectrum_id"] for spectrum in cleaned_data]
     spectrum_ids_storer.store(ids)
     return ids
 
 
-@pytest.fixture()
-def embedding_storer(tmpdir):
+@pytest.fixture(scope="module")
+def embedding_storer():
     return EmbeddingStorer(
         feature_table_name="embedding_info",
         run_id="1",
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def embeddings_stored(embedding_storer, embeddings):
     embedding_storer.store(embeddings)
-    embedding_storer.store_online()
+
+
+@pytest.fixture(scope="module")
+def spectrum_storer():
+    return SpectrumStorer(
+        feature_table_name="spectrum_info",
+    )
+
+
+@pytest.fixture(scope="module")
+def spectrum_stored(spectrum_storer, cleaned_data):
+    spectrum_storer.store(cleaned_data)
+
+
+@pytest.fixture(scope="module")
+def document_storer():
+    return DocumentStorer(
+        feature_table_name="document_info",
+    )
+
+
+@pytest.fixture(scope="module")
+def documents_stored(document_storer, documents_data):
+    document_storer.store(documents_data)

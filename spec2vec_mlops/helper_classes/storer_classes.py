@@ -1,33 +1,21 @@
-import os
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
 
 import numpy as np
 import pandas as pd
 from feast import ValueType
-from feast.pyspark.abc import RetrievalJob
 from matchms import Spectrum
-from spec2vec import SpectrumDocument, Document
+from spec2vec import SpectrumDocument
 
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.feast_spectrum_document import FeastSpectrumDocument
 from spec2vec_mlops.helper_classes.base_storer import BaseStorer
 from spec2vec_mlops.helper_classes.exception import StorerLoadError
-from spec2vec_mlops.helper_classes.feast_table import FeastTableGenerator
-from spec2vec_mlops.helper_classes.utils import read_parquet
+from spec2vec_mlops.helper_classes.feast_dgw import FeastDataGateway
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 KEYS = config["cleaned_data"]["necessary_keys"]
-FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION = os.getenv(
-    "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION",
-    config["feast"]["spark"]["output_location"],
-)
-FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION = os.getenv(
-    "FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION",
-    config["feast"]["spark"]["output_location"],
-)
 not_string_features2types = {
     "mz_list": ValueType.DOUBLE_LIST,
     "intensity_list": ValueType.DOUBLE_LIST,
@@ -45,62 +33,41 @@ string_features2types = {
 
 class SpectrumIDStorer(BaseStorer):
     def __init__(self, feature_table_name: str):
-        self._feast_table = FeastTableGenerator(
-            feature_table_name,
-            **{
-                "all_spectrum_ids": ValueType.STRING_LIST,
-            },
-        )
-        self._spectrum_table = self._feast_table.get_or_create_table(
+        self._dgw = FeastDataGateway()
+        self._table = self._dgw.get_or_create_table(
             entity_name="spectrum_ids_id",
             entity_description="List of spectrum IDs identifier",
+            feature_table_name=feature_table_name,
+            features2types={
+                "all_spectrum_ids": ValueType.STRING_LIST,
+            },
         )
 
     def store(self, data: List[str]):
         try:
-            existing_ids = self.read()
+            existing_ids = self.read_offline()
         except StorerLoadError:
             existing_ids = []
         new_ids = list(set(data).difference(existing_ids))
         all_ids = [*existing_ids, *new_ids]
         data_df = self._get_data_df(all_ids)
-        self._feast_table.client.ingest(self._spectrum_table, data_df)
+        self._dgw.store_offline(self._table, data_df)
+        self._dgw.store_online(self._table)
 
-    def store_online(self):
-        today = datetime.now()
-        yesterday = today - timedelta(1)
-        job = self._feast_table.client.start_offline_to_online_ingestion(
-            self._spectrum_table, yesterday, today
-        )
-        self._wait_for_job(job)
-        if job.get_status().name == "FAILED":
-            raise StorerLoadError
-
-    def read(self) -> List[str]:
-        entities_of_interest = pd.DataFrame(
-            {
-                "spectrum_ids_id": ["1"],
-                "event_timestamp": [datetime.now()],
-            }
-        )
-        job = self._feast_table.client.get_historical_features(
-            [f"{self._feast_table.feature_table_name}:all_spectrum_ids"],
-            entity_source=entities_of_interest,
-            output_location=FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION,
-        )
-        self._wait_for_job(job)
-        if job.get_status().name == "FAILED":
-            raise StorerLoadError
-        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
-        return df[f"{self._feast_table.feature_table_name}__all_spectrum_ids"].iloc[0]
+    def read_offline(self) -> List[str]:
+        feature_list = [f"{self._table.name}:all_spectrum_ids"]
+        entity_dict = {
+            "spectrum_ids_id": ["1"],
+            "event_timestamp": [datetime.now()],
+        }
+        df = self._dgw.read_offline(feature_list, entity_dict)
+        return df[f"{self._table.name}__all_spectrum_ids"].iloc[0]
 
     def read_online(self) -> List[str]:
-        response = self._feast_table.client.get_online_features(
-            feature_refs=[f"{self._feast_table.feature_table_name}:all_spectrum_ids"],
-            entity_rows=[{"spectrum_ids_id": "1"}],
-        )
-        d = response.to_dict()
-        return d[f"{self._feast_table.feature_table_name}:all_spectrum_ids"][0]
+        feature_list = [f"{self._table.name}:all_spectrum_ids"]
+        entity_rows = [{"spectrum_ids_id": "1"}]
+        df = self._dgw.read_online(feature_list, entity_rows)
+        return df[f"{self._table.name}:all_spectrum_ids"][0]
 
     def _get_data_df(self, data: List[str]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
@@ -114,114 +81,60 @@ class SpectrumIDStorer(BaseStorer):
             ]
         )
 
-    @staticmethod
-    def _wait_for_job(job: RetrievalJob):
-        while job.get_status().name not in ("FAILED", "COMPLETED"):
-            print(".", end="")
-            time.sleep(0.5)
-
 
 class SpectrumStorer(BaseStorer):
     def __init__(self, feature_table_name: str):
-        self._feast_table = FeastTableGenerator(
-            feature_table_name,
-            **string_features2types,
-            **not_string_features2types,
-        )
-        self._spectrum_table = self._feast_table.get_or_create_table(
-            entity_description="spectrum_identifier"
+        self._dgw = FeastDataGateway()
+        self._table = self._dgw.get_or_create_table(
+            entity_name="spectrum_id",
+            entity_description="spectrum_identifier",
+            feature_table_name=feature_table_name,
+            features2types={
+                **string_features2types,
+                **not_string_features2types,
+                **{"metadata_timestamp": ValueType.STRING},
+            },
         )
 
     def store(self, data: List[Spectrum]) -> List[str]:
         data_df = self._get_data_df(data)
-        self._feast_table.client.ingest(self._spectrum_table, data_df)
-        spectrum_ids_stored = data_df["spectrum_id"].tolist()
-        return spectrum_ids_stored
+        self._dgw.store_offline(self._table, data_df)
+        self._dgw.store_online(self._table)
+        return data_df["spectrum_id"].tolist()
 
-    def store_online(self):
-        today = datetime.now()
-        yesterday = today - timedelta(1)
-        job = self._feast_table.client.start_offline_to_online_ingestion(
-            self._spectrum_table, yesterday, today
-        )
-        self._wait_for_job(job)
-        if job.get_status().name == "FAILED":
-            raise StorerLoadError
-
-    def read(self, ids: List[str]) -> List[Spectrum]:
-        entities_of_interest = pd.DataFrame(
-            {
-                "spectrum_id": ids,
-                "event_timestamp": [datetime.now()] * len(ids),
-            }
-        )
-        job = self._feast_table.client.get_historical_features(
-            [
-                f"{self._feast_table.feature_table_name}:mz_list",
-                f"{self._feast_table.feature_table_name}:intensity_list",
-                f"{self._feast_table.feature_table_name}:losses",
-            ],
-            entity_source=entities_of_interest,
-            output_location=FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION,
-        )
-        self._wait_for_job(job)
-        if job.get_status().name == "FAILED":
-            raise StorerLoadError
-        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
+    def read_offline(self, ids: List[str]) -> List[Spectrum]:
+        feature_list = [
+            f"{self._table.name}:mz_list",
+            f"{self._table.name}:intensity_list",
+            f"{self._table.name}:losses",
+            f"{self._table.name}:metadata_timestamp",
+        ]
+        entity_dict = {
+            "spectrum_id": ids,
+            "event_timestamp": [datetime.now()] * len(ids),
+        }
+        df = self._dgw.read_offline(feature_list, entity_dict)
         df = df.set_index("spectrum_id")
-        spectra = []
-        for spectrum_id, record in df.iterrows():
-            spectrum = Spectrum(
-                mz=record["spectrum_info__mz_list"],
-                intensities=record["spectrum_info__intensity_list"],
-                metadata={
-                    "spectrum_id": spectrum_id,
-                    "create_time": datetime.strftime(
-                        record["event_timestamp"], TIME_FORMAT
-                    ),
-                },
-            )
-            if record["spectrum_info__losses"] == [np.inf]:
-                spectrum.losses = None
-            else:
-                spectrum.losses = record["spectrum_info__losses"]
-            spectra.append(spectrum)
-        return spectra
+        return self._get_output(df, sep="__")
 
     def read_online(self, ids: List[str]) -> List[Spectrum]:
-        response = self._feast_table.client.get_online_features(
-            feature_refs=[
-                f"{self._feast_table.feature_table_name}:mz_list",
-                f"{self._feast_table.feature_table_name}:intensity_list",
-                f"{self._feast_table.feature_table_name}:losses",
-                f"{self._feast_table.feature_table_name}:event_timestamp",
-            ],
-            entity_rows=[{"spectrum_id": id} for id in ids],
-        )
-        d = response.to_dict()
-        spectra = []
-        for i, spectrum_id in enumerate(d["spectrum_id"]):
-            spectrum = Spectrum(
-                mz=d[f"{self._feast_table.feature_table_name}:mz_list"][i],
-                intensities=d[f"{self._feast_table.feature_table_name}:intensity_list"][
-                    i
-                ],
-                metadata={
-                    "spectrum_id": spectrum_id,
-                    "create_time": datetime.strftime(
-                        d[f"{self._feast_table.feature_table_name}:event_timestamp"][i],
-                        TIME_FORMAT,
-                    ),
-                },
-            )
-            if d[f"{self._feast_table.feature_table_name}:losses"] == [np.inf]:
-                spectrum.losses = None
-            else:
-                spectrum.losses = d[f"{self._feast_table.feature_table_name}:losses"]
-            spectra.append(spectrum)
-        return spectra
+        feature_list = [
+            f"{self._table.name}:mz_list",
+            f"{self._table.name}:intensity_list",
+            f"{self._table.name}:losses",
+            f"{self._table.name}:metadata_timestamp",
+        ]
+        entity_rows = [{"spectrum_id": id} for id in ids]
+        df = self._dgw.read_online(feature_list, entity_rows)
+        df = df.set_index("spectrum_id")
+        return self._get_output(df, sep=":")
 
     def _get_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
+        features2types = {
+            **string_features2types,
+            **not_string_features2types,
+            **{"metadata_timestamp": ValueType.STRING},
+        }
         return pd.DataFrame.from_records(
             [
                 {
@@ -232,9 +145,10 @@ class SpectrumStorer(BaseStorer):
                     or [np.inf],  # need this to maintain the correct type in Spark
                     **{
                         key: spectrum.metadata[key]
-                        for key in self._feast_table.features2types.keys()
+                        for key in features2types.keys()
                         if key in spectrum.metadata.keys()
                     },
+                    "metadata_timestamp": spectrum.metadata.get("create_time"),
                     "event_timestamp": self._convert_create_time(
                         spectrum.metadata.get("create_time")
                     ),
@@ -245,110 +159,78 @@ class SpectrumStorer(BaseStorer):
         )
 
     @staticmethod
+    def _get_output(df: pd.DataFrame, sep: str = ":") -> List[Spectrum]:
+        spectra = []
+        for spectrum_id, record in df.iterrows():
+            spectrum = Spectrum(
+                mz=record[f"spectrum_info{sep}mz_list"],
+                intensities=record[f"spectrum_info{sep}intensity_list"],
+                metadata={
+                    "spectrum_id": spectrum_id,
+                    "create_time": record[f"spectrum_info{sep}metadata_timestamp"],
+                },
+            )
+            if record[f"spectrum_info{sep}losses"] == [np.inf]:
+                spectrum.losses = None
+            else:
+                spectrum.losses = record[f"spectrum_info{sep}losses"]
+            spectra.append(spectrum)
+        return spectra
+
+    @staticmethod
     def _convert_create_time(create_time: str) -> datetime:
         if create_time:
             return datetime.strptime(create_time, TIME_FORMAT)
         else:
             return datetime.now()
 
-    @staticmethod
-    def _wait_for_job(job: RetrievalJob):
-        while job.get_status().name not in ("FAILED", "COMPLETED"):
-            print(".", end="")
-            time.sleep(0.5)
-
 
 class DocumentStorer(BaseStorer):
     def __init__(self, feature_table_name: str):
-        self._feast_table = FeastTableGenerator(
-            feature_table_name,
-            **{
+        self._dgw = FeastDataGateway()
+        self._table = self._dgw.get_or_create_table(
+            entity_name="spectrum_id",
+            entity_description="document_identifier",
+            feature_table_name=feature_table_name,
+            features2types={
                 "words": ValueType.STRING_LIST,
                 "losses": ValueType.STRING_LIST,
                 "weights": ValueType.DOUBLE_LIST,
                 "n_decimals": ValueType.INT64,
             },
         )
-        self._document_table = self._feast_table.get_or_create_table(
-            entity_description="document_identifier"
-        )
 
     def store(self, data: List[SpectrumDocument]):
         data_df = self._get_data_df(data)
-        self._feast_table.client.ingest(self._document_table, data_df)
+        self._dgw.store_offline(self._table, data_df)
+        self._dgw.store_online(self._table)
 
-    def store_online(self):
-        today = datetime.now()
-        yesterday = today - timedelta(1)
-        job = self._feast_table.client.start_offline_to_online_ingestion(
-            self._document_table, yesterday, today
-        )
-        self._wait_for_job(job)
-        if job.get_status().name == "FAILED":
-            raise StorerLoadError
-
-    def read(self, ids: List[str]) -> List[FeastSpectrumDocument]:
-        entities_of_interest = pd.DataFrame(
-            {
-                "spectrum_id": ids,
-                "event_timestamp": [datetime.now()] * len(ids),
-            }
-        )
-        job = self._feast_table.client.get_historical_features(
-            [
-                f"{self._feast_table.feature_table_name}:words",
-                f"{self._feast_table.feature_table_name}:losses",
-                f"{self._feast_table.feature_table_name}:weights",
-                f"{self._feast_table.feature_table_name}:n_decimals",
-            ],
-            entity_source=entities_of_interest,
-            output_location=FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION,
-        )
-        self._wait_for_job(job)
-        if job.get_status().name == "FAILED":
-            raise StorerLoadError
-        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
+    def read_offline(self, ids: List[str]) -> List[FeastSpectrumDocument]:
+        feature_list = [
+            f"{self._table.name}:words",
+            f"{self._table.name}:losses",
+            f"{self._table.name}:weights",
+            f"{self._table.name}:n_decimals",
+        ]
+        entity_dict = {
+            "spectrum_id": ids,
+            "event_timestamp": [datetime.now()] * len(ids),
+        }
+        df = self._dgw.read_offline(feature_list, entity_dict)
         df = df.set_index("spectrum_id")
-        documents = []
-        for spectrum_id, record in df.iterrows():
-            doc = FeastSpectrumDocument(
-                {
-                    "words": record["document_info__words"],
-                    "losses": record["document_info__losses"],
-                    "weights": record["document_info__weights"],
-                    "n_decimals": record["document_info__n_decimals"],
-                    "metadata": {"spectrum_id": spectrum_id},
-                }
-            )
-            documents.append(doc)
-        return documents
+        return self._get_output(df, sep="__")
 
     def read_online(self, ids: List[str]) -> List[FeastSpectrumDocument]:
-        response = self._feast_table.client.get_online_features(
-            feature_refs=[
-                f"{self._feast_table.feature_table_name}:words",
-                f"{self._feast_table.feature_table_name}:losses",
-                f"{self._feast_table.feature_table_name}:weights",
-                f"{self._feast_table.feature_table_name}:n_decimals",
-            ],
-            entity_rows=[{"spectrum_id": id} for id in ids],
-        )
-        d = response.to_dict()
-        documents = []
-        for i, spectrum_id in enumerate(d["spectrum_id"]):
-            doc = FeastSpectrumDocument(
-                {
-                    "words": d[f"{self._feast_table.feature_table_name}:words"][i],
-                    "losses": d[f"{self._feast_table.feature_table_name}:losses"][i],
-                    "weights": d[f"{self._feast_table.feature_table_name}:weights"][i],
-                    "n_decimals": d[
-                        f"{self._feast_table.feature_table_name}:n_decimals"
-                    ],
-                    "metadata": {"spectrum_id": spectrum_id},
-                }
-            )
-            documents.append(doc)
-        return documents
+        feature_list = [
+            f"{self._table.name}:words",
+            f"{self._table.name}:losses",
+            f"{self._table.name}:weights",
+            f"{self._table.name}:n_decimals",
+        ]
+        entity_rows = [{"spectrum_id": id} for id in ids]
+        df = self._dgw.read_online(feature_list, entity_rows)
+        df = df.set_index("spectrum_id")
+        return self._get_output(df, sep=":")
 
     def _get_data_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
@@ -373,88 +255,69 @@ class DocumentStorer(BaseStorer):
         )
 
     @staticmethod
+    def _get_output(df: pd.DataFrame, sep: str = ":") -> List[FeastSpectrumDocument]:
+        documents = []
+        for spectrum_id, record in df.iterrows():
+            doc = FeastSpectrumDocument(
+                {
+                    "words": record[f"document_info{sep}words"],
+                    "losses": record[f"document_info{sep}losses"],
+                    "weights": record[f"document_info{sep}weights"],
+                    "n_decimals": record[f"document_info{sep}n_decimals"],
+                    "metadata": {"spectrum_id": spectrum_id},
+                }
+            )
+            documents.append(doc)
+        return documents
+
+    @staticmethod
     def _convert_create_time(create_time: str) -> datetime:
         if create_time:
             return datetime.strptime(create_time, TIME_FORMAT)
         else:
             return datetime.now()
 
-    @staticmethod
-    def _wait_for_job(job: RetrievalJob):
-        while job.get_status().name not in ("FAILED", "COMPLETED"):
-            print(".", end="")
-            time.sleep(0.5)
-
 
 class EmbeddingStorer(BaseStorer):
     def __init__(self, feature_table_name: str, run_id: str):
-        self._feast_table = FeastTableGenerator(
-            feature_table_name,
-            **{"run_id": ValueType.STRING, "embedding": ValueType.DOUBLE_LIST},
-        )
+        self._dgw = FeastDataGateway()
         self.run_id = run_id
-        self._embedding_table = self._feast_table.get_or_create_table(
-            entity_description="embedding_identifier"
+        self._table = self._dgw.get_or_create_table(
+            entity_name="spectrum_id",
+            entity_description="embedding_identifier",
+            feature_table_name=feature_table_name,
+            features2types={
+                "run_id": ValueType.STRING,
+                "embedding": ValueType.DOUBLE_LIST,
+            },
         )
 
     def store(self, data: List[Embedding]):
-        df = self._get_data_df(data)
-        self._feast_table.client.ingest(self._embedding_table, df)
+        data_df = self._get_data_df(data)
+        self._dgw.store_offline(self._table, data_df)
+        self._dgw.store_online(self._table)
 
-    def store_online(self):
-        today = datetime.now()
-        yesterday = today - timedelta(1)
-        job = self._feast_table.client.start_offline_to_online_ingestion(
-            self._embedding_table, yesterday, today
-        )
-        self._wait_for_job(job)
-        if job.get_status().name == "FAILED":
-            raise StorerLoadError
-
-    def read(self, ids: List[str]) -> List[Embedding]:
-        entities_of_interest = pd.DataFrame(
-            {
-                "spectrum_id": ids,
-                "run_id": [self.run_id] * len(ids),
-                "event_timestamp": [datetime.now()] * len(ids),
-            }
-        )
-        job = self._feast_table.client.get_historical_features(
-            [
-                f"{self._feast_table.feature_table_name}:embedding",
-            ],
-            entity_source=entities_of_interest,
-            output_location=FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION,
-        )
-        self._wait_for_job(job)
-        if job.get_status().name == "FAILED":
-            raise StorerLoadError
-        df = read_parquet(FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION)
+    def read_offline(self, ids: List[str]) -> List[Embedding]:
+        feature_list = [
+            f"{self._table.name}:embedding",
+        ]
+        entity_dict = {
+            "spectrum_id": ids,
+            "run_id": [self.run_id] * len(ids),
+            "event_timestamp": [datetime.now()] * len(ids),
+        }
+        df = self._dgw.read_offline(feature_list, entity_dict)
         df = df.set_index("spectrum_id")
-        embeddings = []
-        for spectrum_id, record in df.iterrows():
-            embeddings.append(
-                Embedding(
-                    vector=record["embedding_info__embedding"], spectrum_id=spectrum_id
-                )
-            )
-        return embeddings
+        return self._get_output(df, sep="__")
 
     def read_online(self, ids: List[str]) -> List[Embedding]:
-        response = self._feast_table.client.get_online_features(
-            feature_refs=[f"{self._feast_table.feature_table_name}:embedding"],
-            entity_rows=[{"spectrum_id": id} for id in ids],
-        )
-        d = response.to_dict()
-        embeddings = []
-        for i, spectrum_id in enumerate(d["spectrum_id"]):
-            embeddings.append(
-                Embedding(
-                    vector=d[f"{self._feast_table.feature_table_name}:embedding"][i],
-                    spectrum_id=spectrum_id,
-                )
-            )
-        return embeddings
+        feature_list = [
+            f"{self._table.name}:embedding",
+        ]
+        entity_rows = [{"spectrum_id": id} for id in ids]
+        df = self._dgw.read_online(feature_list, entity_rows)
+        df = df.set_index("spectrum_id")
+        return self._get_output(df, sep=":")
 
     def _get_data_df(self, embeddings: List[Embedding]) -> pd.DataFrame:
         return pd.DataFrame.from_records(
@@ -471,7 +334,13 @@ class EmbeddingStorer(BaseStorer):
         )
 
     @staticmethod
-    def _wait_for_job(job: RetrievalJob):
-        while job.get_status().name not in ("FAILED", "COMPLETED"):
-            print(".", end="")
-            time.sleep(0.5)
+    def _get_output(df: pd.DataFrame, sep: str = ":") -> List[Embedding]:
+        embeddings = []
+        for spectrum_id, record in df.iterrows():
+            embeddings.append(
+                Embedding(
+                    vector=record[f"embedding_info{sep}embedding"],
+                    spectrum_id=spectrum_id,
+                )
+            )
+        return embeddings
