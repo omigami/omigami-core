@@ -163,8 +163,8 @@ class SpectrumStorer(BaseStorer):
         spectra = []
         for spectrum_id, record in df.iterrows():
             spectrum = Spectrum(
-                mz=record[f"spectrum_info{sep}mz_list"],
-                intensities=record[f"spectrum_info{sep}intensity_list"],
+                mz=np.array(record[f"spectrum_info{sep}mz_list"]),
+                intensities=np.array(record[f"spectrum_info{sep}intensity_list"]),
                 metadata={
                     "spectrum_id": spectrum_id,
                     "create_time": record[f"spectrum_info{sep}metadata_timestamp"],
