@@ -26,7 +26,7 @@ FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION = os.getenv(
 )
 FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION = os.getenv(
     "FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION",
-    config["feast"]["spark"]["output_location"],
+    config["feast"]["spark"]["output_read_location"],
 )
 not_string_features2types = {
     "mz_list": ValueType.DOUBLE_LIST,
