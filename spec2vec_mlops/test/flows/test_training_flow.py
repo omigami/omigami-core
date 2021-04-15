@@ -6,7 +6,6 @@ import pytest
 from prefect import Flow, unmapped, case
 from prefect.engine.state import State
 
-from spec2vec_mlops import config
 from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.register_model import register_model_task

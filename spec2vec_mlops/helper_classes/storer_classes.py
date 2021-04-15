@@ -92,6 +92,7 @@ class SpectrumStorer(BaseStorer):
             features2types={
                 **string_features2types,
                 **not_string_features2types,
+                **{"metadata_timestamp": ValueType.STRING},
             },
         )
 
@@ -106,6 +107,7 @@ class SpectrumStorer(BaseStorer):
             f"{self._table.name}:mz_list",
             f"{self._table.name}:intensity_list",
             f"{self._table.name}:losses",
+            f"{self._table.name}:metadata_timestamp",
         ]
         entity_dict = {
             "spectrum_id": ids,
@@ -120,7 +122,7 @@ class SpectrumStorer(BaseStorer):
             f"{self._table.name}:mz_list",
             f"{self._table.name}:intensity_list",
             f"{self._table.name}:losses",
-            f"{self._table.name}:event_timestamp",
+            f"{self._table.name}:metadata_timestamp",
         ]
         entity_rows = [{"spectrum_id": id} for id in ids]
         df = self._dgw.read_online(feature_list, entity_rows)
@@ -128,7 +130,11 @@ class SpectrumStorer(BaseStorer):
         return self._get_output(df, sep=":")
 
     def _get_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
-        features2types = {**string_features2types, **not_string_features2types}
+        features2types = {
+            **string_features2types,
+            **not_string_features2types,
+            **{"metadata_timestamp": ValueType.STRING},
+        }
         return pd.DataFrame.from_records(
             [
                 {
@@ -142,6 +148,7 @@ class SpectrumStorer(BaseStorer):
                         for key in features2types.keys()
                         if key in spectrum.metadata.keys()
                     },
+                    "metadata_timestamp": spectrum.metadata.get("create_time"),
                     "event_timestamp": self._convert_create_time(
                         spectrum.metadata.get("create_time")
                     ),
@@ -160,9 +167,7 @@ class SpectrumStorer(BaseStorer):
                 intensities=record[f"spectrum_info{sep}intensity_list"],
                 metadata={
                     "spectrum_id": spectrum_id,
-                    "create_time": datetime.strftime(
-                        record["event_timestamp"], TIME_FORMAT
-                    ),
+                    "create_time": record[f"spectrum_info{sep}metadata_timestamp"],
                 },
             )
             if record[f"spectrum_info{sep}losses"] == [np.inf]:

@@ -35,5 +35,4 @@ def make_embeddings_task(
     ]
     embedding_storer = EmbeddingStorer("embedding_info", run_id)
     embedding_storer.store(embeddings)
-    embedding_storer.store_online()
     return embeddings
