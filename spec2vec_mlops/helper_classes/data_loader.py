@@ -81,7 +81,7 @@ class DataLoader:
                     f.write(chunk)
 
     @staticmethod
-    def _make_path(out_dir: Optional[Path]) -> str:
+    def _make_path(out_dir: Path) -> str:
         if out_dir is None:
             out_dir = (
                 RemotePath("s3://dr-prefect/spec2vec-data")
