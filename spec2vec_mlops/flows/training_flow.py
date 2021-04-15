@@ -28,6 +28,7 @@ SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"]
 API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"]
 FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"]
+FEAST_SERVING_URL_REMOTE = config["feast"]["serving_url"]["remote"]
 MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"]
 
 
@@ -72,12 +73,13 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.1eecbe6",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.19caba9",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
                 "FEAST_BASE_SOURCE_LOCATION": "s3a://dr-prefect/spec2vec-training-flow/feast",
                 "FEAST_CORE_URL": FEAST_CORE_URL_REMOTE,
+                "FEAST_SERVING_URL": FEAST_SERVING_URL_REMOTE,
                 "FEAST_SPARK_LAUNCHER": "k8s",
                 "FEAST_SPARK_K8S_NAMESPACE": "feast",
                 "FEAST_SPARK_STAGING_LOCATION": "s3a://dr-prefect/spec2vec-training-flow/feast/staging",

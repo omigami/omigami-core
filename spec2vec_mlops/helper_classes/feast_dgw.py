@@ -15,8 +15,8 @@ FEAST_CORE_URL = os.getenv(
     "FEAST_CORE_URL",
     config["feast"]["url"]["local"],
 )
-FEAST_SERVE_URL = os.getenv(
-    "FEAST_SERVE_URL",
+FEAST_SERVING_URL = os.getenv(
+    "FEAST_SERVING_URL",
     config["feast"]["serving_url"]["local"],
 )
 FEAST_BASE_SOURCE_LOCATION = os.getenv(
@@ -44,14 +44,14 @@ class FeastDataGateway:
         if FEAST_JOB_SERVICE_URL:
             self.client = Client(
                 core_url=FEAST_CORE_URL,
-                serving_url=FEAST_SERVE_URL,
+                serving_url=FEAST_SERVING_URL,
                 job_service_url=FEAST_JOB_SERVICE_URL,
                 telemetry=False,
             )
         else:
             self.client = Client(
                 core_url=FEAST_CORE_URL,
-                serving_url=FEAST_SERVE_URL,
+                serving_url=FEAST_SERVING_URL,
                 telemetry=False,
             )
 
