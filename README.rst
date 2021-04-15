@@ -9,6 +9,7 @@ How to setup
 ------------
 ::
 
+    export PIP_FIND_LINKS=[PATH-TO-REPO]/libs
     conda env create -f requirements/environment.frozen.yaml
     conda env update -f requirements/environment_test.yaml
     conda activate spec2vec_mlops
