@@ -28,6 +28,8 @@ class KratosAuthenticator(Authenticator):
         password: str
             Authentication password
         """
+        if host[-1] != "/":
+            host = f"{host}/"
         self.url = host
         super(KratosAuthenticator, self).__init__(username, password)
 
@@ -38,7 +40,7 @@ class KratosAuthenticator(Authenticator):
 
     def _get_login_flow_url(self):
         """Sends a request to Krato's Public endpoint to get the Login Flow URL + UID"""
-        r = requests.get(self.url + "self-service/login/api")
+        r = requests.get(f"{self.url}self-service/login/api")
         json = r.json()
         try:
             action_url = json["methods"]["password"]["config"]["action"]
