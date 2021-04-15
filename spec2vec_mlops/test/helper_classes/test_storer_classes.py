@@ -71,6 +71,7 @@ def test_embedding_storer_get_data_df(embedding_storer, documents_data, embeddin
         "spectrum_id",
         "embedding",
         "run_id",
+        "n_decimals",
         "event_timestamp",
         "created_timestamp",
     }
@@ -79,7 +80,5 @@ def test_embedding_storer_get_data_df(embedding_storer, documents_data, embeddin
     assert not embedding_df.event_timestamp.isnull().any()
 
 
-def test_embedding_storer_store_embeddings(
-    embedding_storer, documents_data, embeddings
-):
+def test_embedding_storer_store_embeddings(embedding_storer, embeddings):
     embedding_storer.store(embeddings)

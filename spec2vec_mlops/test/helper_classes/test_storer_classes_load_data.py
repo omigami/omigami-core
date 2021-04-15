@@ -15,6 +15,7 @@ def target_spectrum_ids(spectrum_ids_storer, cleaned_data):
     return ids
 
 
+@pytest.mark.slow
 def test_load_all_spectrum_ids_offline(spectrum_ids_storer, target_spectrum_ids):
     all_spectrum_ids = spectrum_ids_storer.read_offline()
     assert all(id in all_spectrum_ids for id in target_spectrum_ids)
@@ -26,16 +27,19 @@ def test_load_all_spectrum_ids_offline(spectrum_ids_storer, target_spectrum_ids)
     assert list(updated_spectrum_ids).count(target_id) == 1
 
 
+@pytest.mark.slow
 def test_load_spectrum_offline(spectrum_storer, spectrum_stored, target_spectrum_ids):
     spectra = spectrum_storer.read_offline(target_spectrum_ids)
     assert len(spectra) == len(target_spectrum_ids)
 
 
+@pytest.mark.slow
 def test_load_documents_offline(document_storer, documents_stored, target_spectrum_ids):
     documents = document_storer.read_offline(target_spectrum_ids)
     assert len(documents) == len(target_spectrum_ids)
 
 
+@pytest.mark.slow
 def test_load_embeddings_offline(
     embedding_storer, embeddings_stored, target_spectrum_ids
 ):
@@ -48,9 +52,6 @@ def test_load_all_spectrum_ids_online(spectrum_ids_storer, target_spectrum_ids):
     assert all(id in all_spectrum_ids for id in target_spectrum_ids)
 
 
-@pytest.mark.skip(
-    reason="this fails because dump to online store doesn't work if there's a missing column"
-)
 def test_load_spectrum_online(spectrum_storer, spectrum_stored, target_spectrum_ids):
     spectra = spectrum_storer.read_online(target_spectrum_ids)
     assert len(spectra) == len(target_spectrum_ids)
@@ -66,3 +67,24 @@ def test_load_embeddings_online(
 ):
     embeddings = embedding_storer.read_online(target_spectrum_ids)
     assert len(embeddings) == len(target_spectrum_ids)
+
+
+@pytest.mark.skip(reason="run this test only after online store is fully loaded.")
+def test_load_online(
+    spectrum_ids_storer, spectrum_storer, document_storer, embedding_storer
+):
+    target_spectrum_ids = ["CCMSLIB00000001547"]
+    all_spectrum_ids = spectrum_ids_storer.read_online()
+    assert all(id in all_spectrum_ids for id in target_spectrum_ids)
+
+    spectra = spectrum_storer.read_online(target_spectrum_ids)
+    assert len(spectra) == len(target_spectrum_ids)
+    assert len(spectra[0].peaks.mz) > 0
+
+    documents = document_storer.read_online(target_spectrum_ids)
+    assert len(documents) == len(target_spectrum_ids)
+    assert documents[0].n_decimals
+
+    embeddings = embedding_storer.read_online(target_spectrum_ids)
+    assert len(embeddings) == len(target_spectrum_ids)
+    assert embeddings[0].n_decimals
