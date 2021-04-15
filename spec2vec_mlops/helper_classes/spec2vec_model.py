@@ -5,7 +5,6 @@ from matchms import calculate_scores
 from mlflow.pyfunc import PythonModel
 
 from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
-from spec2vec_mlops.helper_classes.data_loader import DataLoader
 from spec2vec_mlops.helper_classes.document_converter import DocumentConverter
 from spec2vec_mlops.helper_classes.embedding import Embedding
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
@@ -24,21 +23,21 @@ class Model(PythonModel):
         self.n_decimals = n_decimals
         self.intensity_weighting_power = intensity_weighting_power
         self.allowed_missing_percentage = allowed_missing_percentage
-        self.data_loader = DataLoader()
         self.data_cleaner = DataCleaner()
         self.document_converter = DocumentConverter()
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
 
-    def predict(self, context, model_input: str) -> List[Dict]:
+    def predict(self, context, model_input: List[Dict]) -> List[Dict]:
         embeddings = self._pre_process_data(model_input)
         # get library embeddings from feast
         # for now going to use the calculated ones
         best_matches = self._get_best_matches(embeddings, embeddings)
         return best_matches
 
-    def _pre_process_data(self, model_input: str):
-        loaded_data = self.data_loader.load_gnps_json(model_input)
-        cleaned_data = [self.data_cleaner.clean_data(data) for data in loaded_data]
+    def _pre_process_data(self, model_input: List[Dict]):
+        # TODO: when merging with master make sure we get the changes from master (this is already well implemented there)
+        # loaded_data = self.data_loader.load_gnps_json(model_input)
+        cleaned_data = [self.data_cleaner.clean_data(data) for data in model_input]
         documents = [
             self.document_converter.convert_to_document(spectrum, self.n_decimals)
             for spectrum in cleaned_data

@@ -1,7 +1,7 @@
 import pickle
 from pathlib import Path
+
 import pytest
-from drfs.filesystems.local import LocalFileSystem
 
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
 
@@ -33,9 +33,9 @@ def local_gnps_small_json(assets_dir):
 
 
 @pytest.fixture()
-def loaded_data(local_gnps_small_json):
-    dl = DataLoader()
-    return dl.parse_json(LocalFileSystem(), local_gnps_small_json)
+def loaded_data(local_gnps_small_json, tmpdir):
+    dl = DataLoader(tmpdir)
+    return dl.parse_json(local_gnps_small_json)
 
 
 @pytest.fixture()
