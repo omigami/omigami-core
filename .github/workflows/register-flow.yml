@@ -58,7 +58,11 @@ jobs:
 
       - name: Register model deployment flow
         run: |
-          python spec2vec_mlops/flows/training_flow.py register-train-pipeline
+          python spec2vec_mlops/flows/training_flow.py register-train-pipeline \
+          --auth=True \
+          --auth_url=https://mlops.datarevenue.com/.ory/kratos/public/ \
+          --username=${{ secrets.AUTH_USERNAME }} \
+          --password=${{ secrets.AUTH_PASSWORD }}
  
 #       Important: The code below cannot be executed yet because the above command already registers AND runs the flow
 #       - name: Get commit sha
