@@ -123,7 +123,7 @@ def test_raise_api_exception(model):
     seldon_metrics = SeldonMetrics()
     app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
-    rv = client.get('/predict?json={"data":{"ndarray":[[1,2]]}}')
+    rv = client.get('/predict?json={"data":{"ndarray":[[1,2]], "names":["spec1"]}}')
     j = json.loads(rv.data)
     assert rv.status_code == 400
     assert j["status"]["info"] == "Spectrum data must be a dictionary"
