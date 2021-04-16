@@ -3,18 +3,22 @@ from pathlib import Path
 from typing import Union
 
 import pytest
+from drfs import DRPath
 from prefect import Flow, unmapped, case
 from prefect.engine.state import State
 
+from spec2vec_mlops import config
 from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
-from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
-from spec2vec_mlops.tasks.train_model import train_model_task
-from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
+from spec2vec_mlops.tasks.download_data import download_data_task
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.load_spectrum_ids import load_spectrum_ids_task
+from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
+from spec2vec_mlops.tasks.register_model import register_model_task
+from spec2vec_mlops.tasks.train_model import train_model_task
 
+SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
 
 
@@ -26,6 +30,7 @@ pytestmark = pytest.mark.skipif(
 
 def spec2vec_train_pipeline_local(
     source_uri: str,
+    download_out_dir: DRPath,
     n_decimals: int,
     save_model_path: str,
     mlflow_server_uri: str,
@@ -36,7 +41,8 @@ def spec2vec_train_pipeline_local(
     allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> State:
     with Flow("flow") as flow:
-        raw_chunks = load_data_task(source_uri, chunksize=1000)
+        file_path = download_data_task(source_uri, download_out_dir)
+        raw_chunks = load_data_task(file_path, chunksize=1000)
         spectrum_ids_saved = clean_data_task.map(raw_chunks)
 
         with case(check_condition(spectrum_ids_saved), True):
@@ -69,9 +75,10 @@ def spec2vec_train_pipeline_local(
     return state
 
 
-def test_spec2vec_train_pipeline_local(gnps_small_json, tmpdir):
+def test_spec2vec_train_pipeline_local(tmpdir):
     state = spec2vec_train_pipeline_local(
-        source_uri=gnps_small_json,
+        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        download_out_dir=tmpdir,
         n_decimals=2,
         iterations=10,
         window=5,

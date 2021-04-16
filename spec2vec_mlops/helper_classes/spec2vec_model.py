@@ -6,7 +6,6 @@ from mlflow.pyfunc import PythonModel
 
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
-from spec2vec_mlops.helper_classes.data_loader import DataLoader
 from spec2vec_mlops.helper_classes.document_converter import DocumentConverter
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
@@ -29,7 +28,6 @@ class Model(PythonModel):
         self.n_decimals = n_decimals
         self.intensity_weighting_power = intensity_weighting_power
         self.allowed_missing_percentage = allowed_missing_percentage
-        self.data_loader = DataLoader()
         self.data_cleaner = DataCleaner()
         self.document_converter = DocumentConverter()
         self.embedding_maker = EmbeddingMaker(self.n_decimals)

@@ -33,15 +33,15 @@ def assets_dir():
 
 
 @pytest.fixture(scope="module")
-def gnps_small_json(assets_dir):
+def local_gnps_small_json(assets_dir):
     path = str(assets_dir / "SMALL_GNPS.json")
-    return f"file://{path}"
+    return path
 
 
-@pytest.fixture(scope="module")
-def loaded_data(gnps_small_json):
-    dl = DataLoader()
-    return dl.load_gnps_json(gnps_small_json)
+@pytest.fixture()
+def loaded_data(local_gnps_small_json, tmpdir):
+    dl = DataLoader(local_gnps_small_json)
+    return dl.load_gnps_json()
 
 
 @pytest.fixture(scope="module")
