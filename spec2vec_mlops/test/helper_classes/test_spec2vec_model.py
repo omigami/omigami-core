@@ -58,11 +58,19 @@ def test_get_best_matches(model, embeddings):
         assert query.spectrum_id == best_match["best_match_id"]
 
 
+@pytest.mark.skipif(
+    os.getenv("SKIP_SPARK_TEST", True),
+    reason="It can only be run if the Feast docker-compose is up and with Spark",
+)
 def test_get_reference_embeddings(model, all_spectrum_ids, embeddings_stored):
     embeddings = model._get_reference_embeddings()
     assert len(embeddings) == len(all_spectrum_ids)
 
 
+@pytest.mark.skipif(
+    os.getenv("SKIP_SPARK_TEST", True),
+    reason="It can only be run if the Feast docker-compose is up and with Spark",
+)
 def test_predict_from_saved_model(saved_model_run_id, loaded_data, embeddings_stored):
     run = mlflow.get_run(saved_model_run_id)
     model_path = f"{run.info.artifact_uri}/model/"

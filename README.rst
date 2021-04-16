@@ -9,6 +9,7 @@ How to setup
 ------------
 ::
 
+    export PIP_FIND_LINKS=[PATH-TO-REPO]/libs
     conda env create -f requirements/environment.frozen.yaml
     conda env update -f requirements/environment_test.yaml
     conda activate spec2vec_mlops
@@ -77,6 +78,15 @@ An example of [YOUR_PYSPARK_LIBRARY_PATH] on a MacOS would be:
 ::
 
     /Users/your_username/miniconda3/envs/spec2vec_mlops/lib/python3.7/site-packages/pyspark
+
+Feast uses Postgres to store feature names. If you add/change/remove feature names or types, do the following to reset Feast:
+::
+
+    rm -rf /tmp/base_source
+    cd feast/infra/docker-compose
+    docker-compose down
+    docker volume prune
+    docker-compose up
 
 How to register the training flow manually
 ------------------------------------------
