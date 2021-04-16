@@ -9,6 +9,7 @@ How to setup
 ------------
 ::
 
+    export PIP_FIND_LINKS=[PATH-TO-REPO]/libs
     conda env create -f requirements/environment.frozen.yaml
     conda env update -f requirements/environment_test.yaml
     conda activate spec2vec_mlops
@@ -78,6 +79,15 @@ An example of [YOUR_PYSPARK_LIBRARY_PATH] on a MacOS would be:
 
     /Users/your_username/miniconda3/envs/spec2vec_mlops/lib/python3.7/site-packages/pyspark
 
+Feast uses Postgres to store feature names. If you add/change/remove feature names or types, do the following to reset Feast:
+::
+
+    rm -rf /tmp/base_source
+    cd feast/infra/docker-compose
+    docker-compose down
+    docker volume prune
+    docker-compose up
+
 How to register the training flow manually
 ------------------------------------------
 
@@ -88,7 +98,14 @@ To register the flow manually to Prefect you need to follow these steps:
     export AWS_PROFILE=<your data revenue profile>
     export PYTHONPATH=$(pwd)
     prefect backend server
-    python spec2vec_mlops/flows/training_flow.py register-train-pipeline
+    python spec2vec_mlops/flows/training_flow.py register-train-pipeline [args]
+
+If the Prefect Server requires authentication, you can use the arguments to set it up:
+::
+    --auth (bool): Enables authentication, defaults to False
+    --auth_url (str): Authentication API Path. Ex.: https://mlops.datarevenue.com/.ory/kratos/public/ [Optional, only required if auth=True]
+    --username (str): Your username [Optional, only required if auth=True]
+    --password (str): Your password [Optional, only required if auth=True]
 
 Then you can check the flow here: https://prefect.mlops.datarevenue.com/default
 
