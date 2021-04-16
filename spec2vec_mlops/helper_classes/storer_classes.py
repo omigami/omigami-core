@@ -11,6 +11,7 @@ from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.feast_spectrum_document import FeastSpectrumDocument
 from spec2vec_mlops.helper_classes.base_storer import BaseStorer
+from spec2vec_mlops.helper_classes.exception import StorerLoadError
 from spec2vec_mlops.helper_classes.feast_dgw import FeastDataGateway
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
@@ -43,7 +44,10 @@ class SpectrumIDStorer(BaseStorer):
         )
 
     def store(self, data: List[str]):
-        existing_ids = self.read_online() or []
+        try:
+            existing_ids = self.read_online() or self.read_offline()
+        except StorerLoadError:
+            existing_ids = []
         new_ids = list(set(data).difference(existing_ids))
         all_ids = [*existing_ids, *new_ids]
         data_df = self._get_data_df(all_ids)
