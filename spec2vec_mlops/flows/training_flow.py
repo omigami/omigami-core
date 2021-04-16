@@ -38,7 +38,7 @@ def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-spec2vec-load-small-data-5",
-    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets",
+    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small",  # or full if using complete GNPS
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
