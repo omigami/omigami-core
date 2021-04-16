@@ -53,9 +53,11 @@ def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
 
 
 def test_get_best_matches(model, embeddings):
-    best_matches = model._get_best_matches(embeddings, embeddings)
+    n_best_spectra = 2
+    best_matches = model._get_best_matches(embeddings, embeddings, n_best_spectra)
     for query, best_match in zip(embeddings, best_matches):
-        assert query.spectrum_id == best_match["best_match_id"]
+        assert len(best_match) == n_best_spectra
+        assert query.spectrum_id == best_match[0]["best_match_id"]
 
 
 @pytest.mark.skipif(
