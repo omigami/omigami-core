@@ -1,8 +1,8 @@
 import logging
-from pathlib import Path
 from typing import Union
 
 import click
+from drfs import DRPath
 from prefect import Flow, Parameter, Client, unmapped, case
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
@@ -74,7 +74,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.14e73b1",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.3b065b8",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
@@ -93,7 +93,7 @@ def spec2vec_train_pipeline_distributed(
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
-        file_path = download_data_task(uri, Path(download_out_dir))
+        file_path = download_data_task(uri, DRPath(download_out_dir))
         raw_chunks = load_data_task(file_path, chunksize=1000)
         logger.info("Data loading is complete.")
 
@@ -103,7 +103,7 @@ def spec2vec_train_pipeline_distributed(
         with case(check_condition(spectrum_ids_saved), True):
             all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
             all_spectrum_ids_chunks = convert_to_documents_task.map(
-            all_spectrum_ids_chunks, n_decimals=unmapped(2)
+                all_spectrum_ids_chunks, n_decimals=unmapped(2)
             )
             logger.info("Document conversion is complete.")
 

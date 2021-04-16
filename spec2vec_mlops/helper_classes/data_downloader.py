@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
-from pathlib import Path
 from uuid import uuid4
 
 import requests
+from drfs import DRPath
 from drfs.filesystems import get_fs
 
 logging.basicConfig(level=logging.DEBUG)
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class DataDownloader:
-    def __init__(self, out_dir: Path):
+    def __init__(self, out_dir: DRPath):
         self.fs = get_fs(str(out_dir))
         date = datetime.today().strftime("%Y-%m-%d")
         self.out_dir = out_dir / date
@@ -42,7 +42,7 @@ class DataDownloader:
                         chunk_size=10 * 1024 * 1024
                     ):  # 10 MBs of chunks
                         f.write(chunk)
-                        file_size = Path(file_path).stat().st_size
+                        file_size = DRPath(file_path).stat().st_size
         except requests.ConnectionError:
             self._resume_download(file_size, uri, file_path)
         except requests.Timeout:

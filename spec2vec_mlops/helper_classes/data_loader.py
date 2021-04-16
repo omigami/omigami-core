@@ -1,8 +1,8 @@
 import logging
-from pathlib import Path
 from typing import Dict, List
 
 import ijson
+from drfs import DRPath
 from drfs.filesystems import get_fs
 
 from spec2vec_mlops import config
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class DataLoader:
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: DRPath):
         self.fs = get_fs(str(file_path))
         self.file_path = file_path
 

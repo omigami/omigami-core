@@ -43,7 +43,9 @@ def test_resume_download(data_downloader, tmpdir, local_gnps_small_json):
     existing_file_size = path.stat().st_size
     new_path = f"{tmpdir}/SMALL_GNPS_remaining.json"
 
-    data_downloader._resume_download(existing_file_size, SOURCE_URI_COMPLETE_GNPS, new_path)
+    data_downloader._resume_download(
+        existing_file_size, SOURCE_URI_COMPLETE_GNPS, new_path
+    )
 
     updated_file_size = Path(new_path).stat().st_size
 
