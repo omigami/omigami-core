@@ -21,7 +21,7 @@ class ModelRegister:
                 "n_decimals_for_documents": model.n_decimals,
                 "intensity_weighting_power": model.intensity_weighting_power,
                 "allowed_missing_percentage": model.allowed_missing_percentage,
-                "iter": model.model.iter,
+                "iter": model.model.epochs,
                 "window": model.model.window,
             }
             mlflow.log_params(params)

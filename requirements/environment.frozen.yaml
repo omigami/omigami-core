@@ -16,8 +16,10 @@ dependencies:
   - numpy=1.19.2
   - pandas=1.2.3
   - s3fs=0.4.2
+  - pyyaml=5.4.1
   - pip:
-      - drfs
       - matchms==0.8.2
       - feast==0.9.3
       - mlflow==1.14.1
+      - seldon-core==1.6.0
+      - git+https://github.com/datarevenue-berlin/drfs

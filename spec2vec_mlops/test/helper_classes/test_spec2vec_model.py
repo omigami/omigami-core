@@ -1,10 +1,20 @@
+import json
 import os
 from pathlib import Path
 
 import mlflow
 import pytest
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.wrapper import get_rest_microservice
 
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
+from spec2vec_mlops.helper_classes.exception import (
+    MandatoryKeyMissingException,
+    IncorrectSpectrumDataTypeException,
+    IncorrectPeaksJsonTypeException,
+    IncorrectFloatFieldTypeException,
+    IncorrectStringFieldTypeException,
+)
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
@@ -36,6 +46,41 @@ def model(word2vec_model):
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         run_id="1",
+    )
+
+
+@pytest.mark.parametrize(
+    "input_data, exception",
+    [
+        ([[]], IncorrectSpectrumDataTypeException),
+        ([{}], MandatoryKeyMissingException),
+        ([{"peaks_json": ""}], MandatoryKeyMissingException),
+        (
+            [{"peaks_json": "peaks", "Precursor_MZ": "1.0"}],
+            IncorrectPeaksJsonTypeException,
+        ),
+        (
+            [{"peaks_json": {}, "Precursor_MZ": "1.0"}],
+            IncorrectPeaksJsonTypeException,
+        ),
+        (
+            [{"peaks_json": [], "Precursor_MZ": "some_mz"}],
+            IncorrectFloatFieldTypeException,
+        ),
+        (
+            [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": 1}],
+            IncorrectStringFieldTypeException,
+        ),
+    ],
+)
+def test_validate_input_raised_expections(input_data, exception, model):
+    with pytest.raises(exception):
+        model._validate_input(input_data)
+
+
+def test_validate_input_valid(model):
+    model._validate_input(
+        [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": "some_key"}],
     )
 
 
@@ -80,3 +125,16 @@ def test_predict_from_saved_model(saved_model_run_id, loaded_data, embeddings_st
     best_matches = model.predict(loaded_data)
     for spectrum, best_match in zip(loaded_data, best_matches):
         assert best_match["best_match_id"] == spectrum["spectrum_id"]
+
+
+def test_raise_api_exception(model):
+    user_object = Model(
+        model, n_decimals=1, intensity_weighting_power=0.5, allowed_missing_percentage=5
+    )
+    seldon_metrics = SeldonMetrics()
+    app = get_rest_microservice(user_object, seldon_metrics)
+    client = app.test_client()
+    rv = client.get('/predict?json={"data":{"ndarray":[[1,2]], "names":["spec1"]}}')
+    j = json.loads(rv.data)
+    assert rv.status_code == 400
+    assert j["status"]["info"] == "Spectrum data must be a dictionary"
