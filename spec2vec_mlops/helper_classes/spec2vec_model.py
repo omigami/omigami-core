@@ -74,8 +74,8 @@ class Model(PythonModel):
         return embeddings
 
     def _get_best_matches(
-        self, references: List[Embedding], queries: List[Embedding]
-    ) -> List[Dict]:
+        self, references: List[Embedding], queries: List[Embedding], n_best_spectra: int
+    ) -> List[List[Dict]]:
         spec2vec_embeddings_similarity = Spec2VecEmbeddings(
             model=self.model,
             intensity_weighting_power=self.intensity_weighting_power,
@@ -86,14 +86,17 @@ class Model(PythonModel):
             queries,
             spec2vec_embeddings_similarity,
         )
-        best_matches = []
+        spectra_best_matches = []
         for i, query in enumerate(queries):
-            best_match = scores.scores_by_query(query, sort=True)[0]
-            best_matches.append(
-                {
-                    "spectrum_number": i,
-                    "best_match_id": best_match[0].spectrum_id,
-                    "score": best_match[1],
-                }
-            )
-        return best_matches
+            spectrum_best_scores = scores.scores_by_query(query, sort=True)[:n_best_spectra]
+            spectrum_best_matches = []
+            for spectrum_match in spectrum_best_scores:
+                spectrum_best_matches.append(
+                    {
+                        "spectrum_number": i,
+                        "best_match_id": spectrum_match[0].spectrum_id,
+                        "score": spectrum_match[1],
+                    }
+                )
+            spectra_best_matches.append(spectrum_best_matches)
+        return spectra_best_matches
