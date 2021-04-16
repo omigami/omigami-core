@@ -93,7 +93,7 @@ def spec2vec_train_pipeline_distributed(
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
-        file_path = download_data_task(Path(uri), Path(download_out_dir))
+        file_path = download_data_task(uri, Path(download_out_dir))
         raw_chunks = load_data_task(file_path, chunksize=1000)
         logger.info("Data loading is complete.")
 
