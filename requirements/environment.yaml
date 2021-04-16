@@ -18,8 +18,8 @@ dependencies:
   - s3fs=0.4.*
   - pyyaml=5.4.*
   - pip:
-      - drfs
       - matchms==0.8.*
       - feast==0.9.*
       - mlflow==1.14.*
       - seldon-core==1.6.*
+      - git+https://github.com/datarevenue-berlin/drfs
