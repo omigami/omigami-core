@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Union
 
 import pytest
+from drfs import DRPath
 from prefect import Flow, unmapped, case
 from prefect.engine.state import State
 
@@ -29,7 +30,7 @@ pytestmark = pytest.mark.skipif(
 
 def spec2vec_train_pipeline_local(
     source_uri: str,
-    download_out_dir: Path,
+    download_out_dir: DRPath,
     n_decimals: int,
     save_model_path: str,
     mlflow_server_uri: str,
