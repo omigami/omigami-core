@@ -22,7 +22,7 @@ def make_embeddings_task(
     allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> List[Embedding]:
     document_storer = DocumentStorer("document_info")
-    documents = document_storer.read(spectrum_ids)
+    documents = document_storer.read_online(spectrum_ids)
     embedding_maker = EmbeddingMaker(n_decimals=n_decimals)
     embeddings = [
         embedding_maker.make_embedding(

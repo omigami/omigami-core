@@ -1,8 +1,9 @@
 import logging
 from typing import Dict, List
-from urllib.request import urlopen
 
 import ijson
+from drfs import DRPath
+from drfs.filesystems import get_fs
 
 from spec2vec_mlops import config
 
@@ -14,9 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 class DataLoader:
-    def load_gnps_json(self, uri: str) -> List[Dict]:
-        uri = urlopen(uri)
-        logger.info(f"Loading data from {uri}... This might take a while.")
-        items = ijson.items(uri, "item", multiple_values=True)
-        results = [{k: item[k] for k in KEYS} for item in items]
+    def __init__(self, file_path: DRPath):
+        self.fs = get_fs(str(file_path))
+        self.file_path = file_path
+
+    def load_gnps_json(self) -> List[Dict[str, str]]:
+        with self.fs.open(self.file_path, "rb") as f:
+            items = ijson.items(f, "item", multiple_values=True)
+            results = [{k: item[k] for k in KEYS} for item in items]
         return results
