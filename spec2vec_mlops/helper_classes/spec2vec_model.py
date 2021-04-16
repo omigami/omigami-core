@@ -48,7 +48,9 @@ class Model(PythonModel):
         self._validate_input(model_input)
         embeddings = self._pre_process_data(model_input)
         reference_embeddings = self._get_reference_embeddings()
-        best_matches = self._get_best_matches(reference_embeddings, embeddings)
+        best_matches = self._get_best_matches(
+            reference_embeddings, embeddings, n_best_spectra=10
+        )
         return best_matches
 
     def set_run_id(self, run_id: str):
@@ -98,7 +100,9 @@ class Model(PythonModel):
         )
         spectra_best_matches = []
         for i, query in enumerate(queries):
-            spectrum_best_scores = scores.scores_by_query(query, sort=True)[:n_best_spectra]
+            spectrum_best_scores = scores.scores_by_query(query, sort=True)[
+                :n_best_spectra
+            ]
             spectrum_best_matches = []
             for spectrum_match in spectrum_best_scores:
                 spectrum_best_matches.append(
