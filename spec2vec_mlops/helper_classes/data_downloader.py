@@ -65,4 +65,5 @@ class DataDownloader:
     def _make_path(self) -> str:
         file_id = str(uuid4())
         path = str(self.out_dir / f"{file_id}.json")
+        logger.info(f"Writing file to {path}")
         return path
