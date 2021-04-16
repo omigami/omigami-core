@@ -12,8 +12,8 @@ from spec2vec_mlops import config
 from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
-from spec2vec_mlops.tasks.download_data import download_data_task
 from spec2vec_mlops.tasks.deploy_model import deploy_model_task
+from spec2vec_mlops.tasks.download_data import download_data_task
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.load_spectrum_ids import load_spectrum_ids_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
@@ -93,7 +93,7 @@ def spec2vec_train_pipeline_distributed(
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
-        file_path = download_data_task(uri, Path(download_out_dir))
+        file_path = download_data_task(Path(uri), Path(download_out_dir))
         raw_chunks = load_data_task(file_path, chunksize=1000)
         logger.info("Data loading is complete.")
 

@@ -31,12 +31,6 @@ def assets_dir():
 
 
 @pytest.fixture()
-def gnps_small_json(assets_dir):
-    path = str(assets_dir / "SMALL_GNPS.json")
-    return f"file://{path}"
-
-
-@pytest.fixture()
 def local_gnps_small_json(assets_dir):
     path = str(assets_dir / "SMALL_GNPS.json")
     return path
