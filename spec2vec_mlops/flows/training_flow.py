@@ -7,6 +7,7 @@ from prefect import Flow, Parameter, Client, unmapped, case
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
+from prefect.tasks.control_flow import merge
 
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.check_condition import check_condition
@@ -79,7 +80,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.56c3a27",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.a2a8691",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
@@ -103,12 +104,13 @@ def spec2vec_train_pipeline_distributed(
         # TODO: these two cases are just for testing purposes:
         #  we want to use a bigger dataset than the small one but smaller than the full one
         with case(use_testing_dataset_task(testing_dataset_path), True):
-            raw_chunks = load_data_task(DRPath(testing_dataset_path), chunksize=1000)
+            raw_chunks_10k = load_data_task(DRPath(testing_dataset_path), chunksize=1000)
         with case(use_testing_dataset_task(testing_dataset_path), False):
             file_path = download_data_task(uri, DRPath(download_out_dir))
-            raw_chunks = load_data_task(file_path, chunksize=1000)
-        logger.info("Data loading is complete.")
+            raw_chunks_full = load_data_task(file_path, chunksize=1000)
+        raw_chunks = merge(raw_chunks_10k, raw_chunks_full)
 
+        logger.info("Data loading is complete.")
         spectrum_ids_saved = clean_data_task.map(raw_chunks)
         logger.info("Data cleaning is complete.")
 
