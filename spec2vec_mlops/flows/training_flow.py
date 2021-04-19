@@ -104,7 +104,9 @@ def spec2vec_train_pipeline_distributed(
         # TODO: these two cases are just for testing purposes:
         #  we want to use a bigger dataset than the small one but smaller than the full one
         with case(use_testing_dataset_task(testing_dataset_path), True):
-            raw_chunks_10k = load_data_task(DRPath(testing_dataset_path), chunksize=1000)
+            raw_chunks_10k = load_data_task(
+                DRPath(testing_dataset_path or "path"), chunksize=1000
+            )
         with case(use_testing_dataset_task(testing_dataset_path), False):
             file_path = download_data_task(uri, DRPath(download_out_dir))
             raw_chunks_full = load_data_task(file_path, chunksize=1000)
