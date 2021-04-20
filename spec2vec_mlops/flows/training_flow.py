@@ -114,6 +114,7 @@ def spec2vec_train_pipeline_distributed(
 
         logger.info("Data loading is complete.")
         spectrum_ids_saved = clean_data_task.map(raw_chunks)
+        logger.info(f"Saved {len(spectrum_ids_saved)} spectra")
         logger.info("Data cleaning is complete.")
 
         with case(check_condition(spectrum_ids_saved), True):
