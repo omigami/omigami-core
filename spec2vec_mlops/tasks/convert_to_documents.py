@@ -19,7 +19,7 @@ def convert_to_documents_task(spectrum_ids: List[str], n_decimals: int) -> List[
     spectrum_storer = SpectrumStorer("spectrum_info")
     all_spectra = spectrum_storer.read_online(spectrum_ids)
     if all_spectra:
-        logger.info(f"Using previously downloaded data")
+        logger.info(f"Converting {len(all_spectra)} to documents")
     document_converter = DocumentConverter()
     result = [
         document_converter.convert_to_document(spectrum, n_decimals)
