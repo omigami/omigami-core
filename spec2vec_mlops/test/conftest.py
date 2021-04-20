@@ -1,7 +1,10 @@
 import pickle
 from pathlib import Path
 
+import boto3
 import pytest
+import s3fs
+from moto import mock_s3
 
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
 from spec2vec_mlops.helper_classes.storer_classes import (
@@ -125,3 +128,16 @@ def document_storer():
 @pytest.fixture(scope="module")
 def documents_stored(document_storer, documents_data):
     document_storer.store(documents_data)
+
+
+@pytest.fixture()
+def s3_mock():
+    mock = mock_s3()
+    mock.start()
+    conn = boto3.client("s3")
+    conn.create_bucket(
+        Bucket="test-bucket",
+        CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
+    )
+    yield s3fs.S3FileSystem()
+    mock.stop()

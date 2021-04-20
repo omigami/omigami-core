@@ -34,15 +34,17 @@ class DataDownloader:
         """solution is from https://stackoverflow.com/a/16696317/15485553"""
         file_path = self._make_path()
         logger.info(f"Loading data from {uri}... This might take a while.")
+        chunk_size = 10 * 1024 * 1024
         try:
             with requests.get(uri, stream=True) as r:
                 r.raise_for_status()
                 with self.fs.open(file_path, "wb") as f:
+                    file_size = 0
                     for chunk in r.iter_content(
-                        chunk_size=10 * 1024 * 1024
+                        chunk_size=chunk_size
                     ):  # 10 MBs of chunks
                         f.write(chunk)
-                        file_size = DRPath(file_path).stat().st_size
+                        file_size += chunk_size
         except requests.ConnectionError:
             self._resume_download(file_size, uri, file_path)
         except requests.Timeout:
