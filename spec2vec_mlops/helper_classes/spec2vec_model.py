@@ -100,7 +100,8 @@ class Model(PythonModel):
         )
         spectra_best_matches = []
         for i, query in enumerate(queries):
-            spectrum_best_scores = scores.scores_by_query(query, sort=True)[
+            all_scores = scores.scores_by_query(query, sort=True)
+            spectrum_best_scores = all_scores[
                 :n_best_spectra
             ]
             spectrum_best_matches = []
