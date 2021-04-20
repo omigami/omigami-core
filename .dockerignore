@@ -1,0 +1,7 @@
+**/.ipynb_checkpoints
+**/__pycache__
+.DS_Store
+notebooks
+*.egg-info
+**/.pytest_cache
+spec2vec_mlops/test/*/*

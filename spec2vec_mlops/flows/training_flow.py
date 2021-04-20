@@ -7,6 +7,7 @@ from prefect import Flow, Parameter, Client, unmapped, case
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
+from prefect.tasks.control_flow import merge
 
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.check_condition import check_condition
@@ -19,6 +20,7 @@ from spec2vec_mlops.tasks.load_spectrum_ids import load_spectrum_ids_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.train_model import train_model_task
+from spec2vec_mlops.tasks.use_testing_dataset_task import use_testing_dataset_task
 from spec2vec_mlops.utility.authenticator import KratosAuthenticator
 
 logging.basicConfig(level=logging.DEBUG)
@@ -49,6 +51,7 @@ def spec2vec_train_pipeline_distributed(
     allowed_missing_percentage: Union[float, int] = 5.0,
     seldon_deployment_path: str = "spec2vec_mlops/seldon_deployment.yaml",
     session_token: str = None,
+    testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k/10k_spectra_GNPS.json",
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -77,7 +80,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.56c3a27",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.37d6f80",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
@@ -98,10 +101,18 @@ def spec2vec_train_pipeline_distributed(
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
         uri = Parameter(name="uri")
-        file_path = download_data_task(uri, DRPath(download_out_dir))
-        raw_chunks = load_data_task(file_path, chunksize=1000)
-        logger.info("Data loading is complete.")
+        # TODO: these two cases are just for testing purposes:
+        #  we want to use a bigger dataset than the small one but smaller than the full one
+        with case(use_testing_dataset_task(testing_dataset_path), True):
+            raw_chunks_10k = load_data_task(
+                DRPath(testing_dataset_path or "path"), chunksize=1000
+            )
+        with case(use_testing_dataset_task(testing_dataset_path), False):
+            file_path = download_data_task(uri, DRPath(download_out_dir))
+            raw_chunks_full = load_data_task(file_path, chunksize=1000)
+        raw_chunks = merge(raw_chunks_10k, raw_chunks_full)
 
+        logger.info("Data loading is complete.")
         spectrum_ids_saved = clean_data_task.map(raw_chunks)
         logger.info("Data cleaning is complete.")
 
