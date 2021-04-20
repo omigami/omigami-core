@@ -1,7 +1,6 @@
 import ast
 from typing import Union, List, Dict
 
-import numpy as np
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from mlflow.pyfunc import PythonModel
@@ -101,8 +100,7 @@ class Model(PythonModel):
         )
         spectra_best_matches = []
         for i, query in enumerate(queries):
-            all_scores = scores.scores_by_query(query, sort=True)
-            spectrum_best_scores = all_scores[
+            spectrum_best_scores = scores.scores_by_query(query, sort=True)[
                 :n_best_spectra
             ]
             spectrum_best_matches = []
@@ -114,9 +112,6 @@ class Model(PythonModel):
                         "score": spectrum_match[1],
                     }
                 )
-            just_scores = [spectrum_match[1] for spectrum_match in all_scores]
-            best_match = all_scores[np.argmax(just_scores)]
-            spectrum_best_matches.append({"best_best_match_id": best_match[0].spectrum_id, "score": best_match[1],})
             spectra_best_matches.append(spectrum_best_matches)
         return spectra_best_matches
 
