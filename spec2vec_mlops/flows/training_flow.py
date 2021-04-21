@@ -51,7 +51,7 @@ def spec2vec_train_pipeline_distributed(
     allowed_missing_percentage: Union[float, int] = 5.0,
     seldon_deployment_path: str = "spec2vec_mlops/seldon_deployment.yaml",
     session_token: str = None,
-    testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k/10k_spectra_GNPS.json",
+    testing_dataset_path: str = None #"s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k/10k_spectra_GNPS.json",
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -80,7 +80,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.7f2d260",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.2c9422f", #2c9422f
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
