@@ -8,12 +8,6 @@ from prefect import Flow, unmapped, case
 from prefect.engine.state import State
 
 from spec2vec_mlops import config
-from spec2vec_mlops.helper_classes.storer_classes import (
-    SpectrumIDStorer,
-    SpectrumStorer,
-    DocumentStorer,
-    EmbeddingStorer,
-)
 from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
@@ -52,21 +46,11 @@ def spec2vec_train_pipeline_local(
         raw_chunks = load_data_task(file_path, chunksize=5000)
         spectrum_ids_saved = clean_data_task.map(raw_chunks)
         all_spectrum_ids_chunks = update_spectrum_ids_task(spectrum_ids_saved)
-        all_spectrum_ids_chunks = update_feast_online_task(
-            [
-                SpectrumStorer("spectrum_info"),
-            ],
-            all_spectrum_ids_chunks,
-        )
+        all_spectrum_ids_chunks = update_feast_online_task("spectrum", all_spectrum_ids_chunks)
         all_spectrum_ids_chunks = convert_to_documents_task.map(
             all_spectrum_ids_chunks, n_decimals=unmapped(2)
         )
-        all_spectrum_ids_chunks = update_feast_online_task(
-            [
-                DocumentStorer("document_info"),
-            ],
-            all_spectrum_ids_chunks,
-        )
+        all_spectrum_ids_chunks = update_feast_online_task("document", all_spectrum_ids_chunks)
         with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)
             run_id = register_model_task(
@@ -86,12 +70,7 @@ def spec2vec_train_pipeline_local(
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
         )
-        all_spectrum_ids_chunks = update_feast_online_task(
-            [
-                EmbeddingStorer("embedding_info", run_id),
-            ],
-            all_spectrum_ids_chunks,
-        )
+        all_spectrum_ids_chunks = update_feast_online_task("embedding", all_spectrum_ids_chunks, run_id=run_id)
     state = flow.run()
     return state
 
