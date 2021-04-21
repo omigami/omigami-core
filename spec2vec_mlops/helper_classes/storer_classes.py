@@ -52,6 +52,8 @@ class SpectrumIDStorer(BaseStorer):
         all_ids = [*existing_ids, *new_ids]
         data_df = self._get_data_df(all_ids)
         self._dgw.store_offline(self._table, data_df)
+
+    def store_online(self):
         self._dgw.store_online(self._table)
 
     def read_offline(self) -> List[str]:
@@ -99,8 +101,10 @@ class SpectrumStorer(BaseStorer):
     def store(self, data: List[Spectrum]) -> List[str]:
         data_df = self._get_data_df(data)
         self._dgw.store_offline(self._table, data_df)
-        self._dgw.store_online(self._table)
         return data_df["spectrum_id"].tolist()
+
+    def store_online(self):
+        self._dgw.store_online(self._table)
 
     def read_offline(self, ids: List[str]) -> List[Spectrum]:
         feature_list = [
@@ -126,7 +130,6 @@ class SpectrumStorer(BaseStorer):
         ]
         entity_rows = [{"spectrum_id": id} for id in ids]
         df = self._dgw.read_online(feature_list, entity_rows)
-        df = df.set_index("spectrum_id")
         return self._get_output(df, sep=":")
 
     def _get_data_df(self, data: List[Spectrum]) -> pd.DataFrame:
@@ -203,6 +206,8 @@ class DocumentStorer(BaseStorer):
     def store(self, data: List[SpectrumDocument]):
         data_df = self._get_data_df(data)
         self._dgw.store_offline(self._table, data_df)
+
+    def store_online(self):
         self._dgw.store_online(self._table)
 
     def read_offline(self, ids: List[str]) -> List[FeastSpectrumDocument]:
@@ -229,7 +234,6 @@ class DocumentStorer(BaseStorer):
         ]
         entity_rows = [{"spectrum_id": id} for id in ids]
         df = self._dgw.read_online(feature_list, entity_rows)
-        df = df.set_index("spectrum_id")
         return self._get_output(df, sep=":")
 
     def _get_data_df(self, data: List[SpectrumDocument]) -> pd.DataFrame:
@@ -296,6 +300,8 @@ class EmbeddingStorer(BaseStorer):
     def store(self, data: List[Embedding]):
         data_df = self._get_data_df(data)
         self._dgw.store_offline(self._table, data_df)
+
+    def store_online(self):
         self._dgw.store_online(self._table)
 
     def read_offline(self, ids: List[str]) -> List[Embedding]:
@@ -319,7 +325,6 @@ class EmbeddingStorer(BaseStorer):
         ]
         entity_rows = [{"spectrum_id": id} for id in ids]
         df = self._dgw.read_online(feature_list, entity_rows)
-        df = df.set_index("spectrum_id")
         return self._get_output(df, sep=":")
 
     def _get_data_df(self, embeddings: List[Embedding]) -> pd.DataFrame:

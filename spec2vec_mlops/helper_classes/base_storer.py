@@ -14,6 +14,10 @@ class BaseStorer(ABC):
         pass
 
     @abstractmethod
+    def store_online(self):
+        pass
+
+    @abstractmethod
     def _get_data_df(
         self, data: List[Union[str, Spectrum, SpectrumDocument, Embedding]]
     ) -> pd.DataFrame:

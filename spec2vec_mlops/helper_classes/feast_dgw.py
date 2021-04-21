@@ -102,11 +102,17 @@ class FeastDataGateway:
         entity_rows must be in the following format:
         [{"spectrum_id": "AA"}, {"spectrum_id": "BB"}]]
         """
-        response = self.client.get_online_features(
-            feature_refs=feature_list,
-            entity_rows=entity_rows,
-        )
-        return pd.DataFrame(response.to_dict())
+        responses = []
+        for feature in feature_list:
+            response = self.client.get_online_features(
+                feature_refs=[feature],
+                entity_rows=entity_rows,
+            )
+            df = pd.DataFrame(response.to_dict())
+            indices = list(entity_rows[0].keys())
+            df = df.set_index(indices, drop=True)
+            responses.append(df)
+        return pd.concat(responses, axis=1)
 
     def get_or_create_table(
         self,
