@@ -47,8 +47,8 @@ class Model(PythonModel):
     def predict(
         self, context, model_input_and_parameters: Dict
     ) -> List[List[Dict]]:
-        parameters = model_input_and_parameters["parameters"]
-        model_input = model_input_and_parameters["data"]
+        parameters = model_input_and_parameters.get("parameters")
+        model_input = model_input_and_parameters.get("data")
         self._validate_input(model_input)
         embeddings = self._pre_process_data(model_input)
         reference_embeddings = self._get_reference_embeddings()
