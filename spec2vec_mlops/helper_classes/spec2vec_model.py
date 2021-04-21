@@ -119,6 +119,7 @@ class Model(PythonModel):
                     "best_best_match_id": best_match[0].spectrum_id,
                     "score": best_match[1],
                     "position": int(np.argmax(just_scores)),
+                    "n_references": len(all_scores),
                 }
             )
             spectra_best_matches.append(spectrum_best_matches)
