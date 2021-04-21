@@ -49,6 +49,11 @@ def model(word2vec_model):
     )
 
 
+@pytest.fixture()
+def predict_parameters():
+    return {"n_best_spectra": 5}
+
+
 @pytest.mark.parametrize(
     "input_data, exception",
     [
@@ -118,13 +123,16 @@ def test_get_reference_embeddings(model, all_spectrum_ids, embeddings_stored):
     os.getenv("SKIP_SPARK_TEST", True),
     reason="It can only be run if the Feast docker-compose is up and with Spark",
 )
-def test_predict_from_saved_model(saved_model_run_id, loaded_data, embeddings_stored):
+def test_predict_from_saved_model(
+    saved_model_run_id, loaded_data, embeddings_stored, predict_parameters
+):
     run = mlflow.get_run(saved_model_run_id)
     model_path = f"{run.info.artifact_uri}/model/"
     model = mlflow.pyfunc.load_model(model_path)
-    best_matches = model.predict(loaded_data)
+    data_and_param = loaded_data + [predict_parameters]
+    best_matches = model.predict(data_and_param)
     for spectrum, best_match in zip(loaded_data, best_matches):
-        assert best_match["best_match_id"] == spectrum["spectrum_id"]
+        assert len(best_match) == predict_parameters["n_best_spectra"]
 
 
 def test_raise_api_exception(model):

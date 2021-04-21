@@ -44,12 +44,16 @@ class Model(PythonModel):
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
 
-    def predict(self, context, model_input: List[Dict]) -> List[Dict]:
+    def predict(
+        self, context, model_input_and_parameters: List[Dict]
+    ) -> List[List[Dict]]:
+        parameters = model_input_and_parameters[-1]
+        model_input = model_input_and_parameters[:-1]
         self._validate_input(model_input)
         embeddings = self._pre_process_data(model_input)
         reference_embeddings = self._get_reference_embeddings()
         best_matches = self._get_best_matches(
-            reference_embeddings, embeddings, n_best_spectra=10
+            reference_embeddings, embeddings, **parameters
         )
         return best_matches
 
@@ -86,7 +90,11 @@ class Model(PythonModel):
         return embeddings
 
     def _get_best_matches(
-        self, references: List[Embedding], queries: List[Embedding], n_best_spectra: int
+        self,
+        references: List[Embedding],
+        queries: List[Embedding],
+        n_best_spectra: int = 10,
+        **parameters,
     ) -> List[List[Dict]]:
         spec2vec_embeddings_similarity = Spec2VecEmbeddings(
             model=self.model,
