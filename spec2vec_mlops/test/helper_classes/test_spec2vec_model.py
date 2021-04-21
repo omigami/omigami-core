@@ -101,7 +101,7 @@ def test_get_best_matches(model, embeddings):
     n_best_spectra = 2
     best_matches = model._get_best_matches(embeddings, embeddings, n_best_spectra)
     for query, best_match in zip(embeddings, best_matches):
-        assert len(best_match) == n_best_spectra + 1
+        assert len(best_match) == n_best_spectra + 2
         assert query.spectrum_id == best_match[0]["best_match_id"]
 
 

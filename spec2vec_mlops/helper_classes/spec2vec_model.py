@@ -121,7 +121,26 @@ class Model(PythonModel):
                     "position": int(np.argmax(just_scores)),
                     "n_references": len(all_scores),
                 }
+
             )
+
+            spectrum_id = query.spectrum_id
+            correct_spectrum = [spectrum_match for spectrum_match in all_scores if spectrum_match[0].spectrum_id==spectrum_id]
+            if correct_spectrum:
+                spectrum_best_matches.append(
+                    {
+                        "correct_spectrum": correct_spectrum[0][0].spectrum_id,
+                        "score": correct_spectrum[0][1],
+                    }
+                )
+            else:
+                all_saved_ids = [(spectrum_match[0].spectrum_id, spectrum_match[1]) for spectrum_match in all_scores]
+                spectrum_best_matches.append(
+                    {
+                        "all_saved_ids": all_saved_ids
+                    }
+                )
+
             spectra_best_matches.append(spectrum_best_matches)
         return spectra_best_matches
 
