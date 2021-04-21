@@ -131,6 +131,8 @@ class Model(PythonModel):
                     {
                         "correct_spectrum": correct_spectrum[0][0].spectrum_id,
                         "score": correct_spectrum[0][1],
+                        "vector": correct_spectrum[0][0].vector,
+                        "query_vector": query.vector,
                     }
                 )
             else:

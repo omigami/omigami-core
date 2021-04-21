@@ -80,7 +80,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.a6ad0dc", #2c9422f
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.d32d53b", #2c9422f
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
