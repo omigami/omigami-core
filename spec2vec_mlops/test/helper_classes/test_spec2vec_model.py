@@ -129,7 +129,7 @@ def test_predict_from_saved_model(
     run = mlflow.get_run(saved_model_run_id)
     model_path = f"{run.info.artifact_uri}/model/"
     model = mlflow.pyfunc.load_model(model_path)
-    data_and_param = loaded_data + [predict_parameters]
+    data_and_param = {"parameters": predict_parameters, "data": loaded_data}
     best_matches = model.predict(data_and_param)
     for spectrum, best_match in zip(loaded_data, best_matches):
         assert len(best_match) == predict_parameters["n_best_spectra"]

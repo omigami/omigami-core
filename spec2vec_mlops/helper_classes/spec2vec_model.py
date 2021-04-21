@@ -45,10 +45,10 @@ class Model(PythonModel):
         self.run_id = run_id
 
     def predict(
-        self, context, model_input_and_parameters: List[Dict]
+        self, context, model_input_and_parameters: Dict
     ) -> List[List[Dict]]:
-        parameters = model_input_and_parameters[-1]
-        model_input = model_input_and_parameters[:-1]
+        parameters = model_input_and_parameters["parameters"]
+        model_input = model_input_and_parameters["data"]
         self._validate_input(model_input)
         embeddings = self._pre_process_data(model_input)
         reference_embeddings = self._get_reference_embeddings()
