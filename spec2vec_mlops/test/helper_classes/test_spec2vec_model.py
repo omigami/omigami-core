@@ -124,7 +124,7 @@ def test_predict_from_saved_model(saved_model_run_id, loaded_data, embeddings_st
     model = mlflow.pyfunc.load_model(model_path)
     best_matches = model.predict(loaded_data)
     for spectrum, best_match in zip(loaded_data, best_matches):
-        assert best_match["best_match_id"] == spectrum["spectrum_id"]
+        assert best_match[0]["best_match_id"] == spectrum["spectrum_id"]
 
 
 def test_raise_api_exception(model):
