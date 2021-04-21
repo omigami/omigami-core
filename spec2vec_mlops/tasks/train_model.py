@@ -17,7 +17,7 @@ def train_model_task(
 ) -> Word2Vec:
     ids_storer = SpectrumIDStorer("spectrum_ids_info")
     document_storer = DocumentStorer("document_info")
-    all_spectrum_ids = ids_storer.read_online()
+    all_spectrum_ids = ids_storer.read_online() or ids_storer.read_offline()
     documents = document_storer.read_online(all_spectrum_ids)
     model_trainer = ModelTrainer()
     model = model_trainer.train_model(documents, iterations, window)
