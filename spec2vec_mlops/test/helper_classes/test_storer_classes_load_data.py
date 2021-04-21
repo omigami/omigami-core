@@ -48,16 +48,19 @@ def test_load_embeddings_offline(
 
 
 def test_load_all_spectrum_ids_online(spectrum_ids_storer, target_spectrum_ids):
+    spectrum_ids_storer.store_online()
     all_spectrum_ids = spectrum_ids_storer.read_online()
     assert all(id in all_spectrum_ids for id in target_spectrum_ids)
 
 
 def test_load_spectrum_online(spectrum_storer, spectrum_stored, target_spectrum_ids):
+    spectrum_storer.store_online()
     spectra = spectrum_storer.read_online(target_spectrum_ids)
     assert len(spectra) == len(target_spectrum_ids)
 
 
 def test_load_documents_online(document_storer, documents_stored, target_spectrum_ids):
+    document_storer.store_online()
     documents = document_storer.read_online(target_spectrum_ids)
     assert len(documents) == len(target_spectrum_ids)
 
@@ -65,6 +68,7 @@ def test_load_documents_online(document_storer, documents_stored, target_spectru
 def test_load_embeddings_online(
     embedding_storer, embeddings_stored, target_spectrum_ids
 ):
+    embedding_storer.store_online()
     embeddings = embedding_storer.read_online(target_spectrum_ids)
     assert len(embeddings) == len(target_spectrum_ids)
 
