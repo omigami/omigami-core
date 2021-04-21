@@ -59,6 +59,3 @@ spec:
                 value: "s3://dr-prefect/spec2vec-training-flow/feast/output.parquet"
               - name: FEAST_REDIS_HOST
                 value: "feast-redis-master.feast"
-            env:
-              - name: FEAST_CONFIG
-                value: /microservice/.feast
