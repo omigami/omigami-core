@@ -1,7 +1,7 @@
 import datetime
-import logging
 from typing import List
 
+import prefect
 from prefect import task
 
 from spec2vec_mlops.helper_classes.document_converter import DocumentConverter
@@ -10,28 +10,22 @@ from spec2vec_mlops.helper_classes.storer_classes import (
     DocumentStorer,
 )
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
 def convert_to_documents_task(spectrum_ids: List[str], n_decimals: int) -> List[str]:
-    chunksize = 100  # capped by document_storer.read_online gRPC message size limit
+    logger = prefect.context.get("logger")
+    spectrum_storer = SpectrumStorer("spectrum_info")
+    chunksize = 10  # capped by storer.read_online gRPC message size limit
     ids_chunks = [
         spectrum_ids[i : i + chunksize] for i in range(0, len(spectrum_ids), chunksize)
     ]
-    return [
-        output_id
-        for ids_chunk in ids_chunks
-        for output_id in _read_and_convert(ids_chunk, n_decimals)
+    all_spectra = [
+        spectrum
+        for chunk in ids_chunks
+        for spectrum in spectrum_storer.read_online(chunk)
     ]
 
-
-def _read_and_convert(spectrum_ids: List[str], n_decimals: int) -> List[str]:
-    spectrum_storer = SpectrumStorer("spectrum_info")
-    all_spectra = spectrum_storer.read_online(spectrum_ids)
-    if all_spectra:
-        logger.info(f"Converting {len(all_spectra)} to documents")
+    logger.info(f"Converting {len(all_spectra)} to documents")
     document_converter = DocumentConverter()
     result = [
         document_converter.convert_to_document(spectrum, n_decimals)
