@@ -1,7 +1,6 @@
 import ast
 from typing import Union, List, Dict
 
-import numpy as np
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from mlflow.pyfunc import PythonModel
@@ -45,9 +44,7 @@ class Model(PythonModel):
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
 
-    def predict(
-        self, context, model_input_and_parameters: Dict
-    ) -> List[List[Dict]]:
+    def predict(self, context, model_input_and_parameters: Dict) -> List[List[Dict]]:
         parameters = model_input_and_parameters.get("parameters")
         model_input = model_input_and_parameters.get("data")
         self._validate_input(model_input)
@@ -120,37 +117,6 @@ class Model(PythonModel):
                         "score": spectrum_match[1],
                     }
                 )
-            just_scores = [spectrum_match[1] for spectrum_match in all_scores]
-            best_match = all_scores[np.argmax(just_scores)]
-            spectrum_best_matches.append(
-                {
-                    "best_best_match_id": best_match[0].spectrum_id,
-                    "score": best_match[1],
-                    "position": int(np.argmax(just_scores)),
-                    "n_references": len(all_scores),
-                }
-
-            )
-
-            spectrum_id = query.spectrum_id
-            correct_spectrum = [spectrum_match for spectrum_match in all_scores if spectrum_match[0].spectrum_id==spectrum_id]
-            if correct_spectrum:
-                spectrum_best_matches.append(
-                    {
-                        "correct_spectrum": correct_spectrum[0][0].spectrum_id,
-                        "score": correct_spectrum[0][1],
-                        "vector": list(correct_spectrum[0][0].vector),
-                        "query_vector": list(query.vector),
-                    }
-                )
-            else:
-                all_saved_ids = [(spectrum_match[0].spectrum_id, spectrum_match[1]) for spectrum_match in all_scores]
-                spectrum_best_matches.append(
-                    {
-                        "all_saved_ids": all_saved_ids
-                    }
-                )
-
             spectra_best_matches.append(spectrum_best_matches)
         return spectra_best_matches
 
