@@ -1,6 +1,5 @@
 import json
 import os
-from pathlib import Path
 
 import mlflow
 import pytest
@@ -17,8 +16,6 @@ from spec2vec_mlops.helper_classes.exception import (
 )
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
-
-os.chdir(Path(__file__).parents[3])
 
 
 @pytest.fixture
@@ -39,7 +36,7 @@ def saved_model_run_id(word2vec_model, tmpdir):
         metrics={"alpha": model.model.alpha},
         experiment_name="experiment",
         path=path,
-        code_to_save=["spec2vec_mlops"],
+        code_to_save=["../../../spec2vec_mlops"],
     )
     return run_id
 

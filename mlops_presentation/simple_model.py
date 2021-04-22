@@ -5,5 +5,5 @@ class SimpleModel(PythonModel):
     def predict(self, context, model_input: int):
         return model_input + 2
 
-    def set_run_id(self):
+    def set_run_id(self, run_id):
         pass

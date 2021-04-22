@@ -29,7 +29,9 @@ def register_model_task(
     }
     metrics = {"alpha": model.alpha}
     run_id = model_register.register_model(
-        model=Model(model, n_decimals, intensity_weighting_power, allowed_missing_percentage),
+        model=Model(
+            model, n_decimals, intensity_weighting_power, allowed_missing_percentage
+        ),
         params=params,
         metrics=metrics,
         experiment_name=experiment_name,
