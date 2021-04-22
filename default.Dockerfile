@@ -13,5 +13,6 @@ RUN /opt/conda/bin/conda env update --file environment-docker.yml \
     && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
+RUN patch /opt/conda/lib/python3.7/site-packages/feast/grpc/grpc.py /opt/libs/grpc_message_size.patch
 COPY . /opt/spec2vec_mlops
 RUN pip install -e /opt/spec2vec_mlops
