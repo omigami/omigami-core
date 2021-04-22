@@ -12,10 +12,11 @@ from spec2vec_mlops.helper_classes.storer_classes import (
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def convert_to_documents_task(spectrum_ids: List[str], n_decimals: int) -> List[str]:
+def convert_to_documents_task(
+    spectrum_ids: List[str], n_decimals: int, chunksize: int = 10
+) -> List[str]:
     logger = prefect.context.get("logger")
     spectrum_storer = SpectrumStorer("spectrum_info")
-    chunksize = 10  # capped by storer.read_online gRPC message size limit
     ids_chunks = [
         spectrum_ids[i : i + chunksize] for i in range(0, len(spectrum_ids), chunksize)
     ]

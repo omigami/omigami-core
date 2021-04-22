@@ -46,7 +46,8 @@ def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-spec2vec-load-10k-data-pt-1",
-    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small",  # or full if using complete GNPS
+    # download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small",  # or full if using complete GNPS
+    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k",  # or full if using complete GNPS
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
@@ -57,8 +58,8 @@ def spec2vec_train_pipeline_distributed(
     allowed_missing_percentage: Union[float, int] = 5.0,
     seldon_deployment_path: str = "spec2vec_mlops/seldon_deployment.yaml",
     session_token: str = None,
-    testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small/2021-04-21/1c4c7f13-ae0a-447b-9e8f-df7d83330ebc.json",
-    # testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k/10k_spectra_GNPS.json",
+    # testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small/2021-04-21/1c4c7f13-ae0a-447b-9e8f-df7d83330ebc.json",
+    testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k/10k_spectra_GNPS.json",
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -104,7 +105,7 @@ def spec2vec_train_pipeline_distributed(
             },
         ),
         "storage": S3("dr-prefect"),
-        "executor": LocalDaskExecutor(scheduler="threads", num_workers=4),
+        "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
         # "executor": DaskExecutor(address="dask-scheduler.dask:8786"),
     }
     with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
@@ -113,11 +114,11 @@ def spec2vec_train_pipeline_distributed(
         #  we want to use a bigger dataset than the small one but smaller than the full one
         with case(use_testing_dataset_task(testing_dataset_path), True):
             raw_chunks_10k = load_data_task(
-                DRPath(testing_dataset_path or "path"), chunksize=1000
+                DRPath(testing_dataset_path or "path"), chunksize=2000
             )
         with case(use_testing_dataset_task(testing_dataset_path), False):
             file_path = download_data_task(uri, DRPath(download_out_dir))
-            raw_chunks_full = load_data_task(file_path, chunksize=1000)
+            raw_chunks_full = load_data_task(file_path, chunksize=2000)
         raw_chunks = merge(raw_chunks_10k, raw_chunks_full)
 
         logger.info("Data loading is complete.")
@@ -127,7 +128,7 @@ def spec2vec_train_pipeline_distributed(
             "spectrum", all_spectrum_ids_chunks
         )
         all_spectrum_ids_chunks = convert_to_documents_task.map(
-            all_spectrum_ids_chunks, n_decimals=unmapped(2)
+            all_spectrum_ids_chunks, n_decimals=unmapped(2), chunksize=unmapped(5)
         )
         all_spectrum_ids_chunks = update_feast_online_task(
             "document", all_spectrum_ids_chunks
@@ -154,6 +155,7 @@ def spec2vec_train_pipeline_distributed(
             unmapped(n_decimals),
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
+            unmapped(5),
         )
         all_spectrum_ids_chunks = update_feast_online_task(
             "embedding", all_spectrum_ids_chunks, run_id=run_id

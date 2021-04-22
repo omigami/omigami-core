@@ -20,10 +20,10 @@ def make_embeddings_task(
     n_decimals: int,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
+    chunksize: int = 10,
 ) -> List[str]:
     logger = prefect.context.get("logger")
     document_storer = DocumentStorer("document_info")
-    chunksize = 10  # capped by storer.read_online gRPC message size limit
     ids_chunks = [
         spectrum_ids[i : i + chunksize] for i in range(0, len(spectrum_ids), chunksize)
     ]
