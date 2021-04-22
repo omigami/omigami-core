@@ -101,12 +101,41 @@ To register the flow manually to Prefect you need to follow these steps:
 
 If the Prefect Server requires authentication, you can use the arguments to set it up:
 ::
+
     --auth (bool): Enables authentication, defaults to False
     --auth_url (str): Authentication API Path. Ex.: https://mlops.datarevenue.com/.ory/kratos/public/ [Optional, only required if auth=True]
     --username (str): Your username [Optional, only required if auth=True]
     --password (str): Your password [Optional, only required if auth=True]
 
 Then you can check the flow here: https://prefect.mlops.datarevenue.com/default
+
+After the model has been deployed you can access the predictions endpoint in two ways:
+
+By making a curl request:
+::
+
+    curl -v https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions -H "Content-Type: application/json" -d 'input_data'
+
+By accessing the external API with the user interface at:
+::
+
+    https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/doc/
+
+The input data should look like:
+::
+
+    {
+      "data": {
+        "ndarray": {
+            [
+                {"json_peaks: "[some peaks]", "Precursor_MZ":"900"},
+                {"json_peaks: "[some other peaks]", "Precursor_MZ":"800"},
+            ]
+        }
+      }
+    }
+
+"json_peaks", "Precursor_MZ" are the only mandatory fields.
 
 Black format your code
 -------------------------------------
