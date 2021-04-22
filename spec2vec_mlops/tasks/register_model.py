@@ -20,10 +20,21 @@ def register_model_task(
     conda_env_path: str = None,
 ) -> str:
     model_register = ModelRegister(server_uri)
+    params = {
+        "n_decimals_for_documents": n_decimals,
+        "intensity_weighting_power": intensity_weighting_power,
+        "allowed_missing_percentage": allowed_missing_percentage,
+        "iter": model.epochs,
+        "window": model.window,
+    }
+    metrics = {"alpha": model.alpha}
     run_id = model_register.register_model(
-        Model(model, n_decimals, intensity_weighting_power, allowed_missing_percentage),
-        experiment_name,
-        path,
-        conda_env_path,
+        model=Model(model, n_decimals, intensity_weighting_power, allowed_missing_percentage),
+        params=params,
+        metrics=metrics,
+        experiment_name=experiment_name,
+        path=path,
+        code_to_save=["spec2vec_mlops"],
+        conda_env_path=conda_env_path,
     )
     return run_id

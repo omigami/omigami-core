@@ -25,15 +25,21 @@ os.chdir(Path(__file__).parents[3])
 def saved_model_run_id(word2vec_model, tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = ModelRegister(f"file:/{path}")
+    model = Model(
+        word2vec_model,
+        n_decimals=1,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=5.0,
+    )
     run_id = model_register.register_model(
-        Model(
-            word2vec_model,
-            n_decimals=1,
-            intensity_weighting_power=0.5,
-            allowed_missing_percentage=5.0,
-        ),
-        "experiment",
-        path,
+        model=model,
+        params={
+            "n_decimals_for_documents": model.n_decimals,
+        },
+        metrics={"alpha": model.model.alpha},
+        experiment_name="experiment",
+        path=path,
+        code_to_save=["spec2vec_mlops"],
     )
     return run_id
 

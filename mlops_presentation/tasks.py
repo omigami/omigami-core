@@ -2,7 +2,8 @@ import time
 
 from prefect import task
 
-from mlops_presentation.model_and_registration import ModelRegister, SimpleModel
+from mlops_presentation.simple_model import SimpleModel
+from spec2vec_mlops.helper_classes.model_register import ModelRegister
 
 
 @task()
@@ -31,9 +32,22 @@ def register_model_task(
     path: str,
 ) -> str:
     model_register = ModelRegister(server_uri)
+    params = {
+        "parameter1": 100,
+        "parameter2": 5,
+        "parameter3": 1,
+    }
+    metrics = {
+        "metric1": 1,
+        "metric2": 80,
+        "metric3": 6,
+    }
     run_id = model_register.register_model(
         SimpleModel(),
-        experiment_name,
-        path,
+        params=params,
+        metrics=metrics,
+        experiment_name=experiment_name,
+        path=path,
+        code_to_save=["mlops_presentation"],
     )
     return run_id

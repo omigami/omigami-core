@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import mlflow
 from mlflow.exceptions import MlflowException
 
@@ -11,19 +13,15 @@ class ModelRegister:
     def register_model(
         self,
         model: Model,
+        params: Dict,
+        metrics: Dict,
         experiment_name: str,
         path: str,
+        code_to_save: List[str],
         conda_env_path: str = None,
     ) -> str:
         experiment_id = self._get_or_create_experiment_id(experiment_name, path)
         with mlflow.start_run(experiment_id=experiment_id) as run:
-            params = {
-                "n_decimals_for_documents": model.n_decimals,
-                "intensity_weighting_power": model.intensity_weighting_power,
-                "allowed_missing_percentage": model.allowed_missing_percentage,
-                "iter": model.model.epochs,
-                "window": model.model.window,
-            }
             mlflow.log_params(params)
             run_id = run.info.run_id
             model.set_run_id(run_id)
@@ -33,9 +31,7 @@ class ModelRegister:
                     python_model=model,
                     registered_model_name=experiment_name,
                     conda_env=conda_env_path,
-                    code_path=[
-                        "spec2vec_mlops",
-                    ],
+                    code_path=code_to_save,
                 )
             # This is need to run the flow locally. mlflow.pyfunc.log_model is not supported without a database
             except MlflowException:
@@ -43,11 +39,9 @@ class ModelRegister:
                     f"{path}/model",
                     python_model=model,
                     conda_env=conda_env_path,
-                    code_path=[
-                        "spec2vec_mlops",
-                    ],
+                    code_path=code_to_save,
                 )
-            mlflow.log_metric("alpha", model.model.alpha)
+            mlflow.log_metrics(metrics)
             return run_id
 
     @staticmethod
