@@ -27,7 +27,7 @@ MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"]
 
 def simple_flow(
     api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-spec2vec-load-small-data-with-empty-db",
+    project_name: str = "simple-flow",
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
     seldon_deployment_path: str = "spec2vec_mlops/seldon_deployment.yaml",
@@ -41,7 +41,7 @@ def simple_flow(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.2c9422f",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.4290f75",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
         ),
