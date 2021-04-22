@@ -134,10 +134,10 @@ The input data should look like:
             "data":
                 [
                     {"json_peaks": "[some peaks]", "Precursor_MZ": "900"},
-                    {"json_peaks": "[some other peaks]", "Precursor_MZ": "800"},
-                ],
-         },
-      },
+                    {"json_peaks": "[some other peaks]", "Precursor_MZ": "800"}
+                ]
+         }
+      }
    }
 
 "json_peaks", "Precursor_MZ" are the only mandatory fields.
