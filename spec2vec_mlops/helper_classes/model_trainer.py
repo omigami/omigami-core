@@ -1,35 +1,23 @@
-from typing import List, Union
+from typing import Union, List
 
-from gensim.models import Word2Vec
-from spec2vec import SpectrumDocument
-from spec2vec.model_building import train_new_word2vec_model
+from spec2vec.model_building import (
+    set_spec2vec_defaults,
+    learning_rates_to_gensim_style,
+)
+from spec2vec.utils import TrainingProgressLogger
 
-from spec2vec_mlops.entities.feast_spectrum_document import FeastSpectrumDocument
 
+def spec2vec_settings(iterations: Union[List[int], int], **settings):
+    settings = set_spec2vec_defaults(**settings)
 
-class ModelTrainer:
-    @staticmethod
-    def train_model(
-        documents: List[Union[SpectrumDocument, FeastSpectrumDocument]],
-        iterations: int = None,
-        window: int = None,
-    ) -> Word2Vec:
-        """
-        Parameters
-        ----------
-        documents: List[SpectrumDocument]
-            List of documents, each document being a SpectrumDocument that has a words attribute
-        iterations: List[int]
-            Specifies the number of training iterations.
-        window: int
-            Window size for context words (small for local context, larger for global context).
-            Spec2Vec expects large windows.
-        Returns
-        -------
-        model: Word2Vec
-            A trained Word2Vec model
-        """
-        model = train_new_word2vec_model(
-            documents, iterations=iterations, window=window
-        )
-        return model
+    num_of_epochs = max(iterations) if isinstance(iterations, list) else iterations
+
+    # Convert spec2vec style arguments to gensim style arguments
+    settings = learning_rates_to_gensim_style(num_of_epochs, **settings)
+
+    # Set callbacks
+    callbacks = []
+    training_progress_logger = TrainingProgressLogger(num_of_epochs)
+    callbacks.append(training_progress_logger)
+
+    return callbacks, settings
