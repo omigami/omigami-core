@@ -44,9 +44,7 @@ class Model(PythonModel):
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
 
-    def predict(
-        self, context, model_input_and_parameters: Dict
-    ) -> List[List[Dict]]:
+    def predict(self, context, model_input_and_parameters: Dict) -> List[List[Dict]]:
         parameters = model_input_and_parameters.get("parameters")
         model_input = model_input_and_parameters.get("data")
         self._validate_input(model_input)
@@ -109,9 +107,7 @@ class Model(PythonModel):
         spectra_best_matches = []
         for i, query in enumerate(queries):
             all_scores = scores.scores_by_query(query, sort=True)
-            spectrum_best_scores = all_scores[
-                :n_best_spectra
-            ]
+            spectrum_best_scores = all_scores[:n_best_spectra]
             spectrum_best_matches = []
             for spectrum_match in spectrum_best_scores:
                 spectrum_best_matches.append(
