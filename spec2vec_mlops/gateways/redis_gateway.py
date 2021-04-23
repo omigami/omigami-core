@@ -1,3 +1,4 @@
+import os
 import pickle
 from typing import List, Generator
 
@@ -9,6 +10,7 @@ from spec2vec_mlops import config
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.entities.embedding import Embedding
 
+HOST = os.getenv("REDIS_HOST", config["redis"]["host"])
 DB = config["redis"]["db"]
 SPECTRUM_SET_NAME = config["redis"]["spectrum_set_name"]
 
@@ -17,7 +19,7 @@ class RedisDataGateway:
     """Data gateway for Redis storage."""
 
     def __init__(self):
-        self.client = redis.StrictRedis(db=DB)
+        self.client = redis.StrictRedis(host=HOST, db=DB)
 
     def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
         pipe = self.client.pipeline()

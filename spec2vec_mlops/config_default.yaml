@@ -80,5 +80,6 @@ k8s:
     plural: "seldondeployments"
     namespace: "seldon"
 redis:
+  host: "localhost"
   db: 1
   spectrum_set_name: "spectrum_data"
