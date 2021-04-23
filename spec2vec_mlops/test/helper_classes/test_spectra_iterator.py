@@ -37,7 +37,3 @@ def test_spectra_iterator():
     assert all_words == all_words_no_iterator
     assert all_sentences == len(all_spectrum_ids)
     assert isinstance(spectra_iter, Iterable)
-
-
-
-
