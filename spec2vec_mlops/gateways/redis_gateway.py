@@ -11,7 +11,7 @@ from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.entities.embedding import Embedding
 
 HOST = os.getenv("REDIS_HOST", config["redis"]["host"])
-DB = config["redis"]["db"]
+DB = os.getenv("REDIS_DB", config["redis"]["db"])
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
 SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
 DOCUMENT_HASHES = config["redis"]["document_hashes"]

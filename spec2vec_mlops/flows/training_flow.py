@@ -36,8 +36,8 @@ def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-spec2vec-load-10k-data-pt-1",
-    # download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small",  # or full if using complete GNPS
-    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k",  # or full if using complete GNPS
+    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small",  # or full if using complete GNPS
+    # download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k",  # or full if using complete GNPS
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
@@ -48,8 +48,8 @@ def spec2vec_train_pipeline_distributed(
     allowed_missing_percentage: Union[float, int] = 5.0,
     seldon_deployment_path: str = "spec2vec_mlops/seldon_deployment.yaml",
     session_token: str = None,
-    # testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small/2021-04-21/1c4c7f13-ae0a-447b-9e8f-df7d83330ebc.json",
-    testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k/10k_spectra_GNPS.json",
+    testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small/2021-04-21/1c4c7f13-ae0a-447b-9e8f-df7d83330ebc.json",
+    # testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k/10k_spectra_GNPS.json",
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -78,12 +78,12 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.13eba59",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.06d7451",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
                 "REDIS_HOST": "feast-redis-master.feast",
-                "REDIS_DB": 1
+                "REDIS_DB": "1"
             },
         ),
         "storage": S3("dr-prefect"),
