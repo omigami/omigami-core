@@ -29,31 +29,15 @@ SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"]
 API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"]
-FEAST_CORE_URL_REMOTE = config["feast"]["url"]["remote"]
-FEAST_SERVING_URL_REMOTE = config["feast"]["serving_url"]["remote"]
 MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"]
-
-
-@task
-def ids():
-    from spec2vec_mlops.helper_classes.storer_classes import SpectrumIDStorer
-
-    chunksize = 100
-    sp = SpectrumIDStorer("spectrum_ids_info")
-    sp.store_online()
-    results = sp.read_online()
-    results_chunks = [
-        results[i : i + chunksize] for i in range(0, len(results), chunksize)
-    ]
-    return results_chunks
 
 
 def spec2vec_train_pipeline_distributed(
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-spec2vec-load-10k-data-pt-1",
-    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small",  # or full if using complete GNPS
-    # download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k",  # or full if using complete GNPS
+    # download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small",  # or full if using complete GNPS
+    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k",  # or full if using complete GNPS
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
@@ -64,8 +48,8 @@ def spec2vec_train_pipeline_distributed(
     allowed_missing_percentage: Union[float, int] = 5.0,
     seldon_deployment_path: str = "spec2vec_mlops/seldon_deployment.yaml",
     session_token: str = None,
-    testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small/2021-04-21/1c4c7f13-ae0a-447b-9e8f-df7d83330ebc.json",
-    # testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k/10k_spectra_GNPS.json",
+    # testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/small/2021-04-21/1c4c7f13-ae0a-447b-9e8f-df7d83330ebc.json",
+    testing_dataset_path: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k/10k_spectra_GNPS.json",
 ) -> str:
     """Function to register Prefect flow using remote cluster
 
@@ -94,21 +78,12 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.8ebfc88",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.13eba59",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={
-                # "FEAST_BASE_SOURCE_LOCATION": "s3a://dr-prefect/spec2vec-training-flow/feast",
-                # "FEAST_CORE_URL": FEAST_CORE_URL_REMOTE,
-                # "FEAST_SERVING_URL": FEAST_SERVING_URL_REMOTE,
-                # "FEAST_SPARK_LAUNCHER": "k8s",
-                # "FEAST_SPARK_K8S_NAMESPACE": "feast",
-                # "FEAST_SPARK_STAGING_LOCATION": "s3a://dr-prefect/spec2vec-training-flow/feast/staging",
-                # "FEAST_HISTORICAL_FEATURE_OUTPUT_FORMAT": "parquet",
-                # "FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION": "s3a://dr-prefect/spec2vec-training-flow/feast/output.parquet",
-                # "FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION": "s3://dr-prefect/spec2vec-training-flow/feast/output.parquet",
-                # "FEAST_REDIS_HOST": "feast-redis-master.feast",
                 "REDIS_HOST": "feast-redis-master.feast",
+                "REDIS_DB": 1
             },
         ),
         "storage": S3("dr-prefect"),
@@ -129,10 +104,12 @@ def spec2vec_train_pipeline_distributed(
         raw_chunks = merge(raw_chunks_10k, raw_chunks_full)
 
         logger.info("Data loading is complete.")
-        success = clean_data_task.map(raw_chunks, n_decimals=unmapped(2))
+        all_spectrum_ids_chunks = clean_data_task.map(
+            raw_chunks, n_decimals=unmapped(2)
+        )
         logger.info("Data cleaning and document conversion are complete.")
 
-        with case(check_condition(success), True):
+        with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)
             run_id = register_model_task(
                 mlflow_server_uri,
@@ -145,17 +122,16 @@ def spec2vec_train_pipeline_distributed(
                 conda_env_path,
             )
             logger.info("Model training is complete.")
-        # all_spectrum_ids_chunks = make_embeddings_task.map(
-        #     unmapped(model),
-        #     all_spectrum_ids_chunks,
-        #     unmapped(run_id),
-        #     unmapped(n_decimals),
-        #     unmapped(intensity_weighting_power),
-        #     unmapped(allowed_missing_percentage),
-        #     unmapped(5),
-        # )
-        # logger.info("Saving embedding is complete.")
-
+        all_spectrum_ids_chunks = make_embeddings_task.map(
+            unmapped(model),
+            all_spectrum_ids_chunks,
+            unmapped(run_id),
+            unmapped(n_decimals),
+            unmapped(intensity_weighting_power),
+            unmapped(allowed_missing_percentage),
+            unmapped(5),
+        )
+        logger.info("Saving embedding is complete.")
         # deploy_model_task(run_id, seldon_deployment_path)
     if session_token:
         client = Client(api_server=api_server, api_token=session_token)

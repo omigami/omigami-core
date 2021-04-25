@@ -5,11 +5,8 @@ import prefect
 from gensim.models import Word2Vec
 from prefect import task
 
+from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
-from spec2vec_mlops.helper_classes.storer_classes import (
-    DocumentStorer,
-    EmbeddingStorer,
-)
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
@@ -23,13 +20,8 @@ def make_embeddings_task(
     chunksize: int = 10,
 ) -> List[str]:
     logger = prefect.context.get("logger")
-    document_storer = DocumentStorer("document_info")
-    ids_chunks = [
-        spectrum_ids[i : i + chunksize] for i in range(0, len(spectrum_ids), chunksize)
-    ]
-    documents = [
-        doc for chunk in ids_chunks for doc in document_storer.read_online(chunk)
-    ]
+    dgw = RedisDataGateway()
+    documents = dgw.read_documents(spectrum_ids)
 
     logger.info(f"Make {len(documents)} embeddings")
     embedding_maker = EmbeddingMaker(n_decimals=n_decimals)
@@ -42,6 +34,5 @@ def make_embeddings_task(
         )
         for document in documents
     ]
-    embedding_storer = EmbeddingStorer("embedding_info", run_id)
-    embedding_storer.store(embeddings)
+    dgw.write_embeddings(embeddings, run_id)
     return spectrum_ids

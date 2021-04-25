@@ -7,12 +7,6 @@ import s3fs
 from moto import mock_s3
 
 from spec2vec_mlops.helper_classes.data_loader import DataLoader
-from spec2vec_mlops.helper_classes.storer_classes import (
-    EmbeddingStorer,
-    SpectrumIDStorer,
-    SpectrumStorer,
-    DocumentStorer,
-)
 
 
 def pytest_addoption(parser):
@@ -77,57 +71,6 @@ def embeddings(assets_dir):
     with open(path, "rb") as handle:
         embeddings = pickle.load(handle)
     return embeddings
-
-
-@pytest.fixture(scope="module")
-def spectrum_ids_storer():
-    return SpectrumIDStorer(
-        feature_table_name="spectrum_ids_info",
-    )
-
-
-@pytest.fixture(scope="module")
-def all_spectrum_ids(spectrum_ids_storer, cleaned_data):
-    ids = [spectrum.metadata["spectrum_id"] for spectrum in cleaned_data]
-    spectrum_ids_storer.store(ids)
-    return ids
-
-
-@pytest.fixture(scope="module")
-def embedding_storer():
-    return EmbeddingStorer(
-        feature_table_name="embedding_info",
-        run_id="1",
-    )
-
-
-@pytest.fixture(scope="module")
-def embeddings_stored(embedding_storer, embeddings):
-    embedding_storer.store(embeddings)
-
-
-@pytest.fixture(scope="module")
-def spectrum_storer():
-    return SpectrumStorer(
-        feature_table_name="spectrum_info",
-    )
-
-
-@pytest.fixture(scope="module")
-def spectrum_stored(spectrum_storer, cleaned_data):
-    spectrum_storer.store(cleaned_data)
-
-
-@pytest.fixture(scope="module")
-def document_storer():
-    return DocumentStorer(
-        feature_table_name="document_info",
-    )
-
-
-@pytest.fixture(scope="module")
-def documents_stored(document_storer, documents_data):
-    document_storer.store(documents_data)
 
 
 @pytest.fixture()

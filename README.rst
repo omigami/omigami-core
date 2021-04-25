@@ -56,36 +56,16 @@ And to run it:
 
     docker-compose pull && docker-compose up -d
 
-How to run tests that require Feast and Spark locally
------------------------------------------------------
+How to run tests that require Redis locally
+-------------------------------------------
 
-Some tests that use feature store requires both Feast and a local Spark to run.
-Set these environment variables before running the test suite:
+Some tests that use feature store requires Redis to run.
+Start a Redis container and set these environment variables before running the test suite:
 ::
 
-    export SKIP_SPARK_TEST=False
-    export SKIP_FEAST_TEST=False
-    export FEAST_SPARK_LAUNCHER=standalone
-    export FEAST_SPARK_STAGING_LOCATION=file:///tmp/staging
-    export FEAST_BASE_SOURCE_LOCATION=file:///tmp/base_source
-    export FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION=file:///tmp/output.parquet
-    export FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION=/tmp/output.parquet
-    export FEAST_HISTORICAL_FEATURE_OUTPUT_FORMAT=parquet
-    export FEAST_SPARK_HOME=[YOUR_PYSPARK_LIBRARY_PATH]
+    docker run -d --rm --name redis -p 6379:6379 redis:5-alpine
+    export SKIP_REDIS_TEST=False
 
-An example of [YOUR_PYSPARK_LIBRARY_PATH] on a MacOS would be:
-::
-
-    /Users/your_username/miniconda3/envs/spec2vec_mlops/lib/python3.7/site-packages/pyspark
-
-Feast uses Postgres to store feature names. If you add/change/remove feature names or types, do the following to reset Feast:
-::
-
-    rm -rf /tmp/base_source
-    cd feast/infra/docker-compose
-    docker-compose down
-    docker volume prune
-    docker-compose up
 
 How to register the training flow manually
 ------------------------------------------

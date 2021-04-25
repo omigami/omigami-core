@@ -10,7 +10,7 @@ from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def clean_data_task(spectra_data_chunks: List[Dict], n_decimals: int) -> bool:
+def clean_data_task(spectra_data_chunks: List[Dict], n_decimals: int) -> List[str]:
     logger = prefect.context.get("logger")
     beg = datetime.datetime.now()
     data_cleaner = DataCleaner()
@@ -27,4 +27,4 @@ def clean_data_task(spectra_data_chunks: List[Dict], n_decimals: int) -> bool:
     logger.info(
         f"Clean and convert {len(spectra_data)} spectrum documents in {datetime.datetime.now() - beg} hours."
     )
-    return True
+    return [sp.spectrum_id for sp in spectra_data]
