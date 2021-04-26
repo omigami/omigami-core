@@ -78,7 +78,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.5317edd",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.536f56f",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
             env={"REDIS_HOST": "feast-redis-master.feast", "REDIS_DB": "2"},
