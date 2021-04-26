@@ -78,6 +78,20 @@ def test_write_spectrum_documents(redis_db, cleaned_data):
     assert redis_db.hlen(DOCUMENT_HASHES) == len(cleaned_data)
 
 
+def test_list_spectra_not_exist(cleaned_data, spectra_stored):
+    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
+    dgw = RedisDataGateway()
+    spectra = dgw.list_spectra_not_exist(spectrum_ids_stored)
+    assert len(spectra) == 0
+
+
+def test_list_documents_not_exist(cleaned_data, documents_stored):
+    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
+    dgw = RedisDataGateway()
+    documents = dgw.list_documents_not_exist(spectrum_ids_stored)
+    assert len(documents) == 0
+
+
 def test_read_spectra(cleaned_data, spectra_stored):
     dgw = RedisDataGateway()
     spectra = dgw.read_spectra()
