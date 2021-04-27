@@ -1,14 +1,17 @@
+import json
 import os
 import pickle
-from typing import List, Iterable
+from typing import List, Iterable, Dict
 
 import redis
 from matchms import Spectrum
+from matchms.exporting.save_as_json import SpectrumJSONEncoder
+from matchms.importing.load_from_json import as_spectrum
 from spec2vec import SpectrumDocument
 
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
-from spec2vec_mlops.entities.embedding import Embedding
+from spec2vec_mlops.entities.embedding import Embedding, EmbeddingJSONEncoder
 
 HOST = os.getenv("REDIS_HOST", config["redis"]["host"])
 DB = os.getenv("REDIS_DB", config["redis"]["db"])
@@ -33,7 +36,9 @@ class RedisDataGateway:
                 {spectrum.spectrum_id: spectrum.precursor_mz},
             )
             pipe.hset(
-                SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum.spectrum)
+                SPECTRUM_HASHES,
+                spectrum.spectrum_id,
+                json.dumps(spectrum.spectrum, cls=SpectrumJSONEncoder),
             )
             pipe.hset(
                 DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum.document)
@@ -47,7 +52,7 @@ class RedisDataGateway:
             pipe.hset(
                 f"{EMBEDDING_HASHES}_{run_id}",
                 embedding.spectrum_id,
-                pickle.dumps(embedding),
+                json.dumps(embedding, cls=EmbeddingJSONEncoder),
             )
         pipe.execute()
 
@@ -64,15 +69,25 @@ class RedisDataGateway:
         return self._list_spectrum_ids_not_exist(DOCUMENT_HASHES, spectrum_ids)
 
     def read_spectra(self, spectrum_ids: List[str] = None) -> List[Spectrum]:
-        return self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
+        spectra_dict = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
+        return [as_spectrum(dct) for dct in spectra_dict]
 
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
-        return self._read_hashes(DOCUMENT_HASHES, spectrum_ids)
+        if spectrum_ids:
+            return [
+                pickle.loads(self.client.hget(DOCUMENT_HASHES, id))
+                for id in spectrum_ids
+            ]
+        else:
+            return [
+                pickle.loads(e) for e in self.client.hgetall(DOCUMENT_HASHES).values()
+            ]
 
     def read_embeddings(
         self, run_id: str, spectrum_ids: List[str] = None
     ) -> List[Embedding]:
-        return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)
+        embedding_dict = self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)
+        return [Embedding.from_dict(dct) for dct in embedding_dict]
 
     def read_embeddings_within_range(
         self, run_id: str, min_mz: int = 0, max_mz: int = -1
@@ -85,13 +100,13 @@ class RedisDataGateway:
     def read_documents_iter(self) -> Iterable:
         return RedisHashesIterator(self, DOCUMENT_HASHES)
 
-    def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None):
+    def _read_hashes(
+        self, hash_name: str, spectrum_ids: List[str] = None
+    ) -> List[Dict]:
         if spectrum_ids:
-            return [
-                pickle.loads(self.client.hget(hash_name, id)) for id in spectrum_ids
-            ]
+            return [json.loads(self.client.hget(hash_name, id)) for id in spectrum_ids]
         else:
-            return [pickle.loads(e) for e in self.client.hgetall(hash_name).values()]
+            return [json.loads(e) for e in self.client.hgetall(hash_name).values()]
 
     def _list_spectrum_ids_not_exist(
         self, hash_name: str, spectrum_ids: List[str]

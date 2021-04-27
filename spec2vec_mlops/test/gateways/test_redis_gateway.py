@@ -1,14 +1,16 @@
+import json
 import os
 import pickle
 from typing import Iterable
 
 import pytest
+from matchms.exporting.save_as_json import SpectrumJSONEncoder
 from matchms.Spectrum import Spectrum
 from pytest_redis import factories
 from spec2vec.SpectrumDocument import SpectrumDocument
 
 from spec2vec_mlops import config
-from spec2vec_mlops.entities.embedding import Embedding
+from spec2vec_mlops.entities.embedding import Embedding, EmbeddingJSONEncoder
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
 
@@ -35,7 +37,9 @@ def spectra_stored(redis_db, cleaned_data):
             {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
         )
         pipe.hset(
-            SPECTRUM_HASHES, spectrum.metadata["spectrum_id"], pickle.dumps(spectrum)
+            SPECTRUM_HASHES,
+            spectrum.metadata["spectrum_id"],
+            json.dumps(spectrum, cls=SpectrumJSONEncoder),
         )
     pipe.execute()
 
@@ -60,7 +64,7 @@ def embeddings_stored(redis_db, embeddings):
         pipe.hset(
             f"{EMBEDDING_HASHES}_{run_id}",
             embedding.spectrum_id,
-            pickle.dumps(embedding),
+            json.dumps(embedding, cls=EmbeddingJSONEncoder),
         )
     pipe.execute()
 
