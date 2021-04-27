@@ -119,6 +119,45 @@ def test_read_embeddings(embeddings, embeddings_stored):
         assert isinstance(embedding, Embedding)
 
 
+def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_stored):
+    dgw = RedisDataGateway()
+    mz_min = 300
+    mz_max = 600
+    filtered_spectra = dgw.client.zrangebyscore(
+        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
+    )
+    embeddings_read = dgw.read_embeddings_within_range("1", mz_min, mz_max)
+    assert len(embeddings_read) == len(filtered_spectra)
+    for embedding in embeddings_read:
+        assert isinstance(embedding, Embedding)
+        assert (
+            mz_min
+            <= dgw.client.zscore(
+                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, embedding.spectrum_id
+            )
+            <= mz_max
+        )
+
+
+def test_read_spectra_ids_within_range(spectra_stored):
+    dgw = RedisDataGateway()
+    mz_min = 300
+    mz_max = 600
+    filtered_spectra = dgw.client.zrangebyscore(
+        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
+    )
+    spectra_ids_within_range = dgw._read_spectra_ids_within_range(
+        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
+    )
+    assert len(spectra_ids_within_range) == len(filtered_spectra)
+    for spectrum_id in spectra_ids_within_range:
+        assert (
+            mz_min
+            <= dgw.client.zscore(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, spectrum_id)
+            <= mz_max
+        )
+
+
 def test_read_documents_iter(documents_stored):
     dgw = RedisDataGateway()
     doc_iter = dgw.read_documents_iter()
