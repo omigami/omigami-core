@@ -64,7 +64,7 @@ class RedisDataGateway:
         self, run_id: str, min_mz: int = 0, max_mz: int = -1
     ) -> List[Embedding]:
         spectra_ids_within_range = self._read_spectra_ids_within_range(
-            f"{SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET}", min_mz, max_mz
+            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, min_mz, max_mz
         )
         return self.read_embeddings(run_id, spectra_ids_within_range)
 
