@@ -78,13 +78,10 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.7e8a813",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f13cf05",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
-            env={
-                "REDIS_HOST": "feast-redis-master.feast",
-                "REDIS_DB": "2"
-            },
+            env={"REDIS_HOST": "feast-redis-master.feast", "REDIS_DB": "2"},
         ),
         "storage": S3("dr-prefect"),
         "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
@@ -105,7 +102,7 @@ def spec2vec_train_pipeline_distributed(
 
         logger.info("Data loading is complete.")
         all_spectrum_ids_chunks = clean_data_task.map(
-            raw_chunks, n_decimals=unmapped(2)
+            raw_chunks, n_decimals=unmapped(2), skip_if_exist=unmapped(True)
         )
         logger.info("Data cleaning and document conversion are complete.")
 
@@ -129,7 +126,6 @@ def spec2vec_train_pipeline_distributed(
             unmapped(n_decimals),
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
-            unmapped(5),
         )
         logger.info("Saving embedding is complete.")
         # deploy_model_task(run_id, seldon_deployment_path)
