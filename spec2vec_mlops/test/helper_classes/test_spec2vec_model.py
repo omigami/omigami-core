@@ -1,12 +1,15 @@
 import json
 import os
+import pickle
 from pathlib import Path
 
 import mlflow
 import pytest
+from pytest_redis import factories
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.wrapper import get_rest_microservice
 
+from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
     MandatoryKeyMissingException,
@@ -17,6 +20,10 @@ from spec2vec_mlops.helper_classes.exception import (
 )
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
+
+EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
+
+redis_db = factories.redisdb("redis_nooproc")
 
 os.chdir(Path(__file__).parents[3])
 
@@ -111,21 +118,39 @@ def test_get_best_matches(model, embeddings):
 
 
 @pytest.mark.skipif(
-    os.getenv("SKIP_SPARK_TEST", True),
-    reason="It can only be run if the Feast docker-compose is up and with Spark",
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
 )
-def test_get_reference_embeddings(model, all_spectrum_ids, embeddings_stored):
-    embeddings = model._get_reference_embeddings()
-    assert len(embeddings) == len(all_spectrum_ids)
+def test_get_reference_embeddings(model, embeddings, redis_db):
+    run_id = "1"
+    pipe = redis_db.pipeline()
+    for embedding in embeddings:
+        pipe.hmset(
+            f"{EMBEDDING_HASHES}_{run_id}",
+            {embedding.spectrum_id: pickle.dumps(embedding)},
+        )
+    pipe.execute()
+
+    embeddings_read = model._get_reference_embeddings()
+    assert len(embeddings) == len(embeddings_read)
 
 
 @pytest.mark.skipif(
-    os.getenv("SKIP_SPARK_TEST", True),
-    reason="It can only be run if the Feast docker-compose is up and with Spark",
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
 )
 def test_predict_from_saved_model(
-    saved_model_run_id, loaded_data, embeddings_stored, predict_parameters
+    saved_model_run_id, loaded_data, predict_parameters, embeddings, redis_db
 ):
+    pipe = redis_db.pipeline()
+    for embedding in embeddings:
+        pipe.hset(
+            f"{EMBEDDING_HASHES}_{saved_model_run_id}",
+            embedding.spectrum_id,
+            pickle.dumps(embedding),
+        )
+    pipe.execute()
+
     run = mlflow.get_run(saved_model_run_id)
     model_path = f"{run.info.artifact_uri}/model/"
     model = mlflow.pyfunc.load_model(model_path)

@@ -10,10 +10,8 @@ from prefect.engine.state import State
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
-from spec2vec_mlops.tasks.convert_to_documents import convert_to_documents_task
 from spec2vec_mlops.tasks.download_data import download_data_task
 from spec2vec_mlops.tasks.load_data import load_data_task
-from spec2vec_mlops.tasks.load_spectrum_ids import load_spectrum_ids_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.train_model import train_model_task
@@ -23,8 +21,8 @@ os.chdir(Path(__file__).parents[3])
 
 
 pytestmark = pytest.mark.skipif(
-    os.getenv("SKIP_SPARK_TEST", True),
-    reason="It can only be run if the Feast docker-compose is up and with Spark",
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
 )
 
 
@@ -42,14 +40,10 @@ def spec2vec_train_pipeline_local(
 ) -> State:
     with Flow("flow") as flow:
         file_path = download_data_task(source_uri, download_out_dir)
-        raw_chunks = load_data_task(file_path, chunksize=1000)
-        spectrum_ids_saved = clean_data_task.map(raw_chunks)
-
-        with case(check_condition(spectrum_ids_saved), True):
-            all_spectrum_ids_chunks = load_spectrum_ids_task(chunksize=1000)
-            all_spectrum_ids_chunks = convert_to_documents_task.map(
-                all_spectrum_ids_chunks, n_decimals=unmapped(2)
-            )
+        raw_chunks = load_data_task(file_path, chunksize=5000)
+        all_spectrum_ids_chunks = clean_data_task.map(
+            raw_chunks, n_decimals=unmapped(2)
+        )
 
         with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)
@@ -62,8 +56,7 @@ def spec2vec_train_pipeline_local(
                 intensity_weighting_power,
                 allowed_missing_percentage,
             )
-
-        make_embeddings_task.map(
+        all_spectrum_ids_chunks = make_embeddings_task.map(
             unmapped(model),
             all_spectrum_ids_chunks,
             unmapped(run_id),

@@ -1,15 +1,12 @@
 import datetime
 
 import gensim
+import prefect
 from gensim.models import Word2Vec
 from prefect import task
 
 from spec2vec_mlops.helper_classes.model_trainer import spec2vec_settings
-from spec2vec_mlops.helper_classes.spectra_iterator import SpectraIterator
-from spec2vec_mlops.helper_classes.storer_classes import (
-    SpectrumIDStorer,
-    DocumentStorer,
-)
+from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
@@ -17,12 +14,13 @@ def train_model_task(
     iterations: int = 25,
     window: int = 500,
 ) -> Word2Vec:
-    ids_storer = SpectrumIDStorer("spectrum_ids_info")
-    document_storer = DocumentStorer("document_info")
-    all_spectrum_ids = ids_storer.read_online()
+    logger = prefect.context.get("logger")
+    beg = datetime.datetime.now()
 
-    documents = SpectraIterator(all_spectrum_ids, document_storer)
-
+    dgw = RedisDataGateway()
+    documents = dgw.read_documents_iter()
     callbacks, settings = spec2vec_settings(iterations=iterations, window=window)
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
+    logger.info(f"Train model in {datetime.datetime.now() - beg} hours.")
+
     return model

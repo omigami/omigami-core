@@ -37,25 +37,7 @@ spec:
                 port: 9000
               timeoutSeconds: 3
             env:
-              - name: FEAST_CONFIG
-                value: /tmp/.feast
-              - name: FEAST_BASE_SOURCE_LOCATION
-                value: "s3a://dr-prefect/spec2vec-training-flow/feast"
-              - name: FEAST_CORE_URL
-                value: "feast-feast-core.feast:6565"
-              - name: FEAST_SERVING_URL
-                value: "feast-feast-online-serving.feast:6566"
-              - name: FEAST_SPARK_LAUNCHER
-                value: "k8s"
-              - name: FEAST_SPARK_K8S_NAMESPACE
-                value: "feast"
-              - name: FEAST_SPARK_STAGING_LOCATION
-                value: "s3a://dr-prefect/spec2vec-training-flow/feast/staging"
-              - name: FEAST_HISTORICAL_FEATURE_OUTPUT_FORMAT
-                value: "parquet"
-              - name: FEAST_HISTORICAL_FEATURE_OUTPUT_LOCATION
-                value: "s3a://dr-prefect/spec2vec-training-flow/feast/output.parquet"
-              - name: FEAST_HISTORICAL_FEATURE_OUTPUT_READ_LOCATION
-                value: "s3://dr-prefect/spec2vec-training-flow/feast/output.parquet"
-              - name: FEAST_REDIS_HOST
+              - name: REDIS_HOST
                 value: "feast-redis-master.feast"
+              - name: REDIS_DB
+                value: "2"

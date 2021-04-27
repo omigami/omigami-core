@@ -5,7 +5,6 @@ from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 
 from spec2vec_mlops.entities.embedding import Embedding
-from spec2vec_mlops.entities.feast_spectrum_document import FeastSpectrumDocument
 from spec2vec_mlops.helper_classes.exception import EmbeddingMakerError
 
 
@@ -16,7 +15,7 @@ class EmbeddingMaker:
     def make_embedding(
         self,
         model: Word2Vec,
-        document: Union[FeastSpectrumDocument, SpectrumDocument],
+        document: Union[SpectrumDocument],
         intensity_weighting_power: Union[float, int] = None,
         allowed_missing_percentage: Union[float, int] = None,
     ) -> Embedding:
@@ -31,7 +30,7 @@ class EmbeddingMaker:
 
     def _check_n_decimals(
         self,
-        document: FeastSpectrumDocument,
+        document: SpectrumDocument,
     ):
         if self.n_decimals != document.n_decimals:
             raise EmbeddingMakerError(
