@@ -138,7 +138,6 @@ class RedisHashesIterator:
         self.dgw = dgw
         self.hash_name = hash_name
         self.spectrum_ids = spectrum_ids
-        # self.redis_iter = dgw.client.hscan_iter(hash_name)
 
     def __iter__(self):
         for spectrum_id in self.spectrum_ids:
