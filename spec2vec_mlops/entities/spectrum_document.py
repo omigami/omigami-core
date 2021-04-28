@@ -14,6 +14,10 @@ class SpectrumDocumentData:
         return self.spectrum.metadata["spectrum_id"]
 
     @property
+    def ionmode(self) -> str:
+        return self.spectrum.metadata["ionmode"]
+
+    @property
     def document(self) -> SpectrumDocument:
         return SpectrumDocument(self.spectrum, n_decimals=self.n_decimals)
 

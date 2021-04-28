@@ -71,7 +71,8 @@ k8s:
 redis:
   host: "localhost"
   db: 0
-  spectrum_id_sorted_set: "spectrum_id_precursor_mz_sorted"
+  spectrum_id_sorted_set_pos: "spectrum_id_precursor_mz_sorted_pos"
+  spectrum_id_sorted_set_neg: "spectrum_id_precursor_mz_sorted_neg"
   spectrum_hashes: "spectrum_data"
   document_hashes: "document_data"
   embedding_hashes: "embedding_data"

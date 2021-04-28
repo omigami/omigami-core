@@ -12,7 +12,8 @@ from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
 
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS = config["redis"]["spectrum_id_sorted_set_pos"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_NEG = config["redis"]["spectrum_id_sorted_set_neg"]
 SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
 DOCUMENT_HASHES = config["redis"]["document_hashes"]
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
@@ -30,10 +31,16 @@ pytestmark = pytest.mark.skipif(
 def spectra_stored(redis_db, cleaned_data):
     pipe = redis_db.pipeline()
     for spectrum in cleaned_data:
-        pipe.zadd(
-            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-            {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
-        )
+        if spectrum.metadata["ionmode"] == "positive":
+            pipe.zadd(
+                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS,
+                {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
+            )
+        elif spectrum.metadata["ionmode"] == "negative":
+            pipe.zadd(
+                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_NEG,
+                {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
+            )
         pipe.hset(
             SPECTRUM_HASHES, spectrum.metadata["spectrum_id"], pickle.dumps(spectrum)
         )
@@ -41,7 +48,7 @@ def spectra_stored(redis_db, cleaned_data):
 
 
 @pytest.fixture()
-def documents_stored(redis_db, cleaned_data, documents_data):
+def documents_stored(redis_db, cleaned_data, spectra_stored, documents_data):
     pipe = redis_db.pipeline()
     for i, document in enumerate(documents_data):
         pipe.hset(
@@ -53,7 +60,7 @@ def documents_stored(redis_db, cleaned_data, documents_data):
 
 
 @pytest.fixture()
-def embeddings_stored(redis_db, embeddings):
+def embeddings_stored(redis_db, documents_stored, embeddings):
     run_id = "1"
     pipe = redis_db.pipeline()
     for embedding in embeddings:
@@ -73,7 +80,9 @@ def test_write_spectrum_documents(redis_db, cleaned_data):
     dgw = RedisDataGateway()
     dgw.write_spectrum_documents(spectrum_document_data)
 
-    assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(cleaned_data)
+    assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS) + redis_db.zcard(
+        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_NEG
+    ) == len(cleaned_data)
     assert redis_db.hlen(SPECTRUM_HASHES) == len(cleaned_data)
     assert redis_db.hlen(DOCUMENT_HASHES) == len(cleaned_data)
 
@@ -124,7 +133,7 @@ def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_sto
     mz_min = 300
     mz_max = 600
     filtered_spectra = dgw.client.zrangebyscore(
-        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
+        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS, mz_min, mz_max
     )
     embeddings_read = dgw.read_embeddings_within_range("1", mz_min, mz_max)
     assert len(embeddings_read) == len(filtered_spectra)
@@ -133,7 +142,7 @@ def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_sto
         assert (
             mz_min
             <= dgw.client.zscore(
-                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, embedding.spectrum_id
+                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS, embedding.spectrum_id
             )
             <= mz_max
         )
@@ -144,16 +153,16 @@ def test_read_spectra_ids_within_range(spectra_stored):
     mz_min = 300
     mz_max = 600
     filtered_spectra = dgw.client.zrangebyscore(
-        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
+        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS, mz_min, mz_max
     )
     spectra_ids_within_range = dgw._read_spectra_ids_within_range(
-        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
+        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS, mz_min, mz_max
     )
     assert len(spectra_ids_within_range) == len(filtered_spectra)
     for spectrum_id in spectra_ids_within_range:
         assert (
             mz_min
-            <= dgw.client.zscore(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, spectrum_id)
+            <= dgw.client.zscore(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS, spectrum_id)
             <= mz_max
         )
 

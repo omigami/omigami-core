@@ -15,6 +15,7 @@ def make_embeddings_task(
     spectrum_ids: List[str],
     run_id: str,
     n_decimals: int,
+    ionmode: str,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> List[str]:

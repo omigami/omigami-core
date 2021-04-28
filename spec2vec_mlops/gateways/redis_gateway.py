@@ -12,7 +12,8 @@ from spec2vec_mlops.entities.embedding import Embedding
 
 HOST = os.getenv("REDIS_HOST", config["redis"]["host"])
 DB = os.getenv("REDIS_DB", config["redis"]["db"])
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS = config["redis"]["spectrum_id_sorted_set_pos"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_NEG = config["redis"]["spectrum_id_sorted_set_neg"]
 SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
 DOCUMENT_HASHES = config["redis"]["document_hashes"]
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
@@ -28,10 +29,16 @@ class RedisDataGateway:
         """Write spectrum and document to Redis. Also write a sorted set of spectrum_ids."""
         pipe = self.client.pipeline()
         for spectrum in spectra_data:
-            pipe.zadd(
-                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-                {spectrum.spectrum_id: spectrum.precursor_mz},
-            )
+            if spectrum.ionmode == "positive":
+                pipe.zadd(
+                    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS,
+                    {spectrum.spectrum_id: spectrum.precursor_mz},
+                )
+            elif spectrum.ionmode == "negative":
+                pipe.zadd(
+                    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_NEG,
+                    {spectrum.spectrum_id: spectrum.precursor_mz},
+                )
             pipe.hset(
                 SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum.spectrum)
             )
@@ -63,35 +70,53 @@ class RedisDataGateway:
         """
         return self._list_spectrum_ids_not_exist(DOCUMENT_HASHES, spectrum_ids)
 
-    def read_spectra(self, spectrum_ids: List[str] = None) -> List[Spectrum]:
-        return self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
+    def read_spectra(
+        self, spectrum_ids: List[str] = None, ionmode: str = "positive"
+    ) -> List[Spectrum]:
+        ids_filtered = self._filter_ids(spectrum_ids, ionmode)
+        return self._read_hashes(SPECTRUM_HASHES, ids_filtered)
 
-    def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
-        return self._read_hashes(DOCUMENT_HASHES, spectrum_ids)
+    def read_documents(
+        self, spectrum_ids: List[str] = None, ionmode: str = "positive"
+    ) -> List[SpectrumDocument]:
+        ids_filtered = self._filter_ids(spectrum_ids, ionmode)
+        return self._read_hashes(DOCUMENT_HASHES, ids_filtered)
 
     def read_embeddings(
-        self, run_id: str, spectrum_ids: List[str] = None
+        self, run_id: str, spectrum_ids: List[str] = None, ionmode: str = "positive"
     ) -> List[Embedding]:
-        return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)
+        ids_filtered = self._filter_ids(spectrum_ids, ionmode)
+        return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", ids_filtered)
 
     def read_embeddings_within_range(
         self, run_id: str, min_mz: int = 0, max_mz: int = -1
     ) -> List[Embedding]:
         spectra_ids_within_range = self._read_spectra_ids_within_range(
-            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, min_mz, max_mz
+            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS, min_mz, max_mz
         )
         return self.read_embeddings(run_id, spectra_ids_within_range)
 
     def read_documents_iter(self) -> Iterable:
         return RedisHashesIterator(self, DOCUMENT_HASHES)
 
-    def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None):
+    def _filter_ids(
+        self, spectrum_ids: List[str] = None, ionmode: str = "positive"
+    ) -> List[str]:
+        if ionmode == "negative":
+            set_name = SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_NEG
+        else:
+            set_name = SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS
+
         if spectrum_ids:
-            return [
-                pickle.loads(self.client.hget(hash_name, id)) for id in spectrum_ids
+            ids_filtered = [
+                id for id in spectrum_ids if self.client.zscore(set_name, id)
             ]
         else:
-            return [pickle.loads(e) for e in self.client.hgetall(hash_name).values()]
+            ids_filtered = self.client.zrange(set_name, 0, -1)
+        return ids_filtered
+
+    def _read_hashes(self, hash_name: str, spectrum_ids: List[str]):
+        return [pickle.loads(self.client.hget(hash_name, id)) for id in spectrum_ids]
 
     def _list_spectrum_ids_not_exist(
         self, hash_name: str, spectrum_ids: List[str]
