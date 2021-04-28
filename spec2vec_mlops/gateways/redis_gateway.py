@@ -1,6 +1,6 @@
 import os
 import pickle
-from typing import List, Iterable
+from typing import List, Iterable, Any, Optional
 
 import redis
 from matchms import Spectrum
@@ -74,19 +74,19 @@ class RedisDataGateway:
         self, spectrum_ids: List[str] = None, ionmode: str = "positive"
     ) -> List[Spectrum]:
         ids_filtered = self._filter_ids(spectrum_ids, ionmode)
-        return self._read_hashes(SPECTRUM_HASHES, ids_filtered)
+        return self.read_hashes(SPECTRUM_HASHES, ids_filtered)
 
     def read_documents(
         self, spectrum_ids: List[str] = None, ionmode: str = "positive"
     ) -> List[SpectrumDocument]:
         ids_filtered = self._filter_ids(spectrum_ids, ionmode)
-        return self._read_hashes(DOCUMENT_HASHES, ids_filtered)
+        return self.read_hashes(DOCUMENT_HASHES, ids_filtered)
 
     def read_embeddings(
         self, run_id: str, spectrum_ids: List[str] = None, ionmode: str = "positive"
     ) -> List[Embedding]:
         ids_filtered = self._filter_ids(spectrum_ids, ionmode)
-        return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", ids_filtered)
+        return self.read_hashes(f"{EMBEDDING_HASHES}_{run_id}", ids_filtered)
 
     def read_embeddings_within_range(
         self, run_id: str, min_mz: int = 0, max_mz: int = -1
@@ -96,8 +96,13 @@ class RedisDataGateway:
         )
         return self.read_embeddings(run_id, spectra_ids_within_range)
 
-    def read_documents_iter(self) -> Iterable:
-        return RedisHashesIterator(self, DOCUMENT_HASHES)
+    def read_documents_iter(self, ionmode: str = "positive") -> Optional[Iterable]:
+        spectrum_ids = self._filter_ids(ionmode=ionmode)
+        if spectrum_ids:
+            return RedisHashesIterator(self, DOCUMENT_HASHES, spectrum_ids)
+
+    def read_hashes(self, hash_name: str, spectrum_ids: List[str]) -> List[Any]:
+        return [pickle.loads(self.client.hget(hash_name, id)) for id in spectrum_ids]
 
     def _filter_ids(
         self, spectrum_ids: List[str] = None, ionmode: str = "positive"
@@ -115,9 +120,6 @@ class RedisDataGateway:
             ids_filtered = self.client.zrange(set_name, 0, -1)
         return ids_filtered
 
-    def _read_hashes(self, hash_name: str, spectrum_ids: List[str]):
-        return [pickle.loads(self.client.hget(hash_name, id)) for id in spectrum_ids]
-
     def _list_spectrum_ids_not_exist(
         self, hash_name: str, spectrum_ids: List[str]
     ) -> List[str]:
@@ -132,9 +134,12 @@ class RedisHashesIterator:
     Reading chunks is not supported by gensim word2vec at the moment.
     """
 
-    def __init__(self, dgw, hash_name):
-        self.redis_iter = dgw.client.hscan_iter(hash_name)
+    def __init__(self, dgw: RedisDataGateway, hash_name: str, spectrum_ids: List[str]):
+        self.dgw = dgw
+        self.hash_name = hash_name
+        self.spectrum_ids = spectrum_ids
+        # self.redis_iter = dgw.client.hscan_iter(hash_name)
 
     def __iter__(self):
-        for data in self.redis_iter:
-            yield pickle.loads(data[1])
+        for spectrum_id in self.spectrum_ids:
+            yield self.dgw.read_hashes(self.hash_name, [spectrum_id])[0]

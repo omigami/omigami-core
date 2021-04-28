@@ -13,14 +13,18 @@ from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
 def train_model_task(
     iterations: int = 25,
     window: int = 500,
+    ionmode: str = "positive",
 ) -> Word2Vec:
     logger = prefect.context.get("logger")
     beg = datetime.datetime.now()
 
     dgw = RedisDataGateway()
-    documents = dgw.read_documents_iter()
-    callbacks, settings = spec2vec_settings(iterations=iterations, window=window)
-    model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
-    logger.info(f"Train model in {datetime.datetime.now() - beg} hours.")
+    documents = dgw.read_documents_iter(ionmode=ionmode)
+    if documents:
+        callbacks, settings = spec2vec_settings(iterations=iterations, window=window)
+        model = gensim.models.Word2Vec(
+            sentences=documents, callbacks=callbacks, **settings
+        )
+        logger.info(f"Train model in {datetime.datetime.now() - beg} hours.")
 
-    return model
+        return model

@@ -21,7 +21,7 @@ def make_embeddings_task(
 ) -> List[str]:
     logger = prefect.context.get("logger")
     dgw = RedisDataGateway()
-    documents = dgw.read_documents(spectrum_ids)
+    documents = dgw.read_documents(spectrum_ids, ionmode)
 
     logger.info(f"Make {len(documents)} embeddings")
     embedding_maker = EmbeddingMaker(n_decimals=n_decimals)

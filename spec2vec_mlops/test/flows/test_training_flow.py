@@ -8,7 +8,7 @@ from prefect import Flow, unmapped, case
 from prefect.engine.state import State
 
 from spec2vec_mlops import config
-from spec2vec_mlops.tasks.check_condition import check_condition
+from spec2vec_mlops.tasks.check_condition import check_condition, check_model_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.download_data import download_data_task
 from spec2vec_mlops.tasks.load_data import load_data_task
@@ -46,24 +46,48 @@ def spec2vec_train_pipeline_local(
         )
 
         with case(check_condition(all_spectrum_ids_chunks), True):
-            model = train_model_task(iterations, window)
-            run_id = register_model_task(
-                mlflow_server_uri,
-                model,
-                experiment_name,
-                save_model_path,
-                n_decimals,
-                intensity_weighting_power,
-                allowed_missing_percentage,
-            )
-        all_spectrum_ids_chunks = make_embeddings_task.map(
-            unmapped(model),
-            all_spectrum_ids_chunks,
-            unmapped(run_id),
-            unmapped(n_decimals),
-            unmapped(intensity_weighting_power),
-            unmapped(allowed_missing_percentage),
-        )
+            model_pos = train_model_task(iterations, window, "positive")
+            with case(check_model_condition(model_pos), True):
+                run_id_pos = register_model_task(
+                    mlflow_server_uri,
+                    model_pos,
+                    experiment_name,
+                    save_model_path,
+                    n_decimals,
+                    intensity_weighting_power,
+                    allowed_missing_percentage,
+                )
+                make_embeddings_task.map(
+                    unmapped(model_pos),
+                    all_spectrum_ids_chunks,
+                    unmapped(run_id_pos),
+                    unmapped(n_decimals),
+                    unmapped("positive"),
+                    unmapped(intensity_weighting_power),
+                    unmapped(allowed_missing_percentage),
+                )
+
+            model_neg = train_model_task(iterations, window, "negative")
+            with case(check_model_condition(model_neg), True):
+                run_id_neg = register_model_task(
+                    mlflow_server_uri,
+                    model_neg,
+                    experiment_name,
+                    save_model_path,
+                    n_decimals,
+                    intensity_weighting_power,
+                    allowed_missing_percentage,
+                )
+                make_embeddings_task.map(
+                    unmapped(model_neg),
+                    all_spectrum_ids_chunks,
+                    unmapped(run_id_neg),
+                    unmapped(n_decimals),
+                    unmapped("negative"),
+                    unmapped(intensity_weighting_power),
+                    unmapped(allowed_missing_percentage),
+                )
+
     state = flow.run()
     return state
 
