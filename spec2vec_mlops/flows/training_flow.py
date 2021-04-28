@@ -82,7 +82,7 @@ def spec2vec_train_pipeline_distributed(
             job_template_path="./spec2vec_mlops/job_spec.yaml",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
-            env={"REDIS_HOST": "feast-redis-master.feast", "REDIS_DB": "2"},
+            env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": "2"},
         ),
         "storage": S3("dr-prefect"),
         "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),

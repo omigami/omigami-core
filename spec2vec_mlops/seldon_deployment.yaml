@@ -38,6 +38,6 @@ spec:
               timeoutSeconds: 3
             env:
               - name: REDIS_HOST
-                value: "feast-redis-master.feast"
+                value: "redis-master.redis"
               - name: REDIS_DB
                 value: "2"
