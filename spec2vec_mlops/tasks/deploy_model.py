@@ -9,4 +9,4 @@ def deploy_model_task(
     seldon_deployment_path: str,
 ):
     model_deployer = ModelDeployer()
-    model_deployer.deploy_model(run_id, seldon_deployment_path)
+    model_deployer.deploy_model(run_id, seldon_deployment_path, overwrite=True)
