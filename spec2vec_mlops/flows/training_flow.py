@@ -80,7 +80,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.68f7e25",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.8bff6f5",
             job_template_path="./spec2vec_mlops/job_spec.yaml",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
@@ -99,11 +99,12 @@ def spec2vec_train_pipeline_distributed(
                 DRPath(testing_dataset_path or "path"),
                 ionmode="positive",
                 chunksize=20000,
+                skip_if_exists=True,
             )
         with case(use_testing_dataset_task(testing_dataset_path), False):
             file_path = download_data_task(uri, DRPath(download_out_dir))
             raw_chunks_full = load_data_task(
-                file_path, ionmode="positive", chunksize=20000
+                file_path, ionmode="positive", chunksize=20000, skip_if_exists=True
             )
         raw_chunks = merge(raw_chunks_10k, raw_chunks_full)
 
