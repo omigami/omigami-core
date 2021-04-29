@@ -11,7 +11,9 @@ CUSTOM_RESOURCE_INFO = spec2vec_config["k8s"]["custom_seldon_resource"]
 
 
 class ModelDeployer:
-    def deploy_model(self, run_id: str, seldon_deployment_path: str):
+    def deploy_model(
+        self, run_id: str, seldon_deployment_path: str, overwrite: bool = False
+    ):
         run = mlflow.get_run(run_id)
         model_uri = f"{run.info.artifact_uri}/model/"
 
@@ -29,12 +31,16 @@ class ModelDeployer:
                 "Couldn't create a deployment because the configuration schema is not correct"
             )
         try:
-            self._create_deployment(custom_api, deployment)
+            self._create_deployment(custom_api, deployment, overwrite)
         except:
             self._update_deployment(custom_api, deployment, model_uri)
 
     @staticmethod
-    def _create_deployment(custom_api, deployment):
+    def _create_deployment(custom_api, deployment, overwrite):
+        if overwrite:
+            custom_api.delete_namespaced_custom_object(
+                **CUSTOM_RESOURCE_INFO, name=deployment["metadata"]["name"]
+            )
         resp = custom_api.create_namespaced_custom_object(
             **CUSTOM_RESOURCE_INFO,
             body=deployment,
