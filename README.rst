@@ -113,14 +113,14 @@ The input data should look like:
                 },
             "data":
                 [
-                    {"json_peaks": "[some peaks]", "Precursor_MZ": "900"},
-                    {"json_peaks": "[some other peaks]", "Precursor_MZ": "800"}
+                    {"peaks_json": "[some peaks]", "Precursor_MZ": "900"},
+                    {"peaks_json": "[some other peaks]", "Precursor_MZ": "800"}
                 ]
          }
       }
    }
 
-"json_peaks", "Precursor_MZ" are the only mandatory fields.
+"peaks_json", "Precursor_MZ" are the only mandatory fields.
 By default ‘predict‘ returns 10 spectra per set of peaks.
 
 Black format your code

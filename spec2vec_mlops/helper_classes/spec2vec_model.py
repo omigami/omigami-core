@@ -111,8 +111,8 @@ class Model(PythonModel):
             for spectrum_match in spectrum_best_scores:
                 spectrum_best_matches.append(
                     {
-                        "spectrum_number": i,
-                        "best_match_id": spectrum_match[0].spectrum_id,
+                        "peaks_input": i,
+                        "match_id": spectrum_match[0].spectrum_id,
                         "score": spectrum_match[1],
                     }
                 )
