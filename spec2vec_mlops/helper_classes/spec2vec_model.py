@@ -1,7 +1,6 @@
 import ast
 from typing import Union, List, Dict
 
-import numpy
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from mlflow.pyfunc import PythonModel
@@ -42,16 +41,9 @@ class Model(PythonModel):
         self.run_id = run_id
 
     def predict(self, context, model_input_and_parameters: Dict) -> List[List[Dict]]:
-        import logging
-        logging.error(
-            f"{type(model_input_and_parameters)}, {model_input_and_parameters}"
-        )
-
         if not isinstance(model_input_and_parameters, dict):
             model_input_and_parameters = model_input_and_parameters.tolist()
-            logging.error(
-                f"{type(model_input_and_parameters)}, {model_input_and_parameters}"
-            )
+
         parameters = model_input_and_parameters.get("parameters")
         model_input = model_input_and_parameters.get("data")
         self._validate_input(model_input)
@@ -113,7 +105,7 @@ class Model(PythonModel):
                     {
                         "peaks_input": i,
                         "match_id": spectrum_match[0].spectrum_id,
-                        "score": spectrum_match[1],
+                        "cosine_score": spectrum_match[1],
                     }
                 )
             spectra_best_matches.append(spectrum_best_matches)
