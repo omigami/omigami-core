@@ -80,7 +80,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.08c1c28",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.68f7e25",
             job_template_path="./spec2vec_mlops/job_spec.yaml",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
@@ -96,7 +96,9 @@ def spec2vec_train_pipeline_distributed(
         #  we want to use a bigger dataset than the small one but smaller than the full one
         with case(use_testing_dataset_task(testing_dataset_path), True):
             raw_chunks_10k = load_data_task(
-                DRPath(testing_dataset_path or "path"), chunksize=20000
+                DRPath(testing_dataset_path or "path"),
+                ionmode="positive",
+                chunksize=20000,
             )
         with case(use_testing_dataset_task(testing_dataset_path), False):
             file_path = download_data_task(uri, DRPath(download_out_dir))
@@ -107,7 +109,7 @@ def spec2vec_train_pipeline_distributed(
 
         logger.info("Data loading is complete.")
         all_spectrum_ids_chunks = clean_data_task.map(
-            raw_chunks, n_decimals=unmapped(2), skip_if_exist=unmapped(True)
+            raw_chunks, n_decimals=unmapped(2)
         )
         logger.info("Data cleaning and document conversion are complete.")
 
@@ -133,7 +135,7 @@ def spec2vec_train_pipeline_distributed(
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        deploy_model_task(run_id, seldon_deployment_path)
+        # deploy_model_task(run_id, seldon_deployment_path)
     if session_token:
         client = Client(api_server=api_server, api_token=session_token)
     else:

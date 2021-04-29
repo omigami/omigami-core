@@ -9,10 +9,10 @@ from spec2vec_mlops.helper_classes.data_loader import DataLoader
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
 def load_data_task(
-    file_path: DRPath, ionmode: str, chunksize: int = 1000
+    file_path: DRPath, ionmode: str, chunksize: int = 1000, skip_if_exists=True
 ) -> List[List[Dict[str, str]]]:
     dl = DataLoader(file_path)
-    results = dl.load_gnps_json(ionmode=ionmode)
+    results = dl.load_gnps_json(ionmode=ionmode, skip_if_exists=skip_if_exists)
     results_chunks = [
         results[i : i + chunksize] for i in range(0, len(results), chunksize)
     ]
