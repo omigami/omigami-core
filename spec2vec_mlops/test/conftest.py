@@ -38,7 +38,7 @@ def local_gnps_small_json(assets_dir):
 @pytest.fixture()
 def loaded_data(local_gnps_small_json, tmpdir):
     dl = DataLoader(local_gnps_small_json)
-    return dl.load_gnps_json()
+    return dl.load_gnps_json(ionmode="positive", skip_if_exists=False)
 
 
 @pytest.fixture(scope="module")
