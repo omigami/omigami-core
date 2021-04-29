@@ -19,8 +19,12 @@ class DataLoader:
         self.fs = get_fs(str(file_path))
         self.file_path = file_path
 
-    def load_gnps_json(self) -> List[Dict[str, str]]:
+    def load_gnps_json(self, ionmode: str = None) -> List[Dict[str, str]]:
         with self.fs.open(self.file_path, "rb") as f:
             items = ijson.items(f, "item", multiple_values=True)
             results = [{k: item[k] for k in KEYS} for item in items]
+            if ionmode:
+                results = [
+                    item for item in results if item.get("Ion_Mode").lower == ionmode
+                ]
         return results

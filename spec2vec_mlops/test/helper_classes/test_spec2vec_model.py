@@ -21,34 +21,11 @@ from spec2vec_mlops.helper_classes.exception import (
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS = config["redis"]["spectrum_id_sorted_set_pos"]
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_NEG = config["redis"]["spectrum_id_sorted_set_neg"]
-SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
 
 redis_db = factories.redisdb("redis_nooproc")
 
 os.chdir(Path(__file__).parents[3])
-
-
-@pytest.fixture()
-def spectra_stored(redis_db, cleaned_data):
-    pipe = redis_db.pipeline()
-    for spectrum in cleaned_data:
-        if spectrum.metadata["ionmode"] == "positive":
-            pipe.zadd(
-                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_POS,
-                {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
-            )
-        elif spectrum.metadata["ionmode"] == "negative":
-            pipe.zadd(
-                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET_NEG,
-                {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
-            )
-        pipe.hset(
-            SPECTRUM_HASHES, spectrum.metadata["spectrum_id"], pickle.dumps(spectrum)
-        )
-    pipe.execute()
 
 
 @pytest.fixture
@@ -144,7 +121,7 @@ def test_get_best_matches(model, embeddings):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_get_reference_embeddings(model, spectra_stored, embeddings, redis_db):
+def test_get_reference_embeddings(model, embeddings, redis_db):
     run_id = "1"
     pipe = redis_db.pipeline()
     for embedding in embeddings:
@@ -163,12 +140,7 @@ def test_get_reference_embeddings(model, spectra_stored, embeddings, redis_db):
     reason="It can only be run if the Redis is up",
 )
 def test_predict_from_saved_model(
-    saved_model_run_id,
-    loaded_data,
-    predict_parameters,
-    spectra_stored,
-    embeddings,
-    redis_db,
+    saved_model_run_id, loaded_data, predict_parameters, embeddings, redis_db
 ):
     pipe = redis_db.pipeline()
     for embedding in embeddings:
