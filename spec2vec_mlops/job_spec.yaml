@@ -10,5 +10,4 @@ spec:
       - name: flow
         resources:
           requests:
-            cpu: 4
             memory: 24G
