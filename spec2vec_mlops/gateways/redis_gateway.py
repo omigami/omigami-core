@@ -28,16 +28,17 @@ class RedisDataGateway:
         """Write spectrum and document to Redis. Also write a sorted set of spectrum_ids."""
         pipe = self.client.pipeline()
         for spectrum in spectra_data:
-            pipe.zadd(
-                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-                {spectrum.spectrum_id: spectrum.precursor_mz},
-            )
-            pipe.hset(
-                SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum.spectrum)
-            )
-            pipe.hset(
-                DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum.document)
-            )
+            spectrum_info = spectrum.spectrum
+            document = spectrum.document
+            if spectrum_info and document:
+                pipe.zadd(
+                    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+                    {spectrum.spectrum_id: spectrum.precursor_mz},
+                )
+                pipe.hset(
+                    SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum_info)
+                )
+                pipe.hset(DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(document))
         pipe.execute()
 
     def write_embeddings(self, embeddings: List[Embedding], run_id: str):
