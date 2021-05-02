@@ -20,7 +20,9 @@ def train_model_task(
     dgw = RedisDataGateway()
     documents = dgw.read_documents_iter()
     callbacks, settings = spec2vec_settings(iterations=iterations, window=window)
-    model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
+    model = gensim.models.Word2Vec(
+        sentences=list(documents), callbacks=callbacks, **settings
+    )
     logger.info(f"Train model in {datetime.datetime.now() - beg} hours.")
 
     return model
