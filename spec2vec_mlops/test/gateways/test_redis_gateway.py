@@ -180,11 +180,11 @@ def test_read_documents_iter(documents_stored):
     assert all_words == all_words_no_iterator
 
 
-def test_word2vec_training_with_iterator():
+def test_word2vec_training_with_iterator(documents_stored):
     callbacks, settings = spec2vec_settings(iterations=2)
     dgw = RedisDataGateway()
     documents = dgw.read_documents_iter()
 
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
 
-    assert len(documents.redis_iter) == model.corpus_count
+    assert len(documents.spectra_ids) == model.corpus_count
