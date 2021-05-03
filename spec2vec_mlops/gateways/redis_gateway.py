@@ -108,8 +108,11 @@ class RedisHashesIterator:
     """
 
     def __init__(self, dgw, hash_name):
-        self.redis_iter = dgw.client.hscan_iter(hash_name)
+        self.dgw = dgw
+        self.hash_name = hash_name
+        self.spectra_ids = dgw.client.hkeys(hash_name)
 
     def __iter__(self):
-        for data in self.redis_iter:
-            yield pickle.loads(data[1])
+        for spectrum_id in self.spectra_ids:
+            data = self.dgw.client.hmget(self.hash_name, spectrum_id)[0]
+            yield pickle.loads(data)
