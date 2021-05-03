@@ -1,38 +1,39 @@
 import logging
-from datetime import datetime
+from typing import List, Dict
 from uuid import uuid4
 
+import ijson
 import requests
 from drfs import DRPath
 from drfs.filesystems import get_fs
 
-logging.basicConfig(level=logging.DEBUG)
+from spec2vec_mlops.tasks.data_gateway import InputDataGateway
+from spec2vec_mlops import config
+
 logger = logging.getLogger(__name__)
+KEYS = config["gnps_json"]["necessary_keys"]
 
 
-class DataDownloader:
-    def __init__(self, out_dir: DRPath):
-        self.fs = get_fs(str(out_dir))
-        date = datetime.today().strftime("%Y-%m-%d")
-        self.out_dir = out_dir / date
+class FSInputDataGateway(InputDataGateway):
+    def __init__(self):
+        self.fs = None
 
-    def download_gnps_json(
-        self,
-        uri: str,
-    ) -> str:
-        if self.fs.exists(self.out_dir):
-            files = self.fs.ls(self.out_dir)
+    def download_gnps(self, uri: str, output_dir: str) -> str:
+        self.fs = get_fs(output_dir)
+        output_dir = DRPath(output_dir)
+        if self.fs.exists(output_dir):
+            files = self.fs.ls(output_dir)
             if len(files) != 1:
                 raise Exception
             logger.info(f"Using previously downloaded data")
             file_path = str(files[0])
         else:
-            file_path = self._download_and_serialize(uri)
+            file_path = self._download_and_serialize(uri, output_dir)
         return file_path
 
-    def _download_and_serialize(self, uri: str) -> str:
+    def _download_and_serialize(self, uri: str, output_dir: DRPath) -> str:
         """solution is from https://stackoverflow.com/a/16696317/15485553"""
-        file_path = self._make_path()
+        file_path = self._make_path(output_dir)
         logger.info(f"Loading data from {uri}... This might take a while.")
         chunk_size = 10 * 1024 * 1024
         try:
@@ -64,8 +65,15 @@ class DataDownloader:
                 for chunk in r.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
                     f.write(chunk)
 
-    def _make_path(self) -> str:
+    @staticmethod
+    def _make_path(output_dir: DRPath) -> str:
         file_id = str(uuid4())
-        path = str(self.out_dir / f"{file_id}.json")
+        path = str(output_dir / f"{file_id}.json")
         logger.info(f"Writing file to {path}")
         return path
+
+    def load_gnps(self, path: str) -> List[Dict[str, str]]:
+        with self.fs.open(DRPath(path), "rb") as f:
+            items = ijson.items(f, "item", multiple_values=True)
+            results = [{k: item[k] for k in KEYS} for item in items]
+        return results

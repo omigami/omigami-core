@@ -1,13 +1,23 @@
 import datetime
 
-from drfs import DRPath
-from prefect import task
+from prefect import task, Task
 
-from spec2vec_mlops.helper_classes.data_downloader import DataDownloader
+from spec2vec_mlops.tasks.data_gateway import InputDataGateway
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def download_data_task(uri: str, out_dir: DRPath) -> DRPath:
-    dl = DataDownloader(out_dir)
-    file_path = dl.download_gnps_json(uri=uri)
-    return DRPath(file_path)
+def download_data(uri: str, input_dgw: InputDataGateway, output_dir: str) -> str:
+    file_path = input_dgw.download_gnps(uri, output_dir)
+    return file_path
+
+
+class DownloadData(Task):
+    def __init__(self, input_dgw: InputDataGateway, **kwargs):
+        self._input_dgw = input_dgw
+        super().__init__(
+            max_retries=3, retry_delay=datetime.timedelta(seconds=10), **kwargs
+        )
+
+    def run(self, input_uri: str = None, output_dir: str = None) -> str:
+        file_path = self._input_dgw.download_gnps(input_uri, output_dir)
+        return file_path

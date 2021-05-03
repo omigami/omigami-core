@@ -3,18 +3,19 @@ from typing import Union
 
 import click
 from drfs import DRPath
-from prefect import Flow, Parameter, Client, unmapped, case, task
+from prefect import Flow, Parameter, Client, unmapped, case
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 from prefect.tasks.control_flow import merge
 
 from spec2vec_mlops import config
+from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.deploy_model import deploy_model_task
-from spec2vec_mlops.tasks.download_data import download_data_task
-from spec2vec_mlops.tasks.load_data import load_data_task
+from spec2vec_mlops.tasks.download_data import download_data, DownloadData
+from spec2vec_mlops.tasks.load_data import load_data, LoadData
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.train_model import train_model_task
@@ -85,6 +86,7 @@ def spec2vec_train_pipeline_distributed(
             env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": "2"},
         ),
         "storage": S3("dr-prefect"),
+        # TODO: maybe also useful to have as a parameter?
         "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
         # "executor": DaskExecutor(address="dask-scheduler.dask:8786"),
     }
@@ -92,13 +94,18 @@ def spec2vec_train_pipeline_distributed(
         uri = Parameter(name="uri")
         # TODO: these two cases are just for testing purposes:
         #  we want to use a bigger dataset than the small one but smaller than the full one
+        input_gtw = FSInputDataGateway()
+
         with case(use_testing_dataset_task(testing_dataset_path), True):
-            raw_chunks_10k = load_data_task(
+            raw_chunks_10k = LoadData(input_gtw)(
                 DRPath(testing_dataset_path or "path"), chunksize=20000
             )
         with case(use_testing_dataset_task(testing_dataset_path), False):
-            file_path = download_data_task(uri, DRPath(download_out_dir))
-            raw_chunks_full = load_data_task(file_path, chunksize=20000)
+            # TODO: why do we only use the download task sometimes? IMO should be always
+            # and if the file is already downloaded the orchestrator should handle it
+            file_path = DownloadData(input_gtw)(uri, download_out_dir)
+            raw_chunks_full = LoadData(input_gtw)(file_path, chunksize=20000)
+
         raw_chunks = merge(raw_chunks_10k, raw_chunks_full)
 
         logger.info("Data loading is complete.")

@@ -5,7 +5,7 @@ import requests_mock
 from drfs import DRPath
 
 from spec2vec_mlops import config
-from spec2vec_mlops.helper_classes.data_downloader import DataDownloader
+from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 
 KEYS = config["gnps_json"]["necessary_keys"]
 
@@ -15,12 +15,12 @@ SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 
 @pytest.fixture()
 def data_downloader_to_local_path(tmpdir):
-    return DataDownloader(tmpdir)
+    return FSInputDataGateway(tmpdir)
 
 
 @pytest.fixture()
 def data_downloader_to_remote_path(s3_mock):
-    data_downloader = DataDownloader(DRPath("s3://test-bucket"))
+    data_downloader = FSInputDataGateway(DRPath("s3://test-bucket"))
     data_downloader.fs = s3_mock
     return data_downloader
 
@@ -34,7 +34,7 @@ def data_downloader_to_remote_path(s3_mock):
     ],
 )
 def test_download_and_serialize_to_local(uri, data_downloader_to_local_path):
-    res = data_downloader_to_local_path.download_gnps_json(uri=uri)
+    res = data_downloader_to_local_path.download_gnps(uri=uri)
 
     assert Path(res).exists()
 
@@ -44,17 +44,13 @@ def test_download_and_serialize_to_remote(
 ):
     with requests_mock.Mocker() as m:
         m.get(SOURCE_URI_PARTIAL_GNPS, text="bac")
-        res = data_downloader_to_remote_path.download_gnps_json(
-            uri=SOURCE_URI_PARTIAL_GNPS
-        )
+        res = data_downloader_to_remote_path.download_gnps(uri=SOURCE_URI_PARTIAL_GNPS)
         assert DRPath(res).exists()
 
 
 def test_download_already_exists(data_downloader_to_local_path):
-    file_path = data_downloader_to_local_path.download_gnps_json(
-        uri=SOURCE_URI_PARTIAL_GNPS
-    )
-    same_file_path = data_downloader_to_local_path.download_gnps_json(
+    file_path = data_downloader_to_local_path.download_gnps(uri=SOURCE_URI_PARTIAL_GNPS)
+    same_file_path = data_downloader_to_local_path.download_gnps(
         uri=SOURCE_URI_PARTIAL_GNPS
     )
 

@@ -3,15 +3,15 @@ from pathlib import Path
 from typing import Union
 
 import pytest
-from drfs import DRPath
 from prefect import Flow, unmapped, case
 from prefect.engine.state import State
 
 from spec2vec_mlops import config
+from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
-from spec2vec_mlops.tasks.download_data import download_data_task
-from spec2vec_mlops.tasks.load_data import load_data_task
+from spec2vec_mlops.tasks.download_data import download_data
+from spec2vec_mlops.tasks.load_data import load_data
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
 from spec2vec_mlops.tasks.train_model import train_model_task
@@ -28,7 +28,7 @@ pytestmark = pytest.mark.skipif(
 
 def spec2vec_train_pipeline_local(
     source_uri: str,
-    download_out_dir: DRPath,
+    download_out_dir: str,
     n_decimals: int,
     save_model_path: str,
     mlflow_server_uri: str,
@@ -39,8 +39,8 @@ def spec2vec_train_pipeline_local(
     allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> State:
     with Flow("flow") as flow:
-        file_path = download_data_task(source_uri, download_out_dir)
-        raw_chunks = load_data_task(file_path, chunksize=5000)
+        file_path = download_data(source_uri, FSInputDataGateway(), download_out_dir)
+        raw_chunks = load_data(file_path, chunksize=5000)
         all_spectrum_ids_chunks = clean_data_task.map(
             raw_chunks, n_decimals=unmapped(2)
         )

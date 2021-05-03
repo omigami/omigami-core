@@ -6,7 +6,7 @@ import pytest
 import s3fs
 from moto import mock_s3
 
-from spec2vec_mlops.helper_classes.data_loader import DataLoader
+from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 
 
 def pytest_addoption(parser):
@@ -37,8 +37,8 @@ def local_gnps_small_json(assets_dir):
 
 @pytest.fixture()
 def loaded_data(local_gnps_small_json, tmpdir):
-    dl = DataLoader(local_gnps_small_json)
-    return dl.load_gnps_json()
+    dl = FSInputDataGateway()
+    return dl.load_gnps(local_gnps_small_json)
 
 
 @pytest.fixture(scope="module")
