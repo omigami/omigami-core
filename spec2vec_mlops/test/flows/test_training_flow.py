@@ -7,6 +7,7 @@ from prefect import Flow, unmapped, case
 from prefect.engine.state import State
 
 from spec2vec_mlops import config
+from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.clean_data import clean_data_task
@@ -18,12 +19,6 @@ from spec2vec_mlops.tasks.train_model import train_model_task
 
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
-
-
-pytestmark = pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
 
 
 def spec2vec_train_pipeline_local(
@@ -68,6 +63,10 @@ def spec2vec_train_pipeline_local(
     return state
 
 
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
 def test_spec2vec_train_pipeline_local(tmpdir):
     state = spec2vec_train_pipeline_local(
         source_uri=SOURCE_URI_PARTIAL_GNPS,
@@ -80,3 +79,23 @@ def test_spec2vec_train_pipeline_local(tmpdir):
         experiment_name="experiment",
     )
     assert state.is_successful()
+
+
+def test_training_flow():
+    flow = build_training_flow(
+        project_name="test",
+        source_uri="source_uri",
+        dataset_dir="datasets",
+        dataset_id="dataset-id",
+        model_output_dir="model-output",
+        seldon_deployment_path="seldon-path",
+        n_decimals=2,
+        mlflow_server="mlflow-server",
+        iterations=25,
+        window=500,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=5,
+        flow_config=None,
+    )
+
+    assert flow
