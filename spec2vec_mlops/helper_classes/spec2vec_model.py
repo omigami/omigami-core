@@ -108,8 +108,8 @@ class Model(PythonModel):
                 spectrum_best_matches.append(
                     {
                         "peaks_input": i,
-                        "match_id": spectrum_match[0].spectrum_id,
-                        "cosine_score": spectrum_match[1],
+                        "match_spectrum_id": spectrum_match[0].spectrum_id,
+                        "score": spectrum_match[1],
                     }
                 )
             spectra_best_matches.append(spectrum_best_matches)
