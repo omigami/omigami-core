@@ -30,7 +30,9 @@ SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
     ],
 )
 def test_download_and_serialize_to_local(uri, tmpdir):
-    res = FSInputDataGateway().download_gnps(uri=uri, dataset_dir=tmpdir)
+    res = FSInputDataGateway().download_gnps(
+        uri=uri, dataset_dir=tmpdir, dataset_id="test-ds"
+    )
 
     assert Path(res).exists()
 
@@ -39,17 +41,19 @@ def test_download_and_serialize_to_remote(loaded_data, s3_mock):
     with requests_mock.Mocker() as m:
         m.get(SOURCE_URI_PARTIAL_GNPS, text="bac")
         res = FSInputDataGateway().download_gnps(
-            uri=SOURCE_URI_PARTIAL_GNPS, dataset_dir="s3://test-bucket"
+            uri=SOURCE_URI_PARTIAL_GNPS,
+            dataset_dir="s3://test-bucket",
+            dataset_id="test-ds",
         )
         assert DRPath(res).exists()
 
 
 def test_download_already_exists(tmpdir):
     file_path = FSInputDataGateway().download_gnps(
-        uri=SOURCE_URI_PARTIAL_GNPS, dataset_dir=tmpdir
+        uri=SOURCE_URI_PARTIAL_GNPS, dataset_dir=tmpdir, dataset_id="test-ds"
     )
     same_file_path = FSInputDataGateway().download_gnps(
-        uri=SOURCE_URI_PARTIAL_GNPS, dataset_dir=tmpdir
+        uri=SOURCE_URI_PARTIAL_GNPS, dataset_dir=tmpdir, dataset_id="test-ds"
     )
 
     assert file_path == same_file_path

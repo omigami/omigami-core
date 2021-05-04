@@ -19,7 +19,8 @@ class FSInputDataGateway(InputDataGateway):
         self.fs = None
 
     def download_gnps(self, uri: str, dataset_dir: str, dataset_id: str) -> str:
-        self.fs = get_fs(dataset_dir)
+        if self.fs is None:
+            self.fs = get_fs(dataset_dir)
         dataset_dir = DRPath(dataset_dir) / dataset_id
         if self.fs.exists(dataset_dir):
             files = self.fs.ls(dataset_dir)
@@ -75,6 +76,9 @@ class FSInputDataGateway(InputDataGateway):
         return path
 
     def load_gnps(self, path: str) -> List[Dict[str, str]]:
+        if self.fs is None:
+            self.fs = get_fs(path)
+
         with self.fs.open(DRPath(path), "rb") as f:
             items = ijson.items(f, "item", multiple_values=True)
             results = [{k: item[k] for k in KEYS} for item in items]
