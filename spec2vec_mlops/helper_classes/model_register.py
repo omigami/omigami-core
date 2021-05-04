@@ -37,7 +37,8 @@ class ModelRegister:
                         "spec2vec_mlops",
                     ],
                 )
-            # This is need to run the flow locally. mlflow.pyfunc.log_model is not supported without a database
+            # This is need to run the flow locally. mlflow.pyfunc.log_model is not
+            # supported without a database.
             except MlflowException:
                 mlflow.pyfunc.save_model(
                     f"{path}/model",
