@@ -34,11 +34,20 @@ def build_training_flow(
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_config: Dict[str, Any] = None,
 ) -> Flow:
-    """Function to register Prefect flow using remote cluster
+    """
+    Function to register Prefect flow using remote cluster
     TODO: update
 
     Parameters
     ----------
+    project_name
+    source_uri
+    dataset_dir
+    dataset_id
+    model_output_dir
+    seldon_deployment_path
+    n_decimals
+    mlflow_server
     iterations:
         number of training iterations.
     window:
@@ -49,12 +58,12 @@ def build_training_flow(
         number of what percentage of a spectrum is allowed to be unknown to the model
     seldon_deployment_path:
         path to the seldon deployment configuration file
+    flow_config
 
     Returns
     -------
     flow:
         The built flow
-
     """
     flow_config = flow_config or {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
