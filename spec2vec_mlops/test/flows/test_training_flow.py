@@ -82,6 +82,18 @@ def test_spec2vec_train_pipeline_local(tmpdir):
 
 
 def test_training_flow():
+    expected_tasks = {
+        "DownloadData",
+        "LoadData",
+        "case(True)",
+        "check_condition",
+        "clean_data_task",
+        "deploy_model_task",
+        "make_embeddings_task",
+        "register_model_task",
+        "train_model_task",
+    }
+
     flow = build_training_flow(
         project_name="test",
         source_uri="source_uri",
@@ -101,10 +113,18 @@ def test_training_flow():
     assert flow
     assert len(flow.tasks) == 9
     assert flow.name == "spec2vec-training-flow"
+
+    task_names = {t.name for t in flow.tasks}
+    assert task_names == expected_tasks
+
     download_task = list(flow.tasks)[0]
-    assert download_task.name == "DownloadData"
     assert flow.constants[download_task] == {
         "input_uri": "source_uri",
         "output_dir": "datasets",
         "dataset_id": "dataset-id",
     }
+
+
+def test_run_training_flow():
+    flow = None
+    pass
