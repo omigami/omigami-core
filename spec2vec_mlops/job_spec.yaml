@@ -8,6 +8,3 @@ spec:
     spec:
       containers:
       - name: flow
-        resources:
-          requests:
-            memory: 24G
