@@ -107,7 +107,7 @@ class RedisHashesIterator:
     Reading chunks is not supported by gensim word2vec at the moment.
     """
 
-    def __init__(self, dgw, hash_name):
+    def __init__(self, dgw: RedisDataGateway, hash_name: str):
         self.dgw = dgw
         self.hash_name = hash_name
         self.spectra_ids = dgw.client.hkeys(hash_name)
