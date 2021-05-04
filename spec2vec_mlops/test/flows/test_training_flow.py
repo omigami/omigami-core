@@ -99,3 +99,12 @@ def test_training_flow():
     )
 
     assert flow
+    assert len(flow.tasks) == 9
+    assert flow.name == "spec2vec-training-flow"
+    download_task = list(flow.tasks)[0]
+    assert download_task.name == "DownloadData"
+    assert flow.constants[download_task] == {
+        "input_uri": "source_uri",
+        "output_dir": "datasets",
+        "dataset_id": "dataset-id",
+    }
