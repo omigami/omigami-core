@@ -18,17 +18,19 @@ class FSInputDataGateway(InputDataGateway):
     def __init__(self):
         self.fs = None
 
-    def download_gnps(self, uri: str, output_dir: str) -> str:
-        self.fs = get_fs(output_dir)
-        output_dir = DRPath(output_dir)
-        if self.fs.exists(output_dir):
-            files = self.fs.ls(output_dir)
-            if len(files) != 1:
-                raise Exception
+    def download_gnps(self, uri: str, dataset_dir: str, dataset_id: str) -> str:
+        self.fs = get_fs(dataset_dir)
+        dataset_dir = DRPath(dataset_dir) / dataset_id
+        if self.fs.exists(dataset_dir):
+            files = self.fs.ls(dataset_dir)
+            if len(files) > 1:
+                raise RuntimeError(
+                    f"There are files already present on {dataset_dir}: {files}"
+                )
             logger.info(f"Using previously downloaded data")
             file_path = str(files[0])
         else:
-            file_path = self._download_and_serialize(uri, output_dir)
+            file_path = self._download_and_serialize(uri, dataset_dir)
         return file_path
 
     def _download_and_serialize(self, uri: str, output_dir: DRPath) -> str:

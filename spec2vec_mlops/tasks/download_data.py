@@ -6,8 +6,10 @@ from spec2vec_mlops.tasks.data_gateway import InputDataGateway
 
 
 @task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
-def download_data(uri: str, input_dgw: InputDataGateway, output_dir: str) -> str:
-    file_path = input_dgw.download_gnps(uri, output_dir)
+def download_data(
+    uri: str, input_dgw: InputDataGateway, output_dir: str, dataset_id: str
+) -> str:
+    file_path = input_dgw.download_gnps(uri, output_dir, dataset_id)
     return file_path
 
 
