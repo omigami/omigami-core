@@ -1,8 +1,6 @@
 import os
 import pickle
 from typing import Iterable
-
-import gensim
 import pytest
 from matchms.Spectrum import Spectrum
 from pytest_redis import factories
@@ -12,7 +10,6 @@ from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
-from spec2vec_mlops.helper_classes.model_trainer import spec2vec_settings
 
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
 SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
@@ -178,13 +175,3 @@ def test_read_documents_iter(documents_stored):
     for spectrum in dgw.read_documents():
         all_words_no_iterator += len(spectrum)
     assert all_words == all_words_no_iterator
-
-
-def test_word2vec_training_with_iterator(documents_stored):
-    callbacks, settings = spec2vec_settings(iterations=2)
-    dgw = RedisDataGateway()
-    documents = dgw.read_documents_iter()
-
-    model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
-
-    assert len(documents.spectra_ids) == model.corpus_count
