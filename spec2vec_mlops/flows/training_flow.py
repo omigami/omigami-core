@@ -35,10 +35,10 @@ def build_training_flow(
     flow_config: Dict[str, Any] = None,
 ) -> Flow:
     """Function to register Prefect flow using remote cluster
+    TODO: update
 
     Parameters
     ----------
-    TODO: update
     iterations:
         number of training iterations.
     window:
@@ -58,8 +58,6 @@ def build_training_flow(
     """
     flow_config = flow_config or {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
-        # TODO: these two cases are just for testing purposes:
-        #  we want to use a bigger dataset than the small one but smaller than the full one
         input_gtw = FSInputDataGateway()
 
         file_path = DownloadData(input_gtw)(source_uri, dataset_dir, dataset_id)
@@ -83,7 +81,9 @@ def build_training_flow(
                 allowed_missing_percentage,
             )
             logger.info("Model training is complete.")
-        all_spectrum_ids_chunks = make_embeddings_task.map(
+
+        # TODO: this is make AND save embeddings. Prob need some refactor
+        _ = make_embeddings_task.map(
             unmapped(model),
             all_spectrum_ids_chunks,
             unmapped(run_id),
