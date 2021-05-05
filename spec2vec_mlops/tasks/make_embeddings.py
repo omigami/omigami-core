@@ -5,11 +5,11 @@ import prefect
 from gensim.models import Word2Vec
 from prefect import task
 
-from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
+from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 
 
-@task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
+@task(**DEFAULT_CONFIG)
 def make_embeddings_task(
     model: Word2Vec,
     spectrum_ids: List[str],
@@ -19,7 +19,7 @@ def make_embeddings_task(
     allowed_missing_percentage: Union[float, int] = 5.0,
 ) -> List[str]:
     logger = prefect.context.get("logger")
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     documents = dgw.read_documents(spectrum_ids)
 
     logger.info(f"Make {len(documents)} embeddings")

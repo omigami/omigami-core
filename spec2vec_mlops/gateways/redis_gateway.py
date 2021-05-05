@@ -9,6 +9,7 @@ from spec2vec import SpectrumDocument
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.entities.embedding import Embedding
+from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
 
 HOST = os.getenv("REDIS_HOST", config["redis"]["host"])
 DB = os.getenv("REDIS_DB", config["redis"]["db"])
@@ -18,14 +19,13 @@ DOCUMENT_HASHES = config["redis"]["document_hashes"]
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
 
 
-class RedisDataGateway:
+class RedisSpectrumDataGateway(SpectrumDataGateway):
     """Data gateway for Redis storage."""
 
     def __init__(self):
         self.client = redis.StrictRedis(host=HOST, db=DB)
 
     def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
-        """Write spectrum and document to Redis. Also write a sorted set of spectrum_ids."""
         pipe = self.client.pipeline()
         for spectrum in spectra_data:
             pipe.zadd(
@@ -41,7 +41,6 @@ class RedisDataGateway:
         pipe.execute()
 
     def write_embeddings(self, embeddings: List[Embedding], run_id: str):
-        """Write embeddings to Redis."""
         pipe = self.client.pipeline()
         for embedding in embeddings:
             pipe.hset(
@@ -52,17 +51,16 @@ class RedisDataGateway:
         pipe.execute()
 
     def list_spectra_not_exist(self, spectrum_ids: List[str]):
-        """Check whether spectra exist on Redis.
-        Return a list of IDs that do not exist.
-        """
         return self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids)
 
+    # Not used atm
     def list_documents_not_exist(self, spectrum_ids: List[str]):
         """Check whether document exist on Redis.
         Return a list of IDs that do not exist.
         """
         return self._list_spectrum_ids_not_exist(DOCUMENT_HASHES, spectrum_ids)
 
+    # Not used atm
     def read_spectra(self, spectrum_ids: List[str] = None) -> List[Spectrum]:
         return self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
 
@@ -74,6 +72,7 @@ class RedisDataGateway:
     ) -> List[Embedding]:
         return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)
 
+    # Not used atm
     def read_embeddings_within_range(
         self, run_id: str, min_mz: int = 0, max_mz: int = -1
     ) -> List[Embedding]:

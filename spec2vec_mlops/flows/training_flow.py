@@ -3,18 +3,17 @@ from typing import Union, Dict, Any
 
 from prefect import Flow, unmapped, case
 
-from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
 from spec2vec_mlops.tasks import (
     check_condition,
     DownloadData,
     LoadData,
-    clean_data_task,
     train_model_task,
     register_model_task,
     make_embeddings_task,
     deploy_model_task,
 )
-from spec2vec_mlops.tasks.data_gateway import InputDataGateway
+from spec2vec_mlops.tasks.clean_data import CleanData
+from spec2vec_mlops.tasks.data_gateway import InputDataGateway, SpectrumDataGateway
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -28,9 +27,10 @@ def build_training_flow(
     model_output_dir: str,
     seldon_deployment_path: str,
     n_decimals: int,
+    skip_if_exists: bool,
     mlflow_server: str,
     input_dgw: InputDataGateway,
-    redis_dgw: RedisDataGateway,  # TODO define interface for this gtw?
+    spectrum_gtw: SpectrumDataGateway,
     iterations: int = 25,
     window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
@@ -47,14 +47,14 @@ def build_training_flow(
     """
     flow_config = flow_config or {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
+        logger.info("Downloading and loading spectrum data.")
         file_path = DownloadData(input_dgw)(source_uri, dataset_dir, dataset_id)
         input_data = LoadData(input_dgw)(file_path, chunk_size=20000)
 
-        logger.info("Data loading is complete.")
-        all_spectrum_ids_chunks = clean_data_task.map(
-            input_data, n_decimals=unmapped(n_decimals), skip_if_exist=unmapped(True)
-        )
-        logger.info("Data cleaning and document conversion are complete.")
+        logger.info("Started data cleaning and conversion to documents.")
+        all_spectrum_ids_chunks = CleanData(
+            spectrum_gtw, n_decimals, skip_if_exists
+        ).map(input_data)
 
         with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)

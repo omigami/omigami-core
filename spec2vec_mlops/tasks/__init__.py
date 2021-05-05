@@ -1,5 +1,5 @@
 from spec2vec_mlops.tasks.check_condition import check_condition
-from spec2vec_mlops.tasks.clean_data import clean_data_task
+from spec2vec_mlops.tasks.clean_data import CleanData
 from spec2vec_mlops.tasks.deploy_model import deploy_model_task
 from spec2vec_mlops.tasks.download_data import DownloadData
 from spec2vec_mlops.tasks.load_data import LoadData

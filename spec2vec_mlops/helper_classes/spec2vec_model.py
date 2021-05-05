@@ -8,8 +8,8 @@ from mlflow.pyfunc import PythonModel
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
-from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
-from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
+from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.tasks.clean_data import DataCleaner
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
     MandatoryKeyMissingException,
@@ -71,7 +71,7 @@ class Model(PythonModel):
         return embeddings
 
     def _get_reference_embeddings(self) -> List[Embedding]:
-        dgw = RedisDataGateway()
+        dgw = RedisSpectrumDataGateway()
         embeddings_iter = dgw.read_embeddings(self.run_id)
         return list(embeddings_iter)
 

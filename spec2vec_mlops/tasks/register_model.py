@@ -10,7 +10,7 @@ from spec2vec_mlops.helper_classes.spec2vec_model import Model
 CONDA_ENV_PATH = "requirements/environment.frozen.yaml"
 
 
-@task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
+@task(**DEFAULT_CONFIG)
 def register_model_task(
     server_uri: str,
     model: Word2Vec,

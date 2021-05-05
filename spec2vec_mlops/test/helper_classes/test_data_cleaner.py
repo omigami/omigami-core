@@ -1,6 +1,6 @@
 from matchms import Spectrum
 
-from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
+from spec2vec_mlops.tasks.clean_data import DataCleaner
 
 
 def test_clean_data(loaded_data):
