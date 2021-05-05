@@ -8,6 +8,7 @@ from prefect import task
 import spec2vec_mlops.flows.training_flow
 from spec2vec_mlops import config
 from spec2vec_mlops.flows.training_flow import build_training_flow
+from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
@@ -88,6 +89,8 @@ def test_run_training_flow(mock_seldom_deployment, tmpdir):
         mlflow_server="mlflow-server",
         iterations=25,
         window=500,
+        input_dgw=FSInputDataGateway(),
+        redis_dgw=None,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=None,

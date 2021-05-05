@@ -9,6 +9,7 @@ from prefect.storage import S3
 from spec2vec_mlops import config
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.authentication.authenticator import KratosAuthenticator
+from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.tasks.utils import add_options
 
 SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
@@ -97,6 +98,7 @@ def deploy_training_flow(
     else:
         client = Client(api_server=api_server)
     client.create_project(project_name)
+    input_dgw = FSInputDataGateway()
 
     flow = build_training_flow(
         dataset_id=dataset_id,
@@ -106,6 +108,8 @@ def deploy_training_flow(
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
         project_name=project_name,
+        input_dgw=input_dgw,
+        redis_dgw=None,
         source_uri=source_uri,
         dataset_dir=dataset_dir,
         model_output_dir=model_output_dir,

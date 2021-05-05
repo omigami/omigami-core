@@ -1,11 +1,12 @@
 import logging
-from typing import List, Dict
+from typing import List, Dict, Optional
 from uuid import uuid4
 
 import ijson
 import requests
 from drfs import DRPath
 from drfs.filesystems import get_fs
+from drfs.filesystems.base import FileSystemBase
 
 from spec2vec_mlops.tasks.data_gateway import InputDataGateway
 from spec2vec_mlops import config
@@ -15,8 +16,8 @@ KEYS = config["gnps_json"]["necessary_keys"]
 
 
 class FSInputDataGateway(InputDataGateway):
-    def __init__(self):
-        self.fs = None
+    def __init__(self, fs: Optional[FileSystemBase] = None):
+        self.fs = fs
 
     def download_gnps(self, uri: str, dataset_dir: str, dataset_id: str) -> str:
         if self.fs is None:
