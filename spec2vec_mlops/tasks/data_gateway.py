@@ -9,7 +9,7 @@ from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 
 class InputDataGateway(ABC):
     @abstractmethod
-    def download_gnps(self, uri: str, dataset_dir: str, dataset_id: str) -> str:
+    def download_gnps(self, uri: str, dataset_dir: str) -> str:
         pass
 
     @abstractmethod

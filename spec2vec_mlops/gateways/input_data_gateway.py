@@ -1,6 +1,5 @@
 import logging
 from typing import List, Dict, Optional
-from uuid import uuid4
 
 import ijson
 import requests
@@ -19,22 +18,22 @@ class FSInputDataGateway(InputDataGateway):
     def __init__(self, fs: Optional[FileSystemBase] = None):
         self.fs = fs
 
-    def download_gnps(self, uri: str, dataset_dir: str, dataset_id: str) -> str:
+    def download_gnps(self, uri: str, dataset_dir: str) -> str:
         if self.fs is None:
             self.fs = get_fs(dataset_dir)
-        dataset_dir = DRPath(dataset_dir) / dataset_id
+        dataset_dir = DRPath(dataset_dir)
 
         # TODO: refactor to use prefect's checkpoint functionality. Should be done on task
-        if self.fs.exists(dataset_dir):
-            files = self.fs.ls(dataset_dir)
-            if len(files) > 1:
-                raise RuntimeError(
-                    f"There are files already present on {dataset_dir}: {files}"
-                )
-            logger.info(f"Using previously downloaded data")
-            file_path = str(files[0])
-        else:
-            file_path = self._download_and_serialize(uri, dataset_dir)
+        # if self.fs.exists(dataset_dir):
+        #     files = self.fs.ls(dataset_dir)
+        #     if len(files) > 1:
+        #         raise RuntimeError(
+        #             f"There are files already present on {dataset_dir}: {files}"
+        #         )
+        #     logger.info(f"Using previously downloaded data")
+        #     file_path = str(files[0])
+        # else:
+        file_path = self._download_and_serialize(uri, dataset_dir)
         return file_path
 
     def _download_and_serialize(self, uri: str, output_dir: DRPath) -> str:
@@ -73,8 +72,7 @@ class FSInputDataGateway(InputDataGateway):
 
     @staticmethod
     def _make_path(output_dir: DRPath) -> str:
-        file_id = str(uuid4())
-        path = str(output_dir / f"{file_id}.json")
+        path = str(output_dir / f"gnps.json")
         logger.info(f"Writing file to {path}")
         return path
 
