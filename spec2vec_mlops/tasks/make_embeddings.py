@@ -1,4 +1,3 @@
-import datetime
 from typing import Union, List
 
 import prefect
@@ -7,6 +6,7 @@ from prefect import task
 
 from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
+from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 
 
 @task(**DEFAULT_CONFIG)

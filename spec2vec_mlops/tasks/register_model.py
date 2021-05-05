@@ -6,6 +6,7 @@ from prefect import task
 
 from spec2vec_mlops.helper_classes.model_register import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
+from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 
 CONDA_ENV_PATH = "requirements/environment.frozen.yaml"
 
