@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from spec2vec_mlops.helper_classes.model_register import ModelRegister
+from spec2vec_mlops.tasks.register_model import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
 os.chdir(Path(__file__).parents[3])

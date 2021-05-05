@@ -9,7 +9,6 @@ from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
-from spec2vec_mlops.tasks.clean_data import DataCleaner
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
     MandatoryKeyMissingException,
@@ -19,11 +18,12 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectSpectrumDataTypeException,
 )
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
+from spec2vec_mlops.tasks.clean_data.clean_data import DataCleaner
 
 KEYS = config["gnps_json"]["necessary_keys"]
 
 
-class Model(PythonModel):
+class Predictor(PythonModel):
     def __init__(
         self,
         model: Word2Vec,

@@ -18,7 +18,7 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectFloatFieldTypeException,
     IncorrectStringFieldTypeException,
 )
-from spec2vec_mlops.helper_classes.model_register import ModelRegister
+from spec2vec_mlops.tasks.register_model import ModelRegister
 from spec2vec_mlops.helper_classes.spec2vec_model import Model
 
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
