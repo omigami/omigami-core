@@ -1,13 +1,15 @@
 from prefect import Task
+from prefect.engine.results import S3Result
 
 from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 from spec2vec_mlops.tasks.data_gateway import InputDataGateway
 
 
 class DownloadData(Task):
-    def __init__(self, input_dgw: InputDataGateway):
+    def __init__(self, input_dgw: InputDataGateway, output_dir: str, dataset_id: str):
         self._input_dgw = input_dgw
-        super().__init__(**DEFAULT_CONFIG)
+        self._target_path = f"{output_dir}/{dataset_id}"
+        super().__init__(**DEFAULT_CONFIG, result=S3Result(dir=self._target_path))
 
     # TODO: refactor to use prefect's checkpoint functionality
     def run(
