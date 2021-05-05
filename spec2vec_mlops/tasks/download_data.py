@@ -9,6 +9,7 @@ class DownloadData(Task):
         self._input_dgw = input_dgw
         super().__init__(**DEFAULT_CONFIG)
 
+    # TODO: refactor to use prefect's checkpoint functionality
     def run(
         self, input_uri: str = None, output_dir: str = None, dataset_id: str = None
     ) -> str:

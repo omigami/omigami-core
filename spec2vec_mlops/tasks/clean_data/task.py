@@ -17,7 +17,7 @@ class CleanData(Task):
         n_decimals: int,
         skip_if_exists: bool = True,
     ):
-        self._redis_dgw = spectrum_dgw
+        self._spectrum_dgw = spectrum_dgw
         self._n_decimals = n_decimals
         self._skip_if_exists = skip_if_exists
         super().__init__(**DEFAULT_CONFIG)
@@ -26,9 +26,10 @@ class CleanData(Task):
         logger = prefect.context.get("logger")
         start = datetime.datetime.now()
 
+        # TODO: refactor to use prefect's checkpoint functionality
         if self._skip_if_exists:
             spectrum_ids = [sp.get("spectrum_id") for sp in spectra_data_chunks]
-            spectrum_ids = self._redis_dgw.list_spectra_not_exist(spectrum_ids)
+            spectrum_ids = self._spectrum_dgw.list_spectra_not_exist(spectrum_ids)
             spectra_data_chunks = [
                 sp
                 for sp in spectra_data_chunks
@@ -46,7 +47,7 @@ class CleanData(Task):
             for spectrum in cleaned_data
         ]
 
-        self._redis_dgw.write_spectrum_documents(spectra_data)
+        self._spectrum_dgw.write_spectrum_documents(spectra_data)
         logger.info(
             f"Clean and convert {len(spectra_data)} spectrum documents in "
             f"{datetime.datetime.now() - start} hours."

@@ -23,6 +23,8 @@ class FSInputDataGateway(InputDataGateway):
         if self.fs is None:
             self.fs = get_fs(dataset_dir)
         dataset_dir = DRPath(dataset_dir) / dataset_id
+
+        # TODO: refactor to use prefect's checkpoint functionality. Should be done on task
         if self.fs.exists(dataset_dir):
             files = self.fs.ls(dataset_dir)
             if len(files) > 1:
