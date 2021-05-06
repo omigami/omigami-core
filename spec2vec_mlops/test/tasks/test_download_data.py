@@ -1,9 +1,10 @@
 from unittest.mock import MagicMock
 
+import pytest
 from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
-from prefect.engine.results import LocalResult
+from prefect.engine.results import LocalResult, S3Result
 from prefect.engine.serializers import JSONSerializer
 
 from spec2vec_mlops import config
@@ -46,4 +47,25 @@ def test_download_existing_data():
 
     assert res.is_successful()
     assert fs.exists(DRPath(ASSETS_DIR) / file_name)
+    assert res.result[download].is_cached()
+
+
+# @pytest.mark.skip(reason="This test uses internet connection.")
+def test_download_existing_data_s3():
+    file_name = "test-dataset-download/gnps.json"
+    dir = "s3://dr-prefect/test-dataset-download/"
+    bucket = "dr-prefect"
+    input_dgw = FSInputDataGateway()
+    fs = get_fs(dir)
+    result = S3Result(bucket=bucket, serializer=JSONSerializer())
+
+    with Flow("test-flow") as test_flow:
+        download = DownloadData(input_dgw, result, file_name)(
+            SOURCE_URI_PARTIAL_GNPS, dir
+        )
+
+    res = test_flow.run()
+
+    assert res.is_successful()
+    assert fs.exists(DRPath(bucket) / file_name)
     assert res.result[download].is_cached()

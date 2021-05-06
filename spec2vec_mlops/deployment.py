@@ -73,7 +73,7 @@ def cli():
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
 @add_options(auth_options)
 def deploy_training_flow(
-    dataset_id: str,
+    dataset_name: str,
     n_decimals: int,
     iterations: int,
     window: int,
@@ -101,7 +101,7 @@ def deploy_training_flow(
     input_dgw = FSInputDataGateway()
 
     flow = build_training_flow(
-        dataset_id=dataset_id,
+        dataset_name=dataset_name,
         n_decimals=n_decimals,
         iterations=iterations,
         window=window,

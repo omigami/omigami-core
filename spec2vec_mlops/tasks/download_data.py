@@ -19,8 +19,8 @@ class DownloadData(Task):
         )
 
     def run(
-        self, input_uri: str = None, dataset_dir: str = None
+        self, input_uri: str = None, output_path: str = None
     ) -> List[Dict[str, str]]:
-        file_path = self._input_dgw.download_gnps(input_uri, dataset_dir)
-        gnps = self._input_dgw.load_gnps(file_path)
+        self._input_dgw.download_gnps(input_uri, output_path)
+        gnps = self._input_dgw.load_gnps(output_path)
         return gnps

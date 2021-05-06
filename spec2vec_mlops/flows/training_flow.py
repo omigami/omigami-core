@@ -3,10 +3,10 @@ from typing import Union, Dict, Any
 
 from prefect import Flow, unmapped, case
 
+from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (
     check_condition,
     DownloadData,
-    LoadData,
     train_model_task,
     register_model_task,
     make_embeddings_task,
@@ -19,11 +19,13 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+# TODO: maybe this should be a class so this interface is not so huge? or add dataclasses
+# TODO: to reduce parameters.
 def build_training_flow(
     project_name: str,
     source_uri: str,
     dataset_dir: str,
-    dataset_id: str,
+    dataset_name: str,
     model_output_dir: str,
     seldon_deployment_path: str,
     n_decimals: int,
@@ -48,7 +50,10 @@ def build_training_flow(
     flow_config = flow_config or {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
         logger.info("Downloading and loading spectrum data.")
-        gnps = DownloadData(input_dgw)(source_uri, dataset_dir, dataset_id)
+        download_path = f"{dataset_dir}/{dataset_name}"
+        gnps = DownloadData(
+            input_dgw, result=create_result(dataset_dir), target=dataset_name
+        )(source_uri, download_path)
 
         logger.info("Started data cleaning and conversion to documents.")
         all_spectrum_ids_chunks = CleanData(
