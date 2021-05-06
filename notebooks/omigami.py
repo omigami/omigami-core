@@ -13,7 +13,8 @@ except:
 
 
 def run(mgf_file: str, n_best_spectra: int = 10):
-    """Load the spectra from the MGF file into a generator"""
+    """Load the spectra from the MGF file into a generator, build the payload,
+    call the prediction API and then format the predictions"""
     spectra_generator = load_from_mgf(mgf_file)
 
     payload = build_payload(spectra_generator, n_best_spectra)
