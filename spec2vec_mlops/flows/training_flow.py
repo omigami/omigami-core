@@ -36,7 +36,6 @@ def spec2vec_train_pipeline_distributed(
     api_server: str = API_SERVER_REMOTE,
     project_name: str = "spec2vec-mlops-project-spec2vec-load-full-data-pt",
     download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/full",  # or full if using complete GNPS
-    # download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/test_10k",  # or full if using complete GNPS
     n_decimals: int = 2,
     save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
     mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
@@ -75,7 +74,7 @@ def spec2vec_train_pipeline_distributed(
     """
     custom_confs = {
         "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b1e871d",
+            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f9df07b",
             job_template_path="./spec2vec_mlops/job_spec.yaml",
             labels=["dev"],
             service_account_name="prefect-server-serviceaccount",
