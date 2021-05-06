@@ -66,6 +66,10 @@ Start a Redis container and set these environment variables before running the t
     docker run -d --rm --name redis -p 6379:6379 redis:5-alpine
     export SKIP_REDIS_TEST=False
 
+To run tests one by one via PyCharm, you can add this to your pytest Environment Variables (Run > Edit Configurations...)
+::
+
+    SKIP_REDIS_TEST=False
 
 How to register the training flow manually
 ------------------------------------------
@@ -96,32 +100,41 @@ By making a curl request:
 
     curl -v https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions -H "Content-Type: application/json" -d 'input_data'
 
+::
+
+    curl -v https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions -H "Content-Type: application/json" -d @path_to/input.json
+
 By accessing the external API with the user interface at:
 ::
 
     https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/doc/
 
+Or by querying the prediction API via the python request library (see notebook)
+
 The input data should look like:
 ::
 
-   {
-      "data": {
-         "ndarray": {
-            "parameters":
-                {
-                    "n_best_spectra": 10,
-                },
-            "data":
-                [
-                    {"json_peaks": "[some peaks]", "Precursor_MZ": "900"},
-                    {"json_peaks": "[some other peaks]", "Precursor_MZ": "800"}
-                ]
-         }
-      }
-   }
+    {
+       "data": {
+          "ndarray": {
+             "parameters":
+                 {
+                     "n_best_spectra": 10,
+                 },
+             "data":
+                 [
+                     {"peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
+                      "Precursor_MZ": "900"},
+                     {"peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
+                      "Precursor_MZ": "800"}
+                 ]
+          }
+       }
+    }
 
-"json_peaks", "Precursor_MZ" are the only mandatory fields.
-By default ‘predict‘ returns 10 spectra per set of peaks.
+- `peaks_json` and `Precursor_MZ` are the only mandatory fields.
+- `Precursor_MZ` can be a string of int or a string of float. i.e. "800" or "800.00"
+- The optional `n_best_spectra` parameter controls the number of predicted spectra returned per set of peaks (10 by default).
 
 Black format your code
 -------------------------------------
