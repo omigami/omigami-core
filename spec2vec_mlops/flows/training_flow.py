@@ -48,13 +48,12 @@ def build_training_flow(
     flow_config = flow_config or {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
         logger.info("Downloading and loading spectrum data.")
-        file_path = DownloadData(input_dgw)(source_uri, dataset_dir, dataset_id)
-        input_data = LoadData(input_dgw)(file_path, chunk_size=20000)
+        gnps = DownloadData(input_dgw)(source_uri, dataset_dir, dataset_id)
 
         logger.info("Started data cleaning and conversion to documents.")
         all_spectrum_ids_chunks = CleanData(
             spectrum_gtw, n_decimals, skip_if_exists
-        ).map(input_data)
+        ).map(gnps)
 
         with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)

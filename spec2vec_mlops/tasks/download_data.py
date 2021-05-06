@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 from prefect import Task
 from prefect.engine.result import Result
 
@@ -16,6 +18,9 @@ class DownloadData(Task):
             target=target,
         )
 
-    def run(self, input_uri: str = None, dataset_dir: str = None) -> str:
+    def run(
+        self, input_uri: str = None, dataset_dir: str = None
+    ) -> List[Dict[str, str]]:
         file_path = self._input_dgw.download_gnps(input_uri, dataset_dir)
-        return file_path
+        gnps = self._input_dgw.load_gnps(file_path)
+        return gnps

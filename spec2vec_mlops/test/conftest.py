@@ -24,14 +24,12 @@ def pytest_configure(config):
         setattr(config.option, "markexpr", "not longrun")
 
 
-@pytest.fixture(scope="module")
-def assets_dir():
-    return Path(__file__).parents[0] / "assets"
+ASSETS_DIR = Path(__file__).parents[0] / "assets"
 
 
 @pytest.fixture(scope="module")
-def local_gnps_small_json(assets_dir):
-    path = str(assets_dir / "SMALL_GNPS.json")
+def local_gnps_small_json():
+    path = str(ASSETS_DIR / "SMALL_GNPS.json")
     return path
 
 
@@ -42,32 +40,32 @@ def loaded_data(local_gnps_small_json, tmpdir):
 
 
 @pytest.fixture(scope="module")
-def cleaned_data(assets_dir):
-    path = str(assets_dir / "SMALL_GNPS_cleaned.pickle")
+def cleaned_data():
+    path = str(ASSETS_DIR / "SMALL_GNPS_cleaned.pickle")
     with open(path, "rb") as handle:
         cleaned_data = pickle.load(handle)
     return cleaned_data
 
 
 @pytest.fixture(scope="module")
-def documents_data(assets_dir):
-    path = str(assets_dir / "SMALL_GNPS_as_documents.pickle")
+def documents_data():
+    path = str(ASSETS_DIR / "SMALL_GNPS_as_documents.pickle")
     with open(path, "rb") as handle:
         documents_data = pickle.load(handle)
     return documents_data
 
 
 @pytest.fixture(scope="module")
-def word2vec_model(assets_dir):
-    path = str(assets_dir / "model.pickle")
+def word2vec_model():
+    path = str(ASSETS_DIR / "model.pickle")
     with open(path, "rb") as handle:
         model = pickle.load(handle)
     return model
 
 
 @pytest.fixture(scope="module")
-def embeddings(assets_dir):
-    path = str(assets_dir / "SMALL_GNPS_as_embeddings.pickle")
+def embeddings():
+    path = str(ASSETS_DIR / "SMALL_GNPS_as_embeddings.pickle")
     with open(path, "rb") as handle:
         embeddings = pickle.load(handle)
     return embeddings
