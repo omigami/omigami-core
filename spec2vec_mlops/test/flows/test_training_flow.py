@@ -9,6 +9,8 @@ import spec2vec_mlops.flows.training_flow
 from spec2vec_mlops import config
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
+from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.test.conftest import ASSETS_DIR
 
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
@@ -25,7 +27,8 @@ def test_training_flow():
         "LoadData",
         "case(True)",
         "check_condition",
-        "clean_data_task",
+        "ProcessSpectrum",
+        "CreateChunks",
         "deploy_model_task",
         "make_embeddings_task",
         "register_model_task",
@@ -34,9 +37,9 @@ def test_training_flow():
 
     flow = build_training_flow(
         project_name="test",
-        source_uri="source_uri",
-        dataset_dir="datasets",
-        dataset_id="dataset-id",
+        input_uri="source_uri",
+        output_dir="datasets",
+        dataset_name="dataset-id",
         model_output_dir="model-output",
         seldon_deployment_path="seldon-path",
         n_decimals=2,
@@ -75,14 +78,13 @@ def mock_seldom_deployment(monkeypatch):
     reason="It can only be run if the Redis is up",
 )
 def test_run_training_flow(mock_seldom_deployment, tmpdir):
-    current_dir = Path.cwd()
-    fs = get_fs(str(current_dir))
+    fs = get_fs(ASSETS_DIR)
+    _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
     flow = build_training_flow(
         project_name="test",
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
-        # we dont use tmpdir here to avoid downloading it every time
-        dataset_dir=f"datasets",
-        dataset_id="dataset-id",
+        input_uri=SOURCE_URI_PARTIAL_GNPS,
+        output_dir=ASSETS_DIR,
+        dataset_name="SMALL_GNPS.json",
         model_output_dir=f"{tmpdir}/model-output",
         seldon_deployment_path="seldon-path",
         n_decimals=2,
@@ -90,7 +92,8 @@ def test_run_training_flow(mock_seldom_deployment, tmpdir):
         iterations=25,
         window=500,
         input_dgw=FSInputDataGateway(),
-        redis_dgw=None,
+        spectrum_gtw=RedisSpectrumDataGateway(),
+        skip_if_exists=True,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=None,
@@ -99,5 +102,4 @@ def test_run_training_flow(mock_seldom_deployment, tmpdir):
     results = flow.run()
 
     assert results.is_successful()
-    assert len(fs.ls(current_dir / "datasets")) == 1
     assert len(fs.ls(tmpdir / "model-output")) == 1

@@ -18,7 +18,7 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectSpectrumDataTypeException,
 )
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
-from spec2vec_mlops.tasks.clean_data.clean_data import DataCleaner
+from spec2vec_mlops.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 
 KEYS = config["gnps_json"]["necessary_keys"]
 
@@ -36,7 +36,7 @@ class Predictor(PythonModel):
         self.n_decimals = n_decimals
         self.intensity_weighting_power = intensity_weighting_power
         self.allowed_missing_percentage = allowed_missing_percentage
-        self.data_cleaner = DataCleaner()
+        self.data_cleaner = SpectrumProcessor()
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
 
@@ -55,7 +55,7 @@ class Predictor(PythonModel):
         self.run_id = run_id
 
     def _pre_process_data(self, model_input: List[Dict]) -> List[Embedding]:
-        cleaned_data = [self.data_cleaner.clean_data(data) for data in model_input]
+        cleaned_data = [self.data_cleaner.process_data(data) for data in model_input]
         spectra_data = [
             SpectrumDocumentData(spectrum, self.n_decimals) for spectrum in cleaned_data
         ]

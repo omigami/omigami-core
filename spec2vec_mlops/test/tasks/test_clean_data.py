@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 from matchms import Spectrum
 from prefect import Flow
 
-from spec2vec_mlops.tasks.clean_data import CleanData
-from spec2vec_mlops.tasks.clean_data.clean_data import DataCleaner
+from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrum
+from spec2vec_mlops.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
 
 
@@ -13,7 +13,7 @@ def test_clean_data_task(loaded_data):
     spectrum_gtw = MagicMock(spec=SpectrumDataGateway)
     spectrum_gtw.load_gnps.return_value = gnps
     with Flow("test-flow") as test_flow:
-        clean_task = CleanData(spectrum_gtw)(chunk_size=10)
+        clean_task = ProcessSpectrum(spectrum_gtw)(chunk_size=10)
 
     res = test_flow.run()
     data = res.result[clean_task].result
@@ -25,10 +25,10 @@ def test_clean_data_task(loaded_data):
 
 
 def test_clean_data(loaded_data):
-    dc = DataCleaner()
+    dc = SpectrumProcessor()
 
     for data in loaded_data:
-        cleaned_data = dc.clean_data(data)
+        cleaned_data = dc.process_data(data)
 
         assert isinstance(cleaned_data, Spectrum)
         # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
