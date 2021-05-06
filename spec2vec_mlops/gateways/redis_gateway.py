@@ -28,16 +28,17 @@ class RedisDataGateway:
         """Write spectrum and document to Redis. Also write a sorted set of spectrum_ids."""
         pipe = self.client.pipeline()
         for spectrum in spectra_data:
-            pipe.zadd(
-                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-                {spectrum.spectrum_id: spectrum.precursor_mz},
-            )
-            pipe.hset(
-                SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum.spectrum)
-            )
-            pipe.hset(
-                DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum.document)
-            )
+            spectrum_info = spectrum.spectrum
+            document = spectrum.document
+            if spectrum_info and document:
+                pipe.zadd(
+                    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+                    {spectrum.spectrum_id: spectrum.precursor_mz},
+                )
+                pipe.hset(
+                    SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum_info)
+                )
+                pipe.hset(DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(document))
         pipe.execute()
 
     def write_embeddings(self, embeddings: List[Embedding], run_id: str):
@@ -51,13 +52,16 @@ class RedisDataGateway:
             )
         pipe.execute()
 
-    def list_spectra_not_exist(self, spectrum_ids: List[str]):
+    def list_spectrum_ids(self) -> List[str]:
+        return self.client.hkeys(SPECTRUM_HASHES)
+
+    def list_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether spectra exist on Redis.
         Return a list of IDs that do not exist.
         """
         return self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids)
 
-    def list_documents_not_exist(self, spectrum_ids: List[str]):
+    def list_documents_not_exist(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether document exist on Redis.
         Return a list of IDs that do not exist.
         """

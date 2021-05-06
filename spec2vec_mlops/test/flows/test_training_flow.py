@@ -9,7 +9,6 @@ from prefect.engine.state import State
 
 from spec2vec_mlops import config
 from spec2vec_mlops.tasks.check_condition import check_condition
-from spec2vec_mlops.tasks.clean_data import clean_data_task
 from spec2vec_mlops.tasks.download_data import download_data_task
 from spec2vec_mlops.tasks.load_data import load_data_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
@@ -40,9 +39,8 @@ def spec2vec_train_pipeline_local(
 ) -> State:
     with Flow("flow") as flow:
         file_path = download_data_task(source_uri, download_out_dir)
-        raw_chunks = load_data_task(file_path, chunksize=5000)
-        all_spectrum_ids_chunks = clean_data_task.map(
-            raw_chunks, n_decimals=unmapped(2)
+        all_spectrum_ids_chunks = load_data_task(
+            file_path, ionmode="positive", chunksize=5000
         )
 
         with case(check_condition(all_spectrum_ids_chunks), True):

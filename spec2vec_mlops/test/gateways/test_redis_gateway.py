@@ -1,6 +1,7 @@
 import os
 import pickle
 from typing import Iterable
+
 import pytest
 from matchms.Spectrum import Spectrum
 from pytest_redis import factories
@@ -75,6 +76,13 @@ def test_write_spectrum_documents(redis_db, cleaned_data):
     assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(cleaned_data)
     assert redis_db.hlen(SPECTRUM_HASHES) == len(cleaned_data)
     assert redis_db.hlen(DOCUMENT_HASHES) == len(cleaned_data)
+
+
+def test_list_spectrum_ids(cleaned_data, spectra_stored):
+    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
+    dgw = RedisDataGateway()
+    ids = dgw.list_spectrum_ids()
+    assert len(ids) == len(spectrum_ids_stored)
 
 
 def test_list_spectra_not_exist(cleaned_data, spectra_stored):

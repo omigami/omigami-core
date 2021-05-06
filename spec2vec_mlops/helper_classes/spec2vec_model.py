@@ -41,7 +41,14 @@ class Model(PythonModel):
         self.run_id = run_id
 
     def predict(self, context, model_input_and_parameters: Dict) -> List[List[Dict]]:
-        parameters = model_input_and_parameters.get("parameters")
+        if not isinstance(model_input_and_parameters, dict):
+            model_input_and_parameters = model_input_and_parameters.tolist()
+
+        parameters = (
+            model_input_and_parameters.get("parameters")
+            if model_input_and_parameters.get("parameters")
+            else {}
+        )
         model_input = model_input_and_parameters.get("data")
         self._validate_input(model_input)
         embeddings = self._pre_process_data(model_input)
