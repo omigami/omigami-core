@@ -52,13 +52,16 @@ class RedisDataGateway:
             )
         pipe.execute()
 
-    def list_spectra_not_exist(self, spectrum_ids: List[str]):
+    def list_spectrum_ids(self) -> List[str]:
+        return self.client.hkeys(SPECTRUM_HASHES)
+
+    def list_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether spectra exist on Redis.
         Return a list of IDs that do not exist.
         """
         return self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids)
 
-    def list_documents_not_exist(self, spectrum_ids: List[str]):
+    def list_documents_not_exist(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether document exist on Redis.
         Return a list of IDs that do not exist.
         """

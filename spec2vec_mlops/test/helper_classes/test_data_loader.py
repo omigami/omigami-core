@@ -19,11 +19,14 @@ def data_loader(local_gnps_small_json):
     return DataLoader(local_gnps_small_json)
 
 
-def test_load_gnps_json(local_gnps_small_json, data_loader):
-    for res in data_loader.load_gnps_json(ionmode="positive", skip_if_exists=True):
-        assert isinstance(res, dict)
-        for k in KEYS:
-            assert k in res
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_load_gnps_json(local_gnps_small_json, data_loader, redis_db):
+    ids = data_loader.load_gnps_json(ionmode="positive", skip_if_exists=True)
+    n_spectra = redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET)
+    assert n_spectra == len(ids)
 
 
 @pytest.mark.skipif(
@@ -44,5 +47,5 @@ def test_load_gnps_json_skip_existing(
         )
     pipe.execute()
 
-    results = data_loader.load_gnps_json(ionmode="positive", skip_if_exists=True)
-    assert len(results) == 0
+    ids = data_loader.load_gnps_json(ionmode="positive", skip_if_exists=True)
+    assert len(ids) == len(cleaned_data)

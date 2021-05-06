@@ -17,7 +17,7 @@ from matchms.importing.load_from_json import as_spectrum
 
 
 class DataCleaner:
-    def clean_data(self, spectrum: Dict, min_peaks: int = 5) -> Optional[Spectrum]:
+    def clean_data(self, spectrum: Dict, min_peaks: int = 0) -> Optional[Spectrum]:
         parsed = self._parse_data(spectrum, min_peaks)
         return parsed if parsed else None
 

@@ -2,11 +2,14 @@ import pickle
 from pathlib import Path
 
 import boto3
+import ijson
 import pytest
 import s3fs
 from moto import mock_s3
 
-from spec2vec_mlops.helper_classes.data_loader import DataLoader
+from spec2vec_mlops import config
+
+KEYS = config["gnps_json"]["necessary_keys"]
 
 
 def pytest_addoption(parser):
@@ -37,8 +40,10 @@ def local_gnps_small_json(assets_dir):
 
 @pytest.fixture()
 def loaded_data(local_gnps_small_json, tmpdir):
-    dl = DataLoader(local_gnps_small_json)
-    return dl.load_gnps_json(ionmode="positive", skip_if_exists=False)
+    with open(local_gnps_small_json, "rb") as f:
+        items = ijson.items(f, "item", multiple_values=True)
+        results = [{k: item[k] for k in KEYS} for item in items]
+    return results
 
 
 @pytest.fixture(scope="module")
