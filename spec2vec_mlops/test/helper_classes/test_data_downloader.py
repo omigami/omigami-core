@@ -39,9 +39,7 @@ def test_download_and_serialize_to_local(uri, data_downloader_to_local_path):
     assert Path(res).exists()
 
 
-def test_download_and_serialize_to_remote(
-    loaded_data, data_downloader_to_remote_path, s3_mock
-):
+def test_download_and_serialize_to_remote(data_downloader_to_remote_path, s3_mock):
     with requests_mock.Mocker() as m:
         m.get(SOURCE_URI_PARTIAL_GNPS, text="bac")
         res = data_downloader_to_remote_path.download_gnps_json(
