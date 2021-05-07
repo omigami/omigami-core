@@ -17,13 +17,13 @@ from matchms.importing.load_from_json import as_spectrum
 
 
 class SpectrumProcessor:
-    def process_data(self, spectrum: Dict) -> Optional[Spectrum]:
-        parsed = self._parse_data(spectrum)
+    def process_data(self, spectrum: Dict, min_peaks: int = 0) -> Optional[Spectrum]:
+        parsed = self._parse_data(spectrum, min_peaks)
         return parsed if parsed else None
 
-    def _parse_data(self, spectrum_dict: dict) -> Spectrum:
+    def _parse_data(self, spectrum_dict: dict, min_peaks: int) -> Spectrum:
         spectrum = as_spectrum(spectrum_dict)
-        if spectrum is not None:
+        if spectrum is not None and len(spectrum.peaks.mz) > min_peaks:
             spectrum = self._apply_filters(spectrum)
             spectrum = self._harmonize_spectrum(spectrum)
             spectrum = self._convert_metadata(spectrum)

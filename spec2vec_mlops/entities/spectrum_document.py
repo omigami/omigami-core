@@ -1,3 +1,5 @@
+from typing import Optional
+
 from matchms import Spectrum
 from spec2vec import SpectrumDocument
 
@@ -14,8 +16,16 @@ class SpectrumDocumentData:
         return self.spectrum.metadata["spectrum_id"]
 
     @property
-    def document(self) -> SpectrumDocument:
-        return SpectrumDocument(self.spectrum, n_decimals=self.n_decimals)
+    def ionmode(self) -> str:
+        return self.spectrum.metadata["ionmode"]
+
+    @property
+    def document(self) -> Optional[SpectrumDocument]:
+        try:
+            document = SpectrumDocument(self.spectrum, n_decimals=self.n_decimals)
+        except AssertionError:
+            return
+        return document
 
     @property
     def precursor_mz(self) -> float:
