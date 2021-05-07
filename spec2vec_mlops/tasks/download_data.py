@@ -44,3 +44,12 @@ class DownloadParameters:
     @property
     def download_path(self):
         return f"{self.output_dir}/{self.dataset_name}"
+
+    @property
+    def kwargs(self):
+        return dict(
+            input_uri=self.input_uri,
+            output_dir=self.output_dir,
+            input_dgw=self.input_dgw,
+            dataset_name=self.dataset_name,
+        )
