@@ -15,12 +15,14 @@ class ProcessSpectrum(Task):
         spectrum_dgw: SpectrumDataGateway,
         n_decimals: int,
         skip_if_exists: bool = True,
+        **kwargs,
     ):
         self._spectrum_dgw = spectrum_dgw
         self._n_decimals = n_decimals
         self._skip_if_exists = skip_if_exists
         self._processor = SpectrumProcessor()
-        super().__init__(**DEFAULT_CONFIG)
+        config = {k: v for k, v in {**DEFAULT_CONFIG.copy(), **kwargs}.items()}
+        super().__init__(**config)
 
     def run(self, spectrum_data: List[dict] = None) -> List[str]:
         # TODO: refactor to use prefect's checkpoint functionality

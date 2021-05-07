@@ -30,9 +30,7 @@ SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
     ],
 )
 def test_download_and_serialize_to_local(uri, tmpdir):
-    res = FSInputDataGateway().download_gnps(
-        uri=uri, output_path=tmpdir, dataset_id="test-ds"
-    )
+    res = FSInputDataGateway().download_gnps(uri=uri, output_path=tmpdir / "test-ds")
 
     assert Path(res).exists()
 
@@ -42,21 +40,9 @@ def test_download_and_serialize_to_remote(loaded_data, s3_mock):
         m.get(SOURCE_URI_PARTIAL_GNPS, text="bac")
         res = FSInputDataGateway().download_gnps(
             uri=SOURCE_URI_PARTIAL_GNPS,
-            output_path="s3://test-bucket",
-            dataset_id="test-ds",
+            output_path="s3://test-bucket/test-ds",
         )
-        assert DRPath(res).exists()
-
-
-def test_download_already_exists(tmpdir):
-    file_path = FSInputDataGateway().download_gnps(
-        uri=SOURCE_URI_PARTIAL_GNPS, output_path=tmpdir, dataset_id="test-ds"
-    )
-    same_file_path = FSInputDataGateway().download_gnps(
-        uri=SOURCE_URI_PARTIAL_GNPS, output_path=tmpdir, dataset_id="test-ds"
-    )
-
-    assert file_path == same_file_path
+        assert DRPath("s3://test-bucket/test-ds").exists()
 
 
 @pytest.mark.longrun
@@ -72,10 +58,3 @@ def test_resume_download(tmpdir, local_gnps_small_json):
     updated_file_size = Path(new_path).stat().st_size
 
     assert updated_file_size
-
-
-def test_make_path(tmpdir):
-    path = FSInputDataGateway._make_path(tmpdir)
-
-    assert isinstance(path, str)
-    assert path.split(".")[1] == "json"

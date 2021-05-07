@@ -6,22 +6,24 @@ from prefect import Flow
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrum
 from spec2vec_mlops.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
+from spec2vec_mlops.test.conftest import TEST_TASK_CONFIG
 
 
 def test_clean_data_task(loaded_data):
-    gnps = list(range(50))
     spectrum_gtw = MagicMock(spec=SpectrumDataGateway)
-    spectrum_gtw.load_gnps.return_value = gnps
+    spectrum_gtw.list_spectra_not_exist.side_effect = lambda x: x
     with Flow("test-flow") as test_flow:
-        clean_task = ProcessSpectrum(spectrum_gtw)(chunk_size=10)
+        clean_task = ProcessSpectrum(spectrum_gtw, 2, True, **TEST_TASK_CONFIG)(
+            loaded_data
+        )
 
     res = test_flow.run()
     data = res.result[clean_task].result
 
     assert res.is_successful()
-    assert len(data) == 5
-    assert set(data[0]) == set(range(10))
-    spectrum_gtw.load_gnps.assert_called_once()
+    assert len(data) == 100
+    spectrum_gtw.list_spectra_not_exist.assert_called_once()
+    spectrum_gtw.write_spectrum_documents.assert_called_once()
 
 
 def test_clean_data(loaded_data):

@@ -10,14 +10,21 @@ from spec2vec_mlops import config
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.authentication.authenticator import KratosAuthenticator
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
-from spec2vec_mlops.tasks.utils import add_options
+from spec2vec_mlops.utils import add_options
 
+from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.tasks.download_data import DownloadParameters
+from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
+
+
+# TODO: move all of these variables to config default and organize it
 SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 API_SERVER = config["prefect_flow_registration"]["api_server"]
 MLFLOW_SERVER = config["mlflow"]["url"]["remote"]
 PROJECT_NAME = "spec2vec-mlops-project-spec2vec-load-10k-data-pt-3"
-DATASET_DIR = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/"
+OUTPUT_DIR = "s3://dr-prefect"
+DATASET_NAME = "spec2vec-training-flow/downloaded_datasets/gnps.json"
 DATASET_ID = "test_10k"  # we also have 'small'
 MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
 SELDON_DEPLOYMENT_PATH = "spec2vec_mlops/seldon_deployment.yaml"
@@ -42,7 +49,7 @@ FLOW_CONFIG = {
 configuration_options = [
     click.option("--project-name", default=PROJECT_NAME),
     click.option("--source-uri", default=SOURCE_URI_PARTIAL_GNPS),
-    click.option("--dataset-dir", default=DATASET_DIR),
+    click.option("--dataset-dir", default=OUTPUT_DIR),
     click.option("--model-output-dir", default=MODEL_DIR),
     click.option("--seldon-deployment-path", default=SELDON_DEPLOYMENT_PATH),
     click.option("--mlflow-server", default=MLFLOW_SERVER["remote"]),
@@ -73,20 +80,21 @@ def cli():
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
 @add_options(auth_options)
 def deploy_training_flow(
-    dataset_name: str,
-    n_decimals: int,
     iterations: int,
     window: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    api_server: str,
-    auth: bool,
-    auth_url: Optional[str],
-    username: Optional[str],
-    password: Optional[str],
-    project_name: str = PROJECT_NAME,
+    n_decimals: int = 2,
+    skip_if_exists: bool = True,
+    auth: bool = False,
+    auth_url: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    api_server: str = API_SERVER,
+    dataset_name: str = DATASET_NAME,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
-    dataset_dir: str = DATASET_DIR,
+    output_dir: str = OUTPUT_DIR,
+    project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     seldon_deployment_path: str = SELDON_DEPLOYMENT_PATH,
     mlflow_server: str = MLFLOW_SERVER["remote"],
@@ -98,20 +106,25 @@ def deploy_training_flow(
     else:
         client = Client(api_server=api_server)
     client.create_project(project_name)
+
     input_dgw = FSInputDataGateway()
+    spectrum_dgw = RedisSpectrumDataGateway()
+
+    download_parameters = DownloadParameters(
+        source_uri, output_dir, dataset_name, input_dgw
+    )
+    process_parameters = ProcessSpectrumParameters(
+        spectrum_dgw, n_decimals, skip_if_exists
+    )
 
     flow = build_training_flow(
-        dataset_name=dataset_name,
-        n_decimals=n_decimals,
+        download_params=download_parameters,
+        process_params=process_parameters,
         iterations=iterations,
         window=window,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
         project_name=project_name,
-        input_dgw=input_dgw,
-        redis_dgw=None,
-        input_uri=source_uri,
-        output_dir=dataset_dir,
         model_output_dir=model_output_dir,
         seldon_deployment_path=seldon_deployment_path,
         mlflow_server=mlflow_server,

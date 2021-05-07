@@ -4,14 +4,15 @@ import pytest
 from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
-from prefect.engine.results import LocalResult, S3Result
 from prefect.engine.serializers import JSONSerializer
 
 from spec2vec_mlops import config
+from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.tasks import DownloadData
 from spec2vec_mlops.tasks.data_gateway import InputDataGateway
-from spec2vec_mlops.test.conftest import ASSETS_DIR
+from spec2vec_mlops.tasks.download_data import DownloadParameters
+from spec2vec_mlops.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 
@@ -20,28 +21,34 @@ def test_download_data():
     input_dgw = MagicMock(spec=InputDataGateway)
     input_dgw.download_gnps.return_value = "download"
     input_dgw.load_gnps.return_value = "gnps"
+    download_params = DownloadParameters("input-uri", "dir", "file_name", input_dgw)
     with Flow("test-flow") as test_flow:
-        download = DownloadData(input_dgw, LocalResult(), "target")()
+        download = DownloadData(
+            **download_params.kwargs, result=create_result(DRPath(""))
+        )()
 
     res = test_flow.run()
 
     assert res.is_successful()
     assert res.result[download].result == "gnps"
-    input_dgw.download_gnps.assert_called_once_with(None, None)
-    input_dgw.load_gnps.assert_called_once_with("download")
+    input_dgw.download_gnps.assert_called_once_with("input-uri", "dir/file_name")
+    input_dgw.load_gnps.assert_called_once_with("dir/file_name")
 
 
 def test_download_existing_data():
     file_name = "SMALL_GNPS.json"
     input_dgw = FSInputDataGateway()
-    input_dgw.download_gnps = MagicMock()
     fs = get_fs(ASSETS_DIR)
-    result = LocalResult(dir=ASSETS_DIR, serializer=JSONSerializer())
 
     with Flow("test-flow") as test_flow:
-        download = DownloadData(input_dgw, result, file_name)(
-            SOURCE_URI_PARTIAL_GNPS, str(ASSETS_DIR)
-        )
+        download = DownloadData(
+            input_dgw,
+            SOURCE_URI_PARTIAL_GNPS,
+            ASSETS_DIR,
+            file_name,
+            result=create_result(ASSETS_DIR, serializer=JSONSerializer()),
+            **TEST_TASK_CONFIG,
+        )()
 
     res = test_flow.run()
 
@@ -53,16 +60,21 @@ def test_download_existing_data():
 @pytest.mark.skip(reason="This test uses internet connection.")
 def test_download_existing_data_s3():
     file_name = "test-dataset-download/gnps.json"
-    dir = "s3://dr-prefect/test-dataset-download/"
+    dir = "s3://dr-prefect"
     bucket = "dr-prefect"
     input_dgw = FSInputDataGateway()
     fs = get_fs(dir)
-    result = S3Result(bucket=bucket, serializer=JSONSerializer())
+    download_params = DownloadParameters(
+        SOURCE_URI_PARTIAL_GNPS, dir, file_name, input_dgw
+    )
 
     with Flow("test-flow") as test_flow:
-        download = DownloadData(input_dgw, result, file_name)(
-            SOURCE_URI_PARTIAL_GNPS, dir
-        )
+        download = DownloadData(
+            **download_params.kwargs,
+            result=create_result(
+                download_params.download_path, serializer=JSONSerializer()
+            ),
+        )()
 
     res = test_flow.run()
 

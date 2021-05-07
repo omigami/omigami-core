@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Union, Dict, Any
 
 from prefect import Flow, unmapped, case
+from prefect.engine.serializers import JSONSerializer
 
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (
@@ -30,8 +31,6 @@ class TrainingFlowParameters:
     process_params: ProcessSpectrumParameters
 
 
-# TODO: maybe this should be a class so this interface is not so huge? or add dataclasses
-# TODO: to reduce parameters.
 def build_training_flow(
     project_name: str,
     download_params: DownloadParameters,
@@ -59,7 +58,9 @@ def build_training_flow(
         logger.info("Downloading and loading spectrum data.")
         spectrum = DownloadData(
             **download_params.kwargs,
-            result=create_result(download_params.download_path),
+            result=create_result(
+                download_params.download_path, serializer=JSONSerializer()
+            ),
         )()
 
         chunked_spectrum = CreateChunks(chunk_size)(spectrum)

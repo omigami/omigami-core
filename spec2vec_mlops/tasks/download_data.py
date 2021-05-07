@@ -13,24 +13,27 @@ class DownloadData(Task):
         self,
         input_dgw: InputDataGateway,
         input_uri: str,
-        output_path: str,
+        download_path: str,
         dataset_name: str,
         result: Result,
+        **kwargs,
     ):
         self._input_dgw = input_dgw
         self.input_uri = input_uri
-        self.output_path = output_path
+        self.download_path = download_path
+
+        config = {k: v for k, v in {**DEFAULT_CONFIG.copy(), **kwargs}.items()}
 
         super().__init__(
-            **DEFAULT_CONFIG,
+            **config,
             result=result,
             checkpoint=True,
             target=dataset_name,
         )
 
     def run(self) -> List[Dict[str, str]]:
-        self._input_dgw.download_gnps(self.input_uri, self.output_path)
-        gnps = self._input_dgw.load_gnps(self.output_path)
+        self._input_dgw.download_gnps(self.input_uri, self.download_path)
+        gnps = self._input_dgw.load_gnps(self.download_path)
         return gnps
 
 
@@ -49,7 +52,7 @@ class DownloadParameters:
     def kwargs(self):
         return dict(
             input_uri=self.input_uri,
-            output_dir=self.output_dir,
+            download_path=self.download_path,
             input_dgw=self.input_dgw,
             dataset_name=self.dataset_name,
         )
