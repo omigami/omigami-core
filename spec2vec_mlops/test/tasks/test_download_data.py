@@ -20,6 +20,7 @@ SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 def test_download_data():
     input_dgw = MagicMock(spec=InputDataGateway)
     input_dgw.download_gnps.return_value = "download"
+    input_dgw.get_spectrum_ids.return_value = "spectrum_ids"
     download_params = DownloadParameters("input-uri", "dir", "file_name", input_dgw)
     with Flow("test-flow") as test_flow:
         download = DownloadData(
@@ -29,8 +30,9 @@ def test_download_data():
     res = test_flow.run()
 
     assert res.is_successful()
-    assert res.result[download].result == download_params.download_path
+    assert res.result[download].result == "spectrum_ids"
     input_dgw.download_gnps.assert_called_once_with("input-uri", "dir/file_name")
+    input_dgw.get_spectrum_ids.assert_called_once_with("dir/file_name")
 
 
 def test_download_existing_data():
