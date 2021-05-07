@@ -7,6 +7,7 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
 
+from spec2vec_mlops.entities.data_models import SpectrumInputData
 from spec2vec_mlops.tasks.data_gateway import InputDataGateway
 from spec2vec_mlops import config
 
@@ -56,7 +57,7 @@ class FSInputDataGateway(InputDataGateway):
                 for chunk in r.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
                     f.write(chunk)
 
-    def load_gnps(self, path: str) -> List[Dict[str, str]]:
+    def load_spectrum(self, path: str) -> SpectrumInputData:
         if self.fs is None:
             self.fs = get_fs(path)
 
@@ -64,3 +65,28 @@ class FSInputDataGateway(InputDataGateway):
             items = ijson.items(f, "item", multiple_values=True)
             results = [{k: item[k] for k in KEYS} for item in items]
         return results
+
+    def load_spectrum_ids(
+        self, path: str, spectrum_ids: List[str]
+    ) -> SpectrumInputData:
+        if self.fs is None:
+            self.fs = get_fs(path)
+
+        with self.fs.open(DRPath(path), "rb") as f:
+            items = ijson.items(f, "item", multiple_values=True)
+            results = [
+                {k: item[k] for k in KEYS}
+                for item in items
+                if item["SpectrumID"] in spectrum_ids
+            ]
+        return results
+
+    def get_spectrum_ids(self, path: str) -> List[str]:
+        if self.fs is None:
+            self.fs = get_fs(path)
+
+        with self.fs.open(DRPath(path), "rb") as f:
+            items = ijson.items(f, "item", multiple_values=True)
+            ids = [item["SpectrumID"] for item in items]
+
+        return ids

@@ -3,6 +3,7 @@ from typing import Dict, List, Iterable
 
 from spec2vec import SpectrumDocument
 
+from spec2vec_mlops.entities.data_models import SpectrumInputData
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 
@@ -13,7 +14,17 @@ class InputDataGateway(ABC):
         pass
 
     @abstractmethod
-    def load_gnps(self, path: str) -> List[Dict[str, str]]:
+    def get_spectrum_ids(self, path: str) -> List[str]:
+        pass
+
+    @abstractmethod
+    def load_spectrum(self, path: str) -> SpectrumInputData:
+        pass
+
+    @abstractmethod
+    def load_spectrum_ids(
+        self, path: str, spectrum_ids: List[str]
+    ) -> SpectrumInputData:
         pass
 
 

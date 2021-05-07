@@ -55,18 +55,23 @@ def build_training_flow(
     flow_config = flow_config or {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
         logger.info("Downloading and loading spectrum data.")
-        download_path = DownloadData(
+        spectrum_ids = DownloadData(
             **download_params.kwargs,
             result=create_result(
                 download_params.download_path, serializer=JSONSerializer()
             ),
         )()
 
+        spectrum_id_chunks = [
+            spectrum_ids[i : i + chunk_size]
+            for i in range(0, len(spectrum_ids), chunk_size)
+        ]
+
         logger.info("Started data cleaning and conversion to documents.")
         # TODO: implement data caching like in DownloadData here. Will need to implement
         # TODO: a new class like RedisResult
         all_spectrum_ids_chunks = ProcessSpectrum(**process_params.kwargs).map(
-            download_path
+            spectrum_id_chunks
         )
 
         # TODO: this case can be removed if we link train with clean data via input/output

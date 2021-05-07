@@ -14,21 +14,24 @@ class ProcessSpectrum(Task):
         self,
         spectrum_dgw: SpectrumDataGateway,
         input_dgw: InputDataGateway,
+        download_path: str,
         n_decimals: int,
-        chunk_size: int,
         skip_if_exists: bool = True,
         **kwargs,
     ):
         self._spectrum_dgw = spectrum_dgw
         self._input_dgw = input_dgw
         self._n_decimals = n_decimals
-        self._chunk_size = chunk_size
         self._skip_if_exists = skip_if_exists
         self._processor = SpectrumProcessor()
+        self._download_path = download_path
         config = merge_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, spectrum_data: List[dict] = None) -> List[str]:
+    def run(self, spectrum_ids: List[str] = None) -> List[str]:
+        spectrum_data = self._input_dgw.load_spectrum_ids(
+            self._download_path, spectrum_ids
+        )
         # TODO: refactor to use prefect's checkpoint functionality
         if self._skip_if_exists:
             spectrum_ids = [sp.get("spectrum_id") for sp in spectrum_data]

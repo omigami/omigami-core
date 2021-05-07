@@ -11,7 +11,7 @@ KEYS = config["gnps_json"]["necessary_keys"]
 
 
 def test_load_gnps(local_gnps_small_json):
-    for res in FSInputDataGateway().load_gnps(local_gnps_small_json):
+    for res in FSInputDataGateway().load_spectrum(local_gnps_small_json):
         assert isinstance(res, dict)
         for k in KEYS:
             assert k in res
@@ -58,3 +58,32 @@ def test_resume_download(tmpdir, local_gnps_small_json):
     updated_file_size = Path(new_path).stat().st_size
 
     assert updated_file_size
+
+
+def test_get_spectrum_ids(local_gnps_small_json):
+    ids = FSInputDataGateway().get_spectrum_ids(local_gnps_small_json)
+
+    assert len(ids) == 100
+    assert ids[0] == "CCMSLIB00000001547"
+
+
+def test_load_spectrum_ids(local_gnps_small_json):
+    spectrum_ids = [
+        "CCMSLIB00000001547",
+        "CCMSLIB00000001557",
+        "CCMSLIB00000001567",
+        "CCMSLIB00000001577",
+        "CCMSLIB00000001587",
+        "CCMSLIB00000001597",
+        "CCMSLIB00000001607",
+        "CCMSLIB00000001617",
+        "CCMSLIB00000001627",
+        "CCMSLIB00000001637",
+    ]
+
+    spectrum_data = FSInputDataGateway().load_spectrum_ids(
+        local_gnps_small_json, spectrum_ids
+    )
+
+    assert len(spectrum_data) == len(spectrum_ids)
+    assert set(spectrum_ids) == {d["SpectrumID"] for d in spectrum_data}

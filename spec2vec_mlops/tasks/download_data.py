@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List
 
 from prefect import Task
 from prefect.engine.result import Result
@@ -30,9 +31,10 @@ class DownloadData(Task):
             target=dataset_name,
         )
 
-    def run(self) -> str:
+    def run(self) -> List[str]:
         self._input_dgw.download_gnps(self.input_uri, self.download_path)
-        return self.download_path
+        spectrum_ids = self._input_dgw.get_spectrum_ids(self.download_path)
+        return spectrum_ids
 
 
 @dataclass
