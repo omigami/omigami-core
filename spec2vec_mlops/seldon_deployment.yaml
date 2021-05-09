@@ -40,4 +40,4 @@ spec:
               - name: REDIS_HOST
                 value: "redis-master.redis"
               - name: REDIS_DB
-                value: "1"
+                value: "0"
