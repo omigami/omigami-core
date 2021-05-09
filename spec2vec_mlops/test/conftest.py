@@ -90,3 +90,9 @@ def s3_mock():
     )
     yield s3fs.S3FileSystem()
     mock.stop()
+
+
+@pytest.fixture
+def spectrum_ids(local_gnps_small_json):
+    ids = FSInputDataGateway().get_spectrum_ids(local_gnps_small_json)
+    return ids

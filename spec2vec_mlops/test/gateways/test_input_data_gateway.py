@@ -67,23 +67,10 @@ def test_get_spectrum_ids(local_gnps_small_json):
     assert ids[0] == "CCMSLIB00000001547"
 
 
-def test_load_spectrum_ids(local_gnps_small_json):
-    spectrum_ids = [
-        "CCMSLIB00000001547",
-        "CCMSLIB00000001557",
-        "CCMSLIB00000001567",
-        "CCMSLIB00000001577",
-        "CCMSLIB00000001587",
-        "CCMSLIB00000001597",
-        "CCMSLIB00000001607",
-        "CCMSLIB00000001617",
-        "CCMSLIB00000001627",
-        "CCMSLIB00000001637",
-    ]
-
+def test_load_spectrum_ids(local_gnps_small_json, spectrum_ids):
     spectrum_data = FSInputDataGateway().load_spectrum_ids(
-        local_gnps_small_json, spectrum_ids
+        local_gnps_small_json, spectrum_ids[:10]
     )
 
-    assert len(spectrum_data) == len(spectrum_ids)
-    assert set(spectrum_ids) == {d["SpectrumID"] for d in spectrum_data}
+    assert len(spectrum_data) == len(spectrum_ids[:10])
+    assert set(spectrum_ids[:10]) == {d["SpectrumID"] for d in spectrum_data}
