@@ -8,7 +8,7 @@ from spec2vec_mlops.deployment import (
     SOURCE_URI_PARTIAL_GNPS,
     OUTPUT_DIR,
     MODEL_DIR,
-    SELDON_DEPLOYMENT_PATH,
+    SELDON_DEPLOYMENT_FILE,
     MLFLOW_SERVER,
 )
 
@@ -32,9 +32,9 @@ def test_deploy_training_flow():
         output_dir=OUTPUT_DIR,
         project_name="spec2vec-mlops-test-project",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
-        seldon_deployment_path=SELDON_DEPLOYMENT_PATH,
+        seldon_deployment_path=SELDON_DEPLOYMENT_FILE,
         mlflow_server=MLFLOW_SERVER,
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.8d486b9",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b0544ea",
     )
 
     assert flow_id

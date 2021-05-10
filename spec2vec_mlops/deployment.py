@@ -27,7 +27,7 @@ DATASET_NAME = "spec2vec-training-flow/downloaded_datasets/gnps.json"
 SPECTRUM_IDS_NAME = "spec2vec-training-flow/downloaded_datasets/spectrum_ids"
 DATASET_ID = "test_10k"  # we also have 'small'
 MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
-SELDON_DEPLOYMENT_PATH = str(Path(__file__).parents[0] / "seldon_deployment.yaml")
+SELDON_DEPLOYMENT_FILE = "seldon_deployment.yaml"
 FLOW_CONFIG = {
     "run_config": KubernetesRun(
         job_template_path=str(Path(__file__).parents[0] / "job_spec.yaml"),
@@ -60,7 +60,7 @@ def deploy_training_flow(
     output_dir: str = OUTPUT_DIR,
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
-    seldon_deployment_path: str = SELDON_DEPLOYMENT_PATH,
+    seldon_deployment_path: str = SELDON_DEPLOYMENT_FILE,
     mlflow_server: str = MLFLOW_SERVER,
     image: str = "drtools/prefect:spec2vec_mlops-SNAPSHOT.3c7cf0c",
 ):

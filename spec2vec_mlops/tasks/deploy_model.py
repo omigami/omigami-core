@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 import yaml
 from kubernetes import config, client
@@ -17,21 +18,22 @@ CUSTOM_RESOURCE_INFO = spec2vec_config["k8s"]["custom_seldon_resource"]
 @task(**DEFAULT_CONFIG)
 def deploy_model_task(
     model_uri: str,
-    seldon_deployment_path: str,
+    seldon_deployment_file: str,
 ):
     model_deployer = ModelDeployer()
-    model_deployer.deploy_model(model_uri, seldon_deployment_path, overwrite=True)
+    model_deployer.deploy_model(model_uri, seldon_deployment_file, overwrite=True)
 
 
 class ModelDeployer:
     def deploy_model(
-        self, model_uri: str, seldon_deployment_path: str, overwrite: bool = False
+        self, model_uri: str, seldon_deployment_file: str, overwrite: bool = False
     ):
         logger.info(
             f"Deploying model {model_uri} to environment {CUSTOM_RESOURCE_INFO['namespace']}"
         )
         config.load_incluster_config()
         custom_api = client.CustomObjectsApi()
+        seldon_deployment_path = Path.cwd().parent.parent / seldon_deployment_file
         with open(seldon_deployment_path) as yaml_file:
             deployment = yaml.safe_load(yaml_file)
         try:
