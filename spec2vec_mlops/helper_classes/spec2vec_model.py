@@ -1,6 +1,7 @@
 import ast
 from typing import Union, List, Dict
 
+import numpy as np
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from matchms.importing.load_from_json import as_spectrum
@@ -103,6 +104,7 @@ class Model(PythonModel):
         spectra_best_matches = []
         for i, query in enumerate(queries):
             all_scores = scores.scores_by_query(query, sort=True)
+            all_scores = [(em, sc) for em, sc in all_scores if not np.isnan(sc)]
             spectrum_best_scores = all_scores[:n_best_spectra]
             spectrum_best_matches = []
             for spectrum_match in spectrum_best_scores:
