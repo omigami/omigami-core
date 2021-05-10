@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from matchms import Spectrum
 from prefect import Flow
+from prefect.utilities.storage import flow_to_bytes_pickle
 
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway

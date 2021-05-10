@@ -13,7 +13,7 @@ from spec2vec_mlops.deployment import (
 )
 
 
-# @pytest.mark.skip(reson="This test uses internet connection and deploys to prefect.")
+# @pytest.mark.skip(reason="This test uses internet connection and deploys to prefect.")
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
         iterations=5,
@@ -34,7 +34,7 @@ def test_deploy_training_flow():
         model_output_dir=DRPath(f"{MODEL_DIR}/tests"),
         seldon_deployment_path=SELDON_DEPLOYMENT_PATH,
         mlflow_server=MLFLOW_SERVER,
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.976bf73",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.84e41a2",
     )
 
     assert flow_id

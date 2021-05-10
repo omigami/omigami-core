@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Union, Dict, Any
 
 from prefect import Flow, unmapped, case
-from prefect.engine.serializers import JSONSerializer
+
 
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (

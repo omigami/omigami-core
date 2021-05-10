@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Iterable
+from typing import List, Iterable
 
 from spec2vec import SpectrumDocument
 
