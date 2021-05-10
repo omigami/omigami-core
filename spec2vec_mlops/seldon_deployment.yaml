@@ -5,6 +5,9 @@ metadata:
   namespace: seldon
 spec:
   name: spec2vec
+  annotations:
+    seldon.io/rest-timeout: "100000"
+    seldon.io/grpc-timeout: "100000"
   predictors:
   - graph:
       children: []
@@ -20,6 +23,9 @@ spec:
         # can take long time and we want to avoid k8s killing the container prematurely
         containers:
           - name: spec2vec
+            resources:
+              requests:
+                memory: 8Gi
             readinessProbe:
               failureThreshold: 10
               initialDelaySeconds: 120
