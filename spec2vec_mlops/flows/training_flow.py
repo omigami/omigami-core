@@ -73,7 +73,7 @@ def build_training_flow(
         # TODO: this case can be removed if we link train with clean data via input/output
         with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)
-            run_id = register_model_task(
+            registered_model = register_model_task(
                 mlflow_server,
                 model,
                 project_name,
@@ -88,12 +88,12 @@ def build_training_flow(
         _ = make_embeddings_task.map(
             unmapped(model),
             all_spectrum_ids_chunks,
-            unmapped(run_id),
+            unmapped(registered_model["run_id"]),
             unmapped(process_params.n_decimals),
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        deploy_model_task(run_id, seldon_deployment_path)
+        deploy_model_task(registered_model["model_uri"], seldon_deployment_path)
 
     return training_flow

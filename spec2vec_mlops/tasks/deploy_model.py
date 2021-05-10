@@ -16,12 +16,10 @@ CUSTOM_RESOURCE_INFO = spec2vec_config["k8s"]["custom_seldon_resource"]
 
 @task(**DEFAULT_CONFIG)
 def deploy_model_task(
-    run_id: str,
+    model_uri: str,
     seldon_deployment_path: str,
 ):
     model_deployer = ModelDeployer()
-    # run = mlflow.get_run(run_id)
-    # model_uri = f"{run.info.artifact_uri}/model/"
     model_deployer.deploy_model(model_uri, seldon_deployment_path, overwrite=True)
 
 

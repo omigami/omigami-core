@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Dict
 
 import mlflow
 from gensim.models import Word2Vec
@@ -20,7 +20,7 @@ def register_model_task(
     n_decimals: int,
     intensity_weighting_power: Union[float, int],
     allowed_missing_percentage: Union[float, int],
-) -> str:
+) -> Dict[str, str]:
     model_register = ModelRegister(server_uri)
     run_id = model_register.register_model(
         Predictor(
@@ -30,7 +30,9 @@ def register_model_task(
         path,
         CONDA_ENV_PATH,
     )
-    return run_id
+    run = mlflow.get_run(run_id)
+    model_uri = f"{run.info.artifact_uri}/model/"
+    return {"model_uri": model_uri, "run_id": run_id}
 
 
 class ModelRegister:

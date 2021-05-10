@@ -31,10 +31,10 @@ def test_deploy_training_flow():
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=OUTPUT_DIR,
         project_name="spec2vec-mlops-test-project",
-        model_output_dir=DRPath(f"{MODEL_DIR}/tests"),
+        model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         seldon_deployment_path=SELDON_DEPLOYMENT_PATH,
         mlflow_server=MLFLOW_SERVER,
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.a5331fe",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.8d486b9",
     )
 
     assert flow_id
