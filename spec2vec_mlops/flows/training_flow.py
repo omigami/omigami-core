@@ -36,7 +36,6 @@ def build_training_flow(
     download_params: DownloadParameters,
     process_params: ProcessSpectrumParameters,
     model_output_dir: str,
-    seldon_deployment_path: str,
     mlflow_server: str,
     chunk_size: int = 1000,
     iterations: int = 25,
@@ -94,6 +93,6 @@ def build_training_flow(
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        deploy_model_task(registered_model["model_uri"], seldon_deployment_path)
+        deploy_model_task(registered_model["model_uri"])
 
     return training_flow
