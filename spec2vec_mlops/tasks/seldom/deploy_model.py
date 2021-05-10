@@ -38,6 +38,8 @@ class ModelDeployer:
         import os
 
         logger.info(os.listdir(Path.cwd()))
+        logger.info(os.listdir(seldon_deployment_path.parent))
+
         with open(seldon_deployment_path) as yaml_file:
             deployment = yaml.safe_load(yaml_file)
         try:
