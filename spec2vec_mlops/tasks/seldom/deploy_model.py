@@ -33,7 +33,7 @@ class ModelDeployer:
         )
         config.load_incluster_config()
         custom_api = client.CustomObjectsApi()
-        seldon_deployment_path = Path.cwd().parent.parent / seldon_deployment_file
+        seldon_deployment_path = Path(__file__).parent / "seldom_deployment.yaml"
         with open(seldon_deployment_path) as yaml_file:
             deployment = yaml.safe_load(yaml_file)
         try:
