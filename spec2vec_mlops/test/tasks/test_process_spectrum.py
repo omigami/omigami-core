@@ -19,7 +19,7 @@ def test_process_spectrum_task_calls(local_gnps_small_json, spectrum_ids):
     spectrum_gtw.list_spectra_not_exist.side_effect = lambda x: x
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(
-            spectrum_gtw, input_gtw, local_gnps_small_json, 2, False, **TEST_TASK_CONFIG
+            local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
         )(spectrum_ids[:10])
 
     res = test_flow.run()
@@ -42,7 +42,7 @@ def test_process_spectrum_task(local_gnps_small_json, spectrum_ids):
     input_gtw = FSInputDataGateway()
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(
-            spectrum_gtw, input_gtw, local_gnps_small_json, 2, False, **TEST_TASK_CONFIG
+            local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
         )(spectrum_ids[:10])
 
     res = test_flow.run()
@@ -64,7 +64,7 @@ def test_process_spectrum_task_map(local_gnps_small_json, spectrum_ids):
     chunked_ids = [spectrum_ids[:10], spectrum_ids[10:20], spectrum_ids[20:30]]
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(
-            spectrum_gtw, input_gtw, local_gnps_small_json, 2, False, **TEST_TASK_CONFIG
+            local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
         ).map(chunked_ids)
 
     res = test_flow.run()

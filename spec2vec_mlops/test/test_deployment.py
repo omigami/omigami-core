@@ -34,7 +34,7 @@ def test_deploy_training_flow():
         model_output_dir=DRPath(f"{MODEL_DIR}/tests"),
         seldon_deployment_path=SELDON_DEPLOYMENT_PATH,
         mlflow_server=MLFLOW_SERVER,
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.706c17f",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.976bf73",
     )
 
     assert flow_id

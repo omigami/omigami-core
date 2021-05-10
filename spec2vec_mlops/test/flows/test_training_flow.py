@@ -14,7 +14,7 @@ from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
-from spec2vec_mlops.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
+from spec2vec_mlops.test.conftest import ASSETS_DIR
 
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])

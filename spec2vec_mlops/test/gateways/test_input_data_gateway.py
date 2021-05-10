@@ -21,6 +21,7 @@ SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 
 
+@pytest.mark.skip("Uses internet connection.")
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "uri",
