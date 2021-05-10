@@ -8,7 +8,7 @@ from prefect import task
 from spec2vec_mlops.predictor import Predictor
 from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 
-CONDA_ENV_PATH = "requirements/environment.frozen.yaml"
+CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 
 
 @task(**DEFAULT_CONFIG)

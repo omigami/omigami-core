@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 import requests_mock
 from drfs import DRPath
+from drfs.filesystems import get_fs
 
 from spec2vec_mlops import config
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
@@ -47,12 +48,13 @@ def test_download_and_serialize_to_remote(loaded_data, s3_mock):
 
 
 @pytest.mark.slow
+@pytest.mark.skip("Uses internet connection.")
 def test_resume_download(tmpdir, local_gnps_small_json):
     path = Path(local_gnps_small_json)
     existing_file_size = path.stat().st_size
     new_path = f"{tmpdir}/SMALL_GNPS_remaining.json"
 
-    FSInputDataGateway()._resume_download(
+    FSInputDataGateway(get_fs(path))._resume_download(
         existing_file_size, SOURCE_URI_COMPLETE_GNPS, new_path
     )
 

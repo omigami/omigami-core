@@ -80,7 +80,7 @@ def test_write_spectrum_documents(redis_db, cleaned_data):
 
 def test_list_spectrum_ids(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     ids = dgw.list_spectrum_ids()
     assert len(ids) == len(spectrum_ids_stored)
 
@@ -128,6 +128,7 @@ def test_read_embeddings(embeddings, embeddings_stored):
 
 def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_stored):
     dgw = RedisSpectrumDataGateway()
+    dgw._init_client()
     mz_min = 300
     mz_max = 600
     filtered_spectra = dgw.client.zrangebyscore(
@@ -148,6 +149,7 @@ def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_sto
 
 def test_read_spectra_ids_within_range(spectra_stored):
     dgw = RedisSpectrumDataGateway()
+    dgw._init_client()
     mz_min = 300
     mz_max = 600
     filtered_spectra = dgw.client.zrangebyscore(

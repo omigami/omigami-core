@@ -70,30 +70,36 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         """Check whether document exist on Redis.
         Return a list of IDs that do not exist.
         """
+        self._init_client()
         return self._list_spectrum_ids_not_exist(DOCUMENT_HASHES, spectrum_ids)
 
     # Not used atm
     def read_spectra(self, spectrum_ids: List[str] = None) -> List[Spectrum]:
+        self._init_client()
         return self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
 
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
+        self._init_client()
         return self._read_hashes(DOCUMENT_HASHES, spectrum_ids)
 
     def read_embeddings(
         self, run_id: str, spectrum_ids: List[str] = None
     ) -> List[Embedding]:
+        self._init_client()
         return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)
 
     # Not used atm
     def read_embeddings_within_range(
         self, run_id: str, min_mz: int = 0, max_mz: int = -1
     ) -> List[Embedding]:
+        self._init_client()
         spectra_ids_within_range = self._read_spectra_ids_within_range(
             SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, min_mz, max_mz
         )
         return self.read_embeddings(run_id, spectra_ids_within_range)
 
     def read_documents_iter(self) -> Iterable:
+        self._init_client()
         return RedisHashesIterator(self, DOCUMENT_HASHES)
 
     def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None):
@@ -113,6 +119,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         return self.client.zrangebyscore(hash_name, min_mz, max_mz)
 
     def delete_spectra(self, spectrum_ids: List[str]):
+        self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
 
 

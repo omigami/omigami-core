@@ -26,7 +26,7 @@ OUTPUT_DIR = "s3://dr-prefect"
 DATASET_NAME = "spec2vec-training-flow/downloaded_datasets/gnps.json"
 DATASET_ID = "test_10k"  # we also have 'small'
 MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
-SELDON_DEPLOYMENT_PATH = "spec2vec_mlops/seldon_deployment.yaml"
+SELDON_DEPLOYMENT_PATH = str(Path(__file__).parents[0] / "seldon_deployment.yaml")
 FLOW_CONFIG = {
     "run_config": KubernetesRun(
         job_template_path=str(Path(__file__).parents[0] / "job_spec.yaml"),
