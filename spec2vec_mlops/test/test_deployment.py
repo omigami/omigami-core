@@ -12,7 +12,7 @@ from spec2vec_mlops.deployment import (
 )
 
 
-# @pytest.mark.skip(reason="This test uses internet connection and deploys to prefect.")
+@pytest.mark.skip(reason="This test uses internet connection and deploys to prefect.")
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
         iterations=5,
