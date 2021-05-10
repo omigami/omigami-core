@@ -19,6 +19,7 @@ from spec2vec_mlops.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
 from spec2vec_mlops.tasks.download_data import DownloadParameters
+from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -57,22 +58,17 @@ def build_training_flow(
         logger.info("Downloading and loading spectrum data.")
         spectrum_ids = DownloadData(
             **download_params.kwargs,
-            result=create_result(
-                download_params.download_path, serializer=JSONSerializer()
-            ),
+            result=create_result(download_params.checkpoint_path),
         )()
 
-        spectrum_id_chunks = [
-            spectrum_ids[i : i + chunk_size]
-            for i in range(0, len(spectrum_ids), chunk_size)
-        ]
+        spectrum_id_chunks = CreateChunks(chunk_size)(spectrum_ids)
 
         logger.info("Started data cleaning and conversion to documents.")
         # TODO: implement data caching like in DownloadData here. Will need to implement
         # TODO: a new class like RedisResult
-        all_spectrum_ids_chunks = ProcessSpectrum(**process_params.kwargs).map(
-            spectrum_id_chunks
-        )
+        all_spectrum_ids_chunks = ProcessSpectrum(
+            download_params.download_path, **process_params.kwargs
+        ).map(spectrum_id_chunks)
 
         # TODO: this case can be removed if we link train with clean data via input/output
         with case(check_condition(all_spectrum_ids_chunks), True):

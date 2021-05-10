@@ -1,4 +1,6 @@
 import logging
+import pickle
+from pathlib import Path
 from typing import List, Dict, Optional
 
 import ijson
@@ -56,6 +58,13 @@ class FSInputDataGateway(InputDataGateway):
             with self.fs.open(file_path, "ab") as f:
                 for chunk in r.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
                     f.write(chunk)
+
+    def save_spectrum_ids(self, checkpoint_path: str, spectrum_ids: List[str]):
+        if self.fs is None:
+            self.fs = get_fs(checkpoint_path)
+
+        with self.fs.open(checkpoint_path, "wb") as f:
+            pickle.dump(spectrum_ids, f)
 
     def load_spectrum(self, path: str) -> SpectrumInputData:
         if self.fs is None:

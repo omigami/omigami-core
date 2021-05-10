@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List
 
 from prefect import Task
@@ -14,13 +15,14 @@ class DownloadData(Task):
         input_dgw: InputDataGateway,
         input_uri: str,
         download_path: str,
-        dataset_name: str,
+        checkpoint_path: str,
         result: Result,
         **kwargs,
     ):
         self._input_dgw = input_dgw
         self.input_uri = input_uri
         self.download_path = download_path
+        self.checkpoint_path = checkpoint_path
 
         config = merge_configs(kwargs)
 
@@ -28,12 +30,13 @@ class DownloadData(Task):
             **config,
             result=result,
             checkpoint=True,
-            target=dataset_name,
+            target=Path(checkpoint_path).name,
         )
 
     def run(self) -> List[str]:
         self._input_dgw.download_gnps(self.input_uri, self.download_path)
         spectrum_ids = self._input_dgw.get_spectrum_ids(self.download_path)
+        self._input_dgw.save_spectrum_ids(self.checkpoint_path, spectrum_ids)
         return spectrum_ids
 
 
@@ -43,10 +46,15 @@ class DownloadParameters:
     output_dir: str
     dataset_name: str
     input_dgw: InputDataGateway
+    checkpoint: str = "spectrum_ids.pkl"
 
     @property
     def download_path(self):
         return f"{self.output_dir}/{self.dataset_name}"
+
+    @property
+    def checkpoint_path(self):
+        return f"{self.output_dir}/{self.checkpoint}"
 
     @property
     def kwargs(self):
@@ -54,5 +62,5 @@ class DownloadParameters:
             input_uri=self.input_uri,
             download_path=self.download_path,
             input_dgw=self.input_dgw,
-            dataset_name=self.dataset_name,
+            checkpoint_path=self.checkpoint_path,
         )

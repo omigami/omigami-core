@@ -4,7 +4,6 @@ import pytest
 from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
-from prefect.engine.serializers import JSONSerializer
 
 from spec2vec_mlops import config
 from spec2vec_mlops.flows.utils import create_result
@@ -31,22 +30,28 @@ def test_download_data():
 
     assert res.is_successful()
     assert res.result[download].result == "spectrum_ids"
-    input_dgw.download_gnps.assert_called_once_with("input-uri", "dir/file_name")
-    input_dgw.get_spectrum_ids.assert_called_once_with("dir/file_name")
+    input_dgw.download_gnps.assert_called_once_with(
+        download_params.input_uri, download_params.download_path
+    )
+    input_dgw.get_spectrum_ids.assert_called_once_with(download_params.download_path)
+    input_dgw.save_spectrum_ids.assert_called_once_with(
+        download_params.checkpoint_path, "spectrum_ids"
+    )
 
 
 def test_download_existing_data():
     file_name = "SMALL_GNPS.json"
     input_dgw = FSInputDataGateway()
+    input_dgw.download_gnps = lambda *args: None
     fs = get_fs(ASSETS_DIR)
+    params = DownloadParameters(
+        SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, file_name, input_dgw
+    )
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
-            input_dgw,
-            SOURCE_URI_PARTIAL_GNPS,
-            ASSETS_DIR,
-            file_name,
-            result=create_result(ASSETS_DIR, serializer=JSONSerializer()),
+            **params.kwargs,
+            result=create_result(ASSETS_DIR / "spectrum_ids.pkl"),
             **TEST_TASK_CONFIG,
         )()
 
@@ -57,23 +62,23 @@ def test_download_existing_data():
     assert res.result[download].is_cached()
 
 
-@pytest.mark.skip(reason="This test uses internet connection.")
+# @pytest.mark.skip(reason="This test uses internet connection.")
 def test_download_existing_data_s3():
     file_name = "test-dataset-download/gnps.json"
-    dir = "s3://dr-prefect"
+    dir_ = "s3://dr-prefect"
     bucket = "dr-prefect"
+    checkpoint_name = "spectrum_ids.pkl"
     input_dgw = FSInputDataGateway()
-    fs = get_fs(dir)
+    fs = get_fs(dir_)
     download_params = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS, dir, file_name, input_dgw
+        SOURCE_URI_PARTIAL_GNPS, dir_, file_name, input_dgw, checkpoint_name
     )
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             **download_params.kwargs,
-            result=create_result(
-                download_params.download_path, serializer=JSONSerializer()
-            ),
+            result=create_result(download_params.download_path),
+            **TEST_TASK_CONFIG,
         )()
 
     res = test_flow.run()

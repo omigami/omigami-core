@@ -114,7 +114,7 @@ def test_get_best_matches(model, embeddings):
     best_matches = model._get_best_matches(embeddings, embeddings, n_best_spectra)
     for query, best_match in zip(embeddings, best_matches):
         assert len(best_match) == n_best_spectra
-        assert query.spectrum_id == best_match[0]["match_id"]
+        assert query.spectrum_id == best_match[0]["match_spectrum_id"]
 
 
 @pytest.mark.skipif(

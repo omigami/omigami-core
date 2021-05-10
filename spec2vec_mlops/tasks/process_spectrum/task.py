@@ -12,9 +12,9 @@ from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway, InputDataGate
 class ProcessSpectrum(Task):
     def __init__(
         self,
+        download_path: str,
         spectrum_dgw: SpectrumDataGateway,
         input_dgw: InputDataGateway,
-        download_path: str,
         n_decimals: int,
         skip_if_exists: bool = True,
         **kwargs,
@@ -56,8 +56,8 @@ class ProcessSpectrum(Task):
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: SpectrumDataGateway
+    input_dgw: InputDataGateway
     n_decimals: int = 2
-    chunk_size: int = 2000
     # TODO: deprecated parameter. see comments on clean data task
     skip_if_exists: bool = True
 
@@ -65,6 +65,7 @@ class ProcessSpectrumParameters:
     def kwargs(self):
         return dict(
             spectrum_dgw=self.spectrum_dgw,
+            input_dgw=self.input_dgw,
             n_decimals=self.n_decimals,
             skip_if_exists=self.skip_if_exists,
         )
