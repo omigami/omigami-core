@@ -30,7 +30,7 @@ SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
     ],
 )
 def test_download_and_serialize_to_local(uri, tmpdir):
-    res = FSInputDataGateway().download_gnps(uri=uri, output_path=tmpdir / "test-ds")
+    _ = FSInputDataGateway().download_gnps(uri=uri, output_path=tmpdir / "test-ds")
 
     assert (tmpdir / "test-ds").exists()
 
@@ -38,7 +38,7 @@ def test_download_and_serialize_to_local(uri, tmpdir):
 def test_download_and_serialize_to_remote(loaded_data, s3_mock):
     with requests_mock.Mocker() as m:
         m.get(SOURCE_URI_PARTIAL_GNPS, text="bac")
-        res = FSInputDataGateway().download_gnps(
+        _ = FSInputDataGateway().download_gnps(
             uri=SOURCE_URI_PARTIAL_GNPS,
             output_path="s3://test-bucket/test-ds",
         )

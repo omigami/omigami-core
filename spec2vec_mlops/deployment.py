@@ -30,7 +30,6 @@ MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
 SELDON_DEPLOYMENT_PATH = "spec2vec_mlops/seldon_deployment.yaml"
 FLOW_CONFIG = {
     "run_config": KubernetesRun(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.3c7cf0c",
         job_template_path="./spec2vec_mlops/job_spec.yaml",
         labels=["dev"],
         service_account_name="prefect-server-serviceaccount",
@@ -98,7 +97,9 @@ def deploy_training_flow(
     model_output_dir: str = MODEL_DIR,
     seldon_deployment_path: str = SELDON_DEPLOYMENT_PATH,
     mlflow_server: str = MLFLOW_SERVER["remote"],
+    image: str = "drtools/prefect:spec2vec_mlops-SNAPSHOT.3c7cf0c",
 ):
+    FLOW_CONFIG["run_config"].image = image
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)
         session_token = authenticator.authenticate()
@@ -114,7 +115,7 @@ def deploy_training_flow(
         source_uri, output_dir, dataset_name, input_dgw
     )
     process_parameters = ProcessSpectrumParameters(
-        spectrum_dgw, n_decimals, skip_if_exists
+        spectrum_dgw, input_dgw, n_decimals, skip_if_exists
     )
 
     flow = build_training_flow(

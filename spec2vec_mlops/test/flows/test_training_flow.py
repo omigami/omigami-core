@@ -105,6 +105,8 @@ def test_run_training_flow(mock_seldom_deployment, tmpdir):
     )
 
     results = flow.run()
+    (d,) = flow.get_tasks("DownloadData")
 
     assert results.is_successful()
+    results.result[d].is_cached()
     assert len(fs.ls(tmpdir / "model-output")) == 1
