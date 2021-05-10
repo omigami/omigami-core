@@ -24,6 +24,7 @@ MLFLOW_SERVER = config["mlflow"]["url"]["remote"]
 PROJECT_NAME = "spec2vec-mlops-project-spec2vec-load-10k-data-pt-3"
 OUTPUT_DIR = "s3://dr-prefect"
 DATASET_NAME = "spec2vec-training-flow/downloaded_datasets/gnps.json"
+SPECTRUM_IDS_NAME = "spec2vec-training-flow/downloaded_datasets/spectrum_ids"
 DATASET_ID = "test_10k"  # we also have 'small'
 MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
 SELDON_DEPLOYMENT_PATH = str(Path(__file__).parents[0] / "seldon_deployment.yaml")
@@ -54,6 +55,7 @@ def deploy_training_flow(
     password: Optional[str] = None,
     api_server: str = API_SERVER,
     dataset_name: str = DATASET_NAME,
+    spectrum_ids_name: str = SPECTRUM_IDS_NAME,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     output_dir: str = OUTPUT_DIR,
     project_name: str = PROJECT_NAME,
@@ -75,10 +77,13 @@ def deploy_training_flow(
     spectrum_dgw = RedisSpectrumDataGateway()
 
     download_parameters = DownloadParameters(
-        source_uri, output_dir, dataset_name, input_dgw
+        source_uri, output_dir, dataset_name, input_dgw, spectrum_ids_name
     )
     process_parameters = ProcessSpectrumParameters(
-        spectrum_dgw, input_dgw, n_decimals, skip_if_exists
+        spectrum_dgw,
+        input_dgw,
+        n_decimals,
+        skip_if_exists,
     )
 
     flow = build_training_flow(
