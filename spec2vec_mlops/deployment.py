@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 
 import click
@@ -30,7 +31,7 @@ MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
 SELDON_DEPLOYMENT_PATH = "spec2vec_mlops/seldon_deployment.yaml"
 FLOW_CONFIG = {
     "run_config": KubernetesRun(
-        job_template_path="./spec2vec_mlops/job_spec.yaml",
+        job_template_path=str(Path(__file__).parents[0] / "job_spec.yaml"),
         labels=["dev"],
         service_account_name="prefect-server-serviceaccount",
         env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": "2"},
@@ -51,7 +52,7 @@ configuration_options = [
     click.option("--dataset-dir", default=OUTPUT_DIR),
     click.option("--model-output-dir", default=MODEL_DIR),
     click.option("--seldon-deployment-path", default=SELDON_DEPLOYMENT_PATH),
-    click.option("--mlflow-server", default=MLFLOW_SERVER["remote"]),
+    click.option("--mlflow-server", default=MLFLOW_SERVER),
 ]
 
 auth_options = [
@@ -96,7 +97,7 @@ def deploy_training_flow(
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     seldon_deployment_path: str = SELDON_DEPLOYMENT_PATH,
-    mlflow_server: str = MLFLOW_SERVER["remote"],
+    mlflow_server: str = MLFLOW_SERVER,
     image: str = "drtools/prefect:spec2vec_mlops-SNAPSHOT.3c7cf0c",
 ):
     FLOW_CONFIG["run_config"].image = image
