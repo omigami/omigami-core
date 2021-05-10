@@ -1,6 +1,6 @@
-import logging
 from pathlib import Path
 
+import prefect
 import yaml
 from kubernetes import config, client
 from prefect import task
@@ -11,7 +11,7 @@ from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 
 from spec2vec_mlops import config as spec2vec_config
 
-logger = logging.getLogger(__name__)
+logger = prefect.context.get("logger")
 CUSTOM_RESOURCE_INFO = spec2vec_config["k8s"]["custom_seldon_resource"]
 
 
@@ -34,6 +34,10 @@ class ModelDeployer:
         config.load_incluster_config()
         custom_api = client.CustomObjectsApi()
         seldon_deployment_path = Path(__file__).parent / "seldom_deployment.yaml"
+        logger.info(Path.cwd())
+        import os
+
+        logger.info(os.listdir(Path.cwd()))
         with open(seldon_deployment_path) as yaml_file:
             deployment = yaml.safe_load(yaml_file)
         try:
