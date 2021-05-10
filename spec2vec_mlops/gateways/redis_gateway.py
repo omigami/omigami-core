@@ -23,9 +23,14 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     """Data gateway for Redis storage."""
 
     def __init__(self):
-        self.client = redis.StrictRedis(host=HOST, db=DB)
+        self.client = None
+
+    def _init_client(self):
+        if self.client is None:
+            self.client = redis.StrictRedis(host=HOST, db=DB)
 
     def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
+        self._init_client()
         pipe = self.client.pipeline()
         for spectrum in spectra_data:
             spectrum_info = spectrum.spectrum
@@ -42,6 +47,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         pipe.execute()
 
     def write_embeddings(self, embeddings: List[Embedding], run_id: str):
+        self._init_client()
         pipe = self.client.pipeline()
         for embedding in embeddings:
             pipe.hset(
@@ -52,9 +58,11 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         pipe.execute()
 
     def list_spectrum_ids(self) -> List[str]:
+        self._init_client()
         return [id_.decode() for id_ in self.client.hkeys(SPECTRUM_HASHES)]
 
     def list_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
+        self._init_client()
         return self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids)
 
     # Not used atm
