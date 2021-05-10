@@ -62,7 +62,7 @@ def test_download_existing_data():
     assert res.result[download].is_cached()
 
 
-# @pytest.mark.skip(reason="This test uses internet connection.")
+@pytest.mark.skip(reason="This test uses internet connection.")
 def test_download_existing_data_s3():
     file_name = "test-dataset-download/gnps.json"
     dir_ = "s3://dr-prefect"

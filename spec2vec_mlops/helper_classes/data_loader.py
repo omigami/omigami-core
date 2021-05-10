@@ -10,8 +10,8 @@ from drfs.filesystems import get_fs
 
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
-from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
-from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
+from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.tasks.process_spectrum import SpectrumProcessor
 
 KEYS = config["gnps_json"]["necessary_keys"]
 
@@ -32,7 +32,7 @@ class DataLoader:
         self.file_path = file_path
         self.n_decimals = n_decimals
         self.min_peaks = min_peaks
-        self.dgw = RedisDataGateway()
+        self.dgw = RedisSpectrumDataGateway()
         self.n_workers = n_workers
 
     def load_gnps_json(
@@ -80,14 +80,14 @@ class DataLoader:
     def _load(chunk: List[Dict[str, Any]], n_decimals: int, min_peaks: int):
         """Clean GNPS data item and save it on Redis."""
         spectra = [{k: item[k] for k in KEYS} for item in chunk]
-        data_cleaner = DataCleaner()
+        data_cleaner = SpectrumProcessor()
         cleaned_data = [
-            data_cleaner.clean_data(spectrum_data) for spectrum_data in spectra
+            data_cleaner.process_data(spectrum_data) for spectrum_data in spectra
         ]
         cleaned_data = [spectrum for spectrum in cleaned_data if spectrum]
         spectra_data = [
             SpectrumDocumentData(spectrum, n_decimals) for spectrum in cleaned_data
         ]
 
-        dgw = RedisDataGateway()
+        dgw = RedisSpectrumDataGateway()
         dgw.write_spectrum_documents(spectra_data)
