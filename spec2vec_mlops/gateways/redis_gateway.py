@@ -52,7 +52,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         pipe.execute()
 
     def list_spectrum_ids(self) -> List[str]:
-        return self.client.hkeys(SPECTRUM_HASHES)
+        return [id_.decode() for id_ in self.client.hkeys(SPECTRUM_HASHES)]
 
     def list_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
         return self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids)
@@ -103,6 +103,9 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
 
     def _read_spectra_ids_within_range(self, hash_name: str, min_mz: int, max_mz: int):
         return self.client.zrangebyscore(hash_name, min_mz, max_mz)
+
+    def delete_spectra(self, spectrum_ids: List[str]):
+        _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
 
 
 class RedisHashesIterator:

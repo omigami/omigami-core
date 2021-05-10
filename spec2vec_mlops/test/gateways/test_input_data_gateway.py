@@ -21,7 +21,7 @@ SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 
 
-@pytest.mark.longrun
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "uri",
     [
@@ -45,7 +45,7 @@ def test_download_and_serialize_to_remote(loaded_data, s3_mock):
         assert DRPath("s3://test-bucket/test-ds").exists()
 
 
-@pytest.mark.longrun
+@pytest.mark.slow
 def test_resume_download(tmpdir, local_gnps_small_json):
     path = Path(local_gnps_small_json)
     existing_file_size = path.stat().st_size

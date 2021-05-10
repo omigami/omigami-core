@@ -47,9 +47,19 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
+    def list_spectrum_ids(self) -> List[str]:
+        """List available spectrum IDs"""
+        pass
+
+    @abstractmethod
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
         pass
 
     @abstractmethod
     def read_documents_iter(self) -> Iterable:
+        pass
+
+    @abstractmethod
+    def delete_spectra(self, spectrum_ids: List[str]):
+        """Deletes spectra using their IDs."""
         pass
