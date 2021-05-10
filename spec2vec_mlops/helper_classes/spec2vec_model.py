@@ -4,6 +4,7 @@ from typing import Union, List, Dict
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from matchms.importing.load_from_json import as_spectrum
+from matchms.filtering import normalize_intensities
 from mlflow.pyfunc import PythonModel
 
 from spec2vec_mlops import config
@@ -62,6 +63,7 @@ class Model(PythonModel):
 
     def _pre_process_data(self, model_input: List[Dict]) -> List[Embedding]:
         cleaned_data = [as_spectrum(data) for data in model_input]
+        cleaned_data = [normalize_intensities(data) for data in cleaned_data if data]
         spectra_data = [
             SpectrumDocumentData(spectrum, self.n_decimals) for spectrum in cleaned_data
         ]
