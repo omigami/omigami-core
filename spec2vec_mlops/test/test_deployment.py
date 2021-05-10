@@ -32,7 +32,7 @@ def test_deploy_training_flow():
         project_name="spec2vec-mlops-test-flow",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.16ea1f9",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.0eb1189  ",
     )
 
     assert flow_id
