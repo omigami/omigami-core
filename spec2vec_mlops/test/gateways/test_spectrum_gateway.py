@@ -185,3 +185,14 @@ def test_read_documents_iter(documents_stored):
     for spectrum in dgw.read_documents():
         all_words_no_iterator += len(spectrum)
     assert all_words == all_words_no_iterator
+
+
+def test_delete_spectrum_ids(spectra_stored):
+    dgw = RedisSpectrumDataGateway()
+    stored_ids = dgw.list_spectrum_ids()
+
+    dgw.delete_spectra([stored_ids[0]])
+
+    stored_ids_2 = dgw.list_spectrum_ids()
+
+    assert set(stored_ids) - set(stored_ids_2) == {stored_ids[0]}
