@@ -23,6 +23,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     """Data gateway for Redis storage."""
 
     def __init__(self):
+        # We initialize it with None so we can pickle this gateway when deploying the flow
         self.client = None
 
     def _init_client(self):
@@ -119,6 +120,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         return self.client.zrangebyscore(hash_name, min_mz, max_mz)
 
     def delete_spectra(self, spectrum_ids: List[str]):
+        # Just used on tests atm. No abstract method.
         self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
 

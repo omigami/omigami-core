@@ -5,11 +5,10 @@ from spec2vec_mlops.deployment import (
     SOURCE_URI_PARTIAL_GNPS,
     OUTPUT_DIR,
     MODEL_DIR,
-    SELDON_DEPLOYMENT_PATH,
     MLFLOW_SERVER,
     API_SERVER,
-    DATASET_ID,
     deploy_training_flow,
+    DATASET_NAME,
 )
 from spec2vec_mlops.utils import add_options
 
@@ -22,7 +21,6 @@ configuration_options = [
     click.option("--source-uri", default=SOURCE_URI_PARTIAL_GNPS),
     click.option("--dataset-dir", default=OUTPUT_DIR),
     click.option("--model-output-dir", default=MODEL_DIR),
-    click.option("--seldon-deployment-path", default=SELDON_DEPLOYMENT_PATH),
     click.option("--mlflow-server", default=MLFLOW_SERVER),
 ]
 
@@ -43,7 +41,7 @@ def cli():
 
 
 @cli.command(name="register-training-flow")
-@click.option("--dataset-id", default=DATASET_ID)
+@click.option("--dataset-id", default=DATASET_NAME)
 @click.option("--n-decimals", type=int, default=2)
 @click.option("--iterations", type=int, default=25)
 @click.option("--window", type=int, default=500)

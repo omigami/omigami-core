@@ -67,7 +67,7 @@ def test_training_flow():
 
 
 @pytest.fixture()
-def mock_seldom_deployment(monkeypatch):
+def mock_seldon_deployment(monkeypatch):
     monkeypatch.setattr(
         spec2vec_mlops.flows.training_flow, "deploy_model_task", mock_task
     )
@@ -77,7 +77,7 @@ def mock_seldom_deployment(monkeypatch):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow(mock_seldom_deployment, tmpdir):
+def test_run_training_flow(mock_seldon_deployment, tmpdir):
     # remove results from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]

@@ -23,9 +23,8 @@ API_SERVER = config["prefect_flow_registration"]["api_server"]
 MLFLOW_SERVER = config["mlflow"]["url"]["remote"]
 PROJECT_NAME = "spec2vec-mlops-project-spec2vec-load-10k-data-pt-3"
 OUTPUT_DIR = "s3://dr-prefect"
-DATASET_NAME = "spec2vec-training-flow/downloaded_datasets/gnps.json"
+DATASET_NAME = "spec2vec-training-flow/downloaded_datasets/small/gnps.json"
 SPECTRUM_IDS_NAME = "spec2vec-training-flow/downloaded_datasets/spectrum_ids"
-DATASET_ID = "test_10k"  # we also have 'small'
 MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
 FLOW_CONFIG = {
     "run_config": KubernetesRun(
@@ -61,8 +60,10 @@ def deploy_training_flow(
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
     image: str = "drtools/prefect:spec2vec_mlops-SNAPSHOT.3c7cf0c",
+    redis_db: int = 2,
 ):
     FLOW_CONFIG["run_config"].image = image
+    FLOW_CONFIG["run_config"].env["REDIS_DB"] = redis_db
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)
         session_token = authenticator.authenticate()
