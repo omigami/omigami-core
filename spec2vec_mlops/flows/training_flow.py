@@ -45,12 +45,38 @@ def build_training_flow(
     flow_config: Dict[str, Any] = None,
 ) -> Flow:
     """
-    TODO: update
+    Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
+    embeddings, registers the model and deploys it to the API.
+
+
+    Parameters
+    ----------
+    project_name: str
+        Prefect parameter. The project name.
+    download_params:
+        Parameters of the DownloadData task
+    process_params:
+        Parameters of the ProcessSpectrum task
+    model_output_dir:
+        Diretory for saving the model
+    mlflow_server:
+        Server used for MLFlow to save the model
+    chunk_size:
+        Size of the chunks to map the data processing task
+    iterations:
+        Number of training iterations
+    window:
+        Window size for context around the word
+    intensity_weighting_power:
+        Exponent used to scale intensity weights for each word
+    allowed_missing_percentage:
+        Number of what percentage of a spectrum is allowed to be unknown to the model
+    flow_config:
+        Configuration passed to prefect.Flow
 
     Returns
     -------
-    flow:
-        The built flow
+
     """
     flow_config = flow_config or {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
