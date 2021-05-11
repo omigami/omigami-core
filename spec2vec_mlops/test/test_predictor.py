@@ -158,7 +158,7 @@ def test_predict_from_saved_model(
     best_matches = model.predict(data_and_param)
     for spectrum, best_match in zip(loaded_data, best_matches):
         assert len(best_match) == predict_parameters["n_best_spectra"]
-        assert best_match[0]["match_id"] == spectrum["spectrum_id"]
+        assert best_match[0]["match_spectrum_id"] == spectrum["spectrum_id"]
 
 
 @pytest.mark.skip("this test is currently failing")

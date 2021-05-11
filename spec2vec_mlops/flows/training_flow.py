@@ -87,12 +87,12 @@ def build_training_flow(
         _ = make_embeddings_task.map(
             unmapped(model),
             all_spectrum_ids_chunks,
-            unmapped(registered_model["run_id"]),
+            unmapped(registered_model),
             unmapped(process_params.n_decimals),
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        deploy_model_task(registered_model["model_uri"])
+        deploy_model_task(registered_model)
 
     return training_flow
