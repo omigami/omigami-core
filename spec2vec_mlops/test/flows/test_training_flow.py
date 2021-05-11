@@ -1,80 +1,110 @@
 import os
 from pathlib import Path
-from typing import Union
+from unittest.mock import MagicMock
 
 import pytest
-from drfs import DRPath
-from prefect import Flow, unmapped, case
-from prefect.engine.state import State
+from drfs.filesystems import get_fs
+from prefect import task
 
+import spec2vec_mlops.flows.training_flow
 from spec2vec_mlops import config
-from spec2vec_mlops.tasks.check_condition import check_condition
-from spec2vec_mlops.tasks.download_data import download_data_task
-from spec2vec_mlops.tasks.load_data import load_data_task
-from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
-from spec2vec_mlops.tasks.register_model import register_model_task
-from spec2vec_mlops.tasks.train_model import train_model_task
+from spec2vec_mlops.flows.training_flow import build_training_flow
+from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
+from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
+from spec2vec_mlops.tasks.download_data import DownloadParameters
+from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
+from spec2vec_mlops.test.conftest import ASSETS_DIR
 
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
 
 
-pytestmark = pytest.mark.skipif(
+@task()
+def mock_task(a=None, b=None, c=None, **kwargs):
+    pass
+
+
+def test_training_flow():
+    mock_spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
+    mock_input_dgw = MagicMock(spec=FSInputDataGateway)
+    expected_tasks = {
+        "CreateChunks",
+        "DownloadData",
+        "ProcessSpectrum",
+        "case(True)",
+        "check_condition",
+        "deploy_model_task",
+        "make_embeddings_task",
+        "register_model_task",
+        "train_model_task",
+    }
+
+    flow = build_training_flow(
+        project_name="test",
+        download_params=DownloadParameters(
+            "source_uri", "datasets", "dataset-id", mock_input_dgw
+        ),
+        process_params=ProcessSpectrumParameters(
+            mock_spectrum_dgw, mock_input_dgw, 2, False
+        ),
+        model_output_dir="model-output",
+        mlflow_server="mlflow-server",
+        iterations=25,
+        window=500,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=5,
+        flow_config=None,
+    )
+
+    assert flow
+    assert len(flow.tasks) == 9
+    assert flow.name == "spec2vec-training-flow"
+
+    task_names = {t.name for t in flow.tasks}
+    assert task_names == expected_tasks
+
+
+@pytest.fixture()
+def mock_seldon_deployment(monkeypatch):
+    monkeypatch.setattr(
+        spec2vec_mlops.flows.training_flow, "deploy_model_task", mock_task
+    )
+
+
+@pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
+def test_run_training_flow(mock_seldon_deployment, tmpdir):
+    # remove results from previous runs
+    fs = get_fs(ASSETS_DIR)
+    _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
-
-def spec2vec_train_pipeline_local(
-    source_uri: str,
-    download_out_dir: DRPath,
-    n_decimals: int,
-    save_model_path: str,
-    mlflow_server_uri: str,
-    experiment_name: str,
-    iterations: int = 25,
-    window: int = 500,
-    intensity_weighting_power: Union[float, int] = 0.5,
-    allowed_missing_percentage: Union[float, int] = 5.0,
-) -> State:
-    with Flow("flow") as flow:
-        file_path = download_data_task(source_uri, download_out_dir)
-        all_spectrum_ids_chunks = load_data_task(
-            file_path, ionmode="positive", chunksize=5000
-        )
-
-        with case(check_condition(all_spectrum_ids_chunks), True):
-            model = train_model_task(iterations, window)
-            run_id = register_model_task(
-                mlflow_server_uri,
-                model,
-                experiment_name,
-                save_model_path,
-                n_decimals,
-                intensity_weighting_power,
-                allowed_missing_percentage,
-            )
-        all_spectrum_ids_chunks = make_embeddings_task.map(
-            unmapped(model),
-            all_spectrum_ids_chunks,
-            unmapped(run_id),
-            unmapped(n_decimals),
-            unmapped(intensity_weighting_power),
-            unmapped(allowed_missing_percentage),
-        )
-    state = flow.run()
-    return state
-
-
-def test_spec2vec_train_pipeline_local(tmpdir):
-    state = spec2vec_train_pipeline_local(
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
-        download_out_dir=tmpdir,
-        n_decimals=2,
-        iterations=10,
-        window=5,
-        save_model_path=f"{tmpdir}/mflow",
-        mlflow_server_uri=f"{tmpdir}/mlflow/",
-        experiment_name="experiment",
+    input_dgw = FSInputDataGateway()
+    download_parameters = DownloadParameters(
+        SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, "SMALL_GNPS.json", input_dgw
     )
-    assert state.is_successful()
+    spectrum_dgw = RedisSpectrumDataGateway()
+    process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, True)
+
+    flow = build_training_flow(
+        project_name="test",
+        download_params=download_parameters,
+        process_params=process_parameters,
+        model_output_dir=f"{tmpdir}/model-output",
+        mlflow_server="mlflow-server",
+        iterations=5,
+        window=500,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=5,
+        flow_config=None,
+        chunk_size=10,
+    )
+
+    results = flow.run()
+    (d,) = flow.get_tasks("DownloadData")
+
+    assert results.is_successful()
+    results.result[d].is_cached()
+    assert len(fs.ls(tmpdir / "model-output")) == 1

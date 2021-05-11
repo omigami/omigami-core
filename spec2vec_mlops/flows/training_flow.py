@@ -1,160 +1,124 @@
 import logging
-from typing import Union
+from dataclasses import dataclass
+from typing import Union, Dict, Any
 
-import click
-from drfs import DRPath
-from prefect import Flow, Parameter, Client, unmapped, case, task
-from prefect.executors import LocalDaskExecutor
-from prefect.run_configs import KubernetesRun
-from prefect.storage import S3
-from prefect.tasks.control_flow import merge
+from prefect import Flow, unmapped, case
 
-from spec2vec_mlops import config
-from spec2vec_mlops.tasks.check_condition import check_condition
-from spec2vec_mlops.tasks.deploy_model import deploy_model_task
-from spec2vec_mlops.tasks.download_data import download_data_task
-from spec2vec_mlops.tasks.load_data import load_data_task
-from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
-from spec2vec_mlops.tasks.register_model import register_model_task
-from spec2vec_mlops.tasks.train_model import train_model_task
-from spec2vec_mlops.tasks.use_testing_dataset_task import use_testing_dataset_task
-from spec2vec_mlops.utility.authenticator import KratosAuthenticator
+
+from spec2vec_mlops.flows.utils import create_result
+from spec2vec_mlops.tasks import (
+    check_condition,
+    DownloadData,
+    train_model_task,
+    register_model_task,
+    make_embeddings_task,
+    deploy_model_task,
+)
+from spec2vec_mlops.tasks.process_spectrum import (
+    ProcessSpectrum,
+    ProcessSpectrumParameters,
+)
+from spec2vec_mlops.tasks.download_data import DownloadParameters
+from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# variable definitions
-SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
-SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
-API_SERVER_REMOTE = config["prefect_flow_registration"]["api_server"]["remote"]
-API_SERVER_LOCAL = config["prefect_flow_registration"]["api_server"]["local"]
-MLFLOW_SERVER_REMOTE = config["mlflow"]["url"]["remote"]
+
+@dataclass  # WIP
+class TrainingFlowParameters:
+    download_params: DownloadParameters
+    process_params: ProcessSpectrumParameters
 
 
-def spec2vec_train_pipeline_distributed(
-    source_uri: str = SOURCE_URI_COMPLETE_GNPS,  # TODO when running in prod set to SOURCE_URI_COMPLETE_GNPS
-    api_server: str = API_SERVER_REMOTE,
-    project_name: str = "spec2vec-mlops-project-spec2vec-load-full-data-pt",
-    download_out_dir: str = "s3://dr-prefect/spec2vec-training-flow/downloaded_datasets/full",  # or full if using complete GNPS
-    n_decimals: int = 2,
-    save_model_path: str = "s3://dr-prefect/spec2vec-training-flow/mlflow",
-    mlflow_server_uri: str = MLFLOW_SERVER_REMOTE,
-    conda_env_path: str = "requirements/environment.frozen.yaml",
+def build_training_flow(
+    project_name: str,
+    download_params: DownloadParameters,
+    process_params: ProcessSpectrumParameters,
+    model_output_dir: str,
+    mlflow_server: str,
+    chunk_size: int = 1000,
     iterations: int = 25,
     window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
-    seldon_deployment_path: str = "spec2vec_mlops/seldon_deployment.yaml",
-    session_token: str = None,
-) -> str:
-    """Function to register Prefect flow using remote cluster
+    flow_config: Dict[str, Any] = None,
+) -> Flow:
+    """
+    Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
+    embeddings, registers the model and deploys it to the API.
+
 
     Parameters
     ----------
-    source_uri: uri to load data from
-    api_server: api_server to instantiate Client object
-        when set to API_SERVER_LOCAL port-forwarding is required.
-    project_name: name to register project in Prefect
-    download_out_dir: location to save the downloaded datasets
-    n_decimals: peak positions are converted to strings with n_decimal decimals
-    save_model_path: path to save the trained model with MLFlow to
-    mlflow_server_uri: url of MLFlow server
-    conda_env_path: path to the conda environment requirements
-    iterations: number of training iterations.
-    window: window size for context words
-    intensity_weighting_power: exponent used to scale intensity weights for each word
-    allowed_missing_percentage: number of what percentage of a spectrum is allowed
-        to be unknown to the model
-    seldon_deployment_path: path to the seldon deployment configuration file
+    project_name: str
+        Prefect parameter. The project name.
+    download_params:
+        Parameters of the DownloadData task
+    process_params:
+        Parameters of the ProcessSpectrum task
+    model_output_dir:
+        Diretory for saving the model
+    mlflow_server:
+        Server used for MLFlow to save the model
+    chunk_size:
+        Size of the chunks to map the data processing task
+    iterations:
+        Number of training iterations
+    window:
+        Window size for context around the word
+    intensity_weighting_power:
+        Exponent used to scale intensity weights for each word
+    allowed_missing_percentage:
+        Number of what percentage of a spectrum is allowed to be unknown to the model
+    flow_config:
+        Configuration passed to prefect.Flow
 
     Returns
     -------
-    flow_run_id: unique flow_run_id registered in Prefect
 
     """
-    custom_confs = {
-        "run_config": KubernetesRun(
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f9df07b",
-            job_template_path="./spec2vec_mlops/job_spec.yaml",
-            labels=["dev"],
-            service_account_name="prefect-server-serviceaccount",
-            env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": "0"},
-        ),
-        "storage": S3("dr-prefect"),
-        "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
-        # "executor": DaskExecutor(address="dask-scheduler.dask:8786"),
-    }
-    with Flow("spec2vec-training-flow", **custom_confs) as training_flow:
-        uri = Parameter(name="uri")
-        file_path = download_data_task(uri, DRPath(download_out_dir))
-        all_spectrum_ids_chunks = load_data_task(
-            file_path, ionmode="positive", chunksize=20000, skip_if_exists=True
-        )
-        logger.info("Data cleaning and document conversion are complete.")
+    flow_config = flow_config or {}
+    with Flow("spec2vec-training-flow", **flow_config) as training_flow:
+        logger.info("Downloading and loading spectrum data.")
+        spectrum_ids = DownloadData(
+            **download_params.kwargs,
+            result=create_result(download_params.checkpoint_path),
+        )()
 
+        spectrum_id_chunks = CreateChunks(chunk_size)(spectrum_ids)
+
+        logger.info("Started data cleaning and conversion to documents.")
+        # TODO: implement data caching like in DownloadData here. Will need to implement
+        # TODO: a new class like RedisResult
+        all_spectrum_ids_chunks = ProcessSpectrum(
+            download_params.download_path, **process_params.kwargs
+        ).map(spectrum_id_chunks)
+
+        # TODO: this case can be removed if we link train with clean data via input/output
         with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)
-            run_id = register_model_task(
-                mlflow_server_uri,
+            registered_model = register_model_task(
+                mlflow_server,
                 model,
                 project_name,
-                save_model_path,
-                n_decimals,
+                model_output_dir,
+                process_params.n_decimals,
                 intensity_weighting_power,
                 allowed_missing_percentage,
-                conda_env_path,
             )
             logger.info("Model training is complete.")
-        all_spectrum_ids_chunks = make_embeddings_task.map(
+
+        # TODO: this is make AND save embeddings. Prob need some refactor
+        _ = make_embeddings_task.map(
             unmapped(model),
             all_spectrum_ids_chunks,
-            unmapped(run_id),
-            unmapped(n_decimals),
+            unmapped(registered_model),
+            unmapped(process_params.n_decimals),
             unmapped(intensity_weighting_power),
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        deploy_model_task(run_id, seldon_deployment_path)
-    if session_token:
-        client = Client(api_server=api_server, api_token=session_token)
-    else:
-        client = Client(api_server=api_server)
-    client.create_project(project_name)
-    training_flow_id = client.register(
-        training_flow,
-        project_name=project_name,
-    )
-    flow_run_id = client.create_flow_run(
-        flow_id=training_flow_id,
-        run_name=f"run {project_name}",
-        parameters={"uri": source_uri},
-    )
-    return flow_run_id
+        deploy_model_task(registered_model)
 
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command(name="register-train-pipeline")
-@click.option("--auth", default=False, help="Enable authentication")
-@click.option("--auth_url", default=None, help="Kratos Public URI")
-@click.option("--username", default=None, help="Login username")
-@click.option("--password", default=None, help="Login password")
-def register_train_pipeline_cli(auth, auth_url, username, password, *args, **kwargs):
-    if auth:
-        authenticator = KratosAuthenticator(auth_url, username, password)
-        session_token = authenticator.authenticate()
-        kwargs["session_token"] = session_token
-    spec2vec_train_pipeline_distributed(*args, **kwargs)
-
-
-@cli.command(name="register-all-flows")
-def deploy_model_cli():
-    # spec2vec_model_deployment_pipeline_distributed()
-    spec2vec_train_pipeline_distributed()
-
-
-if __name__ == "__main__":
-    cli()
+    return training_flow

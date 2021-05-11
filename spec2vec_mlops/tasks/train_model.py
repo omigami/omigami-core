@@ -6,10 +6,11 @@ from gensim.models import Word2Vec
 from prefect import task
 
 from spec2vec_mlops.helper_classes.model_trainer import spec2vec_settings
-from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
+from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 
 
-@task(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
+@task(**DEFAULT_CONFIG)
 def train_model_task(
     iterations: int = 25,
     window: int = 500,
@@ -17,7 +18,7 @@ def train_model_task(
     logger = prefect.context.get("logger")
     beg = datetime.datetime.now()
 
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     documents = dgw.read_documents_iter()
     callbacks, settings = spec2vec_settings(iterations=iterations, window=window)
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
