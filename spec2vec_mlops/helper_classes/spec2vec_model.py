@@ -1,15 +1,17 @@
 import ast
 from typing import Union, List, Dict
 
+import numpy as np
 from gensim.models import Word2Vec
 from matchms import calculate_scores
+from matchms.importing.load_from_json import as_spectrum
+from matchms.filtering import normalize_intensities
 from mlflow.pyfunc import PythonModel
 
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
-from spec2vec_mlops.helper_classes.data_cleaner import DataCleaner
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
     MandatoryKeyMissingException,
@@ -36,7 +38,6 @@ class Model(PythonModel):
         self.n_decimals = n_decimals
         self.intensity_weighting_power = intensity_weighting_power
         self.allowed_missing_percentage = allowed_missing_percentage
-        self.data_cleaner = DataCleaner()
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
 
@@ -62,7 +63,8 @@ class Model(PythonModel):
         self.run_id = run_id
 
     def _pre_process_data(self, model_input: List[Dict]) -> List[Embedding]:
-        cleaned_data = [self.data_cleaner.clean_data(data) for data in model_input]
+        cleaned_data = [as_spectrum(data) for data in model_input]
+        cleaned_data = [normalize_intensities(data) for data in cleaned_data if data]
         spectra_data = [
             SpectrumDocumentData(spectrum, self.n_decimals) for spectrum in cleaned_data
         ]
@@ -102,6 +104,7 @@ class Model(PythonModel):
         spectra_best_matches = []
         for i, query in enumerate(queries):
             all_scores = scores.scores_by_query(query, sort=True)
+            all_scores = [(em, sc) for em, sc in all_scores if not np.isnan(sc)]
             spectrum_best_scores = all_scores[:n_best_spectra]
             spectrum_best_matches = []
             for spectrum_match in spectrum_best_scores:
