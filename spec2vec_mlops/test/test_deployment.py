@@ -12,12 +12,12 @@ from spec2vec_mlops.deployment import (
 )
 
 
-# @pytest.mark.skip(
-#     reason="This test uses internet connection and deploys a test flow to prefect."
-# )
+@pytest.mark.skip(
+    reason="This test uses internet connection and deploys a test flow to prefect."
+)
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f315c3e",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.bff888c",
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,
