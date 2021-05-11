@@ -21,7 +21,6 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectSpectrumDataTypeException,
 )
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
-from spec2vec_mlops.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 
 KEYS = config["gnps_json"]["necessary_keys"]
 
