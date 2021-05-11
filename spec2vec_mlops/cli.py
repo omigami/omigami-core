@@ -41,7 +41,8 @@ def cli():
 
 
 @cli.command(name="register-training-flow")
-@click.option("--dataset-id", default=DATASET_NAME)
+@click.option("--image", type=str)
+@click.option("--dataset-id", type=str, default=DATASET_NAME)
 @click.option("--n-decimals", type=int, default=2)
 @click.option("--iterations", type=int, default=25)
 @click.option("--window", type=int, default=500)
