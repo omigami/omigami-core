@@ -23,7 +23,7 @@ def test_download_data():
     download_params = DownloadParameters("input-uri", "dir", "file_name", input_dgw)
     with Flow("test-flow") as test_flow:
         download = DownloadData(
-            **download_params.kwargs, result=create_result(DRPath(""))
+            **download_params.kwargs, checkpoint=False, result=create_result(DRPath(""))
         )()
 
     res = test_flow.run()
@@ -51,6 +51,7 @@ def test_download_existing_data():
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             **params.kwargs,
+            checkpoint=True,
             result=create_result(ASSETS_DIR / "spectrum_ids.pkl"),
             **TEST_TASK_CONFIG,
         )()
@@ -77,6 +78,7 @@ def test_download_existing_data_s3():
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             **download_params.kwargs,
+            checkpoint=True,
             result=create_result(download_params.download_path),
             **TEST_TASK_CONFIG,
         )()
