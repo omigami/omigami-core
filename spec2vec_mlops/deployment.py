@@ -64,7 +64,7 @@ def deploy_training_flow(
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
-    redis_db: int = 2,
+    redis_db: str = "2",
 ):
     FLOW_CONFIG["run_config"].image = image
     FLOW_CONFIG["run_config"].env["REDIS_DB"] = redis_db
