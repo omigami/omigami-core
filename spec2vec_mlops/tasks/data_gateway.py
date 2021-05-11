@@ -45,7 +45,7 @@ class SpectrumDataGateway(ABC):
 
     @abstractmethod
     def list_spectra_not_exist(self, spectrum_ids: List[str]):
-        """Check whether spectra exist on Redis.
+        """Check whether spectra exist.
         Return a list of IDs that do not exist.
         """
         pass
