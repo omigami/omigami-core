@@ -41,6 +41,7 @@ FLOW_CONFIG = {
 
 
 def deploy_training_flow(
+    image: str,
     iterations: int,
     window: int,
     intensity_weighting_power: float,
@@ -59,7 +60,6 @@ def deploy_training_flow(
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
-    image: str = "drtools/prefect:spec2vec_mlops-SNAPSHOT.3c7cf0c",
     redis_db: int = 2,
 ):
     FLOW_CONFIG["run_config"].image = image
