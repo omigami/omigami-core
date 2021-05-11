@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -23,8 +24,11 @@ API_SERVER = config["prefect_flow_registration"]["api_server"]
 MLFLOW_SERVER = config["mlflow"]["url"]["remote"]
 PROJECT_NAME = "spec2vec-mlops-project-spec2vec-load-10k-data-pt-3"
 OUTPUT_DIR = "s3://dr-prefect"
-DATASET_NAME = "spec2vec-training-flow/downloaded_datasets/small/gnps.json"
-SPECTRUM_IDS_NAME = "spec2vec-training-flow/downloaded_datasets/spectrum_ids"
+DATASET_DIR = (
+    f"spec2vec-training-flow/downloaded_datasets/small/{datetime.now().date()}/"
+)
+DATASET_NAME = DATASET_DIR + "gnps.json"
+SPECTRUM_IDS_NAME = DATASET_DIR + "spectrum_ids.pkl"
 MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
 FLOW_CONFIG = {
     "run_config": KubernetesRun(

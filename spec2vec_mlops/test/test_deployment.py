@@ -12,11 +12,12 @@ from spec2vec_mlops.deployment import (
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.fc83f1a",
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,
@@ -31,10 +32,9 @@ def test_deploy_training_flow():
         dataset_name=DATASET_NAME,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=OUTPUT_DIR,
-        project_name="spec2vec-mlops-test-flow",
+        project_name="spec2vec-mlops-test-flow-fc83f1a",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.0eb1189  ",
     )
 
     assert flow_id
