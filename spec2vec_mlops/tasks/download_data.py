@@ -15,6 +15,7 @@ class DownloadData(Task):
         input_dgw: InputDataGateway,
         input_uri: str,
         download_path: str,
+        checkpoint: bool,
         checkpoint_path: str,
         result: Result,
         **kwargs,
@@ -29,7 +30,7 @@ class DownloadData(Task):
         super().__init__(
             **config,
             result=result,
-            checkpoint=True,
+            checkpoint=checkpoint,
             target=Path(checkpoint_path).name,
         )
 

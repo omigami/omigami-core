@@ -2,8 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import Union, Dict, Any
 
-from prefect import Flow, unmapped, case
-
+from prefect import Flow, unmapped, case, Parameter
 
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (
@@ -52,11 +51,13 @@ def build_training_flow(
     flow:
         The built flow
     """
+    checkpoint = Parameter("checkpoint", default=True)
     flow_config = flow_config or {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
         logger.info("Downloading and loading spectrum data.")
         spectrum_ids = DownloadData(
             **download_params.kwargs,
+            checkpoint=checkpoint,
             result=create_result(download_params.checkpoint_path),
         )()
 
