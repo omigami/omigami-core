@@ -16,9 +16,9 @@ CUSTOM_RESOURCE_INFO = spec2vec_config["k8s"]["custom_seldon_resource"]
 
 
 @task(**DEFAULT_CONFIG)
-def deploy_model_task(model_uri: str):
+def deploy_model_task(registered_model: dict):
     model_deployer = ModelDeployer()
-    model_deployer.deploy_model(model_uri, overwrite=True)
+    model_deployer.deploy_model(registered_model["model_uri"], overwrite=True)
 
 
 class ModelDeployer:

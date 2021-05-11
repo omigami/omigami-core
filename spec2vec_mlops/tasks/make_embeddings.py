@@ -13,7 +13,7 @@ from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 def make_embeddings_task(
     model: Word2Vec,
     spectrum_ids: List[str],
-    run_id: str,
+    registered_model: dict,
     n_decimals: int,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
@@ -33,5 +33,5 @@ def make_embeddings_task(
         )
         for document in documents
     ]
-    dgw.write_embeddings(embeddings, run_id)
+    dgw.write_embeddings(embeddings, registered_model["run_id"])
     return spectrum_ids

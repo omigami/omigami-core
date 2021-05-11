@@ -49,7 +49,6 @@ def test_training_flow():
             mock_spectrum_dgw, mock_input_dgw, 2, False
         ),
         model_output_dir="model-output",
-        seldon_deployment_path="seldon-path",
         mlflow_server="mlflow-server",
         iterations=25,
         window=500,
@@ -94,7 +93,6 @@ def test_run_training_flow(mock_seldon_deployment, tmpdir):
         download_params=download_parameters,
         process_params=process_parameters,
         model_output_dir=f"{tmpdir}/model-output",
-        seldon_deployment_path="seldon-path",
         mlflow_server="mlflow-server",
         iterations=5,
         window=500,
