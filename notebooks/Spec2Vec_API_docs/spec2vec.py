@@ -64,7 +64,7 @@ def format_results(api_request):
     response = json.loads(api_request.text)
     library_spectra_raw = response["data"]["ndarray"]
 
-    predicted_spectra = []
+    library_spectra_matches = []
     for i in range(len(library_spectra_raw)):
         library_spectra_dataframe = pd.DataFrame(
             data=[spectrum_id["score"] for spectrum_id in library_spectra_raw[i]],
@@ -75,6 +75,6 @@ def format_results(api_request):
             columns=["score"],
         )
         library_spectra_dataframe.index.name = f"matches of spectrum #{i + 1}"
-        predicted_spectra.append(library_spectra_dataframe)
+        library_spectra_matches.append(library_spectra_dataframe)
 
-    return predicted_spectra
+    return library_spectra_matches
