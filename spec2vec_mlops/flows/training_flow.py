@@ -83,7 +83,7 @@ def build_training_flow(
         logger.info("Downloading and loading spectrum data.")
         spectrum_ids = DownloadData(
             **download_params.kwargs,
-            result=create_result(download_params.checkpoint_path),
+            **create_result(download_params.checkpoint_path),
         )()
 
         spectrum_id_chunks = CreateChunks(chunk_size)(spectrum_ids)

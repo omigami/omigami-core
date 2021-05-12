@@ -1,9 +1,7 @@
 from dataclasses import dataclass
-from pathlib import Path
 from typing import List
 
 from prefect import Task
-from prefect.engine.result import Result
 
 from spec2vec_mlops.tasks.config import merge_configs
 from spec2vec_mlops.tasks.data_gateway import InputDataGateway
@@ -16,7 +14,6 @@ class DownloadData(Task):
         input_uri: str,
         download_path: str,
         checkpoint_path: str,
-        result: Result,
         **kwargs,
     ):
         self._input_dgw = input_dgw
@@ -28,9 +25,7 @@ class DownloadData(Task):
 
         super().__init__(
             **config,
-            result=result,
             checkpoint=True,
-            target=Path(checkpoint_path),
         )
 
     def run(self) -> List[str]:
