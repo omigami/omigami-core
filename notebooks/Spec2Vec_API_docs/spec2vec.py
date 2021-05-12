@@ -1,15 +1,7 @@
 import pandas as pd
 import requests
 import json
-
-try:
-    from matchms.importing import load_from_mgf
-except:
-    import sys
-    import subprocess
-
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "matchms"])
-    from matchms.importing import load_from_mgf
+from matchms.importing import load_from_mgf
 
 
 def run(mgf_file: str, n_best_spectra: int = 10):
@@ -19,11 +11,11 @@ def run(mgf_file: str, n_best_spectra: int = 10):
 
     payload = build_payload(spectra_generator, n_best_spectra)
 
-    API_request = call_prediction_API(payload)
+    API_request = call_spec2vec_API(payload)
 
-    predicted_spectra = format_predictions(API_request)
+    library_spectra = format_results(API_request)
 
-    return predicted_spectra
+    return library_spectra
 
 
 def build_payload(spectra_generator, n_best_spectra):
@@ -59,7 +51,7 @@ def build_payload(spectra_generator, n_best_spectra):
     return payload
 
 
-def call_prediction_API(payload):
+def call_spec2vec_API(payload):
     """"Query of the prediction API endpoint"""
     url = "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
     api_request = requests.post(url, json=payload)
@@ -67,22 +59,22 @@ def call_prediction_API(payload):
     return api_request
 
 
-def format_predictions(api_request):
+def format_results(api_request):
     """Formatting of the results"""
     response = json.loads(api_request.text)
-    predicted_spectra_raw = response["data"]["ndarray"]
+    library_spectra_raw = response["data"]["ndarray"]
 
     predicted_spectra = []
-    for i in range(len(predicted_spectra_raw)):
-        prediction_dataframe = pd.DataFrame(
-            data=[spectrum_id["score"] for spectrum_id in predicted_spectra_raw[i]],
+    for i in range(len(library_spectra_raw)):
+        library_spectra_dataframe = pd.DataFrame(
+            data=[spectrum_id["score"] for spectrum_id in library_spectra_raw[i]],
             index=[
                 spectrum_id["match_spectrum_id"]
-                for spectrum_id in predicted_spectra_raw[i]
+                for spectrum_id in library_spectra_raw[i]
             ],
             columns=["score"],
         )
-        prediction_dataframe.index.name = f"matches of spectrum #{i + 1}"
-        predicted_spectra.append(prediction_dataframe)
+        library_spectra_dataframe.index.name = f"matches of spectrum #{i + 1}"
+        predicted_spectra.append(library_spectra_dataframe)
 
     return predicted_spectra
