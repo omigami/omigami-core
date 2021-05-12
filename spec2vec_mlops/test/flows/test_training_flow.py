@@ -35,7 +35,7 @@ def test_training_flow():
         "case(True)",
         "check_condition",
         "deploy_model_task",
-        "make_embeddings_task",
+        "MakeEmbeddings",
         "register_model_task",
         "train_model_task",
     }

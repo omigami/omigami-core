@@ -2,27 +2,26 @@ import logging
 from dataclasses import dataclass
 from typing import Union, Dict, Any
 
-from prefect import Flow, unmapped, case
-
+import prefect
+from prefect import Flow, case, unmapped
 
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (
     check_condition,
     DownloadData,
+    MakeEmbeddings,
+    ProcessSpectrum,
     train_model_task,
     register_model_task,
-    make_embeddings_task,
     deploy_model_task,
 )
 from spec2vec_mlops.tasks.process_spectrum import (
-    ProcessSpectrum,
     ProcessSpectrumParameters,
 )
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
 
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 
 @dataclass  # WIP
@@ -79,6 +78,7 @@ def build_training_flow(
 
     """
     flow_config = flow_config or {}
+    logger = prefect.context.get("logger")
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
         logger.info("Downloading and loading spectrum data.")
         spectrum_ids = DownloadData(
@@ -98,7 +98,7 @@ def build_training_flow(
         # TODO: this case can be removed if we link train with clean data via input/output
         with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)
-            registered_model = register_model_task(
+            model_registry = register_model_task(
                 mlflow_server,
                 model,
                 project_name,
@@ -110,15 +110,13 @@ def build_training_flow(
             logger.info("Model training is complete.")
 
         # TODO: this is make AND save embeddings. Prob need some refactor
-        _ = make_embeddings_task.map(
-            unmapped(model),
-            all_spectrum_ids_chunks,
-            unmapped(registered_model),
-            unmapped(process_params.n_decimals),
-            unmapped(intensity_weighting_power),
-            unmapped(allowed_missing_percentage),
-        )
+        _ = MakeEmbeddings(
+            process_params.spectrum_dgw,
+            process_params.n_decimals,
+            intensity_weighting_power,
+            allowed_missing_percentage,
+        ).map(unmapped(model), unmapped(model_registry), all_spectrum_ids_chunks)
         logger.info("Saving embedding is complete.")
-        deploy_model_task(registered_model)
+        deploy_model_task(model_registry)
 
     return training_flow
