@@ -2,12 +2,11 @@ import logging
 from dataclasses import dataclass
 from typing import Union, Dict, Any
 
-from prefect import Flow, unmapped, case
+from prefect import Flow, unmapped
 
 
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (
-    check_condition,
     DownloadData,
     train_model_task,
     register_model_task,
@@ -95,19 +94,17 @@ def build_training_flow(
             download_params.download_path, **process_params.kwargs
         ).map(spectrum_id_chunks)
 
-        # TODO: this case can be removed if we link train with clean data via input/output
-        with case(check_condition(all_spectrum_ids_chunks), True):
-            model = train_model_task(iterations, window)
-            registered_model = register_model_task(
-                mlflow_server,
-                model,
-                project_name,
-                model_output_dir,
-                process_params.n_decimals,
-                intensity_weighting_power,
-                allowed_missing_percentage,
-            )
-            logger.info("Model training is complete.")
+        model = train_model_task(iterations, window)
+        registered_model = register_model_task(
+            mlflow_server,
+            model,
+            project_name,
+            model_output_dir,
+            process_params.n_decimals,
+            intensity_weighting_power,
+            allowed_missing_percentage,
+        )
+        logger.info("Model training is complete.")
 
         # TODO: this is make AND save embeddings. Prob need some refactor
         _ = make_embeddings_task.map(

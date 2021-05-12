@@ -4,13 +4,14 @@ import gensim
 import prefect
 from gensim.models import Word2Vec
 from prefect import task
+from prefect.triggers import all_successful
 
 from spec2vec_mlops.helper_classes.model_trainer import spec2vec_settings
 from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 
 
-@task(**DEFAULT_CONFIG)
+@task(**DEFAULT_CONFIG, trigger=all_successful)
 def train_model_task(
     iterations: int = 25,
     window: int = 500,

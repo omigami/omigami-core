@@ -32,8 +32,6 @@ def test_training_flow():
         "CreateChunks",
         "DownloadData",
         "ProcessSpectrum",
-        "case(True)",
-        "check_condition",
         "deploy_model_task",
         "make_embeddings_task",
         "register_model_task",
@@ -58,7 +56,7 @@ def test_training_flow():
     )
 
     assert flow
-    assert len(flow.tasks) == 9
+    assert len(flow.tasks) == 7
     assert flow.name == "spec2vec-training-flow"
 
     task_names = {t.name for t in flow.tasks}

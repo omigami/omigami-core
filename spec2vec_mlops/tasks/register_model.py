@@ -4,6 +4,7 @@ import mlflow
 from gensim.models import Word2Vec
 from mlflow.exceptions import MlflowException
 from prefect import task
+from prefect.triggers import all_successful
 
 from spec2vec_mlops.predictor import Predictor
 from spec2vec_mlops.tasks.config import DEFAULT_CONFIG

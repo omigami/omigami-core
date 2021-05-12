@@ -1,5 +1,4 @@
 from spec2vec_mlops.tasks.download_data import DownloadData
-from spec2vec_mlops.tasks.check_condition import check_condition
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrum
 from spec2vec_mlops.tasks.seldon import deploy_model_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
