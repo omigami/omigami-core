@@ -2,7 +2,8 @@ from drfs import DRPath
 from prefect.engine.result import Result
 from prefect.engine.results import S3Result, LocalResult
 
-
+# TODO(bk): Is this an adapter of sorts? Seems like more core method than util,
+#           perhaps move it, rename and add docstring?
 def create_result(path: str, **kwargs) -> Result:
     path = DRPath(path)
     protocol = getattr(path, "scheme", "file")

@@ -79,6 +79,7 @@ def deploy_training_flow(
     mlflow_server: str = MLFLOW_SERVER,
     redis_db: str = "2",
 ):
+    # TODO(bk): Modifying global values, things getting mixed up, bad design
     FLOW_CONFIG["run_config"].image = image
     # TODO(bk): Is there a reason for redis_db being specified in FLOW_CONFIG above if we have this parameter
     #       that overrides it anyway?
