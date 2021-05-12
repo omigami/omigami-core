@@ -62,12 +62,14 @@ def test_download_existing_data():
     assert res.result[download].is_cached()
 
 
-@pytest.mark.skip(reason="This test uses internet connection.")
+# @pytest.mark.skip(reason="This test uses internet connection.")
 def test_download_existing_data_s3():
-    file_name = "test-dataset-download/gnps.json"
+    file_name = "spec2vec-training-flow/downloaded_datasets/test_10k/gnps.json"
     dir_ = "s3://dr-prefect"
     bucket = "dr-prefect"
-    checkpoint_name = "spectrum_ids.pkl"
+    checkpoint_name = (
+        "spec2vec-training-flow/downloaded_datasets/test_10k/spectrum_ids.pkl"
+    )
     input_dgw = FSInputDataGateway()
     fs = get_fs(dir_)
     download_params = DownloadParameters(
