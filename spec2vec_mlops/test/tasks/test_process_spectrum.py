@@ -9,7 +9,7 @@ from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrum
 from spec2vec_mlops.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
-from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
+from spec2vec_mlops.data_gateway import SpectrumDataGateway
 from spec2vec_mlops.test.conftest import TEST_TASK_CONFIG
 
 

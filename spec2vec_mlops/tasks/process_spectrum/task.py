@@ -6,7 +6,7 @@ from prefect import Task
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from spec2vec_mlops.tasks.config import merge_configs
-from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway, InputDataGateway
+from spec2vec_mlops.data_gateway import SpectrumDataGateway, InputDataGateway
 
 
 class ProcessSpectrum(Task):

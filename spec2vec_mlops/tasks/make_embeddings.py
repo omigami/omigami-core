@@ -5,7 +5,7 @@ from prefect import Task
 
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.tasks.config import merge_configs
-from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
+from spec2vec_mlops.data_gateway import SpectrumDataGateway
 
 
 class MakeEmbeddings(Task):

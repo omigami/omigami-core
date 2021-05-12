@@ -9,7 +9,7 @@ from spec2vec_mlops import config
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.tasks import DownloadData
-from spec2vec_mlops.tasks.data_gateway import InputDataGateway
+from spec2vec_mlops.data_gateway import InputDataGateway
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 

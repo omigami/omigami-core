@@ -4,7 +4,7 @@ from typing import List
 from prefect import Task
 
 from spec2vec_mlops.tasks.config import merge_configs
-from spec2vec_mlops.tasks.data_gateway import InputDataGateway
+from spec2vec_mlops.data_gateway import InputDataGateway
 
 
 class DownloadData(Task):

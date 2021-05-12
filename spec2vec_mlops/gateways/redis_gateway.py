@@ -9,7 +9,7 @@ from spec2vec import SpectrumDocument
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.entities.embedding import Embedding
-from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
+from spec2vec_mlops.data_gateway import SpectrumDataGateway
 
 HOST = os.getenv("REDIS_HOST", config["redis"]["host"])
 DB = os.getenv("REDIS_DB", config["redis"]["db"])
