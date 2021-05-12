@@ -30,7 +30,7 @@ class DownloadData(Task):
             **config,
             result=result,
             checkpoint=True,
-            target=Path(checkpoint_path).name,
+            target=Path(checkpoint_path),
         )
 
     def run(self) -> List[str]:
