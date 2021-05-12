@@ -21,6 +21,7 @@ from spec2vec_mlops.tasks.process_spectrum import (
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
 
+logger = prefect.utilities.logging.get_logger()
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -79,8 +80,7 @@ def build_training_flow(
     """
     flow_config = flow_config or {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
-        logger = prefect.utilities.logging.get_logger()
-        logger.info(
+        print(
             f"Downloading and loading spectrum data from {download_params.input_uri} to "
             f"{download_params.download_path}."
         )
