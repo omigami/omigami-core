@@ -16,20 +16,31 @@ from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 
+# -- CONFIGS:
 
-# TODO: move all of these variables to config default and organize it
+# - GNPS JSON
 SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
+
+# - PREFECT
 API_SERVER = config["prefect_flow_registration"]["api_server"]
-MLFLOW_SERVER = config["mlflow"]["url"]["remote"]
-PROJECT_NAME = "spec2vec-mlops-project-spec2vec-load-10k-data-pt-3"
-OUTPUT_DIR = "s3://dr-prefect"
+PROJECT_NAME = config["prefect"]["project"]
+OUTPUT_DIR = config["prefect"]["output_dir"]
+DATASET_FOLDER = config["prefect"]["dataset_folder"]
 DATASET_DIR = (
-    f"spec2vec-training-flow/downloaded_datasets/small/{datetime.now().date()}/"
+    f"{DATASET_FOLDER}/{datetime.now().date()}/"
 )
+MODEL_DIR = config["prefect"]["model_folder"]
+S3_MODEL_BUCKET = config["prefect"]["s3_model_bucket"]
 DATASET_NAME = DATASET_DIR + "gnps.json"
 SPECTRUM_IDS_NAME = DATASET_DIR + "spectrum_ids.pkl"
-MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
+
+# - MLFLOW
+MLFLOW_SERVER = config["mlflow"]["url"]["remote"]
+
+
+# TODO(bk): Should this be a global config? Shouldnt this be created close to where its used
+#      and receive the necessary params?
 FLOW_CONFIG = {
     "run_config": KubernetesRun(
         job_template_path=str(Path(__file__).parents[0] / "job_spec.yaml"),
@@ -37,7 +48,7 @@ FLOW_CONFIG = {
         service_account_name="prefect-server-serviceaccount",
         env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": "2"},
     ),
-    "storage": S3("dr-prefect"),
+    "storage": S3(S3_MODEL_BUCKET),
     # TODO: maybe also useful to have as a parameter?
     "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
     # "executor": DaskExecutor(address="dask-scheduler.dask:8786"),
@@ -56,6 +67,8 @@ def deploy_training_flow(
     auth_url: Optional[str] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
+    # TODO(bk): if those below are not passed via CLI, probably we dont need them as parameters as
+    #       we can just use the global configs directly
     api_server: str = API_SERVER,
     dataset_name: str = DATASET_NAME,
     spectrum_ids_name: str = SPECTRUM_IDS_NAME,
@@ -67,6 +80,8 @@ def deploy_training_flow(
     redis_db: str = "2",
 ):
     FLOW_CONFIG["run_config"].image = image
+    # TODO(bk): Is there a reason for redis_db being specified in FLOW_CONFIG above if we have this parameter
+    #       that overrides it anyway?
     FLOW_CONFIG["run_config"].env["REDIS_DB"] = redis_db
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)

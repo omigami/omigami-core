@@ -75,3 +75,9 @@ redis:
   spectrum_hashes: "spectrum_data"
   document_hashes: "document_data"
   embedding_hashes: "embedding_data"
+prefect:
+  project: "spec2vec-mlops-project-spec2vec-load-10k-data-pt-3"
+  output_dir: "s3://dr-prefect"
+  dataset_folder: "spec2vec-training-flow/downloaded_datasets/small"
+  model_folder: "s3://dr-prefect/spec2vec-training-flow/mlflow"
+  s3_model_bucket: "dr-prefect"
