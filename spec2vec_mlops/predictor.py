@@ -1,4 +1,6 @@
 import ast
+import gc
+from logging import getLogger
 from typing import Union, List, Dict
 
 import numpy as np
@@ -24,6 +26,8 @@ from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
 KEYS = config["gnps_json"]["necessary_keys"]
 
+log = getLogger(__name__)
+
 
 class Predictor(PythonModel):
     def __init__(
@@ -42,6 +46,7 @@ class Predictor(PythonModel):
         self.run_id = run_id
 
     def predict(self, context, model_input_and_parameters: Dict) -> List[List[Dict]]:
+        log.info("Creating a prediction.")
         if not isinstance(model_input_and_parameters, dict):
             model_input_and_parameters = model_input_and_parameters.tolist()
 
@@ -52,11 +57,16 @@ class Predictor(PythonModel):
         )
         model_input = model_input_and_parameters.get("data")
         self._validate_input(model_input)
+        log.info("Pre-processing data.")
         embeddings = self._pre_process_data(model_input)
+        log.info("Loading reference embeddings.")
         reference_embeddings = self._get_reference_embeddings()
+        log.info("Getting best matches.")
         best_matches = self._get_best_matches(
             reference_embeddings, embeddings, **parameters
         )
+        log.info("Finishing prediction.")
+        gc.collect()
         return best_matches
 
     def set_run_id(self, run_id: str):

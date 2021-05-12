@@ -30,9 +30,10 @@ DATASET_DIR = (
 DATASET_NAME = DATASET_DIR + "gnps.json"
 SPECTRUM_IDS_NAME = DATASET_DIR + "spectrum_ids.pkl"
 MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
+JOB_TEMPLATE_PATH = str(Path(__file__).parents[0] / "job_spec.yaml")
 FLOW_CONFIG = {
     "run_config": KubernetesRun(
-        job_template_path=str(Path(__file__).parents[0] / "job_spec.yaml"),
+        job_template_path=JOB_TEMPLATE_PATH,
         labels=["dev"],
         service_account_name="prefect-server-serviceaccount",
         env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": "2"},
