@@ -24,11 +24,12 @@ API_SERVER = config["prefect_flow_registration"]["api_server"]
 MLFLOW_SERVER = config["mlflow"]["url"]["remote"]
 PROJECT_NAME = "spec2vec-mlops-project-spec2vec-load-10k-data-pt-3"
 OUTPUT_DIR = "s3://dr-prefect"
-DATASET_DIR = (
-    f"spec2vec-training-flow/downloaded_datasets/small/{datetime.now().date()}/"
-)
-DATASET_NAME = DATASET_DIR + "gnps.json"
-SPECTRUM_IDS_NAME = DATASET_DIR + "spectrum_ids.pkl"
+DATASET_DIR = {
+    "small": f"spec2vec-training-flow/downloaded_datasets/small/{datetime.now().date()}/",
+    "10k": f"spec2vec-training-flow/downloaded_datasets/test_10k/",
+    "full": f"spec2vec-training-flow/downloaded_datasets/full/{datetime.now().date()}/",
+}
+
 MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
 JOB_TEMPLATE_PATH = str(Path(__file__).parents[0] / "job_spec.yaml")
 FLOW_CONFIG = {
@@ -58,8 +59,7 @@ def deploy_training_flow(
     username: Optional[str] = None,
     password: Optional[str] = None,
     api_server: str = API_SERVER,
-    dataset_name: str = DATASET_NAME,
-    spectrum_ids_name: str = SPECTRUM_IDS_NAME,
+    dataset: str = "small",
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     output_dir: str = OUTPUT_DIR,
     project_name: str = PROJECT_NAME,
@@ -67,6 +67,8 @@ def deploy_training_flow(
     mlflow_server: str = MLFLOW_SERVER,
     redis_db: str = "2",
 ):
+    dataset_name = DATASET_DIR[dataset] + "gnps.json"
+    spectrum_ids_name = DATASET_DIR[dataset] + "spectrum_ids.pkl"
     FLOW_CONFIG["run_config"].image = image
     FLOW_CONFIG["run_config"].env["REDIS_DB"] = redis_db
     if auth:
