@@ -29,17 +29,20 @@ class ProcessSpectrum(Task):
         super().__init__(**config)
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
+        self.logger.info(f"Processing {len(spectrum_ids)} spectra from the input data")
         spectrum_data = self._input_dgw.load_spectrum_ids(
             self._download_path, spectrum_ids
         )
-        self.logger.info(f"Processing {len(spectrum_ids)} spectra from the input data")
         # TODO: refactor to use prefect's checkpoint functionality
         if self._skip_if_exists:
-            spectrum_ids = [sp.get("spectrum_id") for sp in spectrum_data]
-            spectrum_ids = self._spectrum_dgw.list_spectra_not_exist(spectrum_ids)
+            new_spectrum_ids = self._spectrum_dgw.list_spectra_not_exist(spectrum_ids)
             spectrum_data = [
-                sp for sp in spectrum_data if sp.get("spectrum_id") in spectrum_ids
+                sp for sp in spectrum_data if sp.get("spectrum_id") in new_spectrum_ids
             ]
+            self.logger.info(
+                f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} are new and will"
+                f"be processed."
+            )
 
         cleaned_data = [
             self._processor.process_data(spectra_data) for spectra_data in spectrum_data
