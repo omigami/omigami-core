@@ -54,7 +54,7 @@ def build_payload(spectra_generator, n_best_spectra):
 def call_spec2vec_API(payload):
     """"Query of the prediction API endpoint"""
     url = "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
-    api_request = requests.post(url, json=payload)
+    api_request = requests.post(url, json=payload, timeout=600)
 
     return api_request
 

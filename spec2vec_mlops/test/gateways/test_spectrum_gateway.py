@@ -10,7 +10,7 @@ from spec2vec.SpectrumDocument import SpectrumDocument
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
-from spec2vec_mlops.gateways.redis_gateway import RedisDataGateway
+from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
 
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
 SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
@@ -70,7 +70,7 @@ def test_write_spectrum_documents(redis_db, cleaned_data):
         SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
     ]
 
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     dgw.write_spectrum_documents(spectrum_document_data)
 
     assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(cleaned_data)
@@ -78,22 +78,29 @@ def test_write_spectrum_documents(redis_db, cleaned_data):
     assert redis_db.hlen(DOCUMENT_HASHES) == len(cleaned_data)
 
 
+def test_list_spectrum_ids(cleaned_data, spectra_stored):
+    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
+    dgw = RedisSpectrumDataGateway()
+    ids = dgw.list_spectrum_ids()
+    assert len(ids) == len(spectrum_ids_stored)
+
+
 def test_list_spectra_not_exist(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     spectra = dgw.list_spectra_not_exist(spectrum_ids_stored)
     assert len(spectra) == 0
 
 
 def test_list_documents_not_exist(cleaned_data, documents_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     documents = dgw.list_documents_not_exist(spectrum_ids_stored)
     assert len(documents) == 0
 
 
 def test_read_spectra(cleaned_data, spectra_stored):
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     spectra = dgw.read_spectra()
     assert len(spectra) == len(cleaned_data)
     for spectrum in spectra:
@@ -102,7 +109,7 @@ def test_read_spectra(cleaned_data, spectra_stored):
 
 
 def test_read_documents(documents_data, documents_stored):
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     documents = dgw.read_documents()
     assert len(documents) == len(documents_data)
     for document in documents:
@@ -112,7 +119,7 @@ def test_read_documents(documents_data, documents_stored):
 
 
 def test_read_embeddings(embeddings, embeddings_stored):
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     embeddings_read = dgw.read_embeddings("1")
     assert len(embeddings_read) == len(embeddings)
     for embedding in embeddings_read:
@@ -120,7 +127,8 @@ def test_read_embeddings(embeddings, embeddings_stored):
 
 
 def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_stored):
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
+    dgw._init_client()
     mz_min = 300
     mz_max = 600
     filtered_spectra = dgw.client.zrangebyscore(
@@ -140,7 +148,8 @@ def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_sto
 
 
 def test_read_spectra_ids_within_range(spectra_stored):
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
+    dgw._init_client()
     mz_min = 300
     mz_max = 600
     filtered_spectra = dgw.client.zrangebyscore(
@@ -159,7 +168,7 @@ def test_read_spectra_ids_within_range(spectra_stored):
 
 
 def test_read_documents_iter(documents_stored):
-    dgw = RedisDataGateway()
+    dgw = RedisSpectrumDataGateway()
     doc_iter = dgw.read_documents_iter()
     assert isinstance(doc_iter, Iterable)
 
@@ -176,3 +185,14 @@ def test_read_documents_iter(documents_stored):
     for spectrum in dgw.read_documents():
         all_words_no_iterator += len(spectrum)
     assert all_words == all_words_no_iterator
+
+
+def test_delete_spectrum_ids(spectra_stored):
+    dgw = RedisSpectrumDataGateway()
+    stored_ids = dgw.list_spectrum_ids()
+
+    dgw.delete_spectra([stored_ids[0]])
+
+    stored_ids_2 = dgw.list_spectrum_ids()
+
+    assert set(stored_ids) - set(stored_ids_2) == {stored_ids[0]}

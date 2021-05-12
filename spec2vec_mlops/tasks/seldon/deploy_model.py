@@ -1,27 +1,35 @@
-import mlflow
+from pathlib import Path
+
 import prefect
 import yaml
-from kubernetes import client, config
+from kubernetes import config, client
+from prefect import task
+
+from spec2vec_mlops.helper_classes.exception import DeployingError
+
+from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 
 from spec2vec_mlops import config as spec2vec_config
-from spec2vec_mlops.helper_classes.exception import DeployingError
 
 logger = prefect.context.get("logger")
 CUSTOM_RESOURCE_INFO = spec2vec_config["k8s"]["custom_seldon_resource"]
 
 
-class ModelDeployer:
-    def deploy_model(
-        self, run_id: str, seldon_deployment_path: str, overwrite: bool = False
-    ):
-        run = mlflow.get_run(run_id)
-        model_uri = f"{run.info.artifact_uri}/model/"
+@task(**DEFAULT_CONFIG)
+def deploy_model_task(registered_model: dict):
+    model_deployer = ModelDeployer()
+    model_deployer.deploy_model(registered_model["model_uri"], overwrite=True)
 
+
+class ModelDeployer:
+    def deploy_model(self, model_uri: str, overwrite: bool = False):
         logger.info(
             f"Deploying model {model_uri} to environment {CUSTOM_RESOURCE_INFO['namespace']}"
         )
         config.load_incluster_config()
         custom_api = client.CustomObjectsApi()
+        seldon_deployment_path = Path(__file__).parent / "seldon_deployment.yaml"
+
         with open(seldon_deployment_path) as yaml_file:
             deployment = yaml.safe_load(yaml_file)
         try:

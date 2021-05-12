@@ -18,8 +18,8 @@ from spec2vec_mlops.helper_classes.exception import (
     IncorrectFloatFieldTypeException,
     IncorrectStringFieldTypeException,
 )
-from spec2vec_mlops.helper_classes.model_register import ModelRegister
-from spec2vec_mlops.helper_classes.spec2vec_model import Model
+from spec2vec_mlops.tasks.register_model import ModelRegister
+from spec2vec_mlops.predictor import Predictor
 
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
 
@@ -33,7 +33,7 @@ def saved_model_run_id(word2vec_model, tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = ModelRegister(f"file:/{path}")
     run_id = model_register.register_model(
-        Model(
+        Predictor(
             word2vec_model,
             n_decimals=1,
             intensity_weighting_power=0.5,
@@ -47,7 +47,7 @@ def saved_model_run_id(word2vec_model, tmpdir):
 
 @pytest.fixture()
 def model(word2vec_model):
-    return Model(
+    return Predictor(
         word2vec_model,
         n_decimals=1,
         intensity_weighting_power=0.5,
@@ -114,7 +114,7 @@ def test_get_best_matches(model, embeddings):
     best_matches = model._get_best_matches(embeddings, embeddings, n_best_spectra)
     for query, best_match in zip(embeddings, best_matches):
         assert len(best_match) == n_best_spectra
-        assert query.spectrum_id == best_match[0]["match_id"]
+        assert query.spectrum_id == best_match[0]["match_spectrum_id"]
 
 
 @pytest.mark.skipif(
@@ -158,12 +158,12 @@ def test_predict_from_saved_model(
     best_matches = model.predict(data_and_param)
     for spectrum, best_match in zip(loaded_data, best_matches):
         assert len(best_match) == predict_parameters["n_best_spectra"]
-        assert best_match[0]["match_id"] == spectrum["spectrum_id"]
+        assert best_match[0]["match_spectrum_id"] == spectrum["spectrum_id"]
 
 
 @pytest.mark.skip("this test is currently failing")
 def test_raise_api_exception(model):
-    user_object = Model(
+    user_object = Predictor(
         model, n_decimals=1, intensity_weighting_power=0.5, allowed_missing_percentage=5
     )
     seldon_metrics = SeldonMetrics()

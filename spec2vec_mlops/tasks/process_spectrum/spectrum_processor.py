@@ -4,6 +4,7 @@ from matchms import Spectrum
 from matchms.filtering import (
     default_filters,
     add_parent_mass,
+    normalize_intensities,
     harmonize_undefined_inchikey,
     harmonize_undefined_inchi,
     harmonize_undefined_smiles,
@@ -11,33 +12,34 @@ from matchms.filtering import (
     derive_inchi_from_smiles,
     derive_smiles_from_inchi,
     derive_inchikey_from_inchi,
-    normalize_intensities,
 )
 from matchms.importing.load_from_json import as_spectrum
 
 
-class DataCleaner:
-    def clean_data(self, spectrum: Dict) -> Optional[Spectrum]:
-        parsed = self._parse_data(spectrum)
+class SpectrumProcessor:
+    def process_data(self, spectrum: Dict, min_peaks: int = 0) -> Optional[Spectrum]:
+        parsed = self._parse_data(spectrum, min_peaks)
         return parsed if parsed else None
 
-    def _parse_data(self, spectrum_dict: dict) -> Spectrum:
+    def _parse_data(self, spectrum_dict: dict, min_peaks: int) -> Spectrum:
         spectrum = as_spectrum(spectrum_dict)
-        if spectrum is not None:
+        if spectrum is not None and len(spectrum.peaks.mz) > min_peaks:
             spectrum = self._apply_filters(spectrum)
             spectrum = self._harmonize_spectrum(spectrum)
             spectrum = self._convert_metadata(spectrum)
 
             return spectrum
 
-    def _apply_filters(self, spectrum: Spectrum) -> Spectrum:
+    @staticmethod
+    def _apply_filters(spectrum: Spectrum) -> Spectrum:
         """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
         spectrum = add_parent_mass(spectrum)
         spectrum = normalize_intensities(spectrum)
         return spectrum
 
-    def _harmonize_spectrum(self, spectrum: Spectrum) -> Spectrum:
+    @staticmethod
+    def _harmonize_spectrum(spectrum: Spectrum) -> Spectrum:
         """
         Here, undefined entries will be harmonized (instead of having a huge variation
         of None,"", "N/A" etc.)
@@ -50,7 +52,8 @@ class DataCleaner:
         spectrum = repair_inchi_inchikey_smiles(spectrum)
         return spectrum
 
-    def _convert_metadata(self, spectrum: Spectrum) -> Spectrum:
+    @staticmethod
+    def _convert_metadata(spectrum: Spectrum) -> Spectrum:
         """
         Where possible (and necessary, i.e. missing): Convert between smiles, inchi,
         inchikey to complete metadata. This is done using functions from rdkit.

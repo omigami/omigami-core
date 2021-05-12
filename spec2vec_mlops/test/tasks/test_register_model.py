@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 
-from spec2vec_mlops.helper_classes.model_register import ModelRegister
-from spec2vec_mlops.helper_classes.spec2vec_model import Model
+from spec2vec_mlops.tasks.register_model import ModelRegister
+from spec2vec_mlops.predictor import Predictor
 
 os.chdir(Path(__file__).parents[3])
 
@@ -24,7 +24,7 @@ def test_register_model(word2vec_model, tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = ModelRegister(f"file:/{path}")
     run_id = model_register.register_model(
-        Model(
+        Predictor(
             word2vec_model,
             n_decimals=2,
             intensity_weighting_power=0.5,
