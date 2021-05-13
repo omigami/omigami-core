@@ -140,7 +140,7 @@ def test_get_reference_embeddings(model, embeddings, redis_db):
     reason="It can only be run if the Redis is up",
 )
 def test_predict_from_saved_model(
-    saved_model_run_id, loaded_data, predict_parameters, embeddings, redis_db
+    saved_model_run_id, loaded_data, predict_parameters, embeddings
 ):
     pipe = redis_db.pipeline()
     for embedding in embeddings:
@@ -173,3 +173,10 @@ def test_raise_api_exception(model):
     j = json.loads(rv.data)
     assert rv.status_code == 400
     assert j["status"]["info"] == "Spectrum data must be a dictionary"
+
+
+def test_10k_predictor():
+    model_uri = "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/e06d4ef7116e4bc78b76fc867fff29dc/artifacts/model"
+    predictor = Predictor(
+        model, n_decimals=1, intensity_weighting_power=0.5, allowed_missing_percentage=5
+    )

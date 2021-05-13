@@ -29,7 +29,7 @@ class DownloadData(Task):
         )
 
     def run(self) -> List[str]:
-        # self._input_dgw.download_gnps(self.input_uri, self.download_path)
+        self._input_dgw.download_gnps(self.input_uri, self.download_path)
         spectrum_ids = self._input_dgw.get_spectrum_ids(self.download_path)
         self._input_dgw.save_spectrum_ids(self.checkpoint_path, spectrum_ids)
         self.logger.info(
