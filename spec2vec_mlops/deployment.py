@@ -12,7 +12,7 @@ from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.authentication.authenticator import KratosAuthenticator
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 
-from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 

@@ -6,7 +6,7 @@ from gensim.models import Word2Vec
 from prefect import task
 
 from spec2vec_mlops.helper_classes.model_trainer import spec2vec_settings
-from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.tasks.config import DEFAULT_CONFIG
 
 

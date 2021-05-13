@@ -29,7 +29,9 @@ class ProcessSpectrum(Task):
         super().__init__(**config)
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
-        self.logger.info(f"Processing {len(spectrum_ids)} spectra from the input data")
+        self.logger.info(
+            f"Processing {len(spectrum_ids)} spectra from the input data {self._download_path}"
+        )
         spectrum_data = self._input_dgw.load_spectrum_ids(
             self._download_path, spectrum_ids
         )
