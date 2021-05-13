@@ -43,6 +43,7 @@ def build_training_flow(
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_config: Dict[str, Any] = None,
+    flow_name: str = "spec2vec-training-flow",
 ) -> Flow:
     """
     Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
@@ -79,7 +80,7 @@ def build_training_flow(
 
     """
     flow_config = flow_config or {}
-    with Flow("spec2vec-training-flow", **flow_config) as training_flow:
+    with Flow(flow_name, **flow_config) as training_flow:
         print(
             f"Downloading and loading spectrum data from {download_params.input_uri} to "
             f"{download_params.download_path}."

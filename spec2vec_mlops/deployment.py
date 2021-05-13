@@ -66,6 +66,7 @@ def deploy_training_flow(
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
     redis_db: str = "2",
+    flow_name: str = "spec2vec-training-flow",
 ):
     dataset_name = DATASET_DIR[dataset] + "gnps.json"
     spectrum_ids_name = DATASET_DIR[dataset] + "spectrum_ids.pkl"
@@ -103,6 +104,7 @@ def deploy_training_flow(
         model_output_dir=model_output_dir,
         mlflow_server=mlflow_server,
         flow_config=FLOW_CONFIG,
+        flow_name=flow_name,
     )
 
     training_flow_id = client.register(

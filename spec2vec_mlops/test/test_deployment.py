@@ -34,6 +34,7 @@ def test_deploy_training_flow():
         project_name="spec2vec-mlops-seldon-deployment",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
+        flow_name="debugging-flow",
         redis_db="2",
     )
 
