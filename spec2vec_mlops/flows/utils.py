@@ -17,8 +17,8 @@ def create_result(path: str, **kwargs) -> Dict[str, Union[Result, str]]:
 
     if protocol == "s3":
         # extracts bucket name from s3 path
-        directory = str(path).strip("s3://").split("/")[0]
-        file_name = urlparse(str(path)).path
+        directory = path.netloc
+        file_name = str(path.relative_to(path.parts[0]))
     elif protocol == "file":
         directory = str(path.parent)
         file_name = path.name

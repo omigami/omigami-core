@@ -66,6 +66,7 @@ class Predictor(PythonModel):
             reference_embeddings, embeddings, **parameters
         )
         log.info("Finishing prediction.")
+        del reference_embeddings
         gc.collect()
         return best_matches
 

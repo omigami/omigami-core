@@ -25,7 +25,7 @@ class DownloadData(Task):
 
         super().__init__(
             **config,
-            checkpoint=False,
+            checkpoint=True,
         )
 
     def run(self) -> List[str]:
