@@ -1,8 +1,10 @@
+import os
 from dataclasses import dataclass
 from typing import List
 
 from prefect import Task
 
+from spec2vec_mlops import config
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from spec2vec_mlops.tasks.config import merge_configs
@@ -32,6 +34,9 @@ class ProcessSpectrum(Task):
         self.logger.info(
             f"Processing {len(spectrum_ids)} spectra from the input data {self._download_path}"
         )
+        self.logger.info(
+            f"Using Redis DB {os.getenv('REDIS_DB', config['redis']['db'])}"
+        )
         spectrum_data = self._input_dgw.load_spectrum_ids(
             self._download_path, spectrum_ids
         )
@@ -42,7 +47,7 @@ class ProcessSpectrum(Task):
                 sp for sp in spectrum_data if sp.get("spectrum_id") in new_spectrum_ids
             ]
             self.logger.info(
-                f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} are new and will"
+                f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} spectra are new and will "
                 f"be processed."
             )
 
