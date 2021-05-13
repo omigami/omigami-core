@@ -81,7 +81,7 @@ def build_training_flow(
     """
     flow_config = flow_config or {}
     with Flow(flow_name, **flow_config) as training_flow:
-        print(
+        logger.info(
             f"Downloading and loading spectrum data from {download_params.input_uri} to "
             f"{download_params.download_path}."
         )

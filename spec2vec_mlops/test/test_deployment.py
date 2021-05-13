@@ -16,7 +16,7 @@ from spec2vec_mlops.deployment import (
 # )
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.d0b4c86",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.bed4eb6",
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,
@@ -35,7 +35,7 @@ def test_deploy_training_flow():
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
         flow_name="debugging-flow",
-        redis_db="2",
+        redis_db="1",
     )
 
     assert flow_id
