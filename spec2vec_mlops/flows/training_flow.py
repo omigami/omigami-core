@@ -4,7 +4,7 @@ from typing import Union, Dict, Any
 
 from prefect import Flow, unmapped, case
 
-
+from spec2vec_mlops.flows.config import FlowConfig
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (
     check_condition,
@@ -42,7 +42,7 @@ def build_training_flow(
     window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
-    flow_config: Dict[str, Any] = None,
+    flow_config: FlowConfig = None,
 ) -> Flow:
     """
     Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
@@ -71,14 +71,14 @@ def build_training_flow(
         Exponent used to scale intensity weights for each word
     allowed_missing_percentage:
         Number of what percentage of a spectrum is allowed to be unknown to the model
-    flow_config:
-        Configuration passed to prefect.Flow
+    flow_config: FlowConfig
+        Configuration dataclass passed to prefect.Flow as a dict
 
     Returns
     -------
 
     """
-    flow_config = flow_config or {}
+    flow_config = flow_config.__dict__ if flow_config else {}
     with Flow("spec2vec-training-flow", **flow_config) as training_flow:
         logger.info("Downloading and loading spectrum data.")
         spectrum_ids = DownloadData(
