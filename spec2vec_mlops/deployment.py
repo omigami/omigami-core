@@ -1,8 +1,15 @@
 from datetime import datetime
 from typing import Optional
 
-from spec2vec_mlops import SOURCE_URI_PARTIAL_GNPS, API_SERVER, PROJECT_NAME, OUTPUT_DIR, DATASET_FOLDER, \
-    MODEL_DIR, MLFLOW_SERVER
+from spec2vec_mlops import (
+    SOURCE_URI_PARTIAL_GNPS,
+    API_SERVER,
+    PROJECT_NAME,
+    OUTPUT_DIR,
+    DATASET_FOLDER,
+    MODEL_DIR,
+    MLFLOW_SERVER,
+)
 from prefect import Client
 
 from spec2vec_mlops.flows.training_flow import build_training_flow
@@ -13,8 +20,13 @@ from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway, REDI
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 
-from spec2vec_mlops.flows.config import make_flow_config, PrefectRunMethods, PrefectStorageMethods, \
-    PrefectExecutorMethods
+from spec2vec_mlops.flows.config import (
+    make_flow_config,
+    PrefectRunMethods,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
+
 
 def deploy_training_flow(
     image: str,
@@ -48,7 +60,10 @@ def deploy_training_flow(
     client.create_project(project_name)
 
     dataset_name = dataset_name or f"{DATASET_FOLDER}/{datetime.now().date()}/gnps.json"
-    spectrum_ids_name = spectrum_ids_name or f"{DATASET_FOLDER}/{datetime.now().date()}/spectrum_ids.pkl"
+    spectrum_ids_name = (
+        spectrum_ids_name
+        or f"{DATASET_FOLDER}/{datetime.now().date()}/spectrum_ids.pkl"
+    )
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
@@ -69,7 +84,7 @@ def deploy_training_flow(
         run_config_type=PrefectRunMethods.KUBERNETES,
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db=redis_db
+        redis_db=redis_db,
     )
 
     flow = build_training_flow(
