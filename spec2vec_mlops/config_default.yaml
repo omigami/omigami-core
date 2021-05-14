@@ -76,7 +76,7 @@ redis:
   document_hashes: "document_data"
   embedding_hashes: "embedding_data"
 prefect:
-  project: "spec2vec-mlops-project-spec2vec-load-10k-data-pt-3"
+  project: "spec2vec-mlops-project-spec2vec-load-small-data"
   output_dir: "s3://dr-prefect"
   dataset_folder: "spec2vec-training-flow/downloaded_datasets/small"
   model_folder: "s3://dr-prefect/spec2vec-training-flow/mlflow"
