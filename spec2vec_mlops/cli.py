@@ -1,15 +1,9 @@
 import click
 
 from spec2vec_mlops.deployment import (
-    PROJECT_NAME,
-    SOURCE_URI_PARTIAL_GNPS,
-    OUTPUT_DIR,
-    MODEL_DIR,
-    MLFLOW_SERVER,
-    API_SERVER,
-    deploy_training_flow,
-    DATASET_NAME,
+    deploy_training_flow
 )
+from spec2vec_mlops import SOURCE_URI_PARTIAL_GNPS, API_SERVER, PROJECT_NAME, OUTPUT_DIR, MODEL_DIR, MLFLOW_SERVER
 from spec2vec_mlops.utils import add_options
 
 
@@ -39,9 +33,13 @@ auth_options = [
 def cli():
     pass
 
+# TODO: General: why do we specify defaults in the CLI if we have defaults
+#   in the method that the CLI is linked to?
+#   I would rather have no defaults here and only have them in the method.
+
 
 @cli.command(name="register-training-flow")
-@click.option("--dataset-id", default=DATASET_NAME)
+@click.option("--dataset-id", default=None)
 @click.option("--n-decimals", type=int, default=2)
 @click.option("--iterations", type=int, default=25)
 @click.option("--window", type=int, default=500)

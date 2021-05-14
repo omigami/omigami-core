@@ -1,12 +1,10 @@
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
-ROOT_DIR = Path(__file__).parents[0]
-
+from spec2vec_mlops import SOURCE_URI_PARTIAL_GNPS, API_SERVER, PROJECT_NAME, OUTPUT_DIR, DATASET_FOLDER, \
+    MODEL_DIR, MLFLOW_SERVER
 from prefect import Client
 
-from spec2vec_mlops import config
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.authentication.authenticator import KratosAuthenticator
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
@@ -17,29 +15,6 @@ from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 
 from spec2vec_mlops.flows.config import make_flow_config, PrefectRunMethods, PrefectStorageMethods, \
     PrefectExecutorMethods
-
-
-# -- DEFAULT CONFIGS:
-
-# - GNPS JSON
-SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
-SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
-
-# - PREFECT
-API_SERVER = config["prefect_flow_registration"]["api_server"]
-PROJECT_NAME = config["prefect"]["project"]
-OUTPUT_DIR = config["prefect"]["output_dir"]
-DATASET_FOLDER = config["prefect"]["dataset_folder"]
-DATASET_DIR = (
-    f"{DATASET_FOLDER}/{datetime.now().date()}/"
-)
-MODEL_DIR = config["prefect"]["model_folder"]
-DATASET_NAME = DATASET_DIR + "gnps.json"
-SPECTRUM_IDS_NAME = DATASET_DIR + "spectrum_ids.pkl"
-
-# - MLFLOW
-MLFLOW_SERVER = config["mlflow"]["url"]["remote"]
-
 
 def deploy_training_flow(
     image: str,
@@ -54,14 +29,14 @@ def deploy_training_flow(
     username: Optional[str] = None,
     password: Optional[str] = None,
     api_server: str = API_SERVER,
-    dataset_name: str = DATASET_NAME,
-    spectrum_ids_name: str = SPECTRUM_IDS_NAME,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     output_dir: str = OUTPUT_DIR,
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
     redis_db: str = REDIS_DB_ID,
+    dataset_name: str = None,
+    spectrum_ids_name: str = None,
 ):
 
     if auth:
@@ -71,6 +46,9 @@ def deploy_training_flow(
     else:
         client = Client(api_server=api_server)
     client.create_project(project_name)
+
+    dataset_name = dataset_name or f"{DATASET_FOLDER}/{datetime.now().date()}/gnps.json"
+    spectrum_ids_name = spectrum_ids_name or f"{DATASET_FOLDER}/{datetime.now().date()}/spectrum_ids.pkl"
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()

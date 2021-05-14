@@ -5,8 +5,7 @@ from prefect.executors import Executor, DaskExecutor, LocalDaskExecutor
 from prefect.run_configs import RunConfig, KubernetesRun
 from prefect.storage import Storage, S3
 
-from spec2vec_mlops import config
-from spec2vec_mlops.deployment import ROOT_DIR
+from spec2vec_mlops import config, ROOT_DIR
 
 S3_MODEL_BUCKET = config["prefect"]["s3_model_bucket"]
 

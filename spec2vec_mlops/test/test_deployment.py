@@ -4,14 +4,8 @@ from drfs import DRPath
 
 from spec2vec_mlops.deployment import (
     deploy_training_flow,
-    API_SERVER,
-    DATASET_NAME,
-    SOURCE_URI_PARTIAL_GNPS,
-    OUTPUT_DIR,
-    MODEL_DIR,
-    MLFLOW_SERVER,
 )
-
+from spec2vec_mlops import SOURCE_URI_PARTIAL_GNPS, API_SERVER, OUTPUT_DIR, MODEL_DIR, MLFLOW_SERVER
 
 
 def test_deploy_training_flow():
@@ -28,7 +22,7 @@ def test_deploy_training_flow():
         username=None,
         password=None,
         api_server=API_SERVER["remote"],
-        dataset_name=DATASET_NAME,
+        dataset_name=None,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=OUTPUT_DIR,
         project_name="spec2vec-mlops-test-flow",
