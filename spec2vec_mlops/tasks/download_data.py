@@ -1,12 +1,10 @@
 from dataclasses import dataclass
-from pathlib import Path
 from typing import List
 
 from prefect import Task
-from prefect.engine.result import Result
 
 from spec2vec_mlops.tasks.config import merge_configs
-from spec2vec_mlops.tasks.data_gateway import InputDataGateway
+from spec2vec_mlops.data_gateway import InputDataGateway
 
 
 class DownloadData(Task):
@@ -16,7 +14,6 @@ class DownloadData(Task):
         input_uri: str,
         download_path: str,
         checkpoint_path: str,
-        result: Result,
         **kwargs,
     ):
         self._input_dgw = input_dgw
@@ -28,15 +25,17 @@ class DownloadData(Task):
 
         super().__init__(
             **config,
-            result=result,
             checkpoint=True,
-            target=Path(checkpoint_path).name,
         )
 
     def run(self) -> List[str]:
-        self._input_dgw.download_gnps(self.input_uri, self.download_path)
+        # self._input_dgw.download_gnps(self.input_uri, self.download_path)
         spectrum_ids = self._input_dgw.get_spectrum_ids(self.download_path)
         self._input_dgw.save_spectrum_ids(self.checkpoint_path, spectrum_ids)
+        self.logger.info(
+            f"Downloaded {len(spectrum_ids)} spectra from {self.download_path}."
+        )
+        self.logger.info(f"Saving spectrum ids to {self.checkpoint_path}")
         return spectrum_ids
 
 
