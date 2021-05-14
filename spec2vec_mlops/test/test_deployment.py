@@ -20,7 +20,7 @@ def test_deploy_training_flow():
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,
-        allowed_missing_percentage=25,
+        allowed_missing_percentage=5,
         n_decimals=2,
         skip_if_exists=True,
         auth=False,
