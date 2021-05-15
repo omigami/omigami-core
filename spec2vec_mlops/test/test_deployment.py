@@ -29,14 +29,14 @@ def test_deploy_training_flow():
         username=None,
         password=None,
         api_server=API_SERVER["remote"],
-        dataset="full",
+        dataset="10k",
         source_uri=SOURCE_URI_COMPLETE_GNPS,
         output_dir=OUTPUT_DIR,
-        project_name="spec2vec-mlops-full-data",
+        project_name="spec2vec-mlops-10k",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow",
-        redis_db="0",
+        redis_db="1",
     )
 
     assert flow_id
