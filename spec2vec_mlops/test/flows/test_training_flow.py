@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from drfs import DRPath
 from drfs.filesystems import get_fs
-from prefect import task
+from prefect import task, Flow
 from prefect.executors import LocalDaskExecutor
 from prefect.storage import S3
 
@@ -16,6 +16,7 @@ from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.data_gateway import SpectrumDataGateway
+from spec2vec_mlops.tasks import deploy_model_task
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR
@@ -138,7 +139,7 @@ def test_run_training_flow_with_s3_data(mock_seldon_deployment):
     }
 
     flow = build_training_flow(
-        project_name="test",
+        project_name="test-project",
         download_params=download_parameters,
         process_params=process_parameters,
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
@@ -149,9 +150,26 @@ def test_run_training_flow_with_s3_data(mock_seldon_deployment):
         allowed_missing_percentage=5,
         flow_config=FLOW_CONFIG,
         chunk_size=1000,
+        flow_name="test-flow",
     )
 
     results = flow.run()
-    (d,) = flow.get_tasks("DownloadData")
 
     assert results.is_successful()
+
+
+@pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
+def test_deploy_seldon_model():
+    FLOW_CONFIG = {
+        "storage": S3("dr-prefect"),
+        "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
+    }
+
+    with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
+        deploy_model_task(
+            {
+                "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/e06d4ef7116e4bc78b76fc867fff29dc/artifacts/model/"
+            }
+        )
+
+    res = deploy.run()

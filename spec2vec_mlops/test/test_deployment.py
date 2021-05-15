@@ -8,6 +8,7 @@ from spec2vec_mlops.deployment import (
     OUTPUT_DIR,
     MODEL_DIR,
     MLFLOW_SERVER,
+    SOURCE_URI_COMPLETE_GNPS,
 )
 
 
@@ -16,8 +17,8 @@ from spec2vec_mlops.deployment import (
 # )
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.71c9cef",
-        iterations=10,
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b1e72da",
+        iterations=5,
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
@@ -28,14 +29,14 @@ def test_deploy_training_flow():
         username=None,
         password=None,
         api_server=API_SERVER["remote"],
-        dataset="small",
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        dataset="full",
+        source_uri=SOURCE_URI_COMPLETE_GNPS,
         output_dir=OUTPUT_DIR,
-        project_name="spec2vec-mlops-debug-flow-1",
+        project_name="spec2vec-mlops-full-data",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
-        flow_name="debugging-flow-2",
-        redis_db="2",
+        flow_name="training-flow",
+        redis_db="0",
     )
 
     assert flow_id

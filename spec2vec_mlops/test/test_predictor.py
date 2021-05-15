@@ -2,6 +2,7 @@ import json
 import os
 import pickle
 from pathlib import Path
+from typing import List
 
 import mlflow
 import pytest
@@ -20,12 +21,54 @@ from spec2vec_mlops.helper_classes.exception import (
 )
 from spec2vec_mlops.tasks.register_model import ModelRegister
 from spec2vec_mlops.predictor import Predictor
+from spec2vec_mlops.test.conftest import ASSETS_DIR
 
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
 
 redis_db = factories.redisdb("redis_nooproc")
 
 os.chdir(Path(__file__).parents[3])
+
+
+@pytest.fixture
+def small_payload():
+    small_payload = {
+        "parameters": {"n_best_spectra": 10},
+        "data": [
+            {
+                "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
+                "Precursor_MZ": "353.233",
+            },
+        ],
+    }
+    return small_payload
+
+
+@pytest.fixture
+def big_payload():
+    big_payload = {
+        "parameters": {"n_best_spectra": 10},
+        "data": [
+            {
+                "peaks_json": "[[80.060677, 157.0], [81.072548, 295.0], [83.088249, 185.0], [91.057564, 601.0], "
+                "[95.085892, 634.0], [105.07077, 590.0], [107.09063, 228.0], [109.107414, 238.0], "
+                "[115.056114, 482.0], [117.07032, 715.0], [120.779747, 313.0], [121.067802, 257.0], "
+                "[121.102318, 430.0], [128.064728, 119.0], [129.074646, 241.0], [130.083542, 291.0], "
+                "[131.083939, 917.0], [133.101639, 75.0], [135.11908, 203.0], [136.925232, 163.0], "
+                "[141.068222, 331.0], [142.082947, 193.0], [143.088394, 623.0], [143.576874, 70.0], "
+                "[145.07016, 170.0], [145.105026, 379.0], [147.124954, 63.0], [149.134857, 156.0], "
+                "[154.542526, 94.0], [159.119614, 289.0], [161.135452, 111.0], [164.157211, 433.0], "
+                "[165.069885, 55.0], [166.07579, 163.0], [171.12529, 261.0], [173.09967, 182.0], "
+                "[185.066528, 149.0], [185.135742, 230.0], [189.129272, 164.0], [193.12529, 121.0], "
+                "[196.12677, 166.0], [199.114395, 225.0], [199.154922, 102.0], [207.142349, 179.0], "
+                "[212.152267, 211.0], [213.134125, 397.0], [214.168991, 100.0], [217.117264, 145.0], "
+                "[217.153534, 170.0], [229.207336, 199.0], [229.305023, 106.0], [255.176453, 162.0], "
+                "[259.16922, 175.0], [273.219421, 190.0], [301.217468, 592.0], [1337.508301, 230.0]]",
+                "Precursor_MZ": "301.216",
+            }
+        ],
+    }
+    return big_payload
 
 
 @pytest.fixture
@@ -161,18 +204,20 @@ def test_predict_from_saved_model(
         assert best_match[0]["match_spectrum_id"] == spectrum["spectrum_id"]
 
 
-@pytest.mark.skip("this test is currently failing")
-def test_raise_api_exception(model):
-    user_object = Predictor(
-        model, n_decimals=1, intensity_weighting_power=0.5, allowed_missing_percentage=5
+def test_local_predictions(small_payload, big_payload):
+    path = str(ASSETS_DIR / "full_data/new_predictor.pkl")
+    with open(path, "rb") as input_file:
+        local_model = pickle.load(input_file)
+
+    matches_small = local_model.predict(
+        model_input_and_parameters=small_payload, context=""
     )
-    seldon_metrics = SeldonMetrics()
-    app = get_rest_microservice(user_object, seldon_metrics)
-    client = app.test_client()
-    rv = client.get('/predict?json={"data":{"ndarray":[[1,2]], "names":["spec1"]}}')
-    j = json.loads(rv.data)
-    assert rv.status_code == 400
-    assert j["status"]["info"] == "Spectrum data must be a dictionary"
+    matches_big = local_model.predict(
+        model_input_and_parameters=big_payload, context=""
+    )
+
+    assert isinstance(matches_small, List)
+    assert isinstance(matches_big, List)
 
 
 def test_10k_predictor():
