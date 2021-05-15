@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 from prefect import Client
-from prefect.executors import LocalDaskExecutor
+from prefect.executors import LocalDaskExecutor, DaskExecutor
 from prefect.run_configs import KubernetesRun
 from prefect.storage import S3
 
@@ -27,7 +27,7 @@ OUTPUT_DIR = "s3://dr-prefect"
 DATASET_DIR = {
     "small": f"spec2vec-training-flow/downloaded_datasets/small/{datetime.now().date()}/",
     "10k": f"spec2vec-training-flow/downloaded_datasets/test_10k/",
-    "full": f"spec2vec-training-flow/downloaded_datasets/full/{datetime.now().date()}/",
+    "full": f"spec2vec-training-flow/downloaded_datasets/full/2021-05-14/",
 }
 
 MODEL_DIR = "s3://dr-prefect/spec2vec-training-flow/mlflow"
@@ -41,8 +41,8 @@ FLOW_CONFIG = {
     ),
     "storage": S3("dr-prefect"),
     # TODO: maybe also useful to have as a parameter?
-    "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
-    # "executor": DaskExecutor(address="dask-scheduler.dask:8786"),
+    # "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
+    "executor": DaskExecutor(address="dask-scheduler.dask:8786"),
 }
 
 
