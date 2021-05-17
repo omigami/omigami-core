@@ -45,5 +45,3 @@ spec:
             env:
               - name: REDIS_HOST
                 value: "redis-master.redis"
-              - name: REDIS_DB
-                value: "0"

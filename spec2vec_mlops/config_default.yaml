@@ -71,7 +71,7 @@ k8s:
     namespace: "seldon"
 redis:
   host: "localhost"
-  db: 0
+  db: 2
   spectrum_id_sorted_set: "spectrum_id_precursor_mz_sorted"
   spectrum_hashes: "spectrum_data"
   document_hashes: "document_data"

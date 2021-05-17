@@ -1,4 +1,3 @@
-import os
 import pickle
 from typing import List, Iterable
 
@@ -11,12 +10,17 @@ from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
 
-HOST = os.getenv("REDIS_HOST", config["redis"]["host"])
-REDIS_DB_ID = os.getenv("REDIS_DB", config["redis"]["db"])
+HOST = config["redis"]["host"]
+# this can be overrided by param in cli
+DEFAULT_REDIS_DB_ID = config["redis"]["db"]
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
 SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
 DOCUMENT_HASHES = config["redis"]["document_hashes"]
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
+
+SMALL_DATASET_DB_ID = 2
+MEDIUM_DATASET_DB_ID = 1
+LARGE_DATASET_DB_ID = 0
 
 
 class RedisSpectrumDataGateway(SpectrumDataGateway):
@@ -28,7 +32,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
 
     def _init_client(self):
         if self.client is None:
-            self.client = redis.StrictRedis(host=HOST, db=REDIS_DB_ID)
+            self.client = redis.StrictRedis(host=HOST, db=DEFAULT_REDIS_DB_ID)
 
     def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
         self._init_client()
@@ -123,6 +127,20 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         # Just used on tests atm. No abstract method.
         self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
+
+    @staticmethod
+    def get_database_id(ref_dataset_size: str):
+        _ref_dataset_size = ref_dataset_size.lower()
+        if _ref_dataset_size == "small":
+            return SMALL_DATASET_DB_ID
+        elif _ref_dataset_size == "medium":
+            return MEDIUM_DATASET_DB_ID
+        elif _ref_dataset_size == "large":
+            return LARGE_DATASET_DB_ID
+        else:
+            raise ValueError(
+                f"No such option available for reference dataset size: {ref_dataset_size}."
+            )
 
 
 class RedisHashesIterator:

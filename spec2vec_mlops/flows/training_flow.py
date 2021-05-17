@@ -78,8 +78,8 @@ def build_training_flow(
     -------
 
     """
-    flow_config = flow_config.__dict__ if flow_config else {}
-    with Flow("spec2vec-training-flow", **flow_config) as training_flow:
+    flow_config_dict = flow_config.__dict__ if flow_config else {}
+    with Flow("spec2vec-training-flow", **flow_config_dict) as training_flow:
         logger.info("Downloading and loading spectrum data.")
         spectrum_ids = DownloadData(
             **download_params.kwargs,
@@ -119,6 +119,6 @@ def build_training_flow(
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        deploy_model_task(registered_model)
+        deploy_model_task(registered_model, flow_config_dict["redis_db"])
 
     return training_flow

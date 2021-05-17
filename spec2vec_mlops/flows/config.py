@@ -19,7 +19,7 @@ class PrefectStorageMethods(Enum):
 
 
 class PrefectExecutorMethods(Enum):
-    DASK = 0,
+    DASK = 0
     LOCAL_DASK = 1
 
 
@@ -28,9 +28,11 @@ class FlowConfig:
     """
     Configuration options to be passed into Prefect's Flow() as arguments
     """
+
     run_config: RunConfig
     storage: Storage
     executor: Executor
+    redis_db: str
 
 
 def make_flow_config(
@@ -47,14 +49,16 @@ def make_flow_config(
     # run_config
     if run_config_type == PrefectRunMethods.KUBERNETES:
         run_config = KubernetesRun(
-          image=image,
-          job_template_path=str(ROOT_DIR / "job_spec.yaml"),
-          labels=["dev"],
-          service_account_name="prefect-server-serviceaccount",
-          env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
+            image=image,
+            job_template_path=str(ROOT_DIR / "job_spec.yaml"),
+            labels=["dev"],
+            service_account_name="prefect-server-serviceaccount",
+            env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
         )
     else:
-        raise ValueError(f"Prefect flow run config type '{run_config_type}' not supported.")
+        raise ValueError(
+            f"Prefect flow run config type '{run_config_type}' not supported."
+        )
 
     # storage_type
     if storage_type == PrefectStorageMethods.S3:
@@ -70,4 +74,4 @@ def make_flow_config(
     else:
         raise ValueError(f"Prefect flow executor type '{executor_type}' not supported.")
 
-    return FlowConfig(run_config, storage, executor)
+    return FlowConfig(run_config, storage, executor, redis_db)

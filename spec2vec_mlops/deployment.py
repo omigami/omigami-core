@@ -16,7 +16,10 @@ from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.authentication.authenticator import KratosAuthenticator
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 
-from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway, REDIS_DB_ID
+from spec2vec_mlops.gateways.redis_gateway import (
+    RedisSpectrumDataGateway,
+    DEFAULT_REDIS_DB_ID,
+)
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 
@@ -46,7 +49,7 @@ def deploy_training_flow(
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
-    redis_db: str = REDIS_DB_ID,
+    reference_dataset_size: str = None,
     dataset_name: str = None,
     spectrum_ids_name: str = None,
 ):
@@ -59,10 +62,16 @@ def deploy_training_flow(
         client = Client(api_server=api_server)
     client.create_project(project_name)
 
+    # config values
     dataset_name = dataset_name or f"{DATASET_FOLDER}/{datetime.now().date()}/gnps.json"
     spectrum_ids_name = (
         spectrum_ids_name
         or f"{DATASET_FOLDER}/{datetime.now().date()}/spectrum_ids.pkl"
+    )
+    redis_db = (
+        RedisSpectrumDataGateway.get_database_id(reference_dataset_size)
+        if reference_dataset_size is not None
+        else DEFAULT_REDIS_DB_ID
     )
 
     input_dgw = FSInputDataGateway()

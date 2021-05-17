@@ -1,9 +1,14 @@
 import click
 
-from spec2vec_mlops.deployment import (
-    deploy_training_flow
+from spec2vec_mlops.deployment import deploy_training_flow
+from spec2vec_mlops import (
+    SOURCE_URI_PARTIAL_GNPS,
+    API_SERVER,
+    PROJECT_NAME,
+    OUTPUT_DIR,
+    MODEL_DIR,
+    MLFLOW_SERVER,
 )
-from spec2vec_mlops import SOURCE_URI_PARTIAL_GNPS, API_SERVER, PROJECT_NAME, OUTPUT_DIR, MODEL_DIR, MLFLOW_SERVER
 from spec2vec_mlops.utils import add_options
 
 
@@ -33,6 +38,7 @@ auth_options = [
 def cli():
     pass
 
+
 # TODO: General: why do we specify defaults in the CLI if we have defaults
 #   in the method that the CLI is linked to?
 #   I would rather have no defaults here and only have them in the method.
@@ -45,6 +51,7 @@ def cli():
 @click.option("--window", type=int, default=500)
 @click.option("--intensity-weighting-power", type=float, default=0.5)
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
+@click.option("--reference-dataset-size", default=None)
 @add_options(auth_options)
 def deploy_training_flow_cli(*args, **kwargs):
     _ = deploy_training_flow(*args, **kwargs)
