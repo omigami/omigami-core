@@ -8,6 +8,12 @@ from prefect import task
 
 import spec2vec_mlops.flows.training_flow
 from spec2vec_mlops import config
+from spec2vec_mlops.flows.config import (
+    make_flow_config,
+    PrefectRunMethods,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
@@ -25,7 +31,19 @@ def mock_task(a=None, b=None, c=None, **kwargs):
     pass
 
 
-def test_training_flow():
+@pytest.fixture
+def flow_config():
+    flow_config = make_flow_config(
+        image="image-ref-name-test-harry-potter-XXII",
+        run_config_type=PrefectRunMethods.KUBERNETES,
+        storage_type=PrefectStorageMethods.S3,
+        executor_type=PrefectExecutorMethods.LOCAL_DASK,
+        redis_db="2",
+    )
+    return flow_config
+
+
+def test_training_flow(flow_config):
     mock_spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     expected_tasks = {
@@ -54,11 +72,13 @@ def test_training_flow():
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
-        flow_config=None,
+        flow_config=flow_config,
+        redis_db="0",
     )
 
     assert flow
     assert len(flow.tasks) == 9
+    # TODO: If this is now parameterize in the yaml file, get it from there and put here
     assert flow.name == "spec2vec-training-flow"
 
     task_names = {t.name for t in flow.tasks}
@@ -76,7 +96,7 @@ def mock_seldon_deployment(monkeypatch):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow(mock_seldon_deployment, tmpdir):
+def test_run_training_flow(mock_seldon_deployment, tmpdir, flow_config):
     # remove results from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
@@ -98,8 +118,9 @@ def test_run_training_flow(mock_seldon_deployment, tmpdir):
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
-        flow_config=None,
+        flow_config=flow_config,
         chunk_size=10,
+        redis_db="0",
     )
 
     results = flow.run()

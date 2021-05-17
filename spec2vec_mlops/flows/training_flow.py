@@ -37,12 +37,13 @@ def build_training_flow(
     process_params: ProcessSpectrumParameters,
     model_output_dir: str,
     mlflow_server: str,
+    flow_config: FlowConfig,
+    redis_db: str,
     chunk_size: int = 1000,
     iterations: int = 25,
     window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
-    flow_config: FlowConfig = None,
 ) -> Flow:
     """
     Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
@@ -78,7 +79,8 @@ def build_training_flow(
     -------
 
     """
-    flow_config_dict = flow_config.__dict__ if flow_config else {}
+    flow_config_dict = flow_config.__dict__
+
     with Flow("spec2vec-training-flow", **flow_config_dict) as training_flow:
         logger.info("Downloading and loading spectrum data.")
         spectrum_ids = DownloadData(
@@ -119,6 +121,6 @@ def build_training_flow(
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        deploy_model_task(registered_model, flow_config_dict["redis_db"])
+        deploy_model_task(registered_model, redis_db)
 
     return training_flow

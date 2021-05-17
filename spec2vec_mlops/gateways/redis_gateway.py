@@ -1,4 +1,5 @@
 import pickle
+from enum import Enum
 from typing import List, Iterable
 
 import redis
@@ -18,9 +19,11 @@ SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
 DOCUMENT_HASHES = config["redis"]["document_hashes"]
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
 
-SMALL_DATASET_DB_ID = 2
-MEDIUM_DATASET_DB_ID = 1
-LARGE_DATASET_DB_ID = 0
+
+class RedisDBDatasetSize(Enum):
+    SmallDataset = "2"
+    MediumDataset = "1"
+    LargeDataset = "0"
 
 
 class RedisSpectrumDataGateway(SpectrumDataGateway):
@@ -127,20 +130,6 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         # Just used on tests atm. No abstract method.
         self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
-
-    @staticmethod
-    def get_database_id(ref_dataset_size: str):
-        _ref_dataset_size = ref_dataset_size.lower()
-        if _ref_dataset_size == "small":
-            return SMALL_DATASET_DB_ID
-        elif _ref_dataset_size == "medium":
-            return MEDIUM_DATASET_DB_ID
-        elif _ref_dataset_size == "large":
-            return LARGE_DATASET_DB_ID
-        else:
-            raise ValueError(
-                f"No such option available for reference dataset size: {ref_dataset_size}."
-            )
 
 
 class RedisHashesIterator:

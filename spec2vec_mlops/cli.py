@@ -51,7 +51,7 @@ def cli():
 @click.option("--window", type=int, default=500)
 @click.option("--intensity-weighting-power", type=float, default=0.5)
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
-@click.option("--reference-dataset-size", default=None)
+@click.option("--dataset-size", default=None)
 @add_options(auth_options)
 def deploy_training_flow_cli(*args, **kwargs):
     _ = deploy_training_flow(*args, **kwargs)

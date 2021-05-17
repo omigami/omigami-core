@@ -19,6 +19,7 @@ from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_gateway import (
     RedisSpectrumDataGateway,
     DEFAULT_REDIS_DB_ID,
+    RedisDBDatasetSize,
 )
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
@@ -49,7 +50,7 @@ def deploy_training_flow(
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
-    reference_dataset_size: str = None,
+    dataset_size: str = None,
     dataset_name: str = None,
     spectrum_ids_name: str = None,
 ):
@@ -68,11 +69,16 @@ def deploy_training_flow(
         spectrum_ids_name
         or f"{DATASET_FOLDER}/{datetime.now().date()}/spectrum_ids.pkl"
     )
-    redis_db = (
-        RedisSpectrumDataGateway.get_database_id(reference_dataset_size)
-        if reference_dataset_size is not None
-        else DEFAULT_REDIS_DB_ID
-    )
+
+    if dataset_size is not None:
+        try:
+            redis_db = RedisDBDatasetSize[dataset_size]
+        except KeyError:
+            raise ValueError(
+                f"No such option available for reference dataset size: {dataset_size}."
+            )
+    else:
+        redis_db = DEFAULT_REDIS_DB_ID
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
@@ -107,6 +113,7 @@ def deploy_training_flow(
         model_output_dir=model_output_dir,
         mlflow_server=mlflow_server,
         flow_config=flow_config,
+        redis_db=redis_db,
     )
 
     training_flow_id = client.register(

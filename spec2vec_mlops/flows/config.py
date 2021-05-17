@@ -9,6 +9,10 @@ from spec2vec_mlops import config, ROOT_DIR
 
 S3_MODEL_BUCKET = config["prefect"]["s3_model_bucket"]
 
+"""
+    Implemented Prefect flow configurations:
+"""
+
 
 class PrefectRunMethods(Enum):
     KUBERNETES = 0
@@ -26,13 +30,14 @@ class PrefectExecutorMethods(Enum):
 @dataclass
 class FlowConfig:
     """
-    Configuration options to be passed into Prefect's Flow() as arguments
+    Configuration options to be passed into Prefect's Flow() as arguments.
+
+    Therefore, should mirror expected Flow() arguments ~exatcly~.
     """
 
     run_config: RunConfig
     storage: Storage
     executor: Executor
-    redis_db: str
 
 
 def make_flow_config(
@@ -43,7 +48,8 @@ def make_flow_config(
     redis_db: str,
 ) -> FlowConfig:
     """
-    This will create a flow config either with provided params or using the default values from default_config.yaml
+    This will coordinate the creation of a flow config either with provided params or using the default values
+    from default_config.yaml
     """
 
     # run_config
@@ -74,4 +80,4 @@ def make_flow_config(
     else:
         raise ValueError(f"Prefect flow executor type '{executor_type}' not supported.")
 
-    return FlowConfig(run_config, storage, executor, redis_db)
+    return FlowConfig(run_config=run_config, storage=storage, executor=executor)
