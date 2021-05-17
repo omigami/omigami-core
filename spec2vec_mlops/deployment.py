@@ -18,6 +18,8 @@ from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 
 
 # TODO: move all of these variables to config default and organize it
+from spec2vec_mlops.tasks.train_model import TrainModelParameters
+
 SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 API_SERVER = config["prefect_flow_registration"]["api_server"]
@@ -88,12 +90,12 @@ def deploy_training_flow(
         n_decimals,
         skip_if_exists,
     )
+    train_model_parameters = TrainModelParameters(spectrum_dgw, iterations, window)
 
     flow = build_training_flow(
         download_params=download_parameters,
         process_params=process_parameters,
-        iterations=iterations,
-        window=window,
+        train_params=train_model_parameters,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
         project_name=project_name,

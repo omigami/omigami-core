@@ -3,4 +3,4 @@ from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrum
 from spec2vec_mlops.tasks.seldon import deploy_model_task
 from spec2vec_mlops.tasks.make_embeddings import make_embeddings_task
 from spec2vec_mlops.tasks.register_model import register_model_task
-from spec2vec_mlops.tasks.train_model import train_model_task
+from spec2vec_mlops.tasks.train_model import TrainModel

@@ -14,6 +14,7 @@ from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
+from spec2vec_mlops.tasks.train_model import TrainModelParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR
 
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
@@ -32,10 +33,10 @@ def test_training_flow():
         "CreateChunks",
         "DownloadData",
         "ProcessSpectrum",
+        "TrainModel",
         "deploy_model_task",
         "make_embeddings_task",
         "register_model_task",
-        "train_model_task",
     }
 
     flow = build_training_flow(
@@ -46,10 +47,9 @@ def test_training_flow():
         process_params=ProcessSpectrumParameters(
             mock_spectrum_dgw, mock_input_dgw, 2, False
         ),
+        train_params=TrainModelParameters(mock_spectrum_dgw, 25, 500),
         model_output_dir="model-output",
         mlflow_server="mlflow-server",
-        iterations=25,
-        window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=None,

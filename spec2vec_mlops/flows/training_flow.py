@@ -8,7 +8,7 @@ from prefect import Flow, unmapped
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (
     DownloadData,
-    train_model_task,
+    TrainModel,
     register_model_task,
     make_embeddings_task,
     deploy_model_task,
@@ -19,6 +19,7 @@ from spec2vec_mlops.tasks.process_spectrum import (
 )
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
+from spec2vec_mlops.tasks.train_model import TrainModelParameters
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -34,11 +35,10 @@ def build_training_flow(
     project_name: str,
     download_params: DownloadParameters,
     process_params: ProcessSpectrumParameters,
+    train_params: TrainModelParameters,
     model_output_dir: str,
     mlflow_server: str,
     chunk_size: int = 1000,
-    iterations: int = 25,
-    window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_config: Dict[str, Any] = None,
@@ -62,10 +62,6 @@ def build_training_flow(
         Server used for MLFlow to save the model
     chunk_size:
         Size of the chunks to map the data processing task
-    iterations:
-        Number of training iterations
-    window:
-        Window size for context around the word
     intensity_weighting_power:
         Exponent used to scale intensity weights for each word
     allowed_missing_percentage:
@@ -94,7 +90,10 @@ def build_training_flow(
             download_params.download_path, **process_params.kwargs
         ).map(spectrum_id_chunks)
 
-        model = train_model_task(iterations, window)
+        model = TrainModel(train_params.spectrum_dgw)(
+            train_params.iterations, train_params.window
+        )
+
         registered_model = register_model_task(
             mlflow_server,
             model,
