@@ -4,21 +4,21 @@ import json
 from matchms.importing import load_from_mgf
 
 
-def run(mgf_file: str, n_best_spectra: int = 10):
+def run(mgf_file: str, token: str, n_best_spectra: int = 10):
     """Load the spectra from the MGF file into a generator, build the payload,
     call the prediction API and then format the predictions"""
     spectra_generator = load_from_mgf(mgf_file)
 
     payload = build_payload(spectra_generator, n_best_spectra)
 
-    API_request = call_spec2vec_API(payload)
+    API_request = call_spec2vec_API(payload, token)
 
     library_spectra = format_results(API_request)
 
     return library_spectra
 
 
-def build_payload(spectra_generator, n_best_spectra):
+def build_payload(spectra_generator, n_best_spectra: int):
     """Extract abundance pairs and Precursor_MZ data, then build the json payload"""
     spectra = []
     for spectrum in spectra_generator:
@@ -51,10 +51,13 @@ def build_payload(spectra_generator, n_best_spectra):
     return payload
 
 
-def call_spec2vec_API(payload):
+def call_spec2vec_API(payload: str, token: str):
     """"Query of the prediction API endpoint"""
     url = "https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions"
-    api_request = requests.post(url, json=payload, timeout=600)
+    api_request = requests.post(url, 
+                                json=payload, 
+                                headers={'Authorization': f'Bearer {token}'},
+                                timeout=600)
 
     return api_request
 
