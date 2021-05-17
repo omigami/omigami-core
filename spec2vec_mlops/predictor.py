@@ -1,7 +1,7 @@
 import ast
 import gc
 from logging import getLogger
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Optional
 
 import numpy as np
 from gensim.models import Word2Vec
@@ -27,6 +27,8 @@ from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 KEYS = config["gnps_json"]["necessary_keys"]
 
 log = getLogger(__name__)
+
+REFERENCE_EMBEDDINGS: Optional[List[Embedding]] = None
 
 
 class Predictor(PythonModel):
@@ -60,13 +62,17 @@ class Predictor(PythonModel):
         log.info("Pre-processing data.")
         embeddings = self._pre_process_data(model_input)
         log.info("Loading reference embeddings.")
-        reference_embeddings = self._get_reference_embeddings()
+        global REFERENCE_EMBEDDINGS
+        if REFERENCE_EMBEDDINGS is None:
+            precursor_mz = model_input["Precursor_MZ"]
+            REFERENCE_EMBEDDINGS = self._get_reference_embeddings(precursor_mz)
+        log.info(f"Loaded {len(REFERENCE_EMBEDDINGS)} from the database.")
         log.info("Getting best matches.")
         best_matches = self._get_best_matches(
-            reference_embeddings, embeddings, **parameters
+            REFERENCE_EMBEDDINGS, embeddings, **parameters
         )
         log.info("Finishing prediction.")
-        del reference_embeddings
+        del embeddings
         gc.collect()
         return best_matches
 
@@ -90,9 +96,10 @@ class Predictor(PythonModel):
         ]
         return embeddings
 
-    def _get_reference_embeddings(self) -> List[Embedding]:
+    def _get_reference_embeddings(self, precursor_mz: str) -> List[Embedding]:
         dgw = RedisSpectrumDataGateway()
-        embeddings_iter = dgw.read_embeddings(self.run_id)
+        min_mz, max_mz = float(precursor_mz) - 100, float(precursor_mz) + 100
+        embeddings_iter = dgw.read_embeddings_within_range(self.run_id, min_mz, max_mz)
         return list(embeddings_iter)
 
     def _get_best_matches(
