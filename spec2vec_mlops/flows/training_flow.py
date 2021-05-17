@@ -79,9 +79,7 @@ def build_training_flow(
     -------
 
     """
-    flow_config_dict = flow_config.__dict__
-
-    with Flow("spec2vec-training-flow", **flow_config_dict) as training_flow:
+    with Flow("spec2vec-training-flow", **flow_config.kwargs) as training_flow:
         logger.info("Downloading and loading spectrum data.")
         spectrum_ids = DownloadData(
             **download_params.kwargs,

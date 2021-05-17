@@ -39,6 +39,10 @@ class FlowConfig:
     storage: Storage
     executor: Executor
 
+    @property
+    def kwargs(self):
+        return self.__dict__
+
 
 def make_flow_config(
     image: str,
