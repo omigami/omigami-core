@@ -35,7 +35,7 @@ def small_payload():
             {
                 "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
                 "Precursor_MZ": "353.233",
-            },
+            }
         ],
     }
     return small_payload
@@ -202,7 +202,7 @@ def test_predict_from_saved_model(
 
 
 def test_local_predictions(small_payload, big_payload, embeddings_2k, redis_db):
-    path = str(ASSETS_DIR / "full_data/new_predictor.pkl")
+    path = str(ASSETS_DIR / "full_data/test_global_variables.pkl")
 
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
