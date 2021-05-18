@@ -97,15 +97,14 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)
 
-    # Not used atm
     def read_embeddings_within_range(
         self, run_id: str, min_mz: int = 0, max_mz: int = -1
     ) -> List[Embedding]:
         self._init_client()
-        spectra_ids_within_range = self._read_spectra_ids_within_range(
+        spectrum_ids_within_range = self._read_spectra_ids_within_range(
             SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, min_mz, max_mz
         )
-        return self.read_embeddings(run_id, spectra_ids_within_range)
+        return self.read_embeddings(run_id, spectrum_ids_within_range)
 
     def read_documents_iter(self) -> Iterable:
         self._init_client()
@@ -114,7 +113,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None):
         if spectrum_ids:
             return [
-                pickle.loads(self.client.hget(hash_name, id)) for id in spectrum_ids
+                pickle.loads(self.client.hget(hash_name, id_)) for id_ in spectrum_ids
             ]
         else:
             return [pickle.loads(e) for e in self.client.hgetall(hash_name).values()]
@@ -125,7 +124,9 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]
 
     def _read_spectra_ids_within_range(self, hash_name: str, min_mz: int, max_mz: int):
-        return self.client.zrangebyscore(hash_name, min_mz, max_mz)
+        return [
+            id_.decode() for id_ in self.client.zrangebyscore(hash_name, min_mz, max_mz)
+        ]
 
     def delete_spectra(self, spectrum_ids: List[str]):
         # Just used on tests atm. No abstract method.

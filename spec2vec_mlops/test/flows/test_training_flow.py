@@ -11,7 +11,7 @@ from prefect.storage import S3
 
 import spec2vec_mlops.flows.training_flow
 from spec2vec_mlops import config
-from spec2vec_mlops.deployment import OUTPUT_DIR, DATASET_DIR, MODEL_DIR, MLFLOW_SERVER
+from spec2vec_mlops.deployment import MODEL_DIR
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
@@ -119,17 +119,14 @@ def test_run_training_flow(mock_seldon_deployment, tmpdir):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-@pytest.mark.skip("Uses internet connection.")
 def test_run_training_flow_with_s3_data(mock_seldon_deployment):
-    fs = get_fs(OUTPUT_DIR)
-
     input_dgw = FSInputDataGateway()
     download_parameters = DownloadParameters(
         "fake_10k_dataset_uri",
-        OUTPUT_DIR,
-        DATASET_DIR["10k"] + "gnps.json",
+        ASSETS_DIR,
+        ASSETS_DIR / "10k/gnps.json",
         input_dgw,
-        DATASET_DIR["10k"] + "spectrum_ids.pkl",
+        ASSETS_DIR / "10k/spectrum_ids.pkl",
     )
     spectrum_dgw = RedisSpectrumDataGateway()
     process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, False)
@@ -143,13 +140,13 @@ def test_run_training_flow_with_s3_data(mock_seldon_deployment):
         download_params=download_parameters,
         process_params=process_parameters,
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
-        mlflow_server=MLFLOW_SERVER,
+        mlflow_server="mlflow-server",
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=FLOW_CONFIG,
-        chunk_size=1000,
+        chunk_size=10000,
         flow_name="test-flow",
     )
 

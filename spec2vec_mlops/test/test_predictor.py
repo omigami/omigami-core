@@ -1,4 +1,3 @@
-import json
 import os
 import pickle
 from pathlib import Path
@@ -7,8 +6,6 @@ from typing import List
 import mlflow
 import pytest
 from pytest_redis import factories
-from seldon_core.metrics import SeldonMetrics
-from seldon_core.wrapper import get_rest_microservice
 
 from spec2vec_mlops import config
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
@@ -183,7 +180,7 @@ def test_get_reference_embeddings(model, embeddings, redis_db):
     reason="It can only be run if the Redis is up",
 )
 def test_predict_from_saved_model(
-    saved_model_run_id, loaded_data, predict_parameters, embeddings
+    saved_model_run_id, loaded_data, predict_parameters, embeddings, redis_db
 ):
     pipe = redis_db.pipeline()
     for embedding in embeddings:
@@ -204,10 +201,21 @@ def test_predict_from_saved_model(
         assert best_match[0]["match_spectrum_id"] == spectrum["spectrum_id"]
 
 
-def test_local_predictions(small_payload, big_payload):
+def test_local_predictions(small_payload, big_payload, embeddings_2k, redis_db):
     path = str(ASSETS_DIR / "full_data/new_predictor.pkl")
+
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
+
+    pipe = redis_db.pipeline()
+    for embedding in embeddings_2k:
+        pipe.hmset(
+            f"{EMBEDDING_HASHES}_{local_model.run_id}",
+            {embedding.spectrum_id: pickle.dumps(embedding)},
+        )
+    pipe.execute()
+
+    local_model.run_id = "test_run"
 
     matches_small = local_model.predict(
         model_input_and_parameters=small_payload, context=""
@@ -218,10 +226,3 @@ def test_local_predictions(small_payload, big_payload):
 
     assert isinstance(matches_small, List)
     assert isinstance(matches_big, List)
-
-
-def test_10k_predictor():
-    model_uri = "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/e06d4ef7116e4bc78b76fc867fff29dc/artifacts/model"
-    predictor = Predictor(
-        model, n_decimals=1, intensity_weighting_power=0.5, allowed_missing_percentage=5
-    )

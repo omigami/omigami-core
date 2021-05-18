@@ -28,7 +28,7 @@ KEYS = config["gnps_json"]["necessary_keys"]
 
 log = getLogger(__name__)
 
-REFERENCE_EMBEDDINGS: Optional[List[Embedding]] = None
+# REFERENCE_EMBEDDINGS: Optional[List[Embedding]] = None
 
 
 class Predictor(PythonModel):
@@ -62,14 +62,16 @@ class Predictor(PythonModel):
         log.info("Pre-processing data.")
         embeddings = self._pre_process_data(model_input)
         log.info("Loading reference embeddings.")
-        global REFERENCE_EMBEDDINGS
-        if REFERENCE_EMBEDDINGS is None:
-            precursor_mz = model_input["Precursor_MZ"]
-            REFERENCE_EMBEDDINGS = self._get_reference_embeddings(precursor_mz)
-        log.info(f"Loaded {len(REFERENCE_EMBEDDINGS)} from the database.")
+        # global REFERENCE_EMBEDDINGS
+        # if REFERENCE_EMBEDDINGS is None:
+        reference_embeddings = []
+        for spectra in model_input:
+            precursor_mz = spectra["Precursor_MZ"]
+            reference_embeddings += self._get_reference_embeddings(precursor_mz)
+        log.info(f"Loaded {len(reference_embeddings)} from the database.")
         log.info("Getting best matches.")
         best_matches = self._get_best_matches(
-            REFERENCE_EMBEDDINGS, embeddings, **parameters
+            reference_embeddings, embeddings, **parameters
         )
         log.info("Finishing prediction.")
         del embeddings
