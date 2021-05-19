@@ -112,11 +112,9 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
 
     def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None):
         if spectrum_ids:
-            return [
-                pickle.loads(self.client.hget(hash_name, id_))
-                for id_ in spectrum_ids
-                if self.client.hexists(hash_name, id_)
-            ]
+            spectra = [self.client.hget(hash_name, id_) for id_ in spectrum_ids]
+            loaded_spectra = [pickle.loads(s) for s in spectra if s]
+            return loaded_spectra
         else:
             return [pickle.loads(e) for e in self.client.hgetall(hash_name).values()]
 

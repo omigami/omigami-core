@@ -100,7 +100,7 @@ class Predictor(PythonModel):
 
     def _get_reference_embeddings(self, precursor_mz: str) -> List[Embedding]:
         dgw = RedisSpectrumDataGateway()
-        min_mz, max_mz = float(precursor_mz) - 100, float(precursor_mz) + 100
+        min_mz, max_mz = float(precursor_mz) - 1, float(precursor_mz) + 1
         embeddings_iter = dgw.read_embeddings_within_range(self.run_id, min_mz, max_mz)
         return list(embeddings_iter)
 
