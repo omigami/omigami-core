@@ -4,20 +4,20 @@ from drfs import DRPath
 from spec2vec_mlops.deployment import (
     deploy_training_flow,
     API_SERVER,
-    DATASET_NAME,
     SOURCE_URI_PARTIAL_GNPS,
     OUTPUT_DIR,
     MODEL_DIR,
     MLFLOW_SERVER,
+    SOURCE_URI_COMPLETE_GNPS,
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.bff888c",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.6fde1ff",
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,
@@ -29,12 +29,14 @@ def test_deploy_training_flow():
         username=None,
         password=None,
         api_server=API_SERVER["remote"],
-        dataset_name=DATASET_NAME,
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        dataset="10k",
+        source_uri=SOURCE_URI_COMPLETE_GNPS,
         output_dir=OUTPUT_DIR,
-        project_name="spec2vec-mlops-test-flow",
+        project_name="spec2vec-mlops-10k",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
+        flow_name="training-flow",
+        redis_db="1",
     )
 
     assert flow_id

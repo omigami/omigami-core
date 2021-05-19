@@ -81,7 +81,7 @@ To register the flow manually to Prefect you need to follow these steps:
     export AWS_PROFILE=<your data revenue profile>
     export PYTHONPATH=$(pwd)
     prefect backend server
-    python spec2vec_mlops/flows/training_flow.py register-train-pipeline [args]
+    python spec2vec_mlops/cli.py register-training-flow -i [image] [options]
 
 If the Prefect Server requires authentication, you can use the arguments to set it up:
 ::
