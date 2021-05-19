@@ -92,7 +92,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         return self._read_hashes(DOCUMENT_HASHES, spectrum_ids)
 
     def read_embeddings(
-        self, run_id: str, spectrum_ids: List[str] = None
+        self, run_id: str, spectrum_ids: Iterable[str] = None
     ) -> List[Embedding]:
         self._init_client()
         return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)

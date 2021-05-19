@@ -46,6 +46,7 @@ class Predictor(PythonModel):
         self.allowed_missing_percentage = allowed_missing_percentage
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
+        self._spectrum_dgw = RedisSpectrumDataGateway()
 
     def predict(self, context, model_input_and_parameters: Dict) -> List[List[Dict]]:
         log.info("Creating a prediction.")
@@ -62,17 +63,29 @@ class Predictor(PythonModel):
         log.info("Pre-processing data.")
         embeddings = self._pre_process_data(model_input)
         log.info("Loading reference embeddings.")
-        # global REFERENCE_EMBEDDINGS
-        # if REFERENCE_EMBEDDINGS is None:
-        reference_embeddings = []
+
+        spectrum_ids_list = []
         for spectra in model_input:
             precursor_mz = spectra["Precursor_MZ"]
-            reference_embeddings += self._get_reference_embeddings(precursor_mz)
+            spectrum_ids = self._get_reference_embeddings(precursor_mz)
+            spectrum_ids_list.append(spectrum_ids)
+
+        all_spectra_ids = set(*spectrum_ids_list)
+        reference_embeddings = self._spectrum_dgw.read_embeddings(
+            self.run_id, all_spectra_ids
+        )
+
         log.info(f"Loaded {len(reference_embeddings)} from the database.")
         log.info("Getting best matches.")
-        best_matches = self._get_best_matches(
-            reference_embeddings, embeddings, **parameters
-        )
+
+        for spectrum, ids, emb in zip(model_input, spectrum_ids_list, embeddings):
+            spectrum_references = self.get_spectrum_references(
+                reference_embeddings, spectrum
+            )
+            best_matches = self._get_best_matches(  # SP1+SP2+SP3
+                spectrum_references, emb, **parameters
+            )
+
         log.info("Finishing prediction.")
         del embeddings
         gc.collect()
