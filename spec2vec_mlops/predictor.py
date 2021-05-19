@@ -1,7 +1,7 @@
 import ast
 import gc
 from logging import getLogger
-from typing import Union, List, Dict, Optional
+from typing import Union, List, Dict
 
 import numpy as np
 from gensim.models import Word2Vec
