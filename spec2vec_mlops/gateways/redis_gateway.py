@@ -13,7 +13,7 @@ from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
 
 HOST = config["redis"]["host"]
 # this can be overrided by param in cli
-DEFAULT_REDIS_DB_ID = config["redis"]["db"]
+DEFAULT_REDIS_DB_ID = str(config["redis"]["db"])
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
 SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
 DOCUMENT_HASHES = config["redis"]["document_hashes"]

@@ -119,6 +119,6 @@ def build_training_flow(
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        deploy_model_task(registered_model, redis_db)
+        # deploy_model_task(registered_model, redis_db)
 
     return training_flow
