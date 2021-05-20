@@ -50,18 +50,18 @@ def big_payload():
         "data": [
             {
                 "peaks_json": "[[80.060677, 157.0], [81.072548, 295.0], [83.088249, 185.0], [91.057564, 601.0], "
-                              "[95.085892, 634.0], [105.07077, 590.0], [107.09063, 228.0], [109.107414, 238.0], "
-                              "[115.056114, 482.0], [117.07032, 715.0], [120.779747, 313.0], [121.067802, 257.0], "
-                              "[121.102318, 430.0], [128.064728, 119.0], [129.074646, 241.0], [130.083542, 291.0], "
-                              "[259.16922, 175.0], [273.219421, 190.0], [301.217468, 592.0], [1337.508301, 230.0]]",
+                "[95.085892, 634.0], [105.07077, 590.0], [107.09063, 228.0], [109.107414, 238.0], "
+                "[115.056114, 482.0], [117.07032, 715.0], [120.779747, 313.0], [121.067802, 257.0], "
+                "[121.102318, 430.0], [128.064728, 119.0], [129.074646, 241.0], [130.083542, 291.0], "
+                "[259.16922, 175.0], [273.219421, 190.0], [301.217468, 592.0], [1337.508301, 230.0]]",
                 "Precursor_MZ": "301.216",
             },
             {
                 "peaks_json": "[[80.060677, 157.0], [81.072548, 295.0], [83.088249, 185.0], [91.057564, 601.0], "
-                              "[95.085892, 634.0], [105.07077, 590.0], [107.09063, 228.0], [109.107414, 238.0], "
-                              "[115.056114, 482.0], [117.07032, 715.0], [120.779747, 313.0], [121.067802, 257.0], "
-                              "[121.102318, 430.0], [128.064728, 119.0], [129.074646, 241.0], [130.083542, 291.0], "
-                              "[259.16922, 175.0], [273.219421, 190.0], [301.217468, 592.0], [1337.508301, 230.0]]",
+                "[95.085892, 634.0], [105.07077, 590.0], [107.09063, 228.0], [109.107414, 238.0], "
+                "[115.056114, 482.0], [117.07032, 715.0], [120.779747, 313.0], [121.067802, 257.0], "
+                "[121.102318, 430.0], [128.064728, 119.0], [129.074646, 241.0], [130.083542, 291.0], "
+                "[259.16922, 175.0], [273.219421, 190.0], [301.217468, 592.0], [1337.508301, 230.0]]",
                 "Precursor_MZ": "320.90",
             },
         ],
@@ -130,20 +130,20 @@ def predict_parameters():
         ([{}], MandatoryKeyMissingException),
         ([{"peaks_json": ""}], MandatoryKeyMissingException),
         (
-                [{"peaks_json": "peaks", "Precursor_MZ": "1.0"}],
-                IncorrectPeaksJsonTypeException,
+            [{"peaks_json": "peaks", "Precursor_MZ": "1.0"}],
+            IncorrectPeaksJsonTypeException,
         ),
         (
-                [{"peaks_json": {}, "Precursor_MZ": "1.0"}],
-                IncorrectPeaksJsonTypeException,
+            [{"peaks_json": {}, "Precursor_MZ": "1.0"}],
+            IncorrectPeaksJsonTypeException,
         ),
         (
-                [{"peaks_json": [], "Precursor_MZ": "some_mz"}],
-                IncorrectFloatFieldTypeException,
+            [{"peaks_json": [], "Precursor_MZ": "some_mz"}],
+            IncorrectFloatFieldTypeException,
         ),
         (
-                [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": 1}],
-                IncorrectStringFieldTypeException,
+            [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": 1}],
+            IncorrectStringFieldTypeException,
         ),
     ],
 )
@@ -173,7 +173,15 @@ def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
 
 def test_get_best_matches(model, embeddings):
     n_best_spectra = 2
-    best_matches = model._get_best_matches(embeddings, embeddings, n_best_spectra)
+    best_matches = []
+    for query in embeddings:
+        input_best_matches = model._get_best_matches(
+            embeddings,
+            query,
+            input_spectrum_number=0,
+            n_best_spectra=n_best_spectra,
+        )
+        best_matches.append(input_best_matches)
     for query, best_match in zip(embeddings, best_matches):
         assert len(best_match) == n_best_spectra
         assert query.spectrum_id == best_match[0]["match_spectrum_id"]
@@ -202,7 +210,7 @@ def test_get_reference_embeddings(model, embeddings, redis_db):
     reason="It can only be run if the Redis is up",
 )
 def test_predict_from_saved_model(
-        saved_model_run_id, loaded_data, predict_parameters, embeddings, redis_db
+    saved_model_run_id, loaded_data, predict_parameters, embeddings, redis_db
 ):
     pipe = redis_db.pipeline()
     for embedding in embeddings:
@@ -222,6 +230,7 @@ def test_predict_from_saved_model(
         assert len(best_match) == predict_parameters["n_best_spectra"]
         assert best_match[0]["match_spectrum_id"] == spectrum["spectrum_id"]
 
+
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
@@ -232,9 +241,7 @@ def test_local_predictions(small_payload, big_payload, embeddings, redis_db):
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
 
-    matches_big = local_model.predict(
-        data_input_and_parameters=big_payload, context=""
-    )
+    matches_big = local_model.predict(data_input_and_parameters=big_payload, context="")
     matches_small = local_model.predict(
         data_input_and_parameters=small_payload, context=""
     )
