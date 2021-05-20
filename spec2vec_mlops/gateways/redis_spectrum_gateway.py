@@ -106,6 +106,15 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         )
         return self.read_embeddings(run_id, spectrum_ids_within_range)
 
+    def get_spectra_ids_within_range(
+        self, min_mz: float = 0, max_mz: float = -1
+    ) -> List[Embedding]:
+        self._init_client()
+        spectrum_ids_within_range = self._read_spectra_ids_within_range(
+            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, min_mz, max_mz
+        )
+        return spectrum_ids_within_range
+
     def read_documents_iter(self) -> Iterable:
         self._init_client()
         return RedisHashesIterator(self, DOCUMENT_HASHES)
@@ -123,7 +132,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     ) -> List[str]:
         return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]
 
-    def _read_spectra_ids_within_range(self, hash_name: str, min_mz: int, max_mz: int):
+    def _read_spectra_ids_within_range(self, hash_name: str, min_mz: float, max_mz: float):
         return [
             id_.decode() for id_ in self.client.zrangebyscore(hash_name, min_mz, max_mz)
         ]

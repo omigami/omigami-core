@@ -47,30 +47,23 @@ class Predictor(PythonModel):
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
 
-    def predict(self, context, model_input_and_parameters: Dict) -> List[List[Dict]]:
+    def predict(self, context, data_input_and_parameters: Dict) -> List[List[Dict]]:
         log.info("Creating a prediction.")
-        if not isinstance(model_input_and_parameters, dict):
-            model_input_and_parameters = model_input_and_parameters.tolist()
+        if not isinstance(data_input_and_parameters, dict):
+            data_input_and_parameters = data_input_and_parameters.tolist()
 
         parameters = (
-            model_input_and_parameters.get("parameters")
-            if model_input_and_parameters.get("parameters")
+            data_input_and_parameters.get("parameters")
+            if data_input_and_parameters.get("parameters")
             else {}
         )
-        model_input = model_input_and_parameters.get("data")
-        self._validate_input(model_input)
+        data_input = data_input_and_parameters.get("data")
+        self._validate_input(data_input)
         log.info("Pre-processing data.")
-        input_embeddings = self._pre_process_data(model_input)
+        input_embeddings = self._pre_process_data(data_input)
         log.info("Loading reference embeddings.")
 
-        ref_embeddings_dict = {}
-        for spectra in model_input:
-            precursor_mz = spectra["Precursor_MZ"]
-            all_ref_embeddings = self._get_ref_embeddings_from_precursor(precursor_mz)
-            for emb in all_ref_embeddings:
-                if emb.spectrum_id not in ref_embeddings_dict.keys():
-                    ref_embeddings_dict[emb.spectrum_id] = emb
-        unique_ref_embeddings = list(ref_embeddings_dict.values())
+        unique_ref_embeddings = self._get_ref_embeddings_from_data_input(data_input)
 
         log.info(f"Loaded {len(unique_ref_embeddings)} from the database.")
         log.info("Getting best matches.")
@@ -87,8 +80,8 @@ class Predictor(PythonModel):
     def set_run_id(self, run_id: str):
         self.run_id = run_id
 
-    def _pre_process_data(self, model_input: List[Dict]) -> List[Embedding]:
-        cleaned_data = [as_spectrum(data) for data in model_input]
+    def _pre_process_data(self, data_input: List[Dict]) -> List[Embedding]:
+        cleaned_data = [as_spectrum(data) for data in data_input]
         cleaned_data = [normalize_intensities(data) for data in cleaned_data if data]
         spectra_data = [
             SpectrumDocumentData(spectrum, self.n_decimals) for spectrum in cleaned_data
@@ -104,15 +97,24 @@ class Predictor(PythonModel):
         ]
         return embeddings
 
-    def _get_ref_embeddings_from_precursor(self, precursor_mz: str) -> List[Embedding]:
+    def _get_ref_embeddings_from_data_input(self, data_input) -> List[Embedding]:
         dgw = RedisSpectrumDataGateway()
-        min_mz, max_mz = float(precursor_mz) - 1, float(precursor_mz) + 1
-        embeddings_iter = dgw.read_embeddings_within_range(self.run_id, min_mz, max_mz)
-        return list(embeddings_iter)
+        ref_spectrum_ids_set = set()
+        for spectra in data_input:
+            precursor_mz = spectra["Precursor_MZ"]
+            min_mz, max_mz = float(precursor_mz) - 1, float(precursor_mz) + 1
+            ref_ids = dgw.get_spectra_ids_within_range(min_mz, max_mz)
+            ref_spectrum_ids_set.update(ref_ids)
+        embeddings_iter = dgw.read_embeddings(self.run_id, list(ref_spectrum_ids_set))
+        return embeddings_iter
 
     def _get_ref_embeddings_from_ids(self, spectrum_ids):
         dgw = RedisSpectrumDataGateway()
         return dgw.read_embeddings(self.run_id, spectrum_ids)
+
+    def _get_ref_embeddings(self):
+        dgw = RedisSpectrumDataGateway()
+        return dgw.read_embeddings(self.run_id)
 
     def _get_best_matches(
         self,
