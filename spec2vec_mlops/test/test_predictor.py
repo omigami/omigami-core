@@ -21,6 +21,8 @@ from spec2vec_mlops.predictor import Predictor
 from spec2vec_mlops.test.conftest import ASSETS_DIR
 
 EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
+SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -65,6 +67,27 @@ def big_payload():
         ],
     }
     return big_payload
+
+
+@pytest.fixture()
+def spectra_and_embeddings_stored(redis_db, cleaned_data, embeddings):
+    run_id = "1"
+    pipe = redis_db.pipeline()
+    for embedding in embeddings:
+        pipe.hset(
+            f"{EMBEDDING_HASHES}_{run_id}",
+            embedding.spectrum_id,
+            pickle.dumps(embedding),
+        )
+    for spectrum in cleaned_data:
+        pipe.zadd(
+            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+            {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
+        )
+        pipe.hset(
+            SPECTRUM_HASHES, spectrum.metadata["spectrum_id"], pickle.dumps(spectrum)
+        )
+    pipe.execute()
 
 
 @pytest.fixture
@@ -208,14 +231,6 @@ def test_local_predictions(small_payload, big_payload, embeddings, redis_db):
 
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
-
-    pipe = redis_db.pipeline()
-    for embedding in embeddings:
-        pipe.hmset(
-            f"{EMBEDDING_HASHES}_{local_model.run_id}",
-            {embedding.spectrum_id: pickle.dumps(embedding)},
-        )
-    pipe.execute()
 
     matches_big = local_model.predict(
         data_input_and_parameters=big_payload, context=""

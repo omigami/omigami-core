@@ -1,7 +1,7 @@
 import ast
 import gc
 from logging import getLogger
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Tuple, Any
 
 import numpy as np
 from gensim.models import Word2Vec
@@ -63,19 +63,29 @@ class Predictor(PythonModel):
         input_embeddings = self._pre_process_data(data_input)
         log.info("Loading reference embeddings.")
 
-        unique_ref_embeddings = self._get_ref_embeddings_from_data_input(data_input)
+        ref_spectrum_ids_dict = self._get_ref_ids_from_data_input(data_input)
+        unique_ref_ids = set(
+            item for elem in list(ref_spectrum_ids_dict.values()) for item in elem
+        )
+        ref_embeddings_dict = self._get_ref_embeddings_from_ids(list(unique_ref_ids))
 
-        log.info(f"Loaded {len(unique_ref_embeddings)} from the database.")
+        log.info(f"Loaded {len(ref_embeddings_dict.keys())} from the database.")
         log.info("Getting best matches.")
 
-        best_matches = self._get_best_matches(
-            unique_ref_embeddings, input_embeddings, **parameters
-        )
+        all_best_matches = []
+        for i, input_emb in enumerate(input_embeddings):
+            ref_emb_for_input = self._get_input_ref_embeddings(
+                ref_spectrum_ids_dict, ref_embeddings_dict, spectrum_number=i
+            )
+            input_best_matches = self._get_best_matches(  # SP1+SP2+SP3
+                ref_emb_for_input, input_emb, input_spectrum_number=i, **parameters
+            )
+            all_best_matches.append(input_best_matches)
 
         log.info("Finishing prediction.")
         del input_embeddings
         gc.collect()
-        return best_matches
+        return all_best_matches
 
     def set_run_id(self, run_id: str):
         self.run_id = run_id
@@ -97,20 +107,24 @@ class Predictor(PythonModel):
         ]
         return embeddings
 
-    def _get_ref_embeddings_from_data_input(self, data_input) -> List[Embedding]:
+    @staticmethod
+    def _get_ref_ids_from_data_input(data_input) -> Dict:
         dgw = RedisSpectrumDataGateway()
-        ref_spectrum_ids_set = set()
-        for spectra in data_input:
-            precursor_mz = spectra["Precursor_MZ"]
+        ref_spectrum_ids_dict = dict()
+        for i, spectrum in enumerate(data_input):
+            precursor_mz = spectrum["Precursor_MZ"]
             min_mz, max_mz = float(precursor_mz) - 1, float(precursor_mz) + 1
             ref_ids = dgw.get_spectra_ids_within_range(min_mz, max_mz)
-            ref_spectrum_ids_set.update(ref_ids)
-        embeddings_iter = dgw.read_embeddings(self.run_id, list(ref_spectrum_ids_set))
-        return embeddings_iter
+            ref_spectrum_ids_dict[f"refs_spectrum{i}"] = ref_ids
+        return ref_spectrum_ids_dict
 
     def _get_ref_embeddings_from_ids(self, spectrum_ids):
         dgw = RedisSpectrumDataGateway()
-        return dgw.read_embeddings(self.run_id, spectrum_ids)
+        unique_ref_embeddings = dgw.read_embeddings(self.run_id, spectrum_ids)
+        ref_embeddings_dict = dict()
+        for emb in unique_ref_embeddings:
+            ref_embeddings_dict[emb.spectrum_id] = emb
+        return ref_embeddings_dict
 
     def _get_ref_embeddings(self):
         dgw = RedisSpectrumDataGateway()
@@ -119,10 +133,11 @@ class Predictor(PythonModel):
     def _get_best_matches(
         self,
         references: List[Embedding],
-        queries: List[Embedding],
+        query: Embedding,
+        input_spectrum_number: int,
         n_best_spectra: int = 10,
         **parameters,
-    ) -> List[List[Dict]]:
+    ) -> List[Dict[str, Union[int, Any]]]:
         spec2vec_embeddings_similarity = Spec2VecEmbeddings(
             model=self.model,
             intensity_weighting_power=self.intensity_weighting_power,
@@ -130,25 +145,23 @@ class Predictor(PythonModel):
         )
         scores = calculate_scores(
             references,
-            queries,
+            [query],
             spec2vec_embeddings_similarity,
         )
-        spectra_best_matches = []
-        for i, query in enumerate(queries):
-            all_scores = scores.scores_by_query(query, sort=True)
-            all_scores = [(em, sc) for em, sc in all_scores if not np.isnan(sc)]
-            spectrum_best_scores = all_scores[:n_best_spectra]
-            spectrum_best_matches = []
-            for spectrum_match in spectrum_best_scores:
-                spectrum_best_matches.append(
-                    {
-                        "spectrum_input": i,
-                        "match_spectrum_id": spectrum_match[0].spectrum_id,
-                        "score": spectrum_match[1],
-                    }
-                )
-            spectra_best_matches.append(spectrum_best_matches)
-        return spectra_best_matches
+
+        all_scores = scores.scores_by_query(query, sort=True)
+        all_scores = [(em, sc) for em, sc in all_scores if not np.isnan(sc)]
+        spectrum_best_scores = all_scores[:n_best_spectra]
+        spectrum_best_matches = []
+        for spectrum_match in spectrum_best_scores:
+            spectrum_best_matches.append(
+                {
+                    "spectrum_input": input_spectrum_number,
+                    "match_spectrum_id": spectrum_match[0].spectrum_id,
+                    "score": spectrum_match[1],
+                }
+            )
+        return spectrum_best_matches
 
     @staticmethod
     def _validate_input(model_input: List[Dict]):
@@ -197,3 +210,14 @@ class Predictor(PythonModel):
                         raise IncorrectStringFieldTypeException(
                             f"{key} needs to be a string", 400
                         )
+
+    @staticmethod
+    def _get_input_ref_embeddings(ref_spectrum_ids_dict:Dict, ref_embeddings_dict:Dict, spectrum_number:int):
+        if ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]:
+            ref_ids_for_input = ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]
+        else:
+            ref_ids_for_input = list(ref_embeddings_dict.keys())
+        ref_emb_for_input = [
+            ref_embeddings_dict[ref_id] for ref_id in ref_ids_for_input
+        ]
+        return ref_emb_for_input
