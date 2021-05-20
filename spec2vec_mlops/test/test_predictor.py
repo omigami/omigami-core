@@ -235,7 +235,7 @@ def test_predict_from_saved_model(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_local_predictions(small_payload, big_payload, embeddings, redis_db):
+def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_stored):
     path = str(ASSETS_DIR / "full_data/test_global_variables.pkl")
 
     with open(path, "rb") as input_file:
