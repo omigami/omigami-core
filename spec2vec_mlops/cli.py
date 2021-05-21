@@ -8,7 +8,7 @@ from spec2vec_mlops import (
     OUTPUT_DIR,
     MODEL_DIR,
     MLFLOW_SERVER,
-    DATASET_DIR
+    DATASET_DIR,
 )
 from spec2vec_mlops.utils import add_options
 

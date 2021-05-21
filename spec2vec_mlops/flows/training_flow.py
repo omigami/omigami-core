@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Union
 
 from prefect import Flow, unmapped, case
-impoty prefect
+import prefect
 
 from spec2vec_mlops.flows.config import FlowConfig
 from spec2vec_mlops.flows.utils import create_result
@@ -122,6 +122,6 @@ def build_training_flow(
             allowed_missing_percentage,
         ).map(unmapped(model), unmapped(model_registry), all_spectrum_ids_chunks)
         logger.info("Saving embedding is complete.")
-        deploy_model_task(model_registry)
+        deploy_model_task(model_registry, redis_db)
 
     return training_flow

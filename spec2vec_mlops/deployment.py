@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from spec2vec_mlops import (
@@ -11,9 +12,6 @@ from spec2vec_mlops import (
     MLFLOW_SERVER,
 )
 from prefect import Client
-from prefect.executors import LocalDaskExecutor, DaskExecutor
-from prefect.run_configs import KubernetesRun
-from prefect.storage import S3
 
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.authentication.authenticator import KratosAuthenticator
@@ -34,6 +32,13 @@ from spec2vec_mlops.flows.config import (
     PrefectExecutorMethods,
 )
 
+DATASET_DIR = {
+    "small": f"spec2vec-training-flow/downloaded_datasets/small/{datetime.now().date()}/",
+    "10k": f"spec2vec-training-flow/downloaded_datasets/test_10k/",
+    "full": f"spec2vec-training-flow/downloaded_datasets/full/2021-05-14/",
+}
+JOB_TEMPLATE_PATH = str(Path(__file__).parents[0] / "job_spec.yaml")
+
 
 def deploy_training_flow(
     image: str,
@@ -48,7 +53,6 @@ def deploy_training_flow(
     username: Optional[str] = None,
     password: Optional[str] = None,
     api_server: str = API_SERVER,
-    dataset: str = "small",
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     output_dir: str = OUTPUT_DIR,
     project_name: str = PROJECT_NAME,
@@ -57,11 +61,8 @@ def deploy_training_flow(
     redis_db: str = "2",
     flow_name: str = "spec2vec-training-flow",
     dataset_size: str = None,
-    dataset_name: str = None,
-    spectrum_ids_name: str = None,
+    dataset: str = None,
 ):
-
-
 
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)
@@ -72,11 +73,8 @@ def deploy_training_flow(
     client.create_project(project_name)
 
     # config values
-    dataset_name = dataset_name or f"{DATASET_FOLDER}/{datetime.now().date()}/gnps.json"
-    spectrum_ids_name = (
-        spectrum_ids_name
-        or f"{DATASET_FOLDER}/{datetime.now().date()}/spectrum_ids.pkl"
-    )
+    dataset_name = DATASET_DIR[dataset] + "gnps.json"
+    spectrum_ids_name = DATASET_DIR[dataset] + "spectrum_ids.pkl"
 
     if dataset_size is not None:
         try:

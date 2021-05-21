@@ -140,7 +140,7 @@ def test_run_training_flow(mock_seldon_deployment, tmpdir, flow_config):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow_with_s3_data(mock_seldon_deployment):
+def test_run_training_flow_with_s3_data(mock_seldon_deployment, flow_config):
     input_dgw = FSInputDataGateway()
     download_parameters = DownloadParameters(
         "fake_10k_dataset_uri",
@@ -151,6 +151,7 @@ def test_run_training_flow_with_s3_data(mock_seldon_deployment):
     )
     spectrum_dgw = RedisSpectrumDataGateway()
     process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, False)
+
     FLOW_CONFIG = {
         "storage": S3("dr-prefect"),
         "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
@@ -166,9 +167,10 @@ def test_run_training_flow_with_s3_data(mock_seldon_deployment):
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
-        flow_config=FLOW_CONFIG,
+        flow_config=flow_config,
         chunk_size=10000,
         flow_name="test-flow",
+        redis_db="2",
     )
 
     results = flow.run()
@@ -185,9 +187,10 @@ def test_deploy_seldon_model():
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
         deploy_model_task(
-            {
-                "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/e06d4ef7116e4bc78b76fc867fff29dc/artifacts/model/"
-            }
+            registered_model={
+                "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/e06d4ef7116e4bc78b76fc867fff29dc/artifacts/model/",
+            },
+            redis_db="0",
         )
 
     res = deploy.run()
