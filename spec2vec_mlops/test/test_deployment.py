@@ -16,7 +16,7 @@ from spec2vec_mlops import (
 
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b42e98e",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f06b4f9",
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,
@@ -24,9 +24,9 @@ def test_deploy_training_flow():
         n_decimals=2,
         skip_if_exists=True,
         auth=True,
-        auth_url="https://mlops.datarevenue.com/.ory/kratos/public/",
-        username="ofiehn@ucdavis.edu",
-        password="PWspec2vecbeta",
+        auth_url=None,
+        username=None,
+        password=None,
         api_server=API_SERVER["remote"],
         dataset_name=None,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
