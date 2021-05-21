@@ -46,7 +46,7 @@ class Predictor(PythonModel):
         self.dgw = RedisSpectrumDataGateway()
         # TODO: expose MZ tolerance for filtering (low priority)
 
-    def predict(self, context, data_input_and_parameters: Dict) -> List[List[Dict]]:
+    def predict(self, context, data_input_and_parameters: Dict, mz_range: int = 1) -> List[List[Dict]]:
         log.info("Creating a prediction.")
         data_input, parameters = self._parse_input(data_input_and_parameters)
         self._validate_input(data_input)
@@ -54,7 +54,7 @@ class Predictor(PythonModel):
         input_embeddings = self._pre_process_data(data_input)
 
         log.info("Loading reference embeddings.")
-        ref_spectrum_ids_dict = self._get_ref_ids_from_data_input(data_input)
+        ref_spectrum_ids_dict = self._get_ref_ids_from_data_input(data_input, mz_range)
         log.info(f"Loaded {len(ref_spectrum_ids_dict.keys())} IDs from the database.")
         ref_embeddings_dict = self._load_unique_ref_embeddings(ref_spectrum_ids_dict)
         log.info(
@@ -109,12 +109,12 @@ class Predictor(PythonModel):
         return embeddings
 
     def _get_ref_ids_from_data_input(
-        self, data_input: List[Dict]
+        self, data_input: List[Dict], mz_range: int = 1
     ) -> Dict[str, List[str]]:
         ref_spectrum_ids_dict = dict()
         for i, spectrum in enumerate(data_input):
             precursor_mz = spectrum["Precursor_MZ"]
-            min_mz, max_mz = float(precursor_mz) - 1, float(precursor_mz) + 1
+            min_mz, max_mz = float(precursor_mz) - mz_range, float(precursor_mz) + mz_range
             ref_ids = self.dgw.get_spectra_ids_within_range(min_mz, max_mz)
             ref_spectrum_ids_dict[f"refs_spectrum{i}"] = ref_ids
         return ref_spectrum_ids_dict
@@ -224,8 +224,8 @@ class Predictor(PythonModel):
     ):
         spectrum_ids = ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]
         log.info(
-            f"{len(spectrum_ids)} spectrum IDs and {len(ref_embeddings_dict)} embeddings"
-            f"for spectrum number {spectrum_number}."
+            f"{len(ref_spectrum_ids_dict[f'refs_spectrum{spectrum_number}'])} "
+            f"embeddings for spectrum number {spectrum_number}."
         )
         # log.info(
         #     f"The following spectrum IDs are not present in the reference embeddings: "
@@ -239,6 +239,7 @@ class Predictor(PythonModel):
             ]
         else:
             raise RuntimeError(
-                f"No data found from filtering with precursor MZ for spectrum number {spectrum_number}."
+                f"No data found from filtering with precursor MZ for spectrum number {spectrum_number}. "
+                f"Try increasing the mz_range filtering."
             )
         return ref_emb_for_input
