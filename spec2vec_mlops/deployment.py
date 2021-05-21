@@ -11,12 +11,15 @@ from spec2vec_mlops import (
     MLFLOW_SERVER,
 )
 from prefect import Client
+from prefect.executors import LocalDaskExecutor, DaskExecutor
+from prefect.run_configs import KubernetesRun
+from prefect.storage import S3
 
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.authentication.authenticator import KratosAuthenticator
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 
-from spec2vec_mlops.gateways.redis_gateway import (
+from spec2vec_mlops.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
     DEFAULT_REDIS_DB_ID,
     RedisDBDatasetSize,
@@ -45,15 +48,20 @@ def deploy_training_flow(
     username: Optional[str] = None,
     password: Optional[str] = None,
     api_server: str = API_SERVER,
+    dataset: str = "small",
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     output_dir: str = OUTPUT_DIR,
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
+    redis_db: str = "2",
+    flow_name: str = "spec2vec-training-flow",
     dataset_size: str = None,
     dataset_name: str = None,
     spectrum_ids_name: str = None,
 ):
+
+
 
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)
@@ -114,6 +122,7 @@ def deploy_training_flow(
         mlflow_server=mlflow_server,
         flow_config=flow_config,
         redis_db=redis_db,
+        flow_name=flow_name,
     )
 
     training_flow_id = client.register(

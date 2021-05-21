@@ -3,6 +3,7 @@ from pathlib import Path
 import prefect
 import yaml
 from kubernetes import config, client
+from kubernetes.config import ConfigException
 from prefect import task
 
 from spec2vec_mlops.helper_classes.exception import DeployingError
@@ -26,7 +27,12 @@ class ModelDeployer:
         logger.info(
             f"Deploying model {model_uri} to environment {CUSTOM_RESOURCE_INFO['namespace']}"
         )
-        config.load_incluster_config()
+
+        try:
+            config.load_incluster_config()
+        except ConfigException:
+            config.load_kube_config()
+
         custom_api = client.CustomObjectsApi()
         seldon_deployment_path = Path(__file__).parent / "seldon_deployment.yaml"
 
