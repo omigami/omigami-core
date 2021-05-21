@@ -20,6 +20,7 @@ from spec2vec_mlops.tasks.process_spectrum import (
 )
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
+from spec2vec_mlops.tasks.seldon import DeployModelTask
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -119,6 +120,6 @@ def build_training_flow(
             unmapped(allowed_missing_percentage),
         )
         logger.info("Saving embedding is complete.")
-        # deploy_model_task(registered_model, redis_db)
+        DeployModelTask(redis_db)(registered_model)
 
     return training_flow
