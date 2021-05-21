@@ -16,7 +16,7 @@ from spec2vec_mlops import (
 
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.dcac4e9",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b42e98e",
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,
