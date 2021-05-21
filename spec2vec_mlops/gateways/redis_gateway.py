@@ -11,7 +11,7 @@ from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway
 
-HOST = config["redis"]["host"]
+REDIS_HOST = config["redis"]["host"]
 # this can be overrided by param in cli
 DEFAULT_REDIS_DB_ID = str(config["redis"]["db"])
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
@@ -35,7 +35,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
 
     def _init_client(self):
         if self.client is None:
-            self.client = redis.StrictRedis(host=HOST, db=DEFAULT_REDIS_DB_ID)
+            self.client = redis.StrictRedis(host=REDIS_HOST, db=DEFAULT_REDIS_DB_ID)
 
     def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
         self._init_client()
