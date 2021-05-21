@@ -1,12 +1,14 @@
+import os
 from dataclasses import dataclass
 from typing import List
 
 from prefect import Task
 
+from spec2vec_mlops import config
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from spec2vec_mlops.tasks.config import merge_configs
-from spec2vec_mlops.tasks.data_gateway import SpectrumDataGateway, InputDataGateway
+from spec2vec_mlops.data_gateway import SpectrumDataGateway, InputDataGateway
 
 
 class ProcessSpectrum(Task):
@@ -29,16 +31,25 @@ class ProcessSpectrum(Task):
         super().__init__(**config)
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
+        self.logger.info(
+            f"Processing {len(spectrum_ids)} spectra from the input data {self._download_path}"
+        )
+        self.logger.info(
+            f"Using Redis DB {os.getenv('REDIS_DB', config['redis']['db'])}"
+        )
         spectrum_data = self._input_dgw.load_spectrum_ids(
             self._download_path, spectrum_ids
         )
         # TODO: refactor to use prefect's checkpoint functionality
         if self._skip_if_exists:
-            spectrum_ids = [sp.get("spectrum_id") for sp in spectrum_data]
-            spectrum_ids = self._spectrum_dgw.list_spectra_not_exist(spectrum_ids)
+            new_spectrum_ids = self._spectrum_dgw.list_spectra_not_exist(spectrum_ids)
             spectrum_data = [
-                sp for sp in spectrum_data if sp.get("spectrum_id") in spectrum_ids
+                sp for sp in spectrum_data if sp.get("spectrum_id") in new_spectrum_ids
             ]
+            self.logger.info(
+                f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} spectra are new and will "
+                f"be processed."
+            )
 
         cleaned_data = [
             self._processor.process_data(spectra_data) for spectra_data in spectrum_data
@@ -49,6 +60,7 @@ class ProcessSpectrum(Task):
             for spectrum in cleaned_data
         ]
 
+        self.logger.info(f"Finished processing. saving into spectrum database.")
         self._spectrum_dgw.write_spectrum_documents(spectrum_data)
         return [sp.spectrum_id for sp in spectrum_data]
 

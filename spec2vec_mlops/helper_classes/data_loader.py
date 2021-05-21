@@ -10,7 +10,7 @@ from drfs.filesystems import get_fs
 
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
-from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.tasks.process_spectrum import SpectrumProcessor
 
 KEYS = config["gnps_json"]["necessary_keys"]

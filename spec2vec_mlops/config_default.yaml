@@ -70,8 +70,9 @@ k8s:
     plural: "seldondeployments"
     namespace: "seldon"
 redis:
-  host: "redis-master.redis"
-  db: "2"
+  #host: "redis-master.redis"
+  host: "localhost"
+  db: "0"
   spectrum_id_sorted_set: "spectrum_id_precursor_mz_sorted"
   spectrum_hashes: "spectrum_data"
   document_hashes: "document_data"

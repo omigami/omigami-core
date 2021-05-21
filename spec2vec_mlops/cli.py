@@ -8,6 +8,7 @@ from spec2vec_mlops import (
     OUTPUT_DIR,
     MODEL_DIR,
     MLFLOW_SERVER,
+    DATASET_DIR,
 )
 from spec2vec_mlops.utils import add_options
 
@@ -16,9 +17,9 @@ from spec2vec_mlops.utils import add_options
 # parameters right now. If you think we won't need this we can just tweak config_default
 # for changes in configuration. Atm it doesn't look these change often
 configuration_options = [
-    click.option("--project-name", default=PROJECT_NAME),
+    click.option("--project-name", "-p", default=PROJECT_NAME),
     click.option("--source-uri", default=SOURCE_URI_PARTIAL_GNPS),
-    click.option("--dataset-dir", default=OUTPUT_DIR),
+    click.option("--output-dir", default=OUTPUT_DIR),
     click.option("--model-output-dir", default=MODEL_DIR),
     click.option("--mlflow-server", default=MLFLOW_SERVER),
 ]
@@ -39,12 +40,9 @@ def cli():
     pass
 
 
-# TODO: General: why do we specify defaults in the CLI if we have defaults
-#   in the method that the CLI is linked to?
-#   I would rather have no defaults here and only have them in the method.
-
-
 @cli.command(name="register-training-flow")
+@click.option("--image", "-i", type=str, required=True)
+@click.option("--dataset-name", type=str, default=DATASET_DIR)
 @click.option("--dataset-id", default=None)
 @click.option("--n-decimals", type=int, default=2)
 @click.option("--iterations", type=int, default=25)
@@ -53,6 +51,7 @@ def cli():
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
 @click.option("--dataset-size", default=None)
 @add_options(auth_options)
+@add_options(configuration_options)
 def deploy_training_flow_cli(*args, **kwargs):
     _ = deploy_training_flow(*args, **kwargs)
 

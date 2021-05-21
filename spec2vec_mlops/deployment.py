@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from spec2vec_mlops import (
@@ -16,7 +17,7 @@ from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.authentication.authenticator import KratosAuthenticator
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 
-from spec2vec_mlops.gateways.redis_gateway import (
+from spec2vec_mlops.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
     DEFAULT_REDIS_DB_ID,
     RedisDBDatasetSize,
@@ -30,6 +31,13 @@ from spec2vec_mlops.flows.config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
+
+DATASET_DIR = {
+    "small": f"spec2vec-training-flow/downloaded_datasets/small/{datetime.now().date()}/",
+    "10k": f"spec2vec-training-flow/downloaded_datasets/test_10k/",
+    "full": f"spec2vec-training-flow/downloaded_datasets/full/2021-05-14/",
+}
+JOB_TEMPLATE_PATH = str(Path(__file__).parents[0] / "job_spec.yaml")
 
 
 def deploy_training_flow(
@@ -50,9 +58,10 @@ def deploy_training_flow(
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
+    redis_db: str = "2",
+    flow_name: str = "spec2vec-training-flow",
     dataset_size: str = None,
-    dataset_name: str = None,
-    spectrum_ids_name: str = None,
+    dataset: str = None,
 ):
 
     if auth:
@@ -64,11 +73,8 @@ def deploy_training_flow(
     client.create_project(project_name)
 
     # config values
-    dataset_name = dataset_name or f"{DATASET_FOLDER}/{datetime.now().date()}/gnps.json"
-    spectrum_ids_name = (
-        spectrum_ids_name
-        or f"{DATASET_FOLDER}/{datetime.now().date()}/spectrum_ids.pkl"
-    )
+    dataset_name = DATASET_DIR[dataset] + "gnps.json"
+    spectrum_ids_name = DATASET_DIR[dataset] + "spectrum_ids.pkl"
 
     if dataset_size is not None:
         try:
@@ -114,6 +120,7 @@ def deploy_training_flow(
         mlflow_server=mlflow_server,
         flow_config=flow_config,
         redis_db=redis_db,
+        flow_name=flow_name,
     )
 
     training_flow_id = client.register(
