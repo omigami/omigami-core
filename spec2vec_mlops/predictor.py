@@ -110,7 +110,7 @@ class Predictor(PythonModel):
         ref_spectrum_ids_dict = dict()
         for i, spectrum in enumerate(data_input):
             precursor_mz = spectrum["Precursor_MZ"]
-            min_mz, max_mz = float(precursor_mz) - 1, float(precursor_mz) + 1
+            min_mz, max_mz = float(precursor_mz) - 10, float(precursor_mz) + 10
             ref_ids = dgw.get_spectra_ids_within_range(min_mz, max_mz)
             ref_spectrum_ids_dict[f"refs_spectrum{i}"] = ref_ids
         return ref_spectrum_ids_dict
@@ -216,14 +216,21 @@ class Predictor(PythonModel):
     def _get_input_ref_embeddings(
         ref_spectrum_ids_dict: Dict, ref_embeddings_dict: Dict, spectrum_number: int
     ):
-        # why do we need this if?
-        if ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]:
-            ref_ids_for_input = ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]
+        spectrum_ids = ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]
+        log.info(
+            f"{len(spectrum_ids)} spectrum IDs and {len(ref_embeddings_dict)} embeddings"
+            f"for spectrum number: {spectrum_number}"
+        )
+        log.info(
+            f"The following spectrum IDs are not present in the reference embeddings: "
+            f"{set(spectrum_ids) - set(ref_embeddings_dict.keys())}"
+        )
+        if spectrum_ids:
+            ref_emb_for_input = [
+                ref_embeddings_dict[sp_id]
+                for sp_id in spectrum_ids
+                if sp_id in ref_embeddings_dict
+            ]
         else:
-            ref_ids_for_input = list(ref_embeddings_dict.keys())
-        ref_emb_for_input = [
-            ref_embeddings_dict[ref_id]
-            for ref_id in ref_ids_for_input
-            if ref_id in ref_embeddings_dict.keys()
-        ]
+            raise RuntimeError("No data found from filtering with precursor MZ.")
         return ref_emb_for_input

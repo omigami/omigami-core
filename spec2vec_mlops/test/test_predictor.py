@@ -236,10 +236,12 @@ def test_predict_from_saved_model(
     reason="It can only be run if the Redis is up",
 )
 def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_stored):
-    path = str(ASSETS_DIR / "full_data/test_global_variables.pkl")
+    path = str(ASSETS_DIR / "full_data/test_model.pkl")
 
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
+
+    local_model.run_id = "1"
 
     matches_big = local_model.predict(data_input_and_parameters=big_payload, context="")
     matches_small = local_model.predict(
