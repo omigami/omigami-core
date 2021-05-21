@@ -1,1 +1,1 @@
-from spec2vec_mlops.tasks.seldon.deploy_model import deploy_model_task
+from spec2vec_mlops.tasks.seldon.deploy_model import DeployModelTask
