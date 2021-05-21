@@ -6,8 +6,8 @@ metadata:
 spec:
   name: spec2vec
   annotations:
-    seldon.io/rest-timeout: "100000"
-    seldon.io/grpc-timeout: "100000"
+    seldon.io/rest-timeout: "600000"
+    seldon.io/grpc-timeout: "600000"
   predictors:
   - graph:
       children: []
