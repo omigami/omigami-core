@@ -108,7 +108,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
 
     def get_spectra_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1
-    ) -> List[Embedding]:
+    ) -> List[str]:
         self._init_client()
         spectrum_ids_within_range = [
             id_.decode()

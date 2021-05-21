@@ -104,18 +104,20 @@ class Predictor(PythonModel):
         ]
         return embeddings
 
-    @staticmethod
-    def _get_ref_ids_from_data_input(data_input) -> Dict:
-        dgw = RedisSpectrumDataGateway()
+    def _get_ref_ids_from_data_input(
+        self, data_input: List[Dict]
+    ) -> Dict[str, List[str]]:
         ref_spectrum_ids_dict = dict()
         for i, spectrum in enumerate(data_input):
             precursor_mz = spectrum["Precursor_MZ"]
             min_mz, max_mz = float(precursor_mz) - 10, float(precursor_mz) + 10
-            ref_ids = dgw.get_spectra_ids_within_range(min_mz, max_mz)
+            ref_ids = self.dgw.get_spectra_ids_within_range(min_mz, max_mz)
             ref_spectrum_ids_dict[f"refs_spectrum{i}"] = ref_ids
         return ref_spectrum_ids_dict
 
-    def _load_unique_ref_embeddings(self, spectrum_ids_dict):
+    def _load_unique_ref_embeddings(
+        self, spectrum_ids_dict: Dict[str, List[str]]
+    ) -> Dict[str, Embedding]:
         unique_ref_ids = set(
             item for elem in list(spectrum_ids_dict.values()) for item in elem
         )
@@ -126,10 +128,6 @@ class Predictor(PythonModel):
         for emb in unique_ref_embeddings:
             ref_embeddings_dict[emb.spectrum_id] = emb
         return ref_embeddings_dict
-
-    def _get_ref_embeddings(self):
-        dgw = RedisSpectrumDataGateway()
-        return dgw.read_embeddings(self.run_id)
 
     def _get_best_matches(
         self,
