@@ -1,7 +1,6 @@
 import ast
-import gc
 from logging import getLogger
-from typing import Union, List, Dict, Tuple, Any
+from typing import Union, List, Dict, Any
 
 import numpy as np
 from gensim.models import Word2Vec
@@ -28,8 +27,6 @@ KEYS = config["gnps_json"]["necessary_keys"]
 
 log = getLogger(__name__)
 
-# REFERENCE_EMBEDDINGS: Optional[List[Embedding]] = None
-
 
 class Predictor(PythonModel):
     def __init__(
@@ -46,8 +43,13 @@ class Predictor(PythonModel):
         self.allowed_missing_percentage = allowed_missing_percentage
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
+        self.dgw = RedisSpectrumDataGateway()
+        # TODO: expose MZ tolerance for filtering (low priority)
 
     def predict(self, context, data_input_and_parameters: Dict) -> List[List[Dict]]:
+        """TODO"""
+
+        # TODO: group lines 52 to 64 into a parse_input method
         log.info("Creating a prediction.")
         if not isinstance(data_input_and_parameters, dict):
             data_input_and_parameters = data_input_and_parameters.tolist()
@@ -61,13 +63,10 @@ class Predictor(PythonModel):
         self._validate_input(data_input)
         log.info("Pre-processing data.")
         input_embeddings = self._pre_process_data(data_input)
-        log.info("Loading reference embeddings.")
 
+        log.info("Loading reference embeddings.")
         ref_spectrum_ids_dict = self._get_ref_ids_from_data_input(data_input)
-        unique_ref_ids = set(
-            item for elem in list(ref_spectrum_ids_dict.values()) for item in elem
-        )
-        ref_embeddings_dict = self._get_ref_embeddings_from_ids(list(unique_ref_ids))
+        ref_embeddings_dict = self._load_unique_ref_embeddings(ref_spectrum_ids_dict)
 
         log.info(f"Loaded {len(ref_embeddings_dict.keys())} from the database.")
         log.info("Getting best matches.")
@@ -83,8 +82,6 @@ class Predictor(PythonModel):
             all_best_matches.append(input_best_matches)
 
         log.info("Finishing prediction.")
-        del input_embeddings
-        gc.collect()
         return all_best_matches
 
     def set_run_id(self, run_id: str):
@@ -118,9 +115,13 @@ class Predictor(PythonModel):
             ref_spectrum_ids_dict[f"refs_spectrum{i}"] = ref_ids
         return ref_spectrum_ids_dict
 
-    def _get_ref_embeddings_from_ids(self, spectrum_ids):
-        dgw = RedisSpectrumDataGateway()
-        unique_ref_embeddings = dgw.read_embeddings(self.run_id, spectrum_ids)
+    def _load_unique_ref_embeddings(self, spectrum_ids_dict):
+        unique_ref_ids = set(
+            item for elem in list(spectrum_ids_dict.values()) for item in elem
+        )
+        unique_ref_embeddings = self.dgw.read_embeddings(
+            self.run_id, list(unique_ref_ids)
+        )
         ref_embeddings_dict = dict()
         for emb in unique_ref_embeddings:
             ref_embeddings_dict[emb.spectrum_id] = emb
@@ -212,12 +213,17 @@ class Predictor(PythonModel):
                         )
 
     @staticmethod
-    def _get_input_ref_embeddings(ref_spectrum_ids_dict:Dict, ref_embeddings_dict:Dict, spectrum_number:int):
+    def _get_input_ref_embeddings(
+        ref_spectrum_ids_dict: Dict, ref_embeddings_dict: Dict, spectrum_number: int
+    ):
+        # why do we need this if?
         if ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]:
             ref_ids_for_input = ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]
         else:
             ref_ids_for_input = list(ref_embeddings_dict.keys())
         ref_emb_for_input = [
-            ref_embeddings_dict[ref_id] for ref_id in ref_ids_for_input
+            ref_embeddings_dict[ref_id]
+            for ref_id in ref_ids_for_input
+            if ref_id in ref_embeddings_dict.keys()
         ]
         return ref_emb_for_input
