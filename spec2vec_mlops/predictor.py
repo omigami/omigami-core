@@ -47,28 +47,19 @@ class Predictor(PythonModel):
         # TODO: expose MZ tolerance for filtering (low priority)
 
     def predict(self, context, data_input_and_parameters: Dict) -> List[List[Dict]]:
-        """TODO"""
-
-        # TODO: group lines 52 to 64 into a parse_input method
         log.info("Creating a prediction.")
-        if not isinstance(data_input_and_parameters, dict):
-            data_input_and_parameters = data_input_and_parameters.tolist()
-
-        parameters = (
-            data_input_and_parameters.get("parameters")
-            if data_input_and_parameters.get("parameters")
-            else {}
-        )
-        data_input = data_input_and_parameters.get("data")
+        data_input, parameters = self._parse_input(data_input_and_parameters)
         self._validate_input(data_input)
         log.info("Pre-processing data.")
         input_embeddings = self._pre_process_data(data_input)
 
         log.info("Loading reference embeddings.")
         ref_spectrum_ids_dict = self._get_ref_ids_from_data_input(data_input)
+        log.info(f"Loaded {len(ref_spectrum_ids_dict.keys())} IDs from the database.")
         ref_embeddings_dict = self._load_unique_ref_embeddings(ref_spectrum_ids_dict)
-
-        log.info(f"Loaded {len(ref_embeddings_dict.keys())} from the database.")
+        log.info(
+            f"Loaded {len(ref_embeddings_dict.keys())} embeddings from the database."
+        )
         log.info("Getting best matches.")
 
         all_best_matches = []
@@ -86,6 +77,19 @@ class Predictor(PythonModel):
 
     def set_run_id(self, run_id: str):
         self.run_id = run_id
+
+    @staticmethod
+    def _parse_input(data_input_and_parameters: Dict):
+        if not isinstance(data_input_and_parameters, dict):
+            data_input_and_parameters = data_input_and_parameters.tolist()
+
+        parameters = (
+            data_input_and_parameters.get("parameters")
+            if data_input_and_parameters.get("parameters")
+            else {}
+        )
+        data_input = data_input_and_parameters.get("data")
+        return data_input, parameters
 
     def _pre_process_data(self, data_input: List[Dict]) -> List[Embedding]:
         cleaned_data = [as_spectrum(data) for data in data_input]
@@ -110,7 +114,7 @@ class Predictor(PythonModel):
         ref_spectrum_ids_dict = dict()
         for i, spectrum in enumerate(data_input):
             precursor_mz = spectrum["Precursor_MZ"]
-            min_mz, max_mz = float(precursor_mz) - 10, float(precursor_mz) + 10
+            min_mz, max_mz = float(precursor_mz) - 1, float(precursor_mz) + 1
             ref_ids = self.dgw.get_spectra_ids_within_range(min_mz, max_mz)
             ref_spectrum_ids_dict[f"refs_spectrum{i}"] = ref_ids
         return ref_spectrum_ids_dict
@@ -121,8 +125,12 @@ class Predictor(PythonModel):
         unique_ref_ids = set(
             item for elem in list(spectrum_ids_dict.values()) for item in elem
         )
+        log.info(f"Read embeddings of {len(unique_ref_ids)} IDs from the database.")
         unique_ref_embeddings = self.dgw.read_embeddings(
             self.run_id, list(unique_ref_ids)
+        )
+        log.info(
+            f"Creating Dict[id, Embedding] for {len(unique_ref_embeddings)} unique reference embeddings."
         )
         ref_embeddings_dict = dict()
         for emb in unique_ref_embeddings:
@@ -217,12 +225,12 @@ class Predictor(PythonModel):
         spectrum_ids = ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]
         log.info(
             f"{len(spectrum_ids)} spectrum IDs and {len(ref_embeddings_dict)} embeddings"
-            f"for spectrum number: {spectrum_number}"
+            f"for spectrum number {spectrum_number}."
         )
-        log.info(
-            f"The following spectrum IDs are not present in the reference embeddings: "
-            f"{set(spectrum_ids) - set(ref_embeddings_dict.keys())}"
-        )
+        # log.info(
+        #     f"The following spectrum IDs are not present in the reference embeddings: "
+        #     f"{set(spectrum_ids) - set(ref_embeddings_dict.keys())}"
+        # )
         if spectrum_ids:
             ref_emb_for_input = [
                 ref_embeddings_dict[sp_id]
@@ -230,5 +238,7 @@ class Predictor(PythonModel):
                 if sp_id in ref_embeddings_dict
             ]
         else:
-            raise RuntimeError("No data found from filtering with precursor MZ.")
+            raise RuntimeError(
+                f"No data found from filtering with precursor MZ for spectrum number {spectrum_number}."
+            )
         return ref_emb_for_input
