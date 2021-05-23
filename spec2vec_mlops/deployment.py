@@ -41,8 +41,8 @@ FLOW_CONFIG = {
     ),
     "storage": S3("dr-prefect"),
     # TODO: maybe also useful to have as a parameter?
-    # "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
-    "executor": DaskExecutor(address="dask-scheduler.dask:8786"),
+    "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
+    # "executor": DaskExecutor(address="dask-scheduler.dask:8786"),
 }
 
 

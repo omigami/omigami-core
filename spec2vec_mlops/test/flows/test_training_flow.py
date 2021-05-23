@@ -5,11 +5,10 @@ from unittest.mock import MagicMock
 import pytest
 from drfs import DRPath
 from drfs.filesystems import get_fs
-from prefect import task, Flow
+from prefect import Flow
 from prefect.executors import LocalDaskExecutor
 from prefect.storage import S3
 
-import spec2vec_mlops.flows.training_flow
 from spec2vec_mlops import config
 from spec2vec_mlops.deployment import MODEL_DIR
 from spec2vec_mlops.flows.training_flow import build_training_flow
@@ -23,11 +22,6 @@ from spec2vec_mlops.test.conftest import ASSETS_DIR
 
 SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
-
-
-@task()
-def mock_task(a=None, b=None, c=None, **kwargs):
-    pass
 
 
 def test_training_flow():
@@ -60,6 +54,7 @@ def test_training_flow():
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=None,
+        deploy_model=True,
     )
 
     assert flow
@@ -70,18 +65,11 @@ def test_training_flow():
     assert task_names == expected_tasks
 
 
-@pytest.fixture()
-def mock_seldon_deployment(monkeypatch):
-    monkeypatch.setattr(
-        spec2vec_mlops.flows.training_flow, "deploy_model_task", mock_task
-    )
-
-
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow(mock_seldon_deployment, tmpdir):
+def test_run_training_flow(tmpdir):
     # remove results from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
@@ -104,7 +92,8 @@ def test_run_training_flow(mock_seldon_deployment, tmpdir):
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=None,
-        chunk_size=10,
+        chunk_size=50,
+        deploy_model=False,
     )
 
     results = flow.run()
@@ -119,7 +108,7 @@ def test_run_training_flow(mock_seldon_deployment, tmpdir):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow_with_s3_data(mock_seldon_deployment):
+def test_run_training_flow_with_s3_data():
     input_dgw = FSInputDataGateway()
     download_parameters = DownloadParameters(
         "fake_10k_dataset_uri",
@@ -148,6 +137,7 @@ def test_run_training_flow_with_s3_data(mock_seldon_deployment):
         flow_config=FLOW_CONFIG,
         chunk_size=10000,
         flow_name="test-flow",
+        deploy_model=False,
     )
 
     results = flow.run()
@@ -165,7 +155,7 @@ def test_deploy_seldon_model():
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
         deploy_model_task(
             {
-                "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/e06d4ef7116e4bc78b76fc867fff29dc/artifacts/model/"
+                "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/750c60ddb52544289db228a4af8a52e3/artifacts/model/"
             }
         )
 
