@@ -128,9 +128,6 @@ class Predictor(PythonModel):
         unique_ref_embeddings = self.dgw.read_embeddings(
             self.run_id, list(unique_ref_ids)
         )
-        log.info(
-            f"Creating Dict[id, Embedding] for {len(unique_ref_embeddings)} unique reference embeddings."
-        )
         ref_embeddings = dict()
         for emb in unique_ref_embeddings:
             ref_embeddings[emb.spectrum_id] = emb
@@ -176,10 +173,6 @@ class Predictor(PythonModel):
         spectrum_number: int,
     ) -> List[Embedding]:
         spectrum_ids = ref_spectrum_ids[f"refs_spectrum{spectrum_number}"]
-        log.info(
-            f"{len(ref_spectrum_ids[f'refs_spectrum{spectrum_number}'])} "
-            f"embeddings for spectrum number {spectrum_number}."
-        )
         if spectrum_ids:
             ref_emb_for_input = [
                 ref_embeddings[sp_id]

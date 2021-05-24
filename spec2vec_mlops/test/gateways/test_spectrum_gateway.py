@@ -20,10 +20,10 @@ EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
 redis_db = factories.redisdb("redis_nooproc")
 
 
-# pytestmark = pytest.mark.skipif(
-#     os.getenv("SKIP_REDIS_TEST", True),
-#     reason="It can only be run if the Redis is up",
-# )
+pytestmark = pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
 
 
 @pytest.fixture()

@@ -231,10 +231,10 @@ def test_predict_from_saved_model(
         assert best_match[0]["match_spectrum_id"] == spectrum["spectrum_id"]
 
 
-# @pytest.mark.skipif(
-#     os.getenv("SKIP_REDIS_TEST", True),
-#     reason="It can only be run if the Redis is up",
-# )
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
 def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_stored):
     path = str(ASSETS_DIR / "full_data/test_model.pkl")
 

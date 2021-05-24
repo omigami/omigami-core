@@ -1,6 +1,6 @@
 import os
 import pickle
-from typing import List, Iterable
+from typing import List, Iterable, Tuple
 
 import redis
 from matchms import Spectrum
@@ -128,7 +128,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         return RedisHashesIterator(self, DOCUMENT_HASHES)
 
-    def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None):
+    def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None) -> List:
         if spectrum_ids:
             spectra = self.client.hmget(hash_name, spectrum_ids)
             loaded_spectra = [pickle.loads(s) for s in spectra if s]
