@@ -171,7 +171,8 @@ def test_get_reference_embeddings(model, embeddings, redis_db):
         )
     pipe.execute()
 
-    embeddings_read = model._get_reference_embeddings()
+    embeddings_read = model._get_reference_embeddings("10")
+
     assert len(embeddings) == len(embeddings_read)
 
 
