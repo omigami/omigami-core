@@ -8,9 +8,11 @@ import s3fs
 from moto import mock_s3
 
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
-from spec2vec_mlops import config
+from spec2vec_mlops import config, ROOT_DIR
 
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
+ASSETS_DIR = Path(__file__).parents[0] / "assets"
+DEV_CONFIG_VARS_FILE = ROOT_DIR / "dev.env"
 
 KEYS = config["gnps_json"]["necessary_keys"]
 
@@ -30,7 +32,11 @@ def pytest_configure(config):
         setattr(config.option, "markexpr", "not longrun")
 
 
-ASSETS_DIR = Path(__file__).parents[0] / "assets"
+@pytest.fixture(scope="module")
+def auth():
+    with open(DEV_CONFIG_VARS_FILE) as yaml_vars_file:
+        keys = ["auth_url", "username", "pwd"]
+        return {key: yaml_vars_file[key] for key in keys}
 
 
 @pytest.fixture(scope="module")
