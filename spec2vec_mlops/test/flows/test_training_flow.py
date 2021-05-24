@@ -170,7 +170,7 @@ def test_run_training_flow_with_s3_data(mock_seldon_deployment, flow_config):
         flow_config=flow_config,
         chunk_size=10000,
         flow_name="test-flow",
-        redis_db="2",
+        redis_db="1",
     )
 
     results = flow.run()
