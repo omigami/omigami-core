@@ -20,10 +20,10 @@ EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
 redis_db = factories.redisdb("redis_nooproc")
 
 
-pytestmark = pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
+# pytestmark = pytest.mark.skipif(
+#     os.getenv("SKIP_REDIS_TEST", True),
+#     reason="It can only be run if the Redis is up",
+# )
 
 
 @pytest.fixture()
@@ -134,7 +134,8 @@ def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_sto
     filtered_spectra = dgw.client.zrangebyscore(
         SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
     )
-    embeddings_read = dgw.read_embeddings_within_range("1", mz_min, mz_max)
+    spectrum_ids_within_range = dgw.get_spectrum_ids_within_range(mz_min, mz_max)
+    embeddings_read = dgw.read_embeddings("1", spectrum_ids_within_range)
     assert len(embeddings_read) == len(filtered_spectra)
     for embedding in embeddings_read:
         assert isinstance(embedding, Embedding)
@@ -155,9 +156,7 @@ def test_read_spectra_ids_within_range(spectra_stored):
     filtered_spectra = dgw.client.zrangebyscore(
         SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
     )
-    spectra_ids_within_range = dgw._read_spectra_ids_within_range(
-        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
-    )
+    spectra_ids_within_range = dgw.get_spectrum_ids_within_range(mz_min, mz_max)
     assert len(spectra_ids_within_range) == len(filtered_spectra)
     for spectrum_id in spectra_ids_within_range:
         assert (

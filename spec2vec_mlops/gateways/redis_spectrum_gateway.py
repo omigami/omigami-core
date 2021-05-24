@@ -38,10 +38,10 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         if self.client is None:
             self.client = get_redis_client()
 
-    def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
+    def write_spectrum_documents(self, spectrum_data: List[SpectrumDocumentData]):
         self._init_client()
         pipe = self.client.pipeline()
-        for spectrum in spectra_data:
+        for spectrum in spectrum_data:
             spectrum_info = spectrum.spectrum
             document = spectrum.document
             if spectrum_info and document:
@@ -97,16 +97,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)
 
-    def read_embeddings_within_range(
-        self, run_id: str, min_mz: int = 0, max_mz: int = -1
-    ) -> List[Embedding]:
-        self._init_client()
-        spectrum_ids_within_range = self._read_spectra_ids_within_range(
-            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, min_mz, max_mz
-        )
-        return self.read_embeddings(run_id, spectrum_ids_within_range)
-
-    def get_spectra_ids_within_range(
+    def get_spectrum_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1
     ) -> List[str]:
         self._init_client()
@@ -149,9 +140,9 @@ class RedisHashesIterator:
     def __init__(self, dgw: RedisSpectrumDataGateway, hash_name: str):
         self.dgw = dgw
         self.hash_name = hash_name
-        self.spectra_ids = dgw.client.hkeys(hash_name)
+        self.spectrum_ids = dgw.client.hkeys(hash_name)
 
     def __iter__(self):
-        for spectrum_id in self.spectra_ids:
+        for spectrum_id in self.spectrum_ids:
             data = self.dgw.client.hmget(self.hash_name, spectrum_id)[0]
             yield pickle.loads(data)

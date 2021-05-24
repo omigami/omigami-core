@@ -44,7 +44,6 @@ class Predictor(PythonModel):
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
         self.dgw = RedisSpectrumDataGateway()
-        # TODO: expose MZ tolerance for filtering (low priority)
 
     def predict(self, context, data_input_and_parameters: Dict, mz_range: int = 1) -> List[List[Dict]]:
         log.info("Creating a prediction.")
@@ -115,7 +114,7 @@ class Predictor(PythonModel):
         for i, spectrum in enumerate(data_input):
             precursor_mz = spectrum["Precursor_MZ"]
             min_mz, max_mz = float(precursor_mz) - mz_range, float(precursor_mz) + mz_range
-            ref_ids = self.dgw.get_spectra_ids_within_range(min_mz, max_mz)
+            ref_ids = self.dgw.get_spectrum_ids_within_range(min_mz, max_mz)
             ref_spectrum_ids_dict[f"refs_spectrum{i}"] = ref_ids
         return ref_spectrum_ids_dict
 
