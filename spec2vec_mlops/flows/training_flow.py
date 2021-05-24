@@ -44,6 +44,7 @@ def build_training_flow(
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_config: Dict[str, Any] = None,
     flow_name: str = "spec2vec-training-flow",
+    deploy_model: bool = False,
 ) -> Flow:
     """
     Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
@@ -74,6 +75,8 @@ def build_training_flow(
         Number of what percentage of a spectrum is allowed to be unknown to the model
     flow_config:
         Configuration passed to prefect.Flow
+    deploy_model:
+        Whether to create a seldon deployment with the result of the training flow
 
     Returns
     -------
@@ -121,6 +124,7 @@ def build_training_flow(
             allowed_missing_percentage,
         ).map(unmapped(model), unmapped(model_registry), all_spectrum_ids_chunks)
         logger.info("Saving embedding is complete.")
-        deploy_model_task(model_registry)
+        if deploy_model:
+            deploy_model_task(model_registry)
 
     return training_flow
