@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Union, List, Dict, Any
+from typing import Union, List, Dict, Any, Tuple
 
 import numpy as np
 from gensim.models import Word2Vec
@@ -73,7 +73,9 @@ class Predictor(PythonModel):
         self.run_id = run_id
 
     @staticmethod
-    def _parse_input(data_input_and_parameters: Dict[str, Union[Dict, List]]):
+    def _parse_input(
+        data_input_and_parameters: Dict[str, Union[Dict, List]]
+    ) -> Tuple[Union[dict, list, None], Union[dict, list, None, dict]]:
         if not isinstance(data_input_and_parameters, dict):
             data_input_and_parameters = data_input_and_parameters.tolist()
 
@@ -172,7 +174,7 @@ class Predictor(PythonModel):
         ref_spectrum_ids: Dict[str, List[str]],
         ref_embeddings: Dict[str, Embedding],
         spectrum_number: int,
-    ):
+    ) -> List[Embedding]:
         spectrum_ids = ref_spectrum_ids[f"refs_spectrum{spectrum_number}"]
         log.info(
             f"{len(ref_spectrum_ids[f'refs_spectrum{spectrum_number}'])} "
