@@ -133,7 +133,6 @@ class Predictor(PythonModel):
         self, spectrum_ids: List[List[str]]
     ) -> Dict[str, Embedding]:
         unique_ref_ids = set(item for elem in spectrum_ids for item in elem)
-        log.info(f"Read embeddings of {len(unique_ref_ids)} IDs from the database.")
         unique_ref_embeddings = self.dgw.read_embeddings(
             self.run_id, list(unique_ref_ids)
         )
