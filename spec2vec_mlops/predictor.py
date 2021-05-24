@@ -136,10 +136,7 @@ class Predictor(PythonModel):
         unique_ref_embeddings = self.dgw.read_embeddings(
             self.run_id, list(unique_ref_ids)
         )
-        ref_embeddings = dict()
-        for emb in unique_ref_embeddings:
-            ref_embeddings[emb.spectrum_id] = emb
-        return ref_embeddings
+        return { emb.spectrum_id: emb for emb in unique_ref_embeddings }
 
     def _get_best_matches(
         self,
