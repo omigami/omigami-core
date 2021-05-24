@@ -47,24 +47,29 @@ class Predictor(PythonModel):
         log.info("Creating a prediction.")
         data_input, parameters = self._parse_input(data_input_and_parameters)
         log.info("Pre-processing data.")
-        input_embeddings = self._pre_process_data(data_input)
+        input_spectra_embeddings = self._pre_process_data(data_input)
 
         log.info("Loading reference embeddings.")
-        ref_spectrum_ids = self._get_ref_ids_from_data_input(data_input, mz_range)
-        log.info(f"Loaded {len(ref_spectrum_ids.keys())} IDs from the database.")
-        ref_embeddings = self._load_unique_ref_embeddings(ref_spectrum_ids)
-        log.info(f"Loaded {len(ref_embeddings.keys())} embeddings from the database.")
+        reference_spectra_ids = self._get_ref_ids_from_data_input(data_input, mz_range)
+        log.info(f"Loaded {len(reference_spectra_ids)} IDs from the database.")
+        reference_embeddings = self._load_unique_ref_embeddings(reference_spectra_ids)
+        log.info(
+            f"Loaded {len(reference_embeddings.keys())} embeddings from the database."
+        )
         log.info("Getting best matches.")
 
         all_best_matches = []
-        for i, input_emb in enumerate(input_embeddings):
-            ref_emb_for_input = self._get_input_ref_embeddings(
-                ref_spectrum_ids, ref_embeddings, spectrum_number=i
+        for ref_spectrum_ids, input_spectrum_emb in zip(
+            reference_spectra_ids, input_spectra_embeddings
+        ):
+            input_spectrum_ref_emb = self._get_input_ref_embeddings(
+                ref_spectrum_ids, reference_embeddings
             )
-            input_best_matches = self._get_best_matches(  # SP1+SP2+SP3
-                ref_emb_for_input, input_emb, input_spectrum_number=i, **parameters
+            input_spectrum_number = reference_spectra_ids.index(ref_spectrum_ids) + 1
+            spectrum_best_matches = self._get_best_matches(  # SP1+SP2+SP3
+                input_spectrum_ref_emb, input_spectrum_emb, input_spectrum_number, **parameters
             )
-            all_best_matches.append(input_best_matches)
+            all_best_matches.append(spectrum_best_matches)
 
         log.info("Finishing prediction.")
         return all_best_matches
@@ -106,8 +111,8 @@ class Predictor(PythonModel):
 
     def _get_ref_ids_from_data_input(
         self, data_input: List[Dict[str, str]], mz_range: int = 1
-    ) -> Dict[str, List[str]]:
-        ref_spectrum_ids = dict()
+    ) -> List[List[str]]:
+        ref_spectrum_ids = []
         for i, spectrum in enumerate(data_input):
             precursor_mz = spectrum["Precursor_MZ"]
             min_mz, max_mz = (
@@ -115,15 +120,13 @@ class Predictor(PythonModel):
                 float(precursor_mz) + mz_range,
             )
             ref_ids = self.dgw.get_spectrum_ids_within_range(min_mz, max_mz)
-            ref_spectrum_ids[f"refs_spectrum{i}"] = ref_ids
+            ref_spectrum_ids.append(ref_ids)
         return ref_spectrum_ids
 
     def _load_unique_ref_embeddings(
-        self, spectrum_ids: Dict[str, List[str]]
+        self, spectrum_ids: List[List[str]]
     ) -> Dict[str, Embedding]:
-        unique_ref_ids = set(
-            item for elem in list(spectrum_ids.values()) for item in elem
-        )
+        unique_ref_ids = set(item for elem in spectrum_ids for item in elem)
         log.info(f"Read embeddings of {len(unique_ref_ids)} IDs from the database.")
         unique_ref_embeddings = self.dgw.read_embeddings(
             self.run_id, list(unique_ref_ids)
@@ -168,20 +171,18 @@ class Predictor(PythonModel):
 
     @staticmethod
     def _get_input_ref_embeddings(
-        ref_spectrum_ids: Dict[str, List[str]],
+        ref_spectrum_ids: List[str],
         ref_embeddings: Dict[str, Embedding],
-        spectrum_number: int,
     ) -> List[Embedding]:
-        spectrum_ids = ref_spectrum_ids[f"refs_spectrum{spectrum_number}"]
-        if spectrum_ids:
+        if ref_spectrum_ids:
             ref_emb_for_input = [
                 ref_embeddings[sp_id]
-                for sp_id in spectrum_ids
+                for sp_id in ref_spectrum_ids
                 if sp_id in ref_embeddings
             ]
         else:
             raise RuntimeError(
-                f"No data found from filtering with precursor MZ for spectrum number {spectrum_number}. "
+                f"No data found from filtering with precursor MZ for spectrum {ref_spectrum_ids}. "
                 f"Try increasing the mz_range filtering."
             )
         return ref_emb_for_input
