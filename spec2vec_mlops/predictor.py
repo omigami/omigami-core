@@ -1,4 +1,3 @@
-import ast
 from logging import getLogger
 from typing import Union, List, Dict, Any
 
@@ -14,13 +13,6 @@ from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
-from spec2vec_mlops.helper_classes.exception import (
-    MandatoryKeyMissingException,
-    IncorrectPeaksJsonTypeException,
-    IncorrectFloatFieldTypeException,
-    IncorrectStringFieldTypeException,
-    IncorrectSpectrumDataTypeException,
-)
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
 KEYS = config["gnps_json"]["necessary_keys"]
@@ -54,7 +46,6 @@ class Predictor(PythonModel):
         """
         log.info("Creating a prediction.")
         data_input, parameters = self._parse_input(data_input_and_parameters)
-        self._validate_input(data_input)
         log.info("Pre-processing data.")
         input_embeddings = self._pre_process_data(data_input)
 
@@ -175,54 +166,6 @@ class Predictor(PythonModel):
                 }
             )
         return spectrum_best_matches
-
-    @staticmethod
-    def _validate_input(model_input: List[Dict]):
-        for i, spectrum in enumerate(model_input):
-            if not isinstance(spectrum, Dict):
-                raise IncorrectSpectrumDataTypeException(
-                    f"Spectrum data must be a dictionary", 400
-                )
-
-            mandatory_keys = ["peaks_json", "Precursor_MZ"]
-            if any(key not in spectrum.keys() for key in mandatory_keys):
-                raise MandatoryKeyMissingException(
-                    f"Please include all the mandatory keys in your input data. "
-                    f"The mandatory keys are {mandatory_keys}",
-                    400,
-                )
-
-            if isinstance(spectrum["peaks_json"], str):
-                try:
-                    ast.literal_eval(spectrum["peaks_json"])
-                except ValueError:
-                    raise IncorrectPeaksJsonTypeException(
-                        "peaks_json needs to be a string representation of a list or a list",
-                        400,
-                    )
-            elif not isinstance(spectrum["peaks_json"], list):
-                raise IncorrectPeaksJsonTypeException(
-                    "peaks_json needs to be a string representation of a list or a list",
-                    400,
-                )
-
-            float_keys = ["Precursor_MZ", "Charge"]
-            for key in float_keys:
-                if spectrum.get(key):
-                    try:
-                        float(spectrum[key])
-                    except ValueError:
-                        raise IncorrectFloatFieldTypeException(
-                            f"{key} needs to be a string representation of a float",
-                            400,
-                        )
-
-            for key in KEYS:
-                if key not in float_keys + mandatory_keys:
-                    if not isinstance(spectrum.get(key, ""), str):
-                        raise IncorrectStringFieldTypeException(
-                            f"{key} needs to be a string", 400
-                        )
 
     @staticmethod
     def _get_input_ref_embeddings(
