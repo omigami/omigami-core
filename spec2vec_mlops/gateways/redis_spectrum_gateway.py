@@ -112,7 +112,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     def get_spectrum_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1
     ) -> List[str]:
-        """Get the the spectrum IDs of spectra stored on redis that have a Precursor_MZ within the given range.
+        """Get the spectrum IDs of spectra stored on redis that have a Precursor_MZ within the given range.
         Return a list spectrum IDs."""
         self._init_client()
         spectrum_ids_within_range = [
