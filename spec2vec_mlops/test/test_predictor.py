@@ -2,7 +2,6 @@ import os
 import pickle
 from pathlib import Path
 
-import mlflow
 import pytest
 from pytest_redis import factories
 
@@ -144,50 +143,6 @@ def test_get_best_matches(model, embeddings):
     for query, best_match in zip(embeddings, best_matches):
         assert len(best_match) == n_best_spectra
         assert query.spectrum_id == best_match[0]["match_spectrum_id"]
-
-
-@pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
-def test_get_reference_embeddings(model, embeddings, redis_db):
-    run_id = "1"
-    pipe = redis_db.pipeline()
-    for embedding in embeddings:
-        pipe.hmset(
-            f"{EMBEDDING_HASHES}_{run_id}",
-            {embedding.spectrum_id: pickle.dumps(embedding)},
-        )
-    pipe.execute()
-
-    embeddings_read = model._get_ref_embeddings()
-    assert len(embeddings) == len(embeddings_read)
-
-
-@pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
-def test_predict_from_saved_model(
-    saved_model_run_id, loaded_data, predict_parameters, embeddings, redis_db
-):
-    pipe = redis_db.pipeline()
-    for embedding in embeddings:
-        pipe.hset(
-            f"{EMBEDDING_HASHES}_{saved_model_run_id}",
-            embedding.spectrum_id,
-            pickle.dumps(embedding),
-        )
-    pipe.execute()
-
-    run = mlflow.get_run(saved_model_run_id)
-    model_path = f"{run.info.artifact_uri}/model/"
-    model = mlflow.pyfunc.load_model(model_path)
-    data_and_param = {"parameters": predict_parameters, "data": loaded_data}
-    best_matches = model.predict(data_and_param)
-    for spectrum, best_match in zip(loaded_data, best_matches):
-        assert len(best_match) == predict_parameters["n_best_spectra"]
-        assert best_match[0]["match_spectrum_id"] == spectrum["spectrum_id"]
 
 
 @pytest.mark.skipif(
