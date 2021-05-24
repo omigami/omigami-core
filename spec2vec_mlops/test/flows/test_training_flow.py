@@ -22,7 +22,7 @@ from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.data_gateway import SpectrumDataGateway
-from spec2vec_mlops.tasks import deploy_model_task
+from spec2vec_mlops.tasks import DeployModelTask
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR
@@ -57,7 +57,7 @@ def test_training_flow(flow_config):
         "ProcessSpectrum",
         "case(True)",
         "check_condition",
-        "deploy_model_task",
+        "DeployModelTask",
         "MakeEmbeddings",
         "register_model_task",
         "train_model_task",
@@ -93,7 +93,7 @@ def test_training_flow(flow_config):
 @pytest.fixture()
 def mock_seldon_deployment(monkeypatch):
     monkeypatch.setattr(
-        spec2vec_mlops.flows.training_flow, "deploy_model_task", mock_task
+        spec2vec_mlops.flows.training_flow, "DeployModelTask", mock_task
     )
 
 
@@ -186,11 +186,10 @@ def test_deploy_seldon_model():
     }
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
-        deploy_model_task(
+        DeployModelTask(redis_db="0",)(
             registered_model={
                 "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/e06d4ef7116e4bc78b76fc867fff29dc/artifacts/model/",
-            },
-            redis_db="0",
+            }
         )
 
     res = deploy.run()

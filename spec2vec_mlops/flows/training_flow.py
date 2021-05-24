@@ -14,13 +14,13 @@ from spec2vec_mlops.tasks import (
     ProcessSpectrum,
     train_model_task,
     register_model_task,
-    deploy_model_task,
 )
 from spec2vec_mlops.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
+from spec2vec_mlops.tasks.seldon import DeployModelTask
 
 logger = prefect.utilities.logging.get_logger()
 logging.basicConfig(level=logging.DEBUG)
@@ -122,6 +122,6 @@ def build_training_flow(
             allowed_missing_percentage,
         ).map(unmapped(model), unmapped(model_registry), all_spectrum_ids_chunks)
         logger.info("Saving embedding is complete.")
-        deploy_model_task(model_registry, redis_db)
+        DeployModelTask(redis_db)(model_registry)
 
     return training_flow
