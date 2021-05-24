@@ -1,13 +1,13 @@
 import os
 import pickle
 from pathlib import Path
-from typing import List
 
 import mlflow
 import pytest
 from pytest_redis import factories
 
 from spec2vec_mlops import config
+from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
     MandatoryKeyMissingException,
@@ -252,3 +252,62 @@ def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_st
 
     assert len(matches_small[0]) != 0
     assert len(matches_big[0]) != 0
+
+
+def test_parse_input(small_payload, model):
+    data_input, parameters = model._parse_input(small_payload)
+
+    assert parameters["n_best_spectra"] == 10
+    assert "peaks_json" and "Precursor_MZ" in data_input[0]
+
+
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_get_ref_ids_from_data_input(
+    small_payload, model, spectra_and_embeddings_stored
+):
+    data_input = small_payload.get("data")
+    spectrum_ids = model._get_ref_ids_from_data_input(data_input)
+
+    assert spectrum_ids
+    assert isinstance(spectrum_ids[0][0], str)
+
+
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_load_unique_ref_embeddings(model, spectra_and_embeddings_stored):
+    spectrum_ids = [["CCMSLIB00000006878", "CCMSLIB00000007092"]]
+
+    ref_embeddings = model._load_unique_ref_embeddings(spectrum_ids)
+
+    assert ref_embeddings
+    assert isinstance(ref_embeddings["CCMSLIB00000006878"], Embedding)
+
+
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_get_input_ref_embeddings(model, spectra_and_embeddings_stored):
+    input_ref_spectrum_ids = ["CCMSLIB00000006878", "CCMSLIB00000007092"]
+    all_ref_spectrum_ids = [
+        [
+            "CCMSLIB00000006878",
+            "CCMSLIB00000007092",
+            "CCMSLIB00000070262",
+            "CCMSLIB00000070272",
+        ]
+    ]
+    ref_embeddings = model._load_unique_ref_embeddings(all_ref_spectrum_ids)
+
+    ref_emb_for_input = model._get_input_ref_embeddings(
+        input_ref_spectrum_ids, ref_embeddings
+    )
+
+    assert isinstance(ref_emb_for_input[0], Embedding)
+    assert len(ref_emb_for_input) == len(input_ref_spectrum_ids)
+    assert ref_emb_for_input[0].spectrum_id == input_ref_spectrum_ids[0]
