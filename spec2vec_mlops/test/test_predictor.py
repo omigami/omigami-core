@@ -9,13 +9,7 @@ from pytest_redis import factories
 from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
-from spec2vec_mlops.helper_classes.exception import (
-    MandatoryKeyMissingException,
-    IncorrectSpectrumDataTypeException,
-    IncorrectPeaksJsonTypeException,
-    IncorrectFloatFieldTypeException,
-    IncorrectStringFieldTypeException,
-)
+
 from spec2vec_mlops.tasks.register_model import ModelRegister
 from spec2vec_mlops.predictor import Predictor
 from spec2vec_mlops.test.conftest import ASSETS_DIR
