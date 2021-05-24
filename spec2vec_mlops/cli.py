@@ -2,13 +2,15 @@ import click
 
 from spec2vec_mlops.deployment import deploy_training_flow
 from spec2vec_mlops import (
+    DATASET_DIR,
+)
+from spec2vec_mlops.config import (
     SOURCE_URI_PARTIAL_GNPS,
     API_SERVER,
     PROJECT_NAME,
     OUTPUT_DIR,
     MODEL_DIR,
     MLFLOW_SERVER,
-    DATASET_DIR,
 )
 from spec2vec_mlops.utils import add_options
 

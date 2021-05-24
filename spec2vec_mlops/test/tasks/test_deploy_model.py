@@ -1,7 +1,7 @@
 import yaml
 from prefect import Flow
 
-from spec2vec_mlops import ROOT_DIR
+from spec2vec_mlops.config import ROOT_DIR
 from spec2vec_mlops.tasks.seldon.deploy_model import DeployModelTask
 
 

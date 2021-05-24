@@ -6,7 +6,7 @@ from spec2vec_mlops.deployment import (
     deploy_training_flow,
 )
 
-from spec2vec_mlops import (
+from spec2vec_mlops.config import (
     SOURCE_URI_COMPLETE_GNPS,
     SOURCE_URI_PARTIAL_GNPS,
     API_SERVER,

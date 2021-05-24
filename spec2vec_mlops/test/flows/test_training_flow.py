@@ -17,7 +17,7 @@ from spec2vec_mlops.flows.config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from spec2vec_mlops.deployment import MODEL_DIR
+from spec2vec_mlops.config import MODEL_DIR
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway

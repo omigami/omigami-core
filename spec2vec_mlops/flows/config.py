@@ -5,7 +5,8 @@ from prefect.executors import Executor, DaskExecutor, LocalDaskExecutor
 from prefect.run_configs import RunConfig, KubernetesRun
 from prefect.storage import Storage, S3
 
-from spec2vec_mlops import config, ROOT_DIR
+from spec2vec_mlops import config
+from spec2vec_mlops.config import ROOT_DIR
 
 S3_MODEL_BUCKET = config["prefect"]["s3_model_bucket"]
 
@@ -78,7 +79,9 @@ def make_flow_config(
 
     # executor
     if executor_type == PrefectExecutorMethods.DASK:
-        executor = DaskExecutor(address="dask-scheduler.dask:8786")
+        raise NotImplementedError(
+            "DASK as a prefect executor is not supported at the moment."
+        )
     elif executor_type == PrefectExecutorMethods.LOCAL_DASK:
         executor = LocalDaskExecutor(scheduler="threads", num_workers=5)
     else:

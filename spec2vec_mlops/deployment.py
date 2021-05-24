@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from spec2vec_mlops import (
+from spec2vec_mlops.config import (
     SOURCE_URI_PARTIAL_GNPS,
     API_SERVER,
     PROJECT_NAME,
@@ -99,7 +99,6 @@ def deploy_training_flow(
         skip_if_exists,
     )
 
-    # create flow config
     flow_config = make_flow_config(
         image=image,
         run_config_type=PrefectRunMethods.KUBERNETES,
