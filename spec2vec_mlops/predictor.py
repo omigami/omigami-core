@@ -54,6 +54,7 @@ class Predictor(PythonModel):
 
         log.info("Loading reference embeddings.")
         reference_spectra_ids = self._get_ref_ids_from_data_input(data_input, mz_range)
+        self.check_spectrum_refs(reference_spectra_ids)
         log.info(f"Loaded {len(reference_spectra_ids)} IDs from the database.")
         reference_embeddings = self._load_unique_ref_embeddings(reference_spectra_ids)
         log.info(
@@ -129,6 +130,15 @@ class Predictor(PythonModel):
             ref_spectrum_ids.append(ref_ids)
         return ref_spectrum_ids
 
+    @staticmethod
+    def check_spectrum_refs(reference_spectra_ids: List[List[str]]):
+        if [] in reference_spectra_ids:
+            idx_null = [idx for idx, element in enumerate(reference_spectra_ids) if element == []]
+            raise RuntimeError(
+                f"No data found from filtering with precursor MZ for spectra at indices {idx_null}. "
+                f"Try increasing the mz_range filtering."
+            )
+
     def _load_unique_ref_embeddings(
         self, spectrum_ids: List[List[str]]
     ) -> Dict[str, Embedding]:
@@ -179,15 +189,9 @@ class Predictor(PythonModel):
         ref_spectrum_ids: List[str],
         ref_embeddings: Dict[str, Embedding],
     ) -> List[Embedding]:
-        if ref_spectrum_ids:
-            ref_emb_for_input = [
-                ref_embeddings[sp_id]
-                for sp_id in ref_spectrum_ids
-                if sp_id in ref_embeddings
-            ]
-        else:
-            raise RuntimeError(
-                f"No data found from filtering with precursor MZ for spectrum {ref_spectrum_ids}. "
-                f"Try increasing the mz_range filtering."
-            )
+        ref_emb_for_input = [
+            ref_embeddings[sp_id]
+            for sp_id in ref_spectrum_ids
+            if sp_id in ref_embeddings
+        ]
         return ref_emb_for_input
