@@ -45,7 +45,13 @@ class Predictor(PythonModel):
         self.run_id = run_id
         self.dgw = RedisSpectrumDataGateway()
 
-    def predict(self, context, data_input_and_parameters: Dict, mz_range: int = 1) -> List[List[Dict]]:
+    def predict(
+        self, data_input_and_parameters: Dict, mz_range: int = 1
+    ) -> List[List[Dict]]:
+        """Match spectra from a json payload input with spectra having the highest similarity scores
+        in the GNPS spectra library.
+        Return a list matches of IDs and scores for each input spectrum.
+        """
         log.info("Creating a prediction.")
         data_input, parameters = self._parse_input(data_input_and_parameters)
         self._validate_input(data_input)
@@ -53,18 +59,16 @@ class Predictor(PythonModel):
         input_embeddings = self._pre_process_data(data_input)
 
         log.info("Loading reference embeddings.")
-        ref_spectrum_ids_dict = self._get_ref_ids_from_data_input(data_input, mz_range)
-        log.info(f"Loaded {len(ref_spectrum_ids_dict.keys())} IDs from the database.")
-        ref_embeddings_dict = self._load_unique_ref_embeddings(ref_spectrum_ids_dict)
-        log.info(
-            f"Loaded {len(ref_embeddings_dict.keys())} embeddings from the database."
-        )
+        ref_spectrum_ids = self._get_ref_ids_from_data_input(data_input, mz_range)
+        log.info(f"Loaded {len(ref_spectrum_ids.keys())} IDs from the database.")
+        ref_embeddings = self._load_unique_ref_embeddings(ref_spectrum_ids)
+        log.info(f"Loaded {len(ref_embeddings.keys())} embeddings from the database.")
         log.info("Getting best matches.")
 
         all_best_matches = []
         for i, input_emb in enumerate(input_embeddings):
             ref_emb_for_input = self._get_input_ref_embeddings(
-                ref_spectrum_ids_dict, ref_embeddings_dict, spectrum_number=i
+                ref_spectrum_ids, ref_embeddings, spectrum_number=i
             )
             input_best_matches = self._get_best_matches(  # SP1+SP2+SP3
                 ref_emb_for_input, input_emb, input_spectrum_number=i, **parameters
@@ -113,7 +117,10 @@ class Predictor(PythonModel):
         ref_spectrum_ids_dict = dict()
         for i, spectrum in enumerate(data_input):
             precursor_mz = spectrum["Precursor_MZ"]
-            min_mz, max_mz = float(precursor_mz) - mz_range, float(precursor_mz) + mz_range
+            min_mz, max_mz = (
+                float(precursor_mz) - mz_range,
+                float(precursor_mz) + mz_range,
+            )
             ref_ids = self.dgw.get_spectrum_ids_within_range(min_mz, max_mz)
             ref_spectrum_ids_dict[f"refs_spectrum{i}"] = ref_ids
         return ref_spectrum_ids_dict

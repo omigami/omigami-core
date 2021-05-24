@@ -243,9 +243,11 @@ def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_st
 
     local_model.run_id = "1"
 
-    matches_big = local_model.predict(data_input_and_parameters=big_payload, mz_range=10, context="")
+    matches_big = local_model.predict(
+        data_input_and_parameters=big_payload, mz_range=10
+    )
     matches_small = local_model.predict(
-        data_input_and_parameters=small_payload, mz_range=10, context=""
+        data_input_and_parameters=small_payload, mz_range=10
     )
 
     assert len(matches_small[0]) != 0

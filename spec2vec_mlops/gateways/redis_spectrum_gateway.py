@@ -39,6 +39,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
             self.client = get_redis_client()
 
     def write_spectrum_documents(self, spectrum_data: List[SpectrumDocumentData]):
+        """Write spectra data on the redis database. The spectra ids and precursor_MZ are required."""
         self._init_client()
         pipe = self.client.pipeline()
         for spectrum in spectrum_data:
@@ -56,6 +57,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         pipe.execute()
 
     def write_embeddings(self, embeddings: List[Embedding], run_id: str):
+        """Write embeddings data on the redis database."""
         self._init_client()
         pipe = self.client.pipeline()
         for embedding in embeddings:
@@ -67,10 +69,14 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         pipe.execute()
 
     def list_spectrum_ids(self) -> List[str]:
+        """List the spectrum ids of all spectra on the redis database."""
         self._init_client()
         return [id_.decode() for id_ in self.client.hkeys(SPECTRUM_HASHES)]
 
     def list_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
+        """Check whether spectra exist on Redis.
+        Return a list of IDs that do not exist.
+        """
         self._init_client()
         return self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids)
 
@@ -84,22 +90,30 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
 
     # Not used atm
     def read_spectra(self, spectrum_ids: List[str] = None) -> List[Spectrum]:
+        """Read the spectra information from spectra IDs.
+        Return a list of Spectrum objects."""
         self._init_client()
         return self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
 
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
+        """Read the document information from spectra IDs.
+        Return a list of SpectrumDocument objects."""
         self._init_client()
         return self._read_hashes(DOCUMENT_HASHES, spectrum_ids)
 
     def read_embeddings(
         self, run_id: str, spectrum_ids: List[str] = None
     ) -> List[Embedding]:
+        """Read the embeddings from spectra IDs.
+        Return a list of Embedding objects."""
         self._init_client()
         return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)
 
     def get_spectrum_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1
     ) -> List[str]:
+        """Get the the spectrum IDs of spectra stored on redis that have a Precursor_MZ within the given range.
+        Return a list spectrum IDs."""
         self._init_client()
         spectrum_ids_within_range = [
             id_.decode()
@@ -110,6 +124,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         return spectrum_ids_within_range
 
     def read_documents_iter(self) -> Iterable:
+        """Returns an iterator that yields Redis object one by one"""
         self._init_client()
         return RedisHashesIterator(self, DOCUMENT_HASHES)
 
