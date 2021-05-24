@@ -123,41 +123,6 @@ def predict_parameters():
     return {"n_best_spectra": 5}
 
 
-@pytest.mark.parametrize(
-    "input_data, exception",
-    [
-        ([[]], IncorrectSpectrumDataTypeException),
-        ([{}], MandatoryKeyMissingException),
-        ([{"peaks_json": ""}], MandatoryKeyMissingException),
-        (
-            [{"peaks_json": "peaks", "Precursor_MZ": "1.0"}],
-            IncorrectPeaksJsonTypeException,
-        ),
-        (
-            [{"peaks_json": {}, "Precursor_MZ": "1.0"}],
-            IncorrectPeaksJsonTypeException,
-        ),
-        (
-            [{"peaks_json": [], "Precursor_MZ": "some_mz"}],
-            IncorrectFloatFieldTypeException,
-        ),
-        (
-            [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": 1}],
-            IncorrectStringFieldTypeException,
-        ),
-    ],
-)
-def test_validate_input_raised_expections(input_data, exception, model):
-    with pytest.raises(exception):
-        model._validate_input(input_data)
-
-
-def test_validate_input_valid(model):
-    model._validate_input(
-        [{"peaks_json": [], "Precursor_MZ": "1.0", "INCHI": "some_key"}],
-    )
-
-
 def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
     embeddings_from_model = model._pre_process_data(loaded_data)
 
@@ -244,10 +209,10 @@ def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_st
     local_model.run_id = "1"
 
     matches_big = local_model.predict(
-        data_input_and_parameters=big_payload, mz_range=10
+        data_input_and_parameters=big_payload, mz_range=10, context=""
     )
     matches_small = local_model.predict(
-        data_input_and_parameters=small_payload, mz_range=10
+        data_input_and_parameters=small_payload, mz_range=10, context=""
     )
 
     assert len(matches_small[0]) != 0

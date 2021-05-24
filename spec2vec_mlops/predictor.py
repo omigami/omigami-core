@@ -38,7 +38,10 @@ class Predictor(PythonModel):
         self.dgw = RedisSpectrumDataGateway()
 
     def predict(
-        self, data_input_and_parameters: Dict[str, Union[Dict, List]], mz_range: int = 1
+        self,
+        context,
+        data_input_and_parameters: Dict[str, Union[Dict, List]],
+        mz_range: int = 1,
     ) -> List[List[Dict]]:
         """Match spectra from a json payload input with spectra having the highest similarity scores
         in the GNPS spectra library.
@@ -67,7 +70,10 @@ class Predictor(PythonModel):
             )
             input_spectrum_number = reference_spectra_ids.index(ref_spectrum_ids) + 1
             spectrum_best_matches = self._get_best_matches(  # SP1+SP2+SP3
-                input_spectrum_ref_emb, input_spectrum_emb, input_spectrum_number, **parameters
+                input_spectrum_ref_emb,
+                input_spectrum_emb,
+                input_spectrum_number,
+                **parameters,
             )
             all_best_matches.append(spectrum_best_matches)
 
