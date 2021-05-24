@@ -38,7 +38,7 @@ class Predictor(PythonModel):
         self.dgw = RedisSpectrumDataGateway()
 
     def predict(
-        self, data_input_and_parameters: Dict, mz_range: int = 1
+        self, data_input_and_parameters: Dict[str, Union[Dict, List]], mz_range: int = 1
     ) -> List[List[Dict]]:
         """Match spectra from a json payload input with spectra having the highest similarity scores
         in the GNPS spectra library.
@@ -73,7 +73,7 @@ class Predictor(PythonModel):
         self.run_id = run_id
 
     @staticmethod
-    def _parse_input(data_input_and_parameters: Dict):
+    def _parse_input(data_input_and_parameters: Dict[str, Union[Dict, List]]):
         if not isinstance(data_input_and_parameters, dict):
             data_input_and_parameters = data_input_and_parameters.tolist()
 
@@ -85,7 +85,7 @@ class Predictor(PythonModel):
         data_input = data_input_and_parameters.get("data")
         return data_input, parameters
 
-    def _pre_process_data(self, data_input: List[Dict]) -> List[Embedding]:
+    def _pre_process_data(self, data_input: List[Dict[str, str]]) -> List[Embedding]:
         cleaned_data = [as_spectrum(data) for data in data_input]
         cleaned_data = [normalize_intensities(data) for data in cleaned_data if data]
         spectra_data = [
@@ -103,9 +103,9 @@ class Predictor(PythonModel):
         return embeddings
 
     def _get_ref_ids_from_data_input(
-        self, data_input: List[Dict], mz_range: int = 1
+        self, data_input: List[Dict[str, str]], mz_range: int = 1
     ) -> Dict[str, List[str]]:
-        ref_spectrum_ids_dict = dict()
+        ref_spectrum_ids = dict()
         for i, spectrum in enumerate(data_input):
             precursor_mz = spectrum["Precursor_MZ"]
             min_mz, max_mz = (
@@ -113,14 +113,14 @@ class Predictor(PythonModel):
                 float(precursor_mz) + mz_range,
             )
             ref_ids = self.dgw.get_spectrum_ids_within_range(min_mz, max_mz)
-            ref_spectrum_ids_dict[f"refs_spectrum{i}"] = ref_ids
-        return ref_spectrum_ids_dict
+            ref_spectrum_ids[f"refs_spectrum{i}"] = ref_ids
+        return ref_spectrum_ids
 
     def _load_unique_ref_embeddings(
-        self, spectrum_ids_dict: Dict[str, List[str]]
+        self, spectrum_ids: Dict[str, List[str]]
     ) -> Dict[str, Embedding]:
         unique_ref_ids = set(
-            item for elem in list(spectrum_ids_dict.values()) for item in elem
+            item for elem in list(spectrum_ids.values()) for item in elem
         )
         log.info(f"Read embeddings of {len(unique_ref_ids)} IDs from the database.")
         unique_ref_embeddings = self.dgw.read_embeddings(
@@ -129,10 +129,10 @@ class Predictor(PythonModel):
         log.info(
             f"Creating Dict[id, Embedding] for {len(unique_ref_embeddings)} unique reference embeddings."
         )
-        ref_embeddings_dict = dict()
+        ref_embeddings = dict()
         for emb in unique_ref_embeddings:
-            ref_embeddings_dict[emb.spectrum_id] = emb
-        return ref_embeddings_dict
+            ref_embeddings[emb.spectrum_id] = emb
+        return ref_embeddings
 
     def _get_best_matches(
         self,
@@ -169,22 +169,20 @@ class Predictor(PythonModel):
 
     @staticmethod
     def _get_input_ref_embeddings(
-        ref_spectrum_ids_dict: Dict, ref_embeddings_dict: Dict, spectrum_number: int
+        ref_spectrum_ids: Dict[str, List[str]],
+        ref_embeddings: Dict[str, Embedding],
+        spectrum_number: int,
     ):
-        spectrum_ids = ref_spectrum_ids_dict[f"refs_spectrum{spectrum_number}"]
+        spectrum_ids = ref_spectrum_ids[f"refs_spectrum{spectrum_number}"]
         log.info(
-            f"{len(ref_spectrum_ids_dict[f'refs_spectrum{spectrum_number}'])} "
+            f"{len(ref_spectrum_ids[f'refs_spectrum{spectrum_number}'])} "
             f"embeddings for spectrum number {spectrum_number}."
         )
-        # log.info(
-        #     f"The following spectrum IDs are not present in the reference embeddings: "
-        #     f"{set(spectrum_ids) - set(ref_embeddings_dict.keys())}"
-        # )
         if spectrum_ids:
             ref_emb_for_input = [
-                ref_embeddings_dict[sp_id]
+                ref_embeddings[sp_id]
                 for sp_id in spectrum_ids
-                if sp_id in ref_embeddings_dict
+                if sp_id in ref_embeddings
             ]
         else:
             raise RuntimeError(
