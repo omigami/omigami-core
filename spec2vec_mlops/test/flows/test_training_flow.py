@@ -10,10 +10,9 @@ from prefect.executors import LocalDaskExecutor
 from prefect.storage import S3
 
 import spec2vec_mlops.flows.training_flow
-from spec2vec_mlops import config
+from spec2vec_mlops import default_configs
 from spec2vec_mlops.flows.config import (
     make_flow_config,
-    PrefectRunMethods,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
@@ -27,7 +26,7 @@ from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR
 
-SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
+SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
 
 
@@ -40,7 +39,6 @@ def mock_task(a=None, b=None, c=None, **kwargs):
 def flow_config():
     flow_config = make_flow_config(
         image="image-ref-name-test-harry-potter-XXII",
-        run_config_type=PrefectRunMethods.KUBERNETES,
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db="2",

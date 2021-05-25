@@ -7,7 +7,7 @@ import mlflow
 import pytest
 from pytest_redis import factories
 
-from spec2vec_mlops import config
+from spec2vec_mlops import default_configs
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.exception import (
     MandatoryKeyMissingException,
@@ -20,7 +20,7 @@ from spec2vec_mlops.tasks.register_model import ModelRegister
 from spec2vec_mlops.predictor import Predictor
 from spec2vec_mlops.test.conftest import ASSETS_DIR
 
-EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
+EMBEDDING_HASHES = default_configs["redis"]["embedding_hashes"]
 
 redis_db = factories.redisdb("redis_nooproc")
 

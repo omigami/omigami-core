@@ -25,7 +25,6 @@ from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 
 from spec2vec_mlops.flows.config import (
     make_flow_config,
-    PrefectRunMethods,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )

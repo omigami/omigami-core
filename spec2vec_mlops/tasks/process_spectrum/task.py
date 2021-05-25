@@ -4,11 +4,12 @@ from typing import List
 
 from prefect import Task
 
-from spec2vec_mlops import config
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from spec2vec_mlops.tasks.config import merge_configs
 from spec2vec_mlops.data_gateway import SpectrumDataGateway, InputDataGateway
+
+from spec2vec_mlops.gateways.redis_spectrum_gateway import REDIS_DB
 
 
 class ProcessSpectrum(Task):
@@ -34,9 +35,7 @@ class ProcessSpectrum(Task):
         self.logger.info(
             f"Processing {len(spectrum_ids)} spectra from the input data {self._download_path}"
         )
-        self.logger.info(
-            f"Using Redis DB {os.getenv('REDIS_DB', config['redis']['db'])}"
-        )
+        self.logger.info(f"Using Redis DB {REDIS_DB}")
         spectrum_data = self._input_dgw.load_spectrum_ids(
             self._download_path, spectrum_ids
         )

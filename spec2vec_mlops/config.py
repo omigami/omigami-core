@@ -1,29 +1,29 @@
 from datetime import datetime
 from pathlib import Path
 
-from spec2vec_mlops import config
+from spec2vec_mlops import default_configs
 
 ROOT_DIR = Path(__file__).parents[0]
 
-SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
-SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
-NECESSARY_KEYS = config["gnps_json"]["necessary_keys"]
+SOURCE_URI_COMPLETE_GNPS = default_configs["gnps_json"]["uri"]["complete"]
+SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
+NECESSARY_KEYS = default_configs["gnps_json"]["necessary_keys"]
 
-API_SERVER = config["prefect_flow_registration"]["api_server"]
-PROJECT_NAME = config["prefect"]["project"]
-OUTPUT_DIR = config["prefect"]["output_dir"]
-DATASET_FOLDER = config["prefect"]["dataset_folder"]
-S3_MODEL_BUCKET = config["prefect"]["s3_model_bucket"]
+API_SERVER = default_configs["prefect_flow_registration"]["api_server"]
+PROJECT_NAME = default_configs["prefect"]["project"]
+OUTPUT_DIR = default_configs["prefect"]["output_dir"]
+DATASET_FOLDER = default_configs["prefect"]["dataset_folder"]
+S3_MODEL_BUCKET = default_configs["prefect"]["s3_model_bucket"]
 
-MODEL_DIR = config["mlflow"]["model_folder"]
-MLFLOW_SERVER = config["mlflow"]["url"]["remote"]
-CUSTOM_RESOURCE_INFO = config["k8s"]["custom_seldon_resource"]
+MODEL_DIR = default_configs["mlflow"]["model_folder"]
+MLFLOW_SERVER = default_configs["mlflow"]["url"]["remote"]
+CUSTOM_RESOURCE_INFO = default_configs["k8s"]["custom_seldon_resource"]
 
 # REDIS SETTINGS
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
-SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
-DOCUMENT_HASHES = config["redis"]["document_hashes"]
-EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = default_configs["redis"]["spectrum_id_sorted_set"]
+SPECTRUM_HASHES = default_configs["redis"]["spectrum_hashes"]
+DOCUMENT_HASHES = default_configs["redis"]["document_hashes"]
+EMBEDDING_HASHES = default_configs["redis"]["embedding_hashes"]
 
 RedisDBDatasetSize = {"small": "2", "10k": "1", "full": "0"}
 DATASET_DIR = {
