@@ -8,7 +8,9 @@ import s3fs
 from moto import mock_s3
 
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
-from spec2vec_mlops import config, ROOT_DIR
+from spec2vec_mlops import config
+
+import confuse
 
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
@@ -34,9 +36,9 @@ def pytest_configure(config):
 
 @pytest.fixture(scope="module")
 def auth():
-    with open(DEV_CONFIG_VARS_FILE) as yaml_vars_file:
-        keys = ["auth_url", "username", "pwd"]
-        return {key: yaml_vars_file[key] for key in keys}
+    vars = confuse.Configuration("spec2vec_mlops", __name__)
+    keys = ["auth_url", "username", "pwd"]
+    return {key: vars[key].get() for key in keys}
 
 
 @pytest.fixture(scope="module")
