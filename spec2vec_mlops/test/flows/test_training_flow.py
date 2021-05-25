@@ -49,7 +49,6 @@ def test_training_flow(flow_config):
         "ProcessSpectrum",
         "case(True)",
         "check_condition",
-        "DeployModelTask",
         "MakeEmbeddings",
         "register_model_task",
         "train_model_task",
@@ -75,7 +74,7 @@ def test_training_flow(flow_config):
     )
 
     assert flow
-    assert len(flow.tasks) == 9
+    assert len(flow.tasks) == len(expected_tasks)
     assert flow.name == "spec2vec-training-flow"
 
     task_names = {t.name for t in flow.tasks}
