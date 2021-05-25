@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -7,9 +6,10 @@ from spec2vec_mlops.config import (
     API_SERVER,
     PROJECT_NAME,
     OUTPUT_DIR,
-    DATASET_FOLDER,
     MODEL_DIR,
     MLFLOW_SERVER,
+    DATASET_DIR,
+    RedisDBDatasetSize,
 )
 from prefect import Client
 
@@ -19,8 +19,6 @@ from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 
 from spec2vec_mlops.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
-    DEFAULT_REDIS_DB_ID,
-    RedisDBDatasetSize,
 )
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
@@ -32,11 +30,6 @@ from spec2vec_mlops.flows.config import (
     PrefectExecutorMethods,
 )
 
-DATASET_DIR = {
-    "small": f"spec2vec-training-flow/downloaded_datasets/small/{datetime.now().date()}/",
-    "10k": f"spec2vec-training-flow/downloaded_datasets/test_10k/",
-    "full": f"spec2vec-training-flow/downloaded_datasets/full/2021-05-14/",
-}
 JOB_TEMPLATE_PATH = str(Path(__file__).parents[0] / "job_spec.yaml")
 
 
@@ -46,6 +39,7 @@ def deploy_training_flow(
     window: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
+    dataset_name: str,
     n_decimals: int = 2,
     skip_if_exists: bool = True,
     auth: bool = False,
@@ -60,8 +54,6 @@ def deploy_training_flow(
     mlflow_server: str = MLFLOW_SERVER,
     redis_db: str = "2",
     flow_name: str = "spec2vec-training-flow",
-    dataset_size: str = None,
-    dataset: str = None,
 ):
 
     if auth:
@@ -73,24 +65,21 @@ def deploy_training_flow(
     client.create_project(project_name)
 
     # config values
-    dataset_name = DATASET_DIR[dataset] + "gnps.json"
-    spectrum_ids_name = DATASET_DIR[dataset] + "spectrum_ids.pkl"
-
-    if dataset_size is not None:
-        try:
-            redis_db = RedisDBDatasetSize[dataset_size]
-        except KeyError:
-            raise ValueError(
-                f"No such option available for reference dataset size: {dataset_size}."
-            )
-    else:
-        redis_db = DEFAULT_REDIS_DB_ID
+    try:
+        redis_db = RedisDBDatasetSize[dataset_name]
+        dataset_path = DATASET_DIR[dataset_name] + "gnps.json"
+        spectrum_ids_name = DATASET_DIR[dataset_name] + "spectrum_ids.pkl"
+    except KeyError:
+        raise ValueError(
+            f"No such option available for reference dataset: {dataset_name}. Available options are:"
+            f"{list(RedisDBDatasetSize.keys())}."
+        )
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
 
     download_parameters = DownloadParameters(
-        source_uri, output_dir, dataset_name, input_dgw, spectrum_ids_name
+        source_uri, output_dir, dataset_path, input_dgw, spectrum_ids_name
     )
     process_parameters = ProcessSpectrumParameters(
         spectrum_dgw,

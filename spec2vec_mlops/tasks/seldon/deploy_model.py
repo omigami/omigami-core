@@ -3,17 +3,16 @@ from pathlib import Path
 import prefect
 import yaml
 from kubernetes import config, client
-from prefect import task, Task
+from prefect import Task
 from kubernetes.config import ConfigException
 
 from spec2vec_mlops.helper_classes.exception import DeployingError
 
-from spec2vec_mlops.tasks.config import DEFAULT_CONFIG, merge_configs
+from spec2vec_mlops.tasks.config import merge_configs
 
-from spec2vec_mlops import config as spec2vec_config
+from spec2vec_mlops.config import CUSTOM_RESOURCE_INFO
 
 logger = prefect.context.get("logger")
-CUSTOM_RESOURCE_INFO = spec2vec_config["k8s"]["custom_seldon_resource"]
 
 
 class DeployModelTask(Task):
@@ -55,7 +54,6 @@ class DeployModelTask(Task):
             ]
 
             # sets redis database on seldom container env config
-
             deployment_yaml["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                 "containers"
             ][0]["env"].append({"name": "REDIS_DB", "value": self.redis_db})

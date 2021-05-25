@@ -10,7 +10,7 @@ from matchms.importing.load_from_json import as_spectrum
 from matchms.filtering import normalize_intensities
 from mlflow.pyfunc import PythonModel
 
-from spec2vec_mlops import config
+from spec2vec_mlops.config import NECESSARY_KEYS
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
@@ -24,7 +24,6 @@ from spec2vec_mlops.helper_classes.exception import (
 )
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
-KEYS = config["gnps_json"]["necessary_keys"]
 
 log = getLogger(__name__)
 
@@ -179,7 +178,7 @@ class Predictor(PythonModel):
                             400,
                         )
 
-            for key in KEYS:
+            for key in NECESSARY_KEYS:
                 if key not in float_keys + mandatory_keys:
                     if not isinstance(spectrum.get(key, ""), str):
                         raise IncorrectStringFieldTypeException(

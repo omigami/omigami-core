@@ -44,14 +44,13 @@ def cli():
 
 @cli.command(name="register-training-flow")
 @click.option("--image", "-i", type=str, required=True)
-@click.option("--dataset-name", type=str, default=DATASET_DIR)
+@click.option("--dataset-name", type=str)
 @click.option("--dataset-id", default=None)
 @click.option("--n-decimals", type=int, default=2)
 @click.option("--iterations", type=int, default=25)
 @click.option("--window", type=int, default=500)
 @click.option("--intensity-weighting-power", type=float, default=0.5)
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
-@click.option("--dataset-size", default=None)
 @add_options(auth_options)
 @add_options(configuration_options)
 def deploy_training_flow_cli(*args, **kwargs):
