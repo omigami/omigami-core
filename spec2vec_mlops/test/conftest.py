@@ -14,7 +14,6 @@ import confuse
 
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
-DEV_CONFIG_VARS_FILE = ROOT_DIR / "dev.env"
 
 KEYS = config["gnps_json"]["necessary_keys"]
 
@@ -36,7 +35,7 @@ def pytest_configure(config):
 
 @pytest.fixture(scope="module")
 def auth():
-    vars = confuse.Configuration("spec2vec_mlops", __name__)
+    vars = confuse.Configuration("spec2vec_mlops")
     keys = ["auth_url", "username", "pwd"]
     return {key: vars[key].get() for key in keys}
 
