@@ -8,7 +8,6 @@ from spec2vec_mlops.deployment import (
 
 from spec2vec_mlops.config import (
     SOURCE_URI_COMPLETE_GNPS,
-    SOURCE_URI_PARTIAL_GNPS,
     API_SERVER,
     OUTPUT_DIR,
     MODEL_DIR,
@@ -21,7 +20,7 @@ from spec2vec_mlops.config import (
 )
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f06b4f9",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.1f9bf5b",
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,

@@ -5,11 +5,10 @@ from unittest.mock import MagicMock
 import pytest
 from drfs import DRPath
 from drfs.filesystems import get_fs
-from prefect import task, Flow
+from prefect import Flow
 from prefect.executors import LocalDaskExecutor
 from prefect.storage import S3
 
-import spec2vec_mlops.flows.training_flow
 from spec2vec_mlops import default_configs
 from spec2vec_mlops.flows.config import (
     make_flow_config,
@@ -28,11 +27,6 @@ from spec2vec_mlops.test.conftest import ASSETS_DIR
 
 SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
-
-
-@task()
-def mock_task(a=None, b=None, c=None, **kwargs):
-    pass
 
 
 @pytest.fixture
@@ -77,29 +71,22 @@ def test_training_flow(flow_config):
         allowed_missing_percentage=5,
         flow_config=flow_config,
         redis_db="0",
+        deploy_model=False,
     )
 
     assert flow
     assert len(flow.tasks) == 9
-    # TODO: If this is now parameterize in the yaml file, get it from there and put here
     assert flow.name == "spec2vec-training-flow"
 
     task_names = {t.name for t in flow.tasks}
     assert task_names == expected_tasks
 
 
-@pytest.fixture()
-def mock_seldon_deployment(monkeypatch):
-    monkeypatch.setattr(
-        spec2vec_mlops.flows.training_flow, "DeployModelTask", mock_task
-    )
-
-
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow(mock_seldon_deployment, tmpdir, flow_config):
+def test_run_training_flow(tmpdir, flow_config):
     # remove results from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
@@ -124,6 +111,7 @@ def test_run_training_flow(mock_seldon_deployment, tmpdir, flow_config):
         flow_config=flow_config,
         chunk_size=10,
         redis_db="0",
+        deploy_model=False,
     )
 
     results = flow.run()
@@ -138,7 +126,7 @@ def test_run_training_flow(mock_seldon_deployment, tmpdir, flow_config):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow_with_s3_data(mock_seldon_deployment, flow_config):
+def test_run_training_flow_with_s3_data(flow_config):
     input_dgw = FSInputDataGateway()
     download_parameters = DownloadParameters(
         "fake_10k_dataset_uri",
@@ -149,11 +137,6 @@ def test_run_training_flow_with_s3_data(mock_seldon_deployment, flow_config):
     )
     spectrum_dgw = RedisSpectrumDataGateway()
     process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, False)
-
-    FLOW_CONFIG = {
-        "storage": S3("dr-prefect"),
-        "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
-    }
 
     flow = build_training_flow(
         project_name="test-project",
@@ -169,6 +152,7 @@ def test_run_training_flow_with_s3_data(mock_seldon_deployment, flow_config):
         chunk_size=10000,
         flow_name="test-flow",
         redis_db="1",
+        deploy_model=False,
     )
 
     results = flow.run()
@@ -186,7 +170,7 @@ def test_deploy_seldon_model():
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
         DeployModelTask(redis_db="0",)(
             registered_model={
-                "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/e06d4ef7116e4bc78b76fc867fff29dc/artifacts/model/",
+                "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/750c60ddb52544289db228a4af8a52e3/artifacts/model/"
             }
         )
 

@@ -29,8 +29,6 @@ from spec2vec_mlops.flows.config import (
     PrefectExecutorMethods,
 )
 
-JOB_TEMPLATE_PATH = str(Path(__file__).parents[0] / "job_spec.yaml")
-
 
 def deploy_training_flow(
     image: str,

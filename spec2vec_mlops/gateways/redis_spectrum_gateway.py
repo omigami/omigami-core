@@ -1,6 +1,6 @@
 import os
 import pickle
-from typing import List, Iterable
+from typing import List, Iterable, Tuple
 
 import redis
 from matchms import Spectrum
@@ -43,10 +43,11 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         if self.client is None:
             self.client = get_redis_client()
 
-    def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
+    def write_spectrum_documents(self, spectrum_data: List[SpectrumDocumentData]):
+        """Write spectra data on the redis database. The spectra ids and precursor_MZ are required."""
         self._init_client()
         pipe = self.client.pipeline()
-        for spectrum in spectra_data:
+        for spectrum in spectrum_data:
             spectrum_info = spectrum.spectrum
             document = spectrum.document
             if spectrum_info and document:
@@ -61,6 +62,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         pipe.execute()
 
     def write_embeddings(self, embeddings: List[Embedding], run_id: str):
+        """Write embeddings data on the redis database."""
         self._init_client()
         pipe = self.client.pipeline()
         for embedding in embeddings:
@@ -72,10 +74,14 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         pipe.execute()
 
     def list_spectrum_ids(self) -> List[str]:
+        """List the spectrum ids of all spectra on the redis database."""
         self._init_client()
         return [id_.decode() for id_ in self.client.hkeys(SPECTRUM_HASHES)]
 
     def list_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
+        """Check whether spectra exist on Redis.
+        Return a list of IDs that do not exist.
+        """
         self._init_client()
         return self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids)
 
@@ -89,35 +95,47 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
 
     # Not used atm
     def read_spectra(self, spectrum_ids: List[str] = None) -> List[Spectrum]:
+        """Read the spectra information from spectra IDs.
+        Return a list of Spectrum objects."""
         self._init_client()
         return self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
 
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
+        """Read the document information from spectra IDs.
+        Return a list of SpectrumDocument objects."""
         self._init_client()
         return self._read_hashes(DOCUMENT_HASHES, spectrum_ids)
 
     def read_embeddings(
         self, run_id: str, spectrum_ids: List[str] = None
     ) -> List[Embedding]:
+        """Read the embeddings from spectra IDs.
+        Return a list of Embedding objects."""
         self._init_client()
         return self._read_hashes(f"{EMBEDDING_HASHES}_{run_id}", spectrum_ids)
 
-    def read_embeddings_within_range(
-        self, run_id: str, min_mz: int = 0, max_mz: int = -1
-    ) -> List[Embedding]:
+    def get_spectrum_ids_within_range(
+        self, min_mz: float = 0, max_mz: float = -1
+    ) -> List[str]:
+        """Get the spectrum IDs of spectra stored on redis that have a Precursor_MZ within the given range.
+        Return a list spectrum IDs."""
         self._init_client()
-        spectrum_ids_within_range = self._read_spectra_ids_within_range(
-            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, min_mz, max_mz
-        )
-        return self.read_embeddings(run_id, spectrum_ids_within_range)
+        spectrum_ids_within_range = [
+            id_.decode()
+            for id_ in self.client.zrangebyscore(
+                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, min_mz, max_mz
+            )
+        ]
+        return spectrum_ids_within_range
 
     def read_documents_iter(self) -> Iterable:
+        """Returns an iterator that yields Redis object one by one"""
         self._init_client()
         return RedisHashesIterator(self, DOCUMENT_HASHES)
 
-    def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None):
+    def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None) -> List:
         if spectrum_ids:
-            spectra = [self.client.hget(hash_name, id_) for id_ in spectrum_ids]
+            spectra = self.client.hmget(hash_name, spectrum_ids)
             loaded_spectra = [pickle.loads(s) for s in spectra if s]
             return loaded_spectra
         else:
@@ -127,11 +145,6 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self, hash_name: str, spectrum_ids: List[str]
     ) -> List[str]:
         return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]
-
-    def _read_spectra_ids_within_range(self, hash_name: str, min_mz: int, max_mz: int):
-        return [
-            id_.decode() for id_ in self.client.zrangebyscore(hash_name, min_mz, max_mz)
-        ]
 
     def delete_spectra(self, spectrum_ids: List[str]):
         # Just used on tests atm. No abstract method.
@@ -147,9 +160,9 @@ class RedisHashesIterator:
     def __init__(self, dgw: RedisSpectrumDataGateway, hash_name: str):
         self.dgw = dgw
         self.hash_name = hash_name
-        self.spectra_ids = dgw.client.hkeys(hash_name)
+        self.spectrum_ids = dgw.client.hkeys(hash_name)
 
     def __iter__(self):
-        for spectrum_id in self.spectra_ids:
+        for spectrum_id in self.spectrum_ids:
             data = self.dgw.client.hmget(self.hash_name, spectrum_id)[0]
             yield pickle.loads(data)
