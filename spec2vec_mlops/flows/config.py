@@ -13,10 +13,6 @@ from spec2vec_mlops.config import ROOT_DIR, S3_MODEL_BUCKET
 """
 
 
-class PrefectRunMethods(Enum):
-    KUBERNETES = 0
-
-
 class PrefectStorageMethods(Enum):
     S3 = 0
 
@@ -45,7 +41,6 @@ class FlowConfig:
 
 def make_flow_config(
     image: str,
-    run_config_type: PrefectRunMethods,
     storage_type: PrefectStorageMethods,
     executor_type: PrefectExecutorMethods,
     redis_db: str,
@@ -56,18 +51,13 @@ def make_flow_config(
     """
 
     # run_config
-    if run_config_type == PrefectRunMethods.KUBERNETES:
-        run_config = KubernetesRun(
-            image=image,
-            job_template_path=str(ROOT_DIR / "job_spec.yaml"),
-            labels=["dev"],
-            service_account_name="prefect-server-serviceaccount",
-            env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
-        )
-    else:
-        raise ValueError(
-            f"Prefect flow run config type '{run_config_type}' not supported."
-        )
+    run_config = KubernetesRun(
+        image=image,
+        job_template_path=str(ROOT_DIR / "job_spec.yaml"),
+        labels=["dev"],
+        service_account_name="prefect-server-serviceaccount",
+        env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
+    )
 
     # storage_type
     if storage_type == PrefectStorageMethods.S3:

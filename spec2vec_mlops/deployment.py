@@ -90,7 +90,6 @@ def deploy_training_flow(
 
     flow_config = make_flow_config(
         image=image,
-        run_config_type=PrefectRunMethods.KUBERNETES,
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db=redis_db,
