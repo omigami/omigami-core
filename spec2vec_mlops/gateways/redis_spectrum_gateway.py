@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import os
 import pickle
-from typing import List, Iterable, Tuple
+from typing import List
 
 import redis
 from matchms import Spectrum
@@ -123,7 +125,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         ]
         return spectrum_ids_within_range
 
-    def read_documents_iter(self) -> Iterable:
+    def read_documents_iter(self) -> RedisHashesIterator:
         """Returns an iterator that yields Redis object one by one"""
         self._init_client()
         return RedisHashesIterator(self, DOCUMENT_HASHES)

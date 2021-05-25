@@ -45,4 +45,4 @@ def test_word2vec_training_with_iterator(documents_stored):
 
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
 
-    assert len(documents.spectra_ids) == model.corpus_count
+    assert len(documents.spectrum_ids) == model.corpus_count
