@@ -16,9 +16,9 @@ from spec2vec_mlops.config import (
 )
 
 
-# @pytest.mark.skip(
-#     reason="This test uses internet connection and deploys a test flow to prefect."
-# )
+@pytest.mark.skip(
+    reason="This test uses internet connection and deploys a test flow to prefect."
+)
 def test_deploy_training_flow():
     flow_id = deploy_training_flow(
         image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f06b4f9",
@@ -46,9 +46,11 @@ def test_deploy_training_flow():
     assert flow_id
 
 
+@pytest.mark.skip(reason="This test uses internet connection.")
 def test_dataset_wrong_dataset_name():
     with pytest.raises(ValueError):
         flow_id = deploy_training_flow(
+            dataset_name="NOT-A-DATASET",
             image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f06b4f9",
             iterations=5,
             window=500,
@@ -61,7 +63,6 @@ def test_dataset_wrong_dataset_name():
             username="ofiehn@ucdavis.edu",
             password="PWspec2vecbeta",
             api_server=API_SERVER["remote"],
-            dataset_name="not-a-dataset-really",
             source_uri=SOURCE_URI_COMPLETE_GNPS,
             output_dir=OUTPUT_DIR,
             project_name="spec2vec-mlops-10k",
