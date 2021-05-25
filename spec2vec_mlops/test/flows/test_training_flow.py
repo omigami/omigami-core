@@ -122,44 +122,6 @@ def test_run_training_flow(tmpdir, flow_config):
     assert len(fs.ls(tmpdir / "model-output")) == 1
 
 
-@pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
-def test_run_training_flow_with_s3_data(flow_config):
-    input_dgw = FSInputDataGateway()
-    download_parameters = DownloadParameters(
-        "fake_10k_dataset_uri",
-        ASSETS_DIR,
-        ASSETS_DIR / "10k/gnps.json",
-        input_dgw,
-        ASSETS_DIR / "10k/spectrum_ids.pkl",
-    )
-    spectrum_dgw = RedisSpectrumDataGateway()
-    process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, False)
-
-    flow = build_training_flow(
-        project_name="test-project",
-        download_params=download_parameters,
-        process_params=process_parameters,
-        model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
-        mlflow_server="mlflow-server",
-        iterations=5,
-        window=500,
-        intensity_weighting_power=0.5,
-        allowed_missing_percentage=5,
-        flow_config=flow_config,
-        chunk_size=10000,
-        flow_name="test-flow",
-        redis_db="1",
-        deploy_model=False,
-    )
-
-    results = flow.run()
-
-    assert results.is_successful()
-
-
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
 def test_deploy_seldon_model():
     FLOW_CONFIG = {
