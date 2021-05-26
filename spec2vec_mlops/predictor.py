@@ -8,14 +8,12 @@ from matchms.importing.load_from_json import as_spectrum
 from matchms.filtering import normalize_intensities
 from mlflow.pyfunc import PythonModel
 
-from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
-KEYS = config["gnps_json"]["necessary_keys"]
 
 log = getLogger(__name__)
 
@@ -133,7 +131,11 @@ class Predictor(PythonModel):
     @staticmethod
     def check_spectrum_refs(reference_spectra_ids: List[List[str]]):
         if [] in reference_spectra_ids:
-            idx_null = [idx for idx, element in enumerate(reference_spectra_ids) if element == []]
+            idx_null = [
+                idx
+                for idx, element in enumerate(reference_spectra_ids)
+                if element == []
+            ]
             raise RuntimeError(
                 f"No data found from filtering with precursor MZ for spectra at indices {idx_null}. "
                 f"Try increasing the mz_range filtering."
@@ -146,7 +148,7 @@ class Predictor(PythonModel):
         unique_ref_embeddings = self.dgw.read_embeddings(
             self.run_id, list(unique_ref_ids)
         )
-        return { emb.spectrum_id: emb for emb in unique_ref_embeddings }
+        return {emb.spectrum_id: emb for emb in unique_ref_embeddings}
 
     def _get_best_matches(
         self,

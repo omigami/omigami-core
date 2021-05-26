@@ -5,10 +5,10 @@ import requests_mock
 from drfs import DRPath
 from drfs.filesystems import get_fs
 
-from spec2vec_mlops import config
+from spec2vec_mlops import default_configs
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 
-KEYS = config["gnps_json"]["necessary_keys"]
+KEYS = default_configs["gnps_json"]["necessary_keys"]
 
 
 def test_load_gnps(local_gnps_small_json):
@@ -18,8 +18,8 @@ def test_load_gnps(local_gnps_small_json):
             assert k in res
 
 
-SOURCE_URI_COMPLETE_GNPS = config["gnps_json"]["uri"]["complete"]
-SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
+SOURCE_URI_COMPLETE_GNPS = default_configs["gnps_json"]["uri"]["complete"]
+SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
 
 
 @pytest.mark.skip("Uses internet connection.")

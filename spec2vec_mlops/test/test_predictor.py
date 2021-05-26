@@ -5,7 +5,11 @@ from pathlib import Path
 import pytest
 from pytest_redis import factories
 
-from spec2vec_mlops import config
+from spec2vec_mlops.config import (
+    EMBEDDING_HASHES,
+    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+    SPECTRUM_HASHES,
+)
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 
@@ -13,9 +17,6 @@ from spec2vec_mlops.tasks.register_model import ModelRegister
 from spec2vec_mlops.predictor import Predictor
 from spec2vec_mlops.test.conftest import ASSETS_DIR
 
-EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
-SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
 
 redis_db = factories.redisdb("redis_nooproc")
 
