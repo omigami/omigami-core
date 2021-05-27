@@ -26,13 +26,12 @@ steps:
   - task: Cache@2
     inputs:
       key: 'python | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
-#      restoreKeys: |
-#        python | "$(Agent.OS)"
-#        python
+      restoreKeys: |
+        python | "$(Agent.OS)"
+        python
       path: $(CONDA_CACHE_DIR)
-      cacheHitVar: CACHE_RESTORED
 #      path: $(CONDA_ENV_PATH)
-#      cacheHitVar: CACHE_RESTORED
+      cacheHitVar: CACHE_RESTORED
     displayName: 'Cache Conda packages'
 
   - task: UsePythonVersion@0
@@ -57,3 +56,14 @@ steps:
         --cov-report=html \
         spec2vec_mlops
     displayName: 'Run all tests'
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '**/test-*.xml'
+      testRunTitle: 'Publish test results for Omigami'
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+      reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
