@@ -34,5 +34,10 @@ steps:
     condition: ne(variables.CACHE_RESTORED, 'true')
   - script: |
       pip install pytest pytest-azurepipelines==1.0.0rc5
-      pytest --cov=omigami tests/ --cov-report html --nunitxml test-output.xml
+      pytest \
+        --junitxml=junit/test-results-quick.xml \
+        --cov=spec2vec_mlops \
+        --cov-report=xml \
+        --cov-report=html \
+        spec2vec_mlops
     displayName: 'Run all tests'
