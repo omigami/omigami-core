@@ -29,8 +29,8 @@ steps:
       restoreKeys: |
         python | "$(Agent.OS)"
         python
-      path: $(CONDA_CACHE_DIR)
-#      path: $(CONDA_ENV_PATH)
+#      path: $(CONDA_CACHE_DIR)
+      path: $(CONDA_ENV_PATH)
       cacheHitVar: CACHE_RESTORED
     displayName: 'Cache Conda packages'
 
