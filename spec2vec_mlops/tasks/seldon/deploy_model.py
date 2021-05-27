@@ -10,7 +10,7 @@ from spec2vec_mlops.helper_classes.exception import DeployingError
 
 from spec2vec_mlops.tasks.config import merge_configs
 
-from spec2vec_mlops.config import CUSTOM_RESOURCE_INFO
+from spec2vec_mlops.config import SELDON_PARAMS
 
 logger = prefect.context.get("logger")
 
@@ -25,12 +25,13 @@ class DeployModelTask(Task):
 
         model_uri = registered_model["model_uri"]
         logger.info(
-            f"Deploying model {model_uri} to environment {CUSTOM_RESOURCE_INFO['namespace']}"
+            f"Deploying model {model_uri} to environment {SELDON_PARAMS['namespace']}"
         )
 
         try:
             config.load_incluster_config()
         except ConfigException:
+            # TODO: parametrize context here to use dev/prod. We should use confuse for this
             config.load_kube_config()
 
         custom_api = client.CustomObjectsApi()
@@ -69,10 +70,10 @@ class DeployModelTask(Task):
     def _create_deployment(custom_api, deployment, overwrite):
         if overwrite:
             custom_api.delete_namespaced_custom_object(
-                **CUSTOM_RESOURCE_INFO, name=deployment["metadata"]["name"]
+                **SELDON_PARAMS, name=deployment["metadata"]["name"]
             )
         resp = custom_api.create_namespaced_custom_object(
-            **CUSTOM_RESOURCE_INFO,
+            **SELDON_PARAMS,
             body=deployment,
         )
         logger.info("Deployment created. status='%s'" % resp["status"]["state"])
@@ -81,7 +82,7 @@ class DeployModelTask(Task):
     def _update_deployment(custom_api, deployment, model_uri):
         logger.info("Updating existing model")
         existent_deployment = custom_api.get_namespaced_custom_object(
-            **CUSTOM_RESOURCE_INFO,
+            **SELDON_PARAMS,
             name=deployment["metadata"]["name"],
         )
         try:
@@ -93,7 +94,7 @@ class DeployModelTask(Task):
                 "Couldn't update the deployment because the configuration schema is not correct"
             )
         resp = custom_api.replace_namespaced_custom_object(
-            **CUSTOM_RESOURCE_INFO,
+            **SELDON_PARAMS,
             name=existent_deployment["metadata"]["name"],
             body=existent_deployment,
         )

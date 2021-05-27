@@ -8,8 +8,7 @@ from spec2vec_mlops.deployment import (
 
 from spec2vec_mlops.config import (
     SOURCE_URI_COMPLETE_GNPS,
-    API_SERVER,
-    OUTPUT_DIR,
+    S3_BUCKET,
     MODEL_DIR,
     MLFLOW_SERVER,
 )
@@ -31,15 +30,14 @@ def test_deploy_training_flow():
         auth_url="https://mlops.datarevenue.com/.ory/kratos/public/",
         username="ofiehn@ucdavis.edu",
         password="PWspec2vecbeta",
-        api_server=API_SERVER["remote"],
+        environment="dev",
         dataset_name="10k",
         source_uri=SOURCE_URI_COMPLETE_GNPS,
-        output_dir=OUTPUT_DIR,
+        output_dir=S3_BUCKET,
         project_name="spec2vec-mlops-10k",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow",
-        redis_db="1",
     )
 
     assert flow_id
@@ -61,12 +59,11 @@ def test_dataset_wrong_dataset_name():
             auth_url="https://mlops.datarevenue.com/.ory/kratos/public/",
             username="ofiehn@ucdavis.edu",
             password="PWspec2vecbeta",
-            api_server=API_SERVER["remote"],
+            environment="dev",
             source_uri=SOURCE_URI_COMPLETE_GNPS,
-            output_dir=OUTPUT_DIR,
+            output_dir=S3_BUCKET,
             project_name="spec2vec-mlops-10k",
             model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
             mlflow_server=MLFLOW_SERVER,
             flow_name="training-flow",
-            redis_db="1",
         )

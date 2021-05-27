@@ -1,11 +1,12 @@
 from enum import Enum
 
 from attr import dataclass
+from drfs import DRPath
 from prefect.executors import Executor, LocalDaskExecutor
 from prefect.run_configs import RunConfig, KubernetesRun
 from prefect.storage import Storage, S3
 
-from spec2vec_mlops.config import ROOT_DIR, S3_MODEL_BUCKET
+from spec2vec_mlops.config import ROOT_DIR, S3_BUCKET
 
 
 """
@@ -54,14 +55,14 @@ def make_flow_config(
     run_config = KubernetesRun(
         image=image,
         job_template_path=str(ROOT_DIR / "job_spec.yaml"),
-        labels=["dev"],
+        labels=[],
         service_account_name="prefect-server-serviceaccount",
         env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
     )
 
     # storage_type
     if storage_type == PrefectStorageMethods.S3:
-        storage = S3(S3_MODEL_BUCKET)
+        storage = S3(DRPath(S3_BUCKET).netloc)
     else:
         raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
 

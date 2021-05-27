@@ -10,10 +10,47 @@ from drfs.filesystems.base import FileSystemBase
 
 from spec2vec_mlops.entities.data_models import SpectrumInputData
 from spec2vec_mlops.data_gateway import InputDataGateway
-from spec2vec_mlops.config import default_configs
 
 logger = logging.getLogger(__name__)
-KEYS = default_configs["gnps_json"]["necessary_keys"]
+KEYS = [
+    "spectrum_id",
+    "source_file",
+    "task",
+    "scan",
+    "ms_level",
+    "library_membership",
+    "spectrum_status",
+    "peaks_json",
+    "splash",
+    "submit_user",
+    "Compound_Name",
+    "Ion_Source",
+    "Compound_Source",
+    "Instrument",
+    "PI",
+    "Data_Collector",
+    "Adduct",
+    "Scan",
+    "Precursor_MZ",
+    "ExactMass",
+    "Charge",
+    "CAS_Number",
+    "Pubmed_ID",
+    "Smiles",
+    "INCHI",
+    "INCHI_AUX",
+    "Library_Class",
+    "SpectrumID",
+    "Ion_Mode",
+    "create_time",
+    "task_id",
+    "user_id",
+    "InChIKey_smiles",
+    "InChIKey_inchi",
+    "Formula_smiles",
+    "Formula_inchi",
+    "url",
+]
 
 
 class FSInputDataGateway(InputDataGateway):
