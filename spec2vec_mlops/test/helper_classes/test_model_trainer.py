@@ -6,11 +6,11 @@ import pytest
 from pytest_redis import factories
 from spec2vec.utils import TrainingProgressLogger
 
-from spec2vec_mlops import config
-from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.config import default_configs
+from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.helper_classes.model_trainer import spec2vec_settings
 
-DOCUMENT_HASHES = config["redis"]["document_hashes"]
+DOCUMENT_HASHES = default_configs["redis"]["document_hashes"]
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -45,4 +45,4 @@ def test_word2vec_training_with_iterator(documents_stored):
 
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
 
-    assert len(documents.spectra_ids) == model.corpus_count
+    assert len(documents.spectrum_ids) == model.corpus_count

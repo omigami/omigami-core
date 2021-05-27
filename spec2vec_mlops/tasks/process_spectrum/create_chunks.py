@@ -19,4 +19,8 @@ class CreateChunks(Task):
             spectrum_ids[i : i + self._chunk_size]
             for i in range(0, len(spectrum_ids), self._chunk_size)
         ]
+        self.logger.info(
+            f"Split spectra into {len(chunked_spectrum_data)} chunks of size"
+            f"{self._chunk_size}"
+        )
         return chunked_spectrum_data

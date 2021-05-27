@@ -62,6 +62,7 @@ prefect_flow_registration:
 mlflow:
   url:
     remote: "http://mlflow.mlflow:5000"
+  model_folder: "s3://dr-prefect/spec2vec-training-flow/mlflow"
 k8s:
   custom_seldon_resource:
     group: "machinelearning.seldon.io"
@@ -69,9 +70,12 @@ k8s:
     plural: "seldondeployments"
     namespace: "seldon"
 redis:
-  host: "localhost"
-  db: 0
   spectrum_id_sorted_set: "spectrum_id_precursor_mz_sorted"
   spectrum_hashes: "spectrum_data"
   document_hashes: "document_data"
   embedding_hashes: "embedding_data"
+prefect:
+  project: "spec2vec-mlops-project-spec2vec-load-small-data"
+  output_dir: "s3://dr-prefect"
+  dataset_folder: "spec2vec-training-flow/downloaded_datasets/small"
+  s3_model_bucket: "dr-prefect"

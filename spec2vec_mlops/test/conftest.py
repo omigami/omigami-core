@@ -8,11 +8,11 @@ import s3fs
 from moto import mock_s3
 
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
-from spec2vec_mlops import config
+from spec2vec_mlops.config import default_configs
 
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
 
-KEYS = config["gnps_json"]["necessary_keys"]
+KEYS = default_configs["gnps_json"]["necessary_keys"]
 
 
 def pytest_addoption(parser):
@@ -74,6 +74,14 @@ def word2vec_model():
 @pytest.fixture(scope="module")
 def embeddings():
     path = str(ASSETS_DIR / "SMALL_GNPS_as_embeddings.pickle")
+    with open(path, "rb") as handle:
+        embeddings = pickle.load(handle)
+    return embeddings
+
+
+@pytest.fixture(scope="module")
+def embeddings_2k():
+    path = str(ASSETS_DIR / "embeddings_2k.pickle")
     with open(path, "rb") as handle:
         embeddings = pickle.load(handle)
     return embeddings

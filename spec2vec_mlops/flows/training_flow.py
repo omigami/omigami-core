@@ -1,28 +1,30 @@
 import logging
 from dataclasses import dataclass
-from typing import Union, Dict, Any
+from typing import Union
 
+import prefect
 from prefect import Flow, unmapped
 
-
+from spec2vec_mlops.flows.config import FlowConfig
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (
     DownloadData,
+    MakeEmbeddings,
+    ProcessSpectrum,
     TrainModel,
     register_model_task,
-    make_embeddings_task,
-    deploy_model_task,
 )
 from spec2vec_mlops.tasks.process_spectrum import (
-    ProcessSpectrum,
     ProcessSpectrumParameters,
 )
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
 from spec2vec_mlops.tasks.train_model import TrainModelParameters
+from spec2vec_mlops.tasks.seldon import DeployModelTask
 
+
+logger = prefect.utilities.logging.get_logger()
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 
 @dataclass  # WIP
@@ -38,10 +40,13 @@ def build_training_flow(
     train_params: TrainModelParameters,
     model_output_dir: str,
     mlflow_server: str,
+    flow_config: FlowConfig,
+    redis_db: str,
     chunk_size: int = 1000,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
-    flow_config: Dict[str, Any] = None,
+    flow_name: str = "spec2vec-training-flow",
+    deploy_model: bool = False,
 ) -> Flow:
     """
     Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
@@ -53,32 +58,37 @@ def build_training_flow(
     project_name: str
         Prefect parameter. The project name.
     download_params:
-        Parameters of the DownloadData task
+        Parameters of the DownloadData task.
     process_params:
-        Parameters of the ProcessSpectrum task
+        Parameters of the ProcessSpectrum task.
+    train params:
+        Parameters of the TrainModel task.
     model_output_dir:
-        Diretory for saving the model
+        Diretory for saving the model.
     mlflow_server:
-        Server used for MLFlow to save the model
+        Server used for MLFlow to save the model.
     chunk_size:
-        Size of the chunks to map the data processing task
+        Size of the chunks to map the data processing task.
     intensity_weighting_power:
-        Exponent used to scale intensity weights for each word
+        Exponent used to scale intensity weights for each word.
     allowed_missing_percentage:
-        Number of what percentage of a spectrum is allowed to be unknown to the model
-    flow_config:
-        Configuration passed to prefect.Flow
-
+        Number of what percentage of a spectrum is allowed to be unknown to the model.
+    flow_config: FlowConfig
+        Configuration dataclass passed to prefect.Flow as a dict
+    deploy_model:
+        Whether to create a seldon deployment with the result of the training flow.
     Returns
     -------
 
     """
-    flow_config = flow_config or {}
-    with Flow("spec2vec-training-flow", **flow_config) as training_flow:
-        logger.info("Downloading and loading spectrum data.")
+    with Flow(flow_name, **flow_config.kwargs) as training_flow:
+        logger.info(
+            f"Downloading and loading spectrum data from {download_params.input_uri} to "
+            f"{download_params.download_path}."
+        )
         spectrum_ids = DownloadData(
             **download_params.kwargs,
-            result=create_result(download_params.checkpoint_path),
+            **create_result(download_params.checkpoint_path),
         )()
 
         spectrum_id_chunks = CreateChunks(chunk_size)(spectrum_ids)
@@ -94,7 +104,7 @@ def build_training_flow(
             train_params.iterations, train_params.window
         )
 
-        registered_model = register_model_task(
+        model_registry = register_model_task(
             mlflow_server,
             model,
             project_name,
@@ -106,15 +116,14 @@ def build_training_flow(
         logger.info("Model training is complete.")
 
         # TODO: this is make AND save embeddings. Prob need some refactor
-        _ = make_embeddings_task.map(
-            unmapped(model),
-            all_spectrum_ids_chunks,
-            unmapped(registered_model),
-            unmapped(process_params.n_decimals),
-            unmapped(intensity_weighting_power),
-            unmapped(allowed_missing_percentage),
-        )
+        _ = MakeEmbeddings(
+            process_params.spectrum_dgw,
+            process_params.n_decimals,
+            intensity_weighting_power,
+            allowed_missing_percentage,
+        ).map(unmapped(model), unmapped(model_registry), all_spectrum_ids_chunks)
         logger.info("Saving embedding is complete.")
-        deploy_model_task(registered_model)
+        if deploy_model:
+            DeployModelTask(redis_db)(model_registry)
 
     return training_flow

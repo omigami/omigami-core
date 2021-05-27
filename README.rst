@@ -69,7 +69,7 @@ Start a Redis container and set these environment variables before running the t
 To run tests one by one via PyCharm, you can add this to your pytest Environment Variables (Run > Edit Configurations...)
 ::
 
-    SKIP_REDIS_TEST=False
+    SKIP_REDIS_TEST=False;PREFECT__FLOWS__CHECKPOINTING=True;REDIS_HOST=localhost;REDIS_DB=0
 
 How to register the training flow manually
 ------------------------------------------
@@ -81,7 +81,7 @@ To register the flow manually to Prefect you need to follow these steps:
     export AWS_PROFILE=<your data revenue profile>
     export PYTHONPATH=$(pwd)
     prefect backend server
-    python spec2vec_mlops/flows/training_flow.py register-train-pipeline [args]
+    python spec2vec_mlops/cli.py register-training-flow -i [image] [options]
 
 If the Prefect Server requires authentication, you can use the arguments to set it up:
 ::

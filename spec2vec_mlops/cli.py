@@ -1,14 +1,16 @@
 import click
 
-from spec2vec_mlops.deployment import (
-    PROJECT_NAME,
+from spec2vec_mlops.deployment import deploy_training_flow
+from spec2vec_mlops import (
+    DATASET_DIR,
+)
+from spec2vec_mlops.config import (
     SOURCE_URI_PARTIAL_GNPS,
+    API_SERVER,
+    PROJECT_NAME,
     OUTPUT_DIR,
     MODEL_DIR,
     MLFLOW_SERVER,
-    API_SERVER,
-    deploy_training_flow,
-    DATASET_NAME,
 )
 from spec2vec_mlops.utils import add_options
 
@@ -17,9 +19,9 @@ from spec2vec_mlops.utils import add_options
 # parameters right now. If you think we won't need this we can just tweak config_default
 # for changes in configuration. Atm it doesn't look these change often
 configuration_options = [
-    click.option("--project-name", default=PROJECT_NAME),
+    click.option("--project-name", "-p", default=PROJECT_NAME),
     click.option("--source-uri", default=SOURCE_URI_PARTIAL_GNPS),
-    click.option("--dataset-dir", default=OUTPUT_DIR),
+    click.option("--output-dir", default=OUTPUT_DIR),
     click.option("--model-output-dir", default=MODEL_DIR),
     click.option("--mlflow-server", default=MLFLOW_SERVER),
 ]
@@ -41,13 +43,16 @@ def cli():
 
 
 @cli.command(name="register-training-flow")
-@click.option("--dataset-id", default=DATASET_NAME)
+@click.option("--image", "-i", type=str, required=True)
+@click.option("--dataset-name", type=str)
+@click.option("--dataset-id", default=None)
 @click.option("--n-decimals", type=int, default=2)
 @click.option("--iterations", type=int, default=25)
 @click.option("--window", type=int, default=500)
 @click.option("--intensity-weighting-power", type=float, default=0.5)
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
 @add_options(auth_options)
+@add_options(configuration_options)
 def deploy_training_flow_cli(*args, **kwargs):
     _ = deploy_training_flow(*args, **kwargs)
 

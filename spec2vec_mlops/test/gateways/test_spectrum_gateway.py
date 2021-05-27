@@ -7,15 +7,15 @@ from matchms.Spectrum import Spectrum
 from pytest_redis import factories
 from spec2vec.SpectrumDocument import SpectrumDocument
 
-from spec2vec_mlops import config
+from spec2vec_mlops.config import default_configs
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
-from spec2vec_mlops.gateways.redis_gateway import RedisSpectrumDataGateway
+from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
-SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
-DOCUMENT_HASHES = config["redis"]["document_hashes"]
-EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = default_configs["redis"]["spectrum_id_sorted_set"]
+SPECTRUM_HASHES = default_configs["redis"]["spectrum_hashes"]
+DOCUMENT_HASHES = default_configs["redis"]["document_hashes"]
+EMBEDDING_HASHES = default_configs["redis"]["embedding_hashes"]
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -134,7 +134,8 @@ def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_sto
     filtered_spectra = dgw.client.zrangebyscore(
         SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
     )
-    embeddings_read = dgw.read_embeddings_within_range("1", mz_min, mz_max)
+    spectrum_ids_within_range = dgw.get_spectrum_ids_within_range(mz_min, mz_max)
+    embeddings_read = dgw.read_embeddings("1", spectrum_ids_within_range)
     assert len(embeddings_read) == len(filtered_spectra)
     for embedding in embeddings_read:
         assert isinstance(embedding, Embedding)
@@ -155,9 +156,7 @@ def test_read_spectra_ids_within_range(spectra_stored):
     filtered_spectra = dgw.client.zrangebyscore(
         SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
     )
-    spectra_ids_within_range = dgw._read_spectra_ids_within_range(
-        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
-    )
+    spectra_ids_within_range = dgw.get_spectrum_ids_within_range(mz_min, mz_max)
     assert len(spectra_ids_within_range) == len(filtered_spectra)
     for spectrum_id in spectra_ids_within_range:
         assert (
