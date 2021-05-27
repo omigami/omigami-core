@@ -5,7 +5,7 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from spec2vec_mlops import default_configs
+from spec2vec_mlops.config import default_configs
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.tasks import DownloadData

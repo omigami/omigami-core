@@ -8,7 +8,7 @@ import s3fs
 from moto import mock_s3
 
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
-from spec2vec_mlops import default_configs
+from spec2vec_mlops.config import default_configs
 
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
 

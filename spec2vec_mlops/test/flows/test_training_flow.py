@@ -3,19 +3,17 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 from prefect.executors import LocalDaskExecutor
 from prefect.storage import S3
 
-from spec2vec_mlops import default_configs
+from spec2vec_mlops.config import default_configs
 from spec2vec_mlops.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from spec2vec_mlops.config import MODEL_DIR
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
