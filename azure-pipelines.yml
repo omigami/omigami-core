@@ -41,8 +41,8 @@ steps:
     displayName: 'Create Anaconda environment'
     condition: ne(variables.CACHE_RESTORED, 'true')
 
-  - script: |
-      conda activate omigami
+  - bash: |
+      source activate omigami
       pip install pytest pytest-azurepipelines==1.0.0rc5
       pytest \
         --junitxml=junit/test-results-quick.xml \
