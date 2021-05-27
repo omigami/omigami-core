@@ -26,9 +26,9 @@ steps:
   - task: Cache@2
     inputs:
       key: 'python | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
-      restoreKeys: |
-        python | "$(Agent.OS)"
-        python
+#      restoreKeys: |
+#        python | "$(Agent.OS)"
+#        python
       path: $(CONDA_CACHE_DIR)
       cacheHitVar: CONDA_CACHE_RESTORED
 #      path: $(CONDA_ENV_PATH)
