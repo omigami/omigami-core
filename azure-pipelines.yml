@@ -24,7 +24,7 @@ steps:
     displayName: 'Add conda to PATH'
 
   - task: Cache@2
-    - inputs:
+    inputs:
       key: 'python | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
       restoreKeys: |
         python | "$(Agent.OS)"
