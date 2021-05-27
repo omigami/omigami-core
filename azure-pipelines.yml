@@ -17,13 +17,11 @@ steps:
   inputs:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
-
 - bash: |
     conda env create -f requirements/environment.frozen.yaml
     conda activate omigami
     conda env update -f requirements/environment_test.yaml
   displayName: 'Create Anaconda environment'
-
 - script: |
     pip install pytest pytest-azurepipelines==1.0.0rc5
     pytest --cov=spec2vec_mlops tests/ --cov-report html --nunitxml test-output.xml
