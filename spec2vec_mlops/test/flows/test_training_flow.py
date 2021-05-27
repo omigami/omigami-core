@@ -3,28 +3,42 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 from prefect.executors import LocalDaskExecutor
 from prefect.storage import S3
 
-from spec2vec_mlops import config
-from spec2vec_mlops.deployment import MODEL_DIR
+from spec2vec_mlops.config import default_configs
+from spec2vec_mlops.flows.config import (
+    make_flow_config,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
 from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.data_gateway import SpectrumDataGateway
-from spec2vec_mlops.tasks import deploy_model_task
+from spec2vec_mlops.tasks import DeployModelTask
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR
 
-SOURCE_URI_PARTIAL_GNPS = config["gnps_json"]["uri"]["partial"]
+SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
 
 
-def test_training_flow():
+@pytest.fixture
+def flow_config():
+    flow_config = make_flow_config(
+        image="image-ref-name-test-harry-potter-XXII",
+        storage_type=PrefectStorageMethods.S3,
+        executor_type=PrefectExecutorMethods.LOCAL_DASK,
+        redis_db="2",
+    )
+    return flow_config
+
+
+def test_training_flow(flow_config):
     mock_spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     expected_tasks = {
@@ -33,7 +47,6 @@ def test_training_flow():
         "ProcessSpectrum",
         "case(True)",
         "check_condition",
-        "deploy_model_task",
         "MakeEmbeddings",
         "register_model_task",
         "train_model_task",
@@ -53,12 +66,13 @@ def test_training_flow():
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
-        flow_config=None,
-        deploy_model=True,
+        flow_config=flow_config,
+        redis_db="0",
+        deploy_model=False,
     )
 
     assert flow
-    assert len(flow.tasks) == 9
+    assert len(flow.tasks) == len(expected_tasks)
     assert flow.name == "spec2vec-training-flow"
 
     task_names = {t.name for t in flow.tasks}
@@ -69,7 +83,7 @@ def test_training_flow():
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow(tmpdir):
+def test_run_training_flow(tmpdir, flow_config):
     # remove results from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
@@ -91,8 +105,9 @@ def test_run_training_flow(tmpdir):
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
-        flow_config=None,
-        chunk_size=50,
+        flow_config=flow_config,
+        chunk_size=10,
+        redis_db="0",
         deploy_model=False,
     )
 
@@ -112,8 +127,8 @@ def test_deploy_seldon_model():
     }
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
-        deploy_model_task(
-            {
+        DeployModelTask(redis_db="0",)(
+            registered_model={
                 "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/750c60ddb52544289db228a4af8a52e3/artifacts/model/"
             }
         )

@@ -7,15 +7,15 @@ from matchms.Spectrum import Spectrum
 from pytest_redis import factories
 from spec2vec.SpectrumDocument import SpectrumDocument
 
-from spec2vec_mlops import config
+from spec2vec_mlops.config import default_configs
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
-SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
-DOCUMENT_HASHES = config["redis"]["document_hashes"]
-EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = default_configs["redis"]["spectrum_id_sorted_set"]
+SPECTRUM_HASHES = default_configs["redis"]["spectrum_hashes"]
+DOCUMENT_HASHES = default_configs["redis"]["document_hashes"]
+EMBEDDING_HASHES = default_configs["redis"]["embedding_hashes"]
 
 redis_db = factories.redisdb("redis_nooproc")
 

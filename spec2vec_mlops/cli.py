@@ -1,14 +1,16 @@
 import click
 
-from spec2vec_mlops.deployment import (
-    PROJECT_NAME,
+from spec2vec_mlops.deployment import deploy_training_flow
+from spec2vec_mlops import (
+    DATASET_DIR,
+)
+from spec2vec_mlops.config import (
     SOURCE_URI_PARTIAL_GNPS,
+    API_SERVER,
+    PROJECT_NAME,
     OUTPUT_DIR,
     MODEL_DIR,
     MLFLOW_SERVER,
-    API_SERVER,
-    deploy_training_flow,
-    DATASET_DIR,
 )
 from spec2vec_mlops.utils import add_options
 
@@ -42,7 +44,8 @@ def cli():
 
 @cli.command(name="register-training-flow")
 @click.option("--image", "-i", type=str, required=True)
-@click.option("--dataset-name", type=str, default=DATASET_DIR)
+@click.option("--dataset-name", type=str)
+@click.option("--dataset-id", default=None)
 @click.option("--n-decimals", type=int, default=2)
 @click.option("--iterations", type=int, default=25)
 @click.option("--window", type=int, default=500)

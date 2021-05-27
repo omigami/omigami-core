@@ -8,24 +8,29 @@ import redis
 from matchms import Spectrum
 from spec2vec import SpectrumDocument
 
-from spec2vec_mlops import config
+from spec2vec_mlops.config import (
+    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+    SPECTRUM_HASHES,
+    DOCUMENT_HASHES,
+    EMBEDDING_HASHES,
+)
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.data_gateway import SpectrumDataGateway
 
-HOST = os.getenv("REDIS_HOST", config["redis"]["host"])
-DB = os.getenv("REDIS_DB", config["redis"]["db"])
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["redis"]["spectrum_id_sorted_set"]
-SPECTRUM_HASHES = config["redis"]["spectrum_hashes"]
-DOCUMENT_HASHES = config["redis"]["document_hashes"]
-EMBEDDING_HASHES = config["redis"]["embedding_hashes"]
+# when running locally, those should be set in pycharm/shell env
+# when running on the cluster, they will be gotten from the seldon env,
+# which was defined during deployment by the 'dataset_name' param
+REDIS_HOST = str(os.getenv("REDIS_HOST"))
+REDIS_DB = str(os.getenv("REDIS_DB"))
+
 client = None
 
 
 def get_redis_client():
     global client
     if client is None:
-        client = redis.StrictRedis(host=HOST, db=DB)
+        client = redis.StrictRedis(host=REDIS_HOST, db=REDIS_DB)
     return client
 
 

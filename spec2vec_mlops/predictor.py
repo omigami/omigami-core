@@ -8,14 +8,12 @@ from matchms.importing.load_from_json import as_spectrum
 from matchms.filtering import normalize_intensities
 from mlflow.pyfunc import PythonModel
 
-from spec2vec_mlops import config
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.helper_classes.embedding_maker import EmbeddingMaker
 from spec2vec_mlops.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
-KEYS = config["gnps_json"]["necessary_keys"]
 
 log = getLogger(__name__)
 
@@ -100,20 +98,20 @@ class Predictor(PythonModel):
         return data_input, parameters
 
     def _pre_process_data(self, data_input: List[Dict[str, str]]) -> List[Embedding]:
-        cleaned_data = [as_spectrum(data) for data in data_input]
-        cleaned_data = [normalize_intensities(data) for data in cleaned_data if data]
-        spectra_data = [
-            SpectrumDocumentData(spectrum, self.n_decimals) for spectrum in cleaned_data
-        ]
-        embeddings = [
-            self.embedding_maker.make_embedding(
-                self.model,
-                spectrum_data.document,
-                self.intensity_weighting_power,
-                self.allowed_missing_percentage,
-            )
-            for spectrum_data in spectra_data
-        ]
+        embeddings = []
+        for data in data_input:
+            raw_spectrum = as_spectrum(data)
+            if raw_spectrum:
+                norm_spectrum = normalize_intensities(raw_spectrum)
+                spectrum_data = SpectrumDocumentData(norm_spectrum, self.n_decimals)
+                embeddings.append(
+                    self.embedding_maker.make_embedding(
+                        self.model,
+                        spectrum_data.document,
+                        self.intensity_weighting_power,
+                        self.allowed_missing_percentage,
+                    )
+                )
         return embeddings
 
     def _get_ref_ids_from_data_input(
@@ -133,7 +131,11 @@ class Predictor(PythonModel):
     @staticmethod
     def check_spectrum_refs(reference_spectra_ids: List[List[str]]):
         if [] in reference_spectra_ids:
-            idx_null = [idx for idx, element in enumerate(reference_spectra_ids) if element == []]
+            idx_null = [
+                idx
+                for idx, element in enumerate(reference_spectra_ids)
+                if element == []
+            ]
             raise RuntimeError(
                 f"No data found from filtering with precursor MZ for spectra at indices {idx_null}. "
                 f"Try increasing the mz_range filtering."
@@ -146,7 +148,7 @@ class Predictor(PythonModel):
         unique_ref_embeddings = self.dgw.read_embeddings(
             self.run_id, list(unique_ref_ids)
         )
-        return { emb.spectrum_id: emb for emb in unique_ref_embeddings }
+        return {emb.spectrum_id: emb for emb in unique_ref_embeddings}
 
     def _get_best_matches(
         self,
