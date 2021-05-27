@@ -7,7 +7,7 @@ from matchms.Spectrum import Spectrum
 from pytest_redis import factories
 from spec2vec.SpectrumDocument import SpectrumDocument
 
-from spec2vec_mlops import default_configs
+from spec2vec_mlops.config import default_configs
 from spec2vec_mlops.entities.embedding import Embedding
 from spec2vec_mlops.entities.spectrum_document import SpectrumDocumentData
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway

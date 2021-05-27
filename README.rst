@@ -69,7 +69,7 @@ Start a Redis container and set these environment variables before running the t
 To run tests one by one via PyCharm, you can add this to your pytest Environment Variables (Run > Edit Configurations...)
 ::
 
-    SKIP_REDIS_TEST=False
+    SKIP_REDIS_TEST=False;PREFECT__FLOWS__CHECKPOINTING=True;REDIS_HOST=localhost;REDIS_DB=0
 
 How to register the training flow manually
 ------------------------------------------

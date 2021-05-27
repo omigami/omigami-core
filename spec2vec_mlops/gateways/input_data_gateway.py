@@ -10,7 +10,7 @@ from drfs.filesystems.base import FileSystemBase
 
 from spec2vec_mlops.entities.data_models import SpectrumInputData
 from spec2vec_mlops.data_gateway import InputDataGateway
-from spec2vec_mlops import default_configs
+from spec2vec_mlops.config import default_configs
 
 logger = logging.getLogger(__name__)
 KEYS = default_configs["gnps_json"]["necessary_keys"]
