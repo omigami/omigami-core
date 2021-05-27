@@ -16,8 +16,8 @@ strategy:
       python.version: '3.7'
     Python38:
       python.version: '3.8'
-steps:
 
+steps:
   - checkout: self
     fetchDepth: 1
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
@@ -30,7 +30,7 @@ steps:
 #        python | "$(Agent.OS)"
 #        python
       path: $(CONDA_CACHE_DIR)
-      cacheHitVar: CONDA_CACHE_RESTORED
+      cacheHitVar: CACHE_RESTORED
 #      path: $(CONDA_ENV_PATH)
 #      cacheHitVar: CACHE_RESTORED
     displayName: 'Cache Conda packages'
@@ -45,7 +45,7 @@ steps:
       conda activate omigami
       conda env update -f requirements/environment_test.yaml
     displayName: 'Create Anaconda environment'
-    condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
+    condition: eq(variables.CACHE_RESTORED, 'false')
 
   - bash: |
       source activate omigami
