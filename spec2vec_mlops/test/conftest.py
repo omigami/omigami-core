@@ -10,7 +10,6 @@ from moto import mock_s3
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.config import default_configs
 
-import confuse
 
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
@@ -31,13 +30,6 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     if not config.option.longrun:
         setattr(config.option, "markexpr", "not longrun")
-
-
-@pytest.fixture(scope="module")
-def auth():
-    vars = confuse.Configuration("spec2vec_mlops")
-    keys = ["auth_url", "username", "pwd"]
-    return {key: vars[key].get() for key in keys}
 
 
 @pytest.fixture(scope="module")

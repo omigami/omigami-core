@@ -2,6 +2,7 @@ import pytest
 
 from drfs import DRPath
 
+from spec2vec_mlops import ENV
 from spec2vec_mlops.deployment import (
     deploy_training_flow,
 )
@@ -18,7 +19,7 @@ from spec2vec_mlops.config import (
 @pytest.mark.skip(
     reason="This test uses internet connection and deploys a test flow to prefect."
 )
-def test_deploy_training_flow(auth):
+def test_deploy_training_flow():
     flow_id = deploy_training_flow(
         image="drtools/prefect:spec2vec_mlops-SNAPSHOT.1f9bf5b",
         iterations=5,
@@ -28,9 +29,9 @@ def test_deploy_training_flow(auth):
         n_decimals=2,
         skip_if_exists=True,
         auth=True,
-        auth_url=auth["auth_url"],
-        username=auth["username"],
-        password=auth["pwd"],
+        auth_url=ENV["auth_url"].get(),
+        username=ENV["username"].get(),
+        password=ENV["pwd"].get(),
         api_server=API_SERVER["remote"],
         dataset_name="10k",
         source_uri=SOURCE_URI_COMPLETE_GNPS,
@@ -58,9 +59,9 @@ def test_dataset_wrong_dataset_name():
             n_decimals=2,
             skip_if_exists=True,
             auth=True,
-            auth_url="https://mlops.datarevenue.com/.ory/kratos/public/",
-            username="ofiehn@ucdavis.edu",
-            password="PWspec2vecbeta",
+            auth_url=ENV["auth_url"].get(),
+            username=ENV["username"].get(),
+            password=ENV["pwd"].get(),
             api_server=API_SERVER["remote"],
             source_uri=SOURCE_URI_COMPLETE_GNPS,
             output_dir=OUTPUT_DIR,
