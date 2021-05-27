@@ -4,6 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 variables:
   CONDA_ENV_PATH: /usr/share/miniconda/envs/omigami/
+  CONDA_CACHE_DIR: $(Pipeline.Workspace)/.condarc
 
 trigger:
 - master
@@ -20,13 +21,18 @@ steps:
   - checkout: self
     fetchDepth: 1
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
-    displayName: Add conda to PATH
+    displayName: 'Add conda to PATH'
 
   - task: Cache@2
-    inputs:
+    - inputs:
       key: 'python | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
-      path: $(CONDA_ENV_PATH)
-      cacheHitVar: CACHE_RESTORED
+      restoreKeys: |
+        python | "$(Agent.OS)"
+        python
+      path: $(CONDA_CACHE_DIR)
+      cacheHitVar: CONDA_CACHE_RESTORED
+#      path: $(CONDA_ENV_PATH)
+#      cacheHitVar: CACHE_RESTORED
     displayName: 'Cache Conda packages'
 
   - task: UsePythonVersion@0
@@ -39,7 +45,7 @@ steps:
       conda activate omigami
       conda env update -f requirements/environment_test.yaml
     displayName: 'Create Anaconda environment'
-    condition: ne(variables.CACHE_RESTORED, 'true')
+    condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
 
   - script: |
       conda activate omigami
