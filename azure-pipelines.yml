@@ -17,13 +17,13 @@ strategy:
       python.version: '3.8'
 steps:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
-      displayName: Add conda to PATH
+      displayName: 'Add conda to PATH'
   - task: Cache@2
     inputs:
       key: 'python | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
       path: $(CONDA_ENV_PATH)
       cacheHitVar: CACHE_RESTORED
-    displayName: Cache Conda packages
+    displayName: 'Cache Conda packages'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
