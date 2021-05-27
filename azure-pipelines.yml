@@ -2,6 +2,9 @@
 # Create and test a Python package on multiple Python versions.
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
+variables:
+  CONDA_ENV_PATH: /usr/share/miniconda/envs/omigami/
+
 trigger:
 - master
 pool:
@@ -13,16 +16,25 @@ strategy:
     Python38:
       python.version: '3.8'
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
-- bash: |
-    conda env create -f requirements/environment.frozen.yaml
-    conda activate omigami
-    conda env update -f requirements/environment_test.yaml
-  displayName: 'Create Anaconda environment'
-- script: |
-    pip install pytest pytest-azurepipelines==1.0.0rc5
-    pytest --cov=spec2vec_mlops tests/ --cov-report html --nunitxml test-output.xml
-  displayName: 'Run all tests'
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+      displayName: Add conda to PATH
+  - task: Cache@2
+    inputs:
+      key: 'python | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
+      path: $(CONDA_ENV_PATH)
+      cacheHitVar: CACHE_RESTORED
+    displayName: Cache Conda packages
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+    displayName: 'Use Python $(python.version)'
+  - bash: |
+      conda env create -f requirements/environment.frozen.yaml
+      conda activate omigami
+      conda env update -f requirements/environment_test.yaml
+    displayName: 'Create Anaconda environment'
+    condition: ne(variables.CACHE_RESTORED, 'true')
+  - script: |
+      pip install pytest pytest-azurepipelines==1.0.0rc5
+      pytest --cov=spec2vec_mlops tests/ --cov-report html --nunitxml test-output.xml
+    displayName: 'Run all tests'
