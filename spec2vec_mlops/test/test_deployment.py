@@ -2,6 +2,7 @@ import pytest
 
 from drfs import DRPath
 
+from spec2vec_mlops import ENV
 from spec2vec_mlops.deployment import (
     deploy_training_flow,
 )
@@ -27,6 +28,10 @@ def test_deploy_training_flow():
         n_decimals=2,
         skip_if_exists=True,
         auth=True,
+        auth_url=ENV["auth_url"].get(),
+        username=ENV["username"].get(),
+        password=ENV["pwd"].get(),
+        api_server=API_SERVER["remote"],
         auth_url="https://mlops.datarevenue.com/.ory/kratos/public/",
         username="ofiehn@ucdavis.edu",
         password="PWspec2vecbeta",
@@ -56,10 +61,10 @@ def test_dataset_wrong_dataset_name():
             n_decimals=2,
             skip_if_exists=True,
             auth=True,
-            auth_url="https://mlops.datarevenue.com/.ory/kratos/public/",
-            username="ofiehn@ucdavis.edu",
-            password="PWspec2vecbeta",
-            environment="dev",
+            auth_url=ENV["auth_url"].get(),
+            username=ENV["username"].get(),
+            password=ENV["pwd"].get(),
+            api_server=API_SERVER["remote"],
             source_uri=SOURCE_URI_COMPLETE_GNPS,
             output_dir=S3_BUCKET,
             project_name="spec2vec-mlops-10k",
