@@ -21,7 +21,7 @@ from spec2vec_mlops.data_gateway import SpectrumDataGateway
 from spec2vec_mlops.tasks import DeployModelTask
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
-from spec2vec_mlops.test.conftest import ASSETS_DIR
+from spec2vec_mlops.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 
 os.chdir(Path(__file__).parents[3])
 
@@ -121,15 +121,17 @@ def test_run_training_flow(tmpdir, flow_config):
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
 def test_deploy_seldon_model():
     FLOW_CONFIG = {
-        "storage": S3("omigami-dev"),
+        "storage": S3("dr-prefect"),
         "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
     }
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
-        DeployModelTask(redis_db="0",)(
+        DeployModelTask(redis_db="0", env="dev", **TEST_TASK_CONFIG)(
             registered_model={
                 "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/750c60ddb52544289db228a4af8a52e3/artifacts/model/"
             }
         )
 
     res = deploy.run()
+
+    assert res.is_successful()

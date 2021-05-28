@@ -10,18 +10,19 @@ from spec2vec_mlops.helper_classes.exception import DeployingError
 
 from spec2vec_mlops.tasks.config import merge_configs
 
-from spec2vec_mlops.config import SELDON_PARAMS
+from spec2vec_mlops.config import SELDON_PARAMS, CLUSTERS
 
 logger = prefect.context.get("logger")
 
 
 class DeployModelTask(Task):
-    def __init__(self, redis_db: str, **kwargs):
+    def __init__(self, redis_db: str, env: str = "dev", **kwargs):
         self.redis_db = redis_db
+        self.env = env
         config = merge_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, registered_model: dict, overwrite: bool = True) -> None:
+    def run(self, registered_model: dict = None, overwrite: bool = True) -> None:
 
         model_uri = registered_model["model_uri"]
         logger.info(
@@ -32,7 +33,7 @@ class DeployModelTask(Task):
             config.load_incluster_config()
         except ConfigException:
             # TODO: parametrize context here to use dev/prod. We should use confuse for this
-            config.load_kube_config()
+            config.load_kube_config(context=CLUSTERS[self.env])
 
         custom_api = client.CustomObjectsApi()
         seldon_deployment_path = Path(__file__).parent / "seldon_deployment.yaml"

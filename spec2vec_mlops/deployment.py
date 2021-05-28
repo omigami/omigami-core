@@ -40,10 +40,6 @@ def deploy_training_flow(
     dataset_name: str,
     n_decimals: int = 2,
     skip_if_exists: bool = True,
-    auth: bool = False,
-    auth_url: Optional[str] = None,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     output_dir: str = S3_BUCKET,
     project_name: str = PROJECT_NAME,
@@ -51,6 +47,10 @@ def deploy_training_flow(
     mlflow_server: str = MLFLOW_SERVER,
     flow_name: str = "spec2vec-training-flow",
     environment: Literal["dev", "prod"] = "dev",
+    auth: bool = False,
+    auth_url: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
 ):
 
     if auth:

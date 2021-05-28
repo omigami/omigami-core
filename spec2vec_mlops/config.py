@@ -34,3 +34,5 @@ DATASET_DIR = {
     "10k": f"spec2vec-training-flow/downloaded_datasets/test_10k/",
     "full": f"spec2vec-training-flow/downloaded_datasets/full/2021-05-14/",
 }
+
+CLUSTERS = config["clusters"].get(dict)

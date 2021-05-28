@@ -19,8 +19,10 @@ from spec2vec_mlops.config import (
     reason="This test uses internet connection and deploys a test flow to prefect."
 )
 def test_deploy_training_flow():
+    login_config = config["login"]["dev"].get(dict)
+    login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.1f9bf5b",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b1a42c8",
         iterations=5,
         window=500,
         intensity_weighting_power=0.5,
@@ -30,13 +32,13 @@ def test_deploy_training_flow():
         environment="dev",
         dataset_name="10k",
         source_uri=SOURCE_URI_COMPLETE_GNPS,
-        output_dir=S3_BUCKET,
-        project_name="spec2vec-mlops-10k",
+        output_dir=S3_BUCKET["dev"],
+        project_name="spec2vec-10k",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow",
         auth=True,
-        **config["login"]["dev"].get(dict),
+        **login_config,
     )
 
     assert flow_id
