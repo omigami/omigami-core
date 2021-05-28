@@ -28,11 +28,6 @@ steps:
       cacheHitVar: CACHE_RESTORED
     displayName: 'Cache Conda packages'
 
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-    displayName: 'Use Python $(python.version)'
-
   - bash: |
       conda env create -f requirements/environment.frozen.yaml
       conda activate omigami
