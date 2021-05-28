@@ -6,11 +6,10 @@ import pytest
 from pytest_redis import factories
 from spec2vec.utils import TrainingProgressLogger
 
-from spec2vec_mlops.config import default_configs
+from spec2vec_mlops.config import DOCUMENT_HASHES
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.helper_classes.model_trainer import spec2vec_settings
 
-DOCUMENT_HASHES = default_configs["redis"]["document_hashes"]
 
 redis_db = factories.redisdb("redis_nooproc")
 
