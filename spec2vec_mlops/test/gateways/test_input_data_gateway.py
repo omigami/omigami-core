@@ -16,8 +16,8 @@ def test_load_gnps(local_gnps_small_json):
             assert k in res
 
 
-SOURCE_URI_COMPLETE_GNPS = default_configs["gnps_json"]["uri"]["complete"]
-SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
+SOURCE_URI_COMPLETE_GNPS = default_configs["uri"]["complete"]
+SOURCE_URI_PARTIAL_GNPS = default_configs["uri"]["partial"]
 
 
 @pytest.mark.skip("Uses internet connection.")

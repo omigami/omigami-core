@@ -13,7 +13,7 @@ from spec2vec_mlops.data_gateway import InputDataGateway
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 
-SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
+SOURCE_URI_PARTIAL_GNPS = default_configs["uri"]["partial"]
 
 
 def test_download_data():

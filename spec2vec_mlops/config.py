@@ -25,7 +25,9 @@ SELDON_PARAMS = default_configs["seldon"]
 # Storage
 S3_BUCKET = default_configs["storage"]["s3_bucket"]
 MODEL_DIR = default_configs["storage"]["model_folder"]
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = default_configs["redis"]["spectrum_id_sorted_set"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = default_configs["storage"]["redis"][
+    "spectrum_id_sorted_set"
+]
 SPECTRUM_HASHES = default_configs["storage"]["redis"]["spectrum_hashes"]
 DOCUMENT_HASHES = default_configs["storage"]["redis"]["document_hashes"]
 EMBEDDING_HASHES = default_configs["storage"]["redis"]["embedding_hashes"]

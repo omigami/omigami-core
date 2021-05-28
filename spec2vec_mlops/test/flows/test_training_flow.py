@@ -23,7 +23,7 @@ from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR
 
-SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
+SOURCE_URI_PARTIAL_GNPS = default_configs["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
 
 
