@@ -32,7 +32,6 @@ class DeployModelTask(Task):
         try:
             config.load_incluster_config()
         except ConfigException:
-            # TODO: parametrize context here to use dev/prod. We should use confuse for this
             config.load_kube_config(context=CLUSTERS[self.env])
 
         custom_api = client.CustomObjectsApi()

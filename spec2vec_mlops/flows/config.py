@@ -45,6 +45,7 @@ def make_flow_config(
     storage_type: PrefectStorageMethods,
     executor_type: PrefectExecutorMethods,
     redis_db: str,
+    env: str = "dev",
 ) -> FlowConfig:
     """
     This will coordinate the creation of a flow config either with provided params or using the default values
@@ -55,14 +56,14 @@ def make_flow_config(
     run_config = KubernetesRun(
         image=image,
         job_template_path=str(ROOT_DIR / "job_spec.yaml"),
-        labels=[],
+        labels=["dev"],
         service_account_name="prefect-server-serviceaccount",
         env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
     )
 
     # storage_type
     if storage_type == PrefectStorageMethods.S3:
-        storage = S3(DRPath(S3_BUCKET).netloc)
+        storage = S3(DRPath(S3_BUCKET[env]).netloc)
     else:
         raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
 

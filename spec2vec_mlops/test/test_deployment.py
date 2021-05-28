@@ -12,6 +12,7 @@ from spec2vec_mlops.config import (
     MODEL_DIR,
     MLFLOW_SERVER,
     config,
+    SOURCE_URI_PARTIAL_GNPS,
 )
 
 
@@ -30,13 +31,13 @@ def test_deploy_training_flow():
         n_decimals=2,
         skip_if_exists=True,
         environment="dev",
-        dataset_name="10k",
-        source_uri=SOURCE_URI_COMPLETE_GNPS,
+        dataset_name="small",
+        source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=S3_BUCKET["dev"],
-        project_name="spec2vec-10k",
+        project_name="spec2vec",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow",
+        flow_name="training-flow-small",
         auth=True,
         **login_config,
     )

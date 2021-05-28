@@ -30,9 +30,9 @@ EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
 
 RedisDBDatasetSize = {"small": "2", "10k": "1", "full": "0"}
 DATASET_DIR = {
-    "small": f"spec2vec-training-flow/downloaded_datasets/small/{datetime.now().date()}/",
-    "10k": f"spec2vec-training-flow/downloaded_datasets/test_10k/",
-    "full": f"spec2vec-training-flow/downloaded_datasets/full/2021-05-14/",
+    "small": f"downloaded_datasets/small/{datetime.now().date()}/",
+    "10k": f"downloaded_datasets/test_10k/",
+    "full": f"downloaded_datasets/full/2021-05-14/",
 }
 
 CLUSTERS = config["clusters"].get(dict)
