@@ -19,8 +19,8 @@ MLFLOW_SERVER = config["mlflow"].get(str)
 SELDON_PARAMS = config["seldon"].get(dict)
 
 # Storage
-S3_BUCKET = config["storage"]["s3_bucket"].get(str)
-MODEL_DIR = config["storage"]["model_folder"].get(str)
+S3_BUCKET = config["storage"]["s3_bucket"].get(dict)
+MODEL_DIR = config["storage"]["model_folder"].get(dict)
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
     "spectrum_id_sorted_set"
 ].get(str)
