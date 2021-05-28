@@ -2,7 +2,6 @@ import pytest
 
 from drfs import DRPath
 
-from spec2vec_mlops import ENV
 from spec2vec_mlops.deployment import (
     deploy_training_flow,
 )
@@ -12,6 +11,7 @@ from spec2vec_mlops.config import (
     S3_BUCKET,
     MODEL_DIR,
     MLFLOW_SERVER,
+    config,
 )
 
 
@@ -27,14 +27,6 @@ def test_deploy_training_flow():
         allowed_missing_percentage=5,
         n_decimals=2,
         skip_if_exists=True,
-        auth=True,
-        auth_url=ENV["auth_url"].get(),
-        username=ENV["username"].get(),
-        password=ENV["pwd"].get(),
-        api_server=API_SERVER["remote"],
-        auth_url="https://mlops.datarevenue.com/.ory/kratos/public/",
-        username="ofiehn@ucdavis.edu",
-        password="PWspec2vecbeta",
         environment="dev",
         dataset_name="10k",
         source_uri=SOURCE_URI_COMPLETE_GNPS,
@@ -43,6 +35,8 @@ def test_deploy_training_flow():
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow",
+        auth=True,
+        **config["login"]["dev"].get(dict),
     )
 
     assert flow_id
@@ -60,15 +54,13 @@ def test_dataset_wrong_dataset_name():
             allowed_missing_percentage=5,
             n_decimals=2,
             skip_if_exists=True,
-            auth=True,
-            auth_url=ENV["auth_url"].get(),
-            username=ENV["username"].get(),
-            password=ENV["pwd"].get(),
-            api_server=API_SERVER["remote"],
             source_uri=SOURCE_URI_COMPLETE_GNPS,
+            environment="dev",
             output_dir=S3_BUCKET,
             project_name="spec2vec-mlops-10k",
             model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
             mlflow_server=MLFLOW_SERVER,
             flow_name="training-flow",
+            auth=True,
+            **config["login"]["dev"].get(dict),
         )

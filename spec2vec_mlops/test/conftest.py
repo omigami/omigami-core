@@ -29,7 +29,6 @@ def pytest_configure(config):
         setattr(config.option, "markexpr", "not longrun")
 
 
-
 @pytest.fixture(scope="module")
 def local_gnps_small_json():
     path = str(ASSETS_DIR / "SMALL_GNPS.json")

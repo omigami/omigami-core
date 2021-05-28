@@ -1,30 +1,32 @@
 from datetime import datetime
 from pathlib import Path
 
-from spec2vec_mlops import ENV
+import confuse
+
+config = confuse.Configuration("omigami", __name__)
 
 ROOT_DIR = Path(__file__).parents[0]
 
 # Data for download
-SOURCE_URI_COMPLETE_GNPS = default_configs["uri"]["complete"]
-SOURCE_URI_PARTIAL_GNPS = default_configs["uri"]["partial"]
+SOURCE_URI_COMPLETE_GNPS = config["uri"]["complete"].get(str)
+SOURCE_URI_PARTIAL_GNPS = config["uri"]["partial"].get(str)
 
 # Prefect
-API_SERVER = default_configs["prefect"]["api_server"]
-PROJECT_NAME = default_configs["prefect"]["project"]
+API_SERVER = config["prefect"]["api_server"].get(dict)
+PROJECT_NAME = config["prefect"]["project"].get(str)
 
-MLFLOW_SERVER = default_configs["mlflow"]
-SELDON_PARAMS = default_configs["seldon"]
+MLFLOW_SERVER = config["mlflow"].get(str)
+SELDON_PARAMS = config["seldon"].get(dict)
 
 # Storage
-S3_BUCKET = default_configs["storage"]["s3_bucket"]
-MODEL_DIR = default_configs["storage"]["model_folder"]
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = default_configs["storage"]["redis"][
+S3_BUCKET = config["storage"]["s3_bucket"].get(str)
+MODEL_DIR = config["storage"]["model_folder"].get(str)
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
     "spectrum_id_sorted_set"
-]
-SPECTRUM_HASHES = default_configs["storage"]["redis"]["spectrum_hashes"]
-DOCUMENT_HASHES = default_configs["storage"]["redis"]["document_hashes"]
-EMBEDDING_HASHES = default_configs["storage"]["redis"]["embedding_hashes"]
+].get(str)
+SPECTRUM_HASHES = config["storage"]["redis"]["spectrum_hashes"].get(str)
+DOCUMENT_HASHES = config["storage"]["redis"]["document_hashes"].get(str)
+EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
 
 RedisDBDatasetSize = {"small": "2", "10k": "1", "full": "0"}
 DATASET_DIR = {
