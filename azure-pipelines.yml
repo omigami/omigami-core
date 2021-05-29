@@ -13,7 +13,7 @@ steps:
 - task: Cache@2
   displayName: Use cached Anaconda environment
   inputs:
-    key: 'conda | "$(Agent.OS)" | requirements/environment.frozen.yaml'
+    key: 'conda | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
     restoreKeys: | 
       python | "$(Agent.OS)"
       python
@@ -22,5 +22,6 @@ steps:
 
 - script: |
     conda env create --quiet --file requirements/environment.frozen.yaml
+    conda env update --quiet --file requirements/environment_test.yaml
   displayName: Create Anaconda environment
   condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
