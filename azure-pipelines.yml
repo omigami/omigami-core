@@ -1,5 +1,5 @@
 variables:
-  CONDA_CACHE_DIR: $(Pipeline.Workspace)/.condarc
+  CONDA_CACHE_DIR: /usr/share/miniconda/envs/omigami/
 
 trigger: none
 
