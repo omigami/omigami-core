@@ -1,3 +1,4 @@
+import pytest
 import yaml
 from prefect import Flow
 
@@ -5,6 +6,9 @@ from spec2vec_mlops.config import ROOT_DIR
 from spec2vec_mlops.tasks.seldon.deploy_model import DeployModelTask
 
 
+@pytest.mark.skip(
+    reason="This test is actually deploying to seldon we should change asap"
+)
 def test_deploy_model_task():
 
     # TODO: this needs assertions and a way of testing from outside kubernetes environment
