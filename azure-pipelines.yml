@@ -8,8 +8,7 @@ variables:
   CONDA_ENV_PATH: /usr/share/miniconda/envs/omigami/
   CONDA_CACHE_DIR: $(Pipeline.Workspace)/.condarc
 
-trigger:
-- master
+trigger: none
 
 jobs:
 - job: UnitTests
