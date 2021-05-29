@@ -1,10 +1,4 @@
-# Python package
-# Create and test a Python package on multiple Python versions.
-# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
 variables:
-  CONDA_HOME: /usr/share/miniconda/envs/omigami/
-  CONDA_ENV: omigami
   CONDA_CACHE_DIR: $(Pipeline.Workspace)/.condarc
 
 trigger: none
@@ -19,34 +13,15 @@ steps:
 - task: Cache@2
   displayName: Use cached Anaconda environment
   inputs:
-    key: 'conda | "$(Agent.OS)" | "requirements/environment.frozen.yaml" | "requirements/environment_test.yaml"'
-    path: $(CONDA_HOME)
+    key: 'conda | "$(Agent.OS)" | environment.yml'
+    restoreKeys: | 
+      python | "$(Agent.OS)"
+      python
+    path: $(CONDA_CACHE_DIR)
     cacheHitVar: CONDA_CACHE_RESTORED
 
 - script: |
-    conda env create -f requirements/environment.frozen.yaml
-    conda activate omigami
-    conda env update -f requirements/environment_test.yaml
-  displayName: Create Anaconda environment (if not restored from cache)
+    conda env create --quiet --file requirements/environment.frozen.yaml
+    conda env update --quiet --file requirements/environment_test.yaml
+  displayName: Create Anaconda environment
   condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
-
-- script: |
-    source activate $(CONDA_ENV)
-    py.test \
-      --junitxml=junit/test-results-quick.xml \
-      --cov=spec2vec_mlops \
-      --cov-report=xml \
-      --cov-report=html \
-      spec2vec_mlops
-  displayName: Run unit tests
-
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFiles: '**/test-*.xml'
-    testRunTitle: 'Publish test results for Omigami'
-- task: PublishCodeCoverageResults@1
-  inputs:
-    codeCoverageTool: Cobertura
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-    reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
