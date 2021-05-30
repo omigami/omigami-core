@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+import pytest
+
 from spec2vec_mlops.tasks.register_model import ModelRegister
 from spec2vec_mlops.predictor import Predictor
 
@@ -9,7 +11,7 @@ os.chdir(Path(__file__).parents[3])
 
 def test_get_or_create_experiment(tmpdir):
     path = f"{tmpdir}/mlflow/"
-    model_register = ModelRegister(f"file:/{path}")
+    model_register = ModelRegister(path)
     experiment_name = "experiment"
     # create
     created_experiment_id = model_register._get_or_create_experiment_id(
@@ -22,7 +24,7 @@ def test_get_or_create_experiment(tmpdir):
 
 def test_register_model(word2vec_model, tmpdir):
     path = f"{tmpdir}/mlflow/"
-    model_register = ModelRegister(f"file:/{path}")
+    model_register = ModelRegister(path)
     run_id = model_register.register_model(
         Predictor(
             word2vec_model,

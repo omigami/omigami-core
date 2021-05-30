@@ -1,0 +1,62 @@
+variables:
+  PWD: $(Build.SourcesDirectory)
+  CONDA_CACHE_DIR: /usr/share/miniconda/envs/omigami/
+  SKIP_REDIS_TEST: False
+  PREFECT__FLOWS__CHECKPOINTING: True
+  REDIS_HOST: localhost
+  REDIS_DB: 0
+
+trigger:
+  - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+services:
+  redis: redis
+
+resources:
+  containers:
+  - container: redis
+    image: redis:5-alpine
+    ports:
+      - 6379:6379
+
+steps:
+- script: echo "##vso[task.prependpath]$CONDA/bin"
+  displayName: Add conda to PATH
+
+- task: Cache@2
+  displayName: Use cached Anaconda environment
+  inputs:
+    key: 'conda | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
+    restoreKeys: |
+      python | "$(Agent.OS)"
+      python
+    path: $(CONDA_CACHE_DIR)
+    cacheHitVar: CONDA_CACHE_RESTORED
+
+- script: |
+    conda env create --quiet --file requirements/environment.frozen.yaml
+    conda env update --quiet --file requirements/environment_test.yaml
+  displayName: Create Anaconda environment
+  condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
+
+- bash: |
+   source activate omigami
+   pytest \
+     --junitxml=junit/test-results.xml \
+     --cov=spec2vec_mlops \
+     --cov-report=xml \
+     --cov-report=html \
+     spec2vec_mlops
+  displayName: 'Run all tests'
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFiles: '**/test-*.xml'
+    testRunTitle: 'Publish test results for Omigami'
+- task: PublishCodeCoverageResults@1
+  inputs:
+    codeCoverageTool: Cobertura
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+    reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'

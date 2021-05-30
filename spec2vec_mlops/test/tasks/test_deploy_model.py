@@ -6,7 +6,9 @@ from spec2vec_mlops.config import ROOT_DIR
 from spec2vec_mlops.tasks.seldon.deploy_model import DeployModelTask
 
 
-@pytest.mark.skip("This test should be removed. it is deploying new things to k8s")
+@pytest.mark.skip(
+    reason="This test is actually deploying to seldon we should change asap"
+)
 def test_deploy_model_task():
 
     # TODO: this needs assertions and a way of testing from outside kubernetes environment
