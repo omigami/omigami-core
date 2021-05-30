@@ -11,6 +11,8 @@ trigger:
 
 pool:
   vmImage: 'ubuntu-latest'
+services:
+  redis: redis
 
 resources:
   containers:
@@ -27,7 +29,7 @@ steps:
   displayName: Use cached Anaconda environment
   inputs:
     key: 'conda | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
-    restoreKeys: | 
+    restoreKeys: |
       python | "$(Agent.OS)"
       python
     path: $(CONDA_CACHE_DIR)
