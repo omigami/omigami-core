@@ -1,12 +1,23 @@
 variables:
   PWD: $(Build.SourcesDirectory)
   CONDA_CACHE_DIR: /usr/share/miniconda/envs/omigami/
+  SKIP_REDIS_TEST: False
+  PREFECT__FLOWS__CHECKPOINTING: True
+  REDIS_HOST: localhost
+  REDIS_DB: 0
 
 trigger:
   - master
 
 pool:
   vmImage: 'ubuntu-latest'
+
+resources:
+  containers:
+  - container: redis
+    image: redis:5-alpine
+    ports:
+      - 6379:6379
 
 steps:
 - script: echo "##vso[task.prependpath]$CONDA/bin"

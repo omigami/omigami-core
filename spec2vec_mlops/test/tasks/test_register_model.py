@@ -9,7 +9,6 @@ from spec2vec_mlops.predictor import Predictor
 os.chdir(Path(__file__).parents[3])
 
 
-@pytest.mark.skip
 def test_get_or_create_experiment(tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = ModelRegister(f"file:/{path}")
@@ -23,7 +22,6 @@ def test_get_or_create_experiment(tmpdir):
     assert created_experiment_id == experiment_id
 
 
-@pytest.mark.skip
 def test_register_model(word2vec_model, tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = ModelRegister(f"file:/{path}")
