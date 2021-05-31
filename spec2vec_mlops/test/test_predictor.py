@@ -147,13 +147,17 @@ def test_get_best_matches(model, embeddings):
 
 
 @pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True) or os.getenv("CI", "False").title(),
+    os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-# @pytest.mark.skipif(
-#     not os.path.exists(str(ASSETS_DIR / "full_data/test_model.pkl")),
-#     reason="test_model.pkl is git ignored",
-# )
+@pytest.mark.skipif(
+    not os.path.exists(str(ASSETS_DIR / "full_data/test_model.pkl")),
+    reason="test_model.pkl is git ignored",
+)
+@pytest.mark.skipif(
+    os.getenv("CI", "False").title(),
+    reason="test_model.pkl is git ignored",
+)
 def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_stored):
     path = str(ASSETS_DIR / "full_data/test_model.pkl")
 
