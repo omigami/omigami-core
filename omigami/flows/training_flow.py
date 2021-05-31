@@ -13,14 +13,14 @@ from omigami.tasks import (
     MakeEmbeddings,
     ProcessSpectrum,
     train_model_task,
-    register_model_task,
+    RegisterModel,
 )
 from omigami.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
 from omigami.tasks.download_data import DownloadParameters
 from omigami.tasks.process_spectrum.create_chunks import CreateChunks
-from omigami.tasks.seldon import DeployModelTask
+from omigami.tasks.seldon import DeployModel
 
 logger = prefect.utilities.logging.get_logger()
 logging.basicConfig(level=logging.DEBUG)
@@ -99,15 +99,14 @@ def build_training_flow(
         # TODO: this case can be removed if we link train with clean data via input/output
         with case(check_condition(all_spectrum_ids_chunks), True):
             model = train_model_task(iterations, window)
-            model_registry = register_model_task(
-                mlflow_server,
-                model,
+            model_registry = RegisterModel(
                 project_name,
                 model_output_dir,
                 process_params.n_decimals,
                 intensity_weighting_power,
                 allowed_missing_percentage,
-            )
+                mlflow_server,
+            )(model)
             logger.info("Model training is complete.")
 
         # TODO: this is make AND save embeddings. Prob need some refactor
@@ -119,6 +118,6 @@ def build_training_flow(
         ).map(unmapped(model), unmapped(model_registry), all_spectrum_ids_chunks)
         logger.info("Saving embedding is complete.")
         if deploy_model:
-            DeployModelTask(redis_db)(model_registry)
+            DeployModel(redis_db)(model_registry)
 
     return training_flow

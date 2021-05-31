@@ -15,7 +15,7 @@ from omigami.config import SELDON_PARAMS, CLUSTERS
 logger = prefect.context.get("logger")
 
 
-class DeployModelTask(Task):
+class DeployModel(Task):
     def __init__(self, redis_db: str, env: str = "dev", **kwargs):
         self.redis_db = redis_db
         self.env = env

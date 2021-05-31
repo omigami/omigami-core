@@ -18,7 +18,7 @@ from omigami.flows.training_flow import build_training_flow
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.data_gateway import SpectrumDataGateway
-from omigami.tasks import DeployModelTask
+from omigami.tasks import DeployModel
 from omigami.tasks.download_data import DownloadParameters
 from omigami.tasks.process_spectrum import ProcessSpectrumParameters
 from omigami.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
@@ -47,7 +47,7 @@ def test_training_flow(flow_config):
         "case(True)",
         "check_condition",
         "MakeEmbeddings",
-        "register_model_task",
+        "RegisterModel",
         "train_model_task",
     }
 
@@ -126,7 +126,7 @@ def test_deploy_seldon_model():
     }
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
-        DeployModelTask(redis_db="0", env="dev", **TEST_TASK_CONFIG)(
+        DeployModel(redis_db="0", env="dev", **TEST_TASK_CONFIG)(
             registered_model={
                 "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/750c60ddb52544289db228a4af8a52e3/artifacts/model/"
             }

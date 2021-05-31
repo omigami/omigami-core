@@ -1,1 +1,1 @@
-from omigami.tasks.seldon.deploy_model import DeployModelTask
+from omigami.tasks.seldon.deploy_model import DeployModel
