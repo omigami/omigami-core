@@ -87,6 +87,8 @@ def test_run_training_flow(tmpdir, flow_config):
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
+    print(f"elem in dir0 : {os.listdir(tmpdir / 'model-output')}")
+
     input_dgw = FSInputDataGateway()
     download_parameters = DownloadParameters(
         SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, "SMALL_GNPS.json", input_dgw
@@ -94,6 +96,7 @@ def test_run_training_flow(tmpdir, flow_config):
     spectrum_dgw = RedisSpectrumDataGateway()
     process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, True)
 
+    print(f"elem in dir1 : {os.listdir(tmpdir / 'model-output')}")
     flow = build_training_flow(
         project_name="test",
         download_params=download_parameters,
@@ -109,12 +112,14 @@ def test_run_training_flow(tmpdir, flow_config):
         redis_db="0",
         deploy_model=False,
     )
+    print(f"elem in dir2 : {os.listdir(tmpdir / 'model-output')}")
 
     results = flow.run()
     (d,) = flow.get_tasks("DownloadData")
 
     assert results.is_successful()
     results.result[d].is_cached()
+    print(f"elem in dir3 : {os.listdir(tmpdir / 'model-output')}")
     assert len(fs.ls(tmpdir / "model-output")) == 1
 
 
