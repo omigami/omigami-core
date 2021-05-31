@@ -7,12 +7,12 @@ import pytest
 import s3fs
 from moto import mock_s3
 
+from spec2vec_mlops.config import NECESSARY_KEYS
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
-from spec2vec_mlops.config import default_configs
+
 
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
-
-KEYS = default_configs["gnps_json"]["necessary_keys"]
+ASSETS_DIR = Path(__file__).parents[0] / "assets"
 
 
 def pytest_addoption(parser):
@@ -30,9 +30,6 @@ def pytest_configure(config):
         setattr(config.option, "markexpr", "not longrun")
 
 
-ASSETS_DIR = Path(__file__).parents[0] / "assets"
-
-
 @pytest.fixture(scope="module")
 def local_gnps_small_json():
     path = str(ASSETS_DIR / "SMALL_GNPS.json")
@@ -43,7 +40,7 @@ def local_gnps_small_json():
 def loaded_data(local_gnps_small_json, tmpdir):
     with open(local_gnps_small_json, "rb") as f:
         items = ijson.items(f, "item", multiple_values=True)
-        results = [{k: item[k] for k in KEYS} for item in items]
+        results = [{k: item[k] for k in NECESSARY_KEYS} for item in items]
     return results
 
 
