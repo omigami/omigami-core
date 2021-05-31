@@ -1,4 +1,4 @@
-name: spec2vec_mlops
+name: omigami
 channels:
   - conda-forge
   - bioconda

@@ -7,7 +7,7 @@ import versioneer
 packages = find_packages()
 
 setup(
-    name="spec2vec_mlops",
+    name="omigami",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description="Spec2Vec implementation leveraging MLOps architecture",

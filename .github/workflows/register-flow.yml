@@ -42,11 +42,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniconda-version: "latest"
-          activate-environment: spec2vec_mlops
+          activate-environment: omigami
           environment-file: requirements/environment.frozen.yaml
           python-version: 3.7.10
           auto-activate-base: false
-      - run: conda activate spec2vec_mlops
+      - run: conda activate omigami
 
       - name: Set prefect server
         run: |
@@ -58,7 +58,7 @@ jobs:
 
       - name: Register model deployment flow
         run: |
-          python spec2vec_mlops/flows/training_flow.py register-train-pipeline \
+          python omigami/flows/training_flow.py register-train-pipeline \
           --auth=True \
           --auth_url=https://mlops.datarevenue.com/.ory/kratos/public/ \
           --username=${{ secrets.AUTH_USERNAME }} \

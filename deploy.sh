@@ -3,7 +3,7 @@ snap ()
     echo "-SNAPSHOT.$(git rev-parse --short HEAD)"
 }
 
-TAG="drtools/prefect:spec2vec_mlops$(snap)"
+TAG="drtools/prefect:omigami$(snap)"
 
 echo "$TAG"
 
