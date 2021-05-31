@@ -39,6 +39,7 @@ def test_pair(
     assert similarity_score_from_embeddings == similarity_score_from_documents
 
 
+@pytest.mark.xfail
 def test_matrix(
     embeddings,
     documents_data,
@@ -55,6 +56,7 @@ def test_matrix(
     assert np.all(similarity_score_from_embeddings == similarity_score_from_documents)
 
 
+@pytest.mark.xfail
 def test_calculate_scores_with_spec2vec_embeddings(
     embeddings,
     documents_data,
