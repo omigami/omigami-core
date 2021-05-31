@@ -109,7 +109,6 @@ def test_run_training_flow(tmpdir, flow_config):
         redis_db="0",
         deploy_model=False,
     )
-    print(f"elem in dir2 : {os.listdir(tmpdir / 'model-output')}")
 
     results = flow.run()
     (d,) = flow.get_tasks("DownloadData")
