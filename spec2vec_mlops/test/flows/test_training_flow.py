@@ -32,7 +32,7 @@ def flow_config():
         image="image-ref-name-test-harry-potter-XXII",
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db="2",
+        redis_db="0",
     )
     return flow_config
 
@@ -83,8 +83,6 @@ def test_training_flow(flow_config):
     reason="It can only be run if the Redis is up",
 )
 def test_run_training_flow(tmpdir, flow_config):
-    os.environ["REDIS_DB"] = "2"
-
     # remove results from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
@@ -108,7 +106,7 @@ def test_run_training_flow(tmpdir, flow_config):
         allowed_missing_percentage=5,
         flow_config=flow_config,
         chunk_size=10,
-        redis_db="2",
+        redis_db="0",
         deploy_model=False,
     )
 
