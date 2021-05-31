@@ -147,7 +147,8 @@ def test_get_best_matches(model, embeddings):
 
 
 @pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
+    os.getenv("SKIP_REDIS_TEST", True)
+    or not os.path.exists(str(ASSETS_DIR / "full_data/test_model.pkl")),
     reason="It can only be run if the Redis is up",
 )
 def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_stored):
