@@ -91,8 +91,7 @@ def build_training_flow(
 
         spectrum_id_chunks = CreateChunks(chunk_size)(spectrum_ids)
 
-        # TODO: implement data caching like in DownloadData here. Will need to implement
-        # TODO: a new class like RedisResult
+        # TODO: implement data caching like in DownloadData on s3
         all_spectrum_ids_chunks = ProcessSpectrum(
             download_params.download_path, **process_params.kwargs
         ).map(spectrum_id_chunks)
