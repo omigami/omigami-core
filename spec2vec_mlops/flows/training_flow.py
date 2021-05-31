@@ -84,10 +84,6 @@ def build_training_flow(
 
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
-        logger.info(
-            f"Downloading and loading spectrum data from {download_params.input_uri} to "
-            f"{download_params.download_path}."
-        )
         spectrum_ids = DownloadData(
             **download_params.kwargs,
             **create_result(download_params.checkpoint_path),
@@ -95,7 +91,6 @@ def build_training_flow(
 
         spectrum_id_chunks = CreateChunks(chunk_size)(spectrum_ids)
 
-        logger.info("Started data cleaning and conversion to documents.")
         # TODO: implement data caching like in DownloadData here. Will need to implement
         # TODO: a new class like RedisResult
         all_spectrum_ids_chunks = ProcessSpectrum(

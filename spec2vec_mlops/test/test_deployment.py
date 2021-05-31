@@ -34,7 +34,7 @@ def test_deploy_training_flow():
         dataset_name="small",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=S3_BUCKET["dev"],
-        project_name="spec2vec",
+        project_name="spec2vec-debug",
         model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow-small",

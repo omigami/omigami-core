@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 
 import confuse
@@ -27,12 +26,7 @@ SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
 SPECTRUM_HASHES = config["storage"]["redis"]["spectrum_hashes"].get(str)
 DOCUMENT_HASHES = config["storage"]["redis"]["document_hashes"].get(str)
 EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
-
 RedisDBDatasetSize = {"small": "2", "10k": "1", "full": "0"}
-DATASET_DIR = {
-    "small": f"downloaded_datasets/small/{datetime.now().date()}/",
-    "10k": f"downloaded_datasets/test_10k/",
-    "full": f"downloaded_datasets/full/2021-05-14/",
-}
+DATASET_DIR = config["storage"]["dataset"].get(dict)
 
 CLUSTERS = config["clusters"].get(dict)

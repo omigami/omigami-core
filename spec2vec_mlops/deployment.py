@@ -47,6 +47,7 @@ def deploy_training_flow(
     mlflow_server: str = MLFLOW_SERVER,
     flow_name: str = "spec2vec-training-flow",
     environment: Literal["dev", "prod"] = "dev",
+    deploy_model: bool = False,
     auth: bool = False,
     auth_url: Optional[str] = None,
     username: Optional[str] = None,
@@ -106,6 +107,7 @@ def deploy_training_flow(
         flow_config=flow_config,
         redis_db=redis_db,
         flow_name=flow_name,
+        deploy_model=deploy_model,
     )
 
     training_flow_id = client.register(
