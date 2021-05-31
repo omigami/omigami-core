@@ -16,15 +16,15 @@ from spec2vec_mlops.config import (
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.b1a42c8",
-        iterations=5,
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.7939631",
+        iterations=15,
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
@@ -35,9 +35,10 @@ def test_deploy_training_flow():
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=S3_BUCKET["dev"],
         project_name="spec2vec-debug",
-        model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
+        model_output_dir=str(DRPath(f"{MODEL_DIR['dev']}/tests")),
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow-small",
+        flow_name="training-task-onward",
+        deploy_model=True,
         auth=True,
         **login_config,
     )
