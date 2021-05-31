@@ -27,6 +27,6 @@ SPECTRUM_HASHES = config["storage"]["redis"]["spectrum_hashes"].get(str)
 DOCUMENT_HASHES = config["storage"]["redis"]["document_hashes"].get(str)
 EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
 RedisDBDatasetSize = {"small": "2", "10k": "1", "full": "0"}
-DATASET_DIR = config["storage"]["dataset"].get(dict)
+DATASET_DIR = config["storage"]["dataset_dir"].get(dict)
 
 CLUSTERS = config["clusters"].get(dict)
