@@ -8,7 +8,7 @@ from prefect import Flow
 from prefect.executors import LocalDaskExecutor
 from prefect.storage import S3
 
-from spec2vec_mlops.config import default_configs
+from spec2vec_mlops.config import SOURCE_URI_PARTIAL_GNPS
 from spec2vec_mlops.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -24,7 +24,6 @@ from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
 from spec2vec_mlops.tasks.train_model import TrainModelParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR
 
-SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
 os.chdir(Path(__file__).parents[3])
 
 

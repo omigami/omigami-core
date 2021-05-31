@@ -8,12 +8,11 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
 
+from spec2vec_mlops.config import NECESSARY_KEYS
 from spec2vec_mlops.entities.data_models import SpectrumInputData
 from spec2vec_mlops.data_gateway import InputDataGateway
-from spec2vec_mlops.config import default_configs
 
 logger = logging.getLogger(__name__)
-KEYS = default_configs["gnps_json"]["necessary_keys"]
 
 
 class FSInputDataGateway(InputDataGateway):
@@ -71,7 +70,7 @@ class FSInputDataGateway(InputDataGateway):
 
         with self.fs.open(DRPath(path), "rb") as f:
             items = ijson.items(f, "item", multiple_values=True)
-            results = [{k: item[k] for k in KEYS} for item in items]
+            results = [{k: item[k] for k in NECESSARY_KEYS} for item in items]
         return results
 
     def load_spectrum_ids(
@@ -83,7 +82,7 @@ class FSInputDataGateway(InputDataGateway):
         with self.fs.open(DRPath(path), "rb") as f:
             items = ijson.items(f, "item", multiple_values=True)
             results = [
-                {k: item[k] for k in KEYS}
+                {k: item[k] for k in NECESSARY_KEYS}
                 for item in items
                 if item["SpectrumID"] in spectrum_ids
             ]

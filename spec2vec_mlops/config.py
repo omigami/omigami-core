@@ -1,35 +1,29 @@
-import os
 from datetime import datetime
 from pathlib import Path
 
-import yaml
-
-with open(
-    os.path.join(os.path.dirname(__file__), "config_default.yaml")
-) as yaml_config_file:
-    default_configs = yaml.safe_load(yaml_config_file)
+from spec2vec_mlops import ENV
 
 ROOT_DIR = Path(__file__).parents[0]
 
-SOURCE_URI_COMPLETE_GNPS = default_configs["gnps_json"]["uri"]["complete"]
-SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
-NECESSARY_KEYS = default_configs["gnps_json"]["necessary_keys"]
+SOURCE_URI_COMPLETE_GNPS = ENV["gnps_json"]["uri"]["complete"].get()
+SOURCE_URI_PARTIAL_GNPS = ENV["gnps_json"]["uri"]["partial"].get()
+NECESSARY_KEYS = ENV["gnps_json"]["necessary_keys"].get()
 
-API_SERVER = default_configs["prefect_flow_registration"]["api_server"]
-PROJECT_NAME = default_configs["prefect"]["project"]
-OUTPUT_DIR = default_configs["prefect"]["output_dir"]
-DATASET_FOLDER = default_configs["prefect"]["dataset_folder"]
-S3_MODEL_BUCKET = default_configs["prefect"]["s3_model_bucket"]
+API_SERVER = ENV["prefect_flow_registration"]["api_server"].get()
+PROJECT_NAME = ENV["prefect"]["project"].get()
+OUTPUT_DIR = ENV["prefect"]["output_dir"].get()
+DATASET_FOLDER = ENV["prefect"]["dataset_folder"].get()
+S3_MODEL_BUCKET = ENV["prefect"]["s3_model_bucket"].get()
 
-MODEL_DIR = default_configs["mlflow"]["model_folder"]
-MLFLOW_SERVER = default_configs["mlflow"]["url"]["remote"]
-CUSTOM_RESOURCE_INFO = default_configs["k8s"]["custom_seldon_resource"]
+MODEL_DIR = ENV["mlflow"]["model_folder"].get()
+MLFLOW_SERVER = ENV["mlflow"]["url"]["remote"].get()
+CUSTOM_RESOURCE_INFO = ENV["k8s"]["custom_seldon_resource"].get()
 
 # REDIS SETTINGS
-SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = default_configs["redis"]["spectrum_id_sorted_set"]
-SPECTRUM_HASHES = default_configs["redis"]["spectrum_hashes"]
-DOCUMENT_HASHES = default_configs["redis"]["document_hashes"]
-EMBEDDING_HASHES = default_configs["redis"]["embedding_hashes"]
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = ENV["redis"]["spectrum_id_sorted_set"].get()
+SPECTRUM_HASHES = ENV["redis"]["spectrum_hashes"].get()
+DOCUMENT_HASHES = ENV["redis"]["document_hashes"].get()
+EMBEDDING_HASHES = ENV["redis"]["embedding_hashes"].get()
 
 RedisDBDatasetSize = {"small": "2", "10k": "1", "full": "0"}
 DATASET_DIR = {

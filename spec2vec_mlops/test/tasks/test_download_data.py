@@ -5,15 +5,13 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from spec2vec_mlops.config import default_configs
+from spec2vec_mlops.config import SOURCE_URI_PARTIAL_GNPS
 from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.tasks import DownloadData
 from spec2vec_mlops.data_gateway import InputDataGateway
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
-
-SOURCE_URI_PARTIAL_GNPS = default_configs["gnps_json"]["uri"]["partial"]
 
 
 def test_download_data():
