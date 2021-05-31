@@ -16,14 +16,14 @@ from spec2vec_mlops.config import (
 )
 
 
-# @pytest.mark.skip(
-#     reason="This test uses internet connection and deploys a test flow to prefect."
-# )
+@pytest.mark.skip(
+    reason="This test uses internet connection and deploys a test flow to prefect."
+)
 def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.7939631",
+        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.448724f",
         iterations=15,
         window=500,
         intensity_weighting_power=0.5,
@@ -37,7 +37,7 @@ def test_deploy_training_flow():
         project_name="spec2vec-debug",
         model_output_dir=str(DRPath(f"{MODEL_DIR['dev']}/tests")),
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-task-onward",
+        flow_name="training-flow",
         deploy_model=True,
         auth=True,
         **login_config,
