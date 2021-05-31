@@ -16,14 +16,14 @@ from omigami.config import (
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.517beb1",
+        image="drtools/prefect:omigami-SNAPSHOT.ed149c7",
         iterations=15,
         window=500,
         intensity_weighting_power=0.5,

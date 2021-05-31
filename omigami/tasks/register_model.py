@@ -31,13 +31,9 @@ class RegisterModel(Task):
         config = merge_configs(kwargs)
         super().__init__(**config)
 
-    def run(
-        self,
-        server_uri: str = None,
-        model: Word2Vec = None,
-    ) -> Dict[str, str]:
-        self.logger.info(f"Registering model to {server_uri}.")
-        model_register = ModelRegister(server_uri)
+    def run(self, model: Word2Vec = None) -> Dict[str, str]:
+        self.logger.info(f"Registering model to {self._server_uri}.")
+        model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
             Predictor(
                 model,
