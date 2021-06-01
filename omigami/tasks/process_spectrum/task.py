@@ -75,7 +75,6 @@ class ProcessSpectrumParameters:
     @property
     def kwargs(self):
         return dict(
-            spectrum_dgw=self.spectrum_dgw,
             input_dgw=self.input_dgw,
             n_decimals=self.n_decimals,
             skip_if_exists=self.skip_if_exists,

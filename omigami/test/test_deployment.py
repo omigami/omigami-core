@@ -23,18 +23,20 @@ def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.2ffa171",
-        iterations=15,
-        window=500,
+        image="drtools/prefect:omigami-SNAPSHOT.c920bdb",
+        iterations=1,
+        window=300,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         n_decimals=2,
+        chunk_size=1000,
         skip_if_exists=True,
         environment="dev",
         dataset_name="full",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=S3_BUCKET["dev"],
         project_name="spec2vec",
+        use_latest=False,
         model_output_dir=MODEL_DIR["dev"],
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow",

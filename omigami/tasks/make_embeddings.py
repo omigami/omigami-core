@@ -27,11 +27,11 @@ class MakeEmbeddings(Task):
 
     def run(
         self,
-        model: Word2Vec = None,
         model_registry: Dict[str, str] = None,
         spectrum_ids: List[str] = None,
     ) -> List[str]:
         documents = self._spectrum_dgw.read_documents(spectrum_ids)
+        model = self._fs_dgw.load_gensim_model(model_registry["model_uri"])
 
         self.logger.info(f"Make {len(documents)} embeddings")
         embeddings = [

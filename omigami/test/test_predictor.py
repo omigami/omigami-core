@@ -88,7 +88,7 @@ def spectra_and_embeddings_stored(redis_db, cleaned_data, embeddings):
 def saved_model_run_id(word2vec_model, tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = ModelRegister(f"file:/{path}")
-    run_id = model_register.register_model(
+    run_id = model_register._register_model(
         Predictor(
             word2vec_model,
             n_decimals=1,

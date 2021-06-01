@@ -21,6 +21,7 @@ from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
 )
+from omigami.tasks import TrainModelParameters
 from omigami.tasks.download_data import DownloadParameters
 from omigami.tasks.process_spectrum import ProcessSpectrumParameters
 
@@ -46,6 +47,7 @@ def deploy_training_flow(
     project_name: str = PROJECT_NAME,
     model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
+    use_latest: bool = False,
     flow_name: str = "spec2vec-training-flow",
     environment: Literal["dev", "prod"] = "dev",
     deploy_model: bool = False,
@@ -86,6 +88,17 @@ def deploy_training_flow(
         n_decimals,
         skip_if_exists,
     )
+    training_parameters = TrainModelParameters(
+        iterations,
+        window,
+        n_decimals,
+        intensity_weighting_power,
+        allowed_missing_percentage,
+        project_name,
+        model_output_dir,
+        mlflow_server,
+        use_latest,
+    )
 
     flow_config = make_flow_config(
         image=image,
@@ -98,14 +111,11 @@ def deploy_training_flow(
     flow = build_training_flow(
         download_params=download_parameters,
         process_params=process_parameters,
+        training_params=training_parameters,
+        spectrum_dgw=spectrum_dgw,
         chunk_size=chunk_size,
-        iterations=iterations,
-        window=window,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
-        project_name=project_name,
-        model_output_dir=model_output_dir,
-        mlflow_server=mlflow_server,
         flow_config=flow_config,
         redis_db=redis_db,
         flow_name=flow_name,

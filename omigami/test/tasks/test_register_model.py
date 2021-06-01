@@ -25,7 +25,7 @@ def test_get_or_create_experiment(tmpdir):
 def test_register_model(word2vec_model, tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = ModelRegister(path)
-    run_id = model_register.register_model(
+    run_id = model_register._register_model(
         Predictor(
             word2vec_model,
             n_decimals=2,
