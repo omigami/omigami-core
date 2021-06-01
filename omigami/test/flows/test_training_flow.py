@@ -18,9 +18,12 @@ from omigami.flows.training_flow import build_training_flow
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.data_gateway import SpectrumDataGateway
-from omigami.tasks import DeployModel
-from omigami.tasks.download_data import DownloadParameters
-from omigami.tasks.process_spectrum import ProcessSpectrumParameters
+from omigami.tasks import (
+    DownloadParameters,
+    ProcessSpectrumParameters,
+    TrainModelParameters,
+    DeployModel,
+)
 from omigami.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 
 os.chdir(Path(__file__).parents[3])
@@ -48,22 +51,27 @@ def test_training_flow(flow_config):
         "register_model_task",
         "TrainModel",
     }
+    training_parameters = TrainModelParameters(
+        epochs=25,
+        window=500,
+        n_decimals=2,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=5,
+        experiment_name="test",
+        model_output_path="model-output",
+        server_uri="mlflow-server",
+        use_latest=False,
+    )
 
     flow = build_training_flow(
-        project_name="test",
         download_params=DownloadParameters(
             "source_uri", "datasets", "dataset-id", mock_input_dgw
         ),
         process_params=ProcessSpectrumParameters(
             mock_spectrum_dgw, mock_input_dgw, 2, False
         ),
-        train_params=TrainModelParameters(mock_spectrum_dgw, 25, 500),
-        model_output_dir="model-output",
-        mlflow_server="mlflow-server",
-        iterations=25,
-        window=500,
-        intensity_weighting_power=0.5,
-        allowed_missing_percentage=5,
+        training_params=training_parameters,
+        spectrum_dgw=mock_spectrum_dgw,
         flow_config=flow_config,
         redis_db="0",
         deploy_model=False,
@@ -92,15 +100,23 @@ def test_run_training_flow(tmpdir, flow_config):
     )
     spectrum_dgw = RedisSpectrumDataGateway()
     process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, True)
-    train_params = TrainModelParameters(spectrum_dgw, 25, 500)
+    training_parameters = TrainModelParameters(
+        epochs=25,
+        window=500,
+        n_decimals=2,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=5,
+        experiment_name="test",
+        model_output_path="model-output",
+        server_uri="mlflow-server",
+        use_latest=False,
+    )
 
     flow = build_training_flow(
-        project_name="test",
         download_params=download_parameters,
         process_params=process_parameters,
-        model_output_dir=f"{tmpdir}/model-output",
-        mlflow_server="mlflow-server",
-        train_params=train_params,
+        training_params=training_parameters,
+        spectrum_dgw=spectrum_dgw,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=flow_config,

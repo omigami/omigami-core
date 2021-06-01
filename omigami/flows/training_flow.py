@@ -11,14 +11,14 @@ from omigami.flows.utils import create_result
 from omigami.tasks import (
     DownloadData,
     DownloadParameters,
-    MakeEmbeddings,
-    ProcessSpectrum,
     CreateChunks,
+    ProcessSpectrum,
     ProcessSpectrumParameters,
-    TrainModelParameters,
     TrainModel,
+    TrainModelParameters,
+    MakeEmbeddings,
+    DeployModel,
 )
-from omigami.tasks.seldon import DeployModel
 
 logger = prefect.utilities.logging.get_logger()
 logging.basicConfig(level=logging.DEBUG)
