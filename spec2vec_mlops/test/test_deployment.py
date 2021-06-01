@@ -23,7 +23,7 @@ def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:spec2vec_mlops-SNAPSHOT.2ffa171",
+        image="drtools/prefect:omigami-SNAPSHOT.2ffa171",
         iterations=15,
         window=500,
         intensity_weighting_power=0.5,
@@ -51,7 +51,7 @@ def test_dataset_wrong_dataset_name():
     with pytest.raises(ValueError):
         flow_id = deploy_training_flow(
             dataset_name="NOT-A-DATASET",
-            image="drtools/prefect:spec2vec_mlops-SNAPSHOT.f06b4f9",
+            image="drtools/prefect:omigami-SNAPSHOT.f06b4f9",
             iterations=5,
             window=500,
             intensity_weighting_power=0.5,

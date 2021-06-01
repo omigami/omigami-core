@@ -2,7 +2,7 @@ from pathlib import Path
 
 import confuse
 
-config = confuse.Configuration("spec2vec_mlops", __name__)
+config = confuse.Configuration("omigami", __name__)
 
 ROOT_DIR = Path(__file__).parents[0]
 

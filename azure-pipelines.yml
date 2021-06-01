@@ -1,6 +1,6 @@
 variables:
   PWD: $(Build.SourcesDirectory)
-  CONDA_CACHE_DIR: /usr/share/miniconda/envs/spec2vec_mlops/
+  CONDA_CACHE_DIR: /usr/share/miniconda/envs/omigami/
   SKIP_REDIS_TEST: False
   PREFECT__FLOWS__CHECKPOINTING: True
   REDIS_HOST: localhost
