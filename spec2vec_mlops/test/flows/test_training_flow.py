@@ -32,7 +32,7 @@ def flow_config():
         image="image-ref-name-test-harry-potter-XXII",
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db="2",
+        redis_db="0",
     )
     return flow_config
 
@@ -115,7 +115,7 @@ def test_run_training_flow(tmpdir, flow_config):
 
     assert results.is_successful()
     results.result[d].is_cached()
-    assert len(fs.ls(tmpdir / "model-output")) == 1
+    assert 'model' in os.listdir(tmpdir / 'model-output')
 
 
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
