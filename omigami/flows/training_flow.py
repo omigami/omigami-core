@@ -107,9 +107,7 @@ def build_training_flow(
                 allowed_missing_percentage,
                 mlflow_server,
             )(model)
-            logger.info("Model training is complete.")
 
-        # TODO: this is make AND save embeddings. Prob need some refactor
         # TODO: this task prob doesnt need chunking or can be done in larger chunks
         _ = MakeEmbeddings(
             process_params.spectrum_dgw,

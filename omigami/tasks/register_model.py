@@ -50,9 +50,6 @@ class RegisterModel(Task):
         run = mlflow.get_run(run_id)
         self.logger.info(f"{run.info}")
 
-        if not isinstance(run.info.artifact_uri, str):
-            raise RuntimeError(f"Invalid uri: {run.info.artifact_uri}")
-
         model_uri = f"{run.info.artifact_uri}/model/"
         return {"model_uri": model_uri, "run_id": run_id}
 

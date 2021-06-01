@@ -115,7 +115,7 @@ def test_run_training_flow(tmpdir, flow_config):
 
     assert results.is_successful()
     results.result[d].is_cached()
-    assert 'model' in os.listdir(tmpdir / 'model-output')
+    assert "model" in os.listdir(tmpdir / "model-output")
 
 
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
