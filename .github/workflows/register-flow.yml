@@ -42,11 +42,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniconda-version: "latest"
-          activate-environment: omigami
+          activate-environment: spec2vec_mlops
           environment-file: requirements/environment.frozen.yaml
           python-version: 3.7.10
           auto-activate-base: false
-      - run: conda activate omigami
+      - run: conda activate spec2vec_mlops
 
       - name: Set prefect server
         run: |
