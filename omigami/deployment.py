@@ -39,6 +39,7 @@ def deploy_training_flow(
     allowed_missing_percentage: float,
     dataset_name: str,
     n_decimals: int = 2,
+    chunk_size: int = 1000,
     skip_if_exists: bool = True,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     output_dir: str = S3_BUCKET,
@@ -97,6 +98,7 @@ def deploy_training_flow(
     flow = build_training_flow(
         download_params=download_parameters,
         process_params=process_parameters,
+        chunk_size=chunk_size,
         iterations=iterations,
         window=window,
         intensity_weighting_power=intensity_weighting_power,

@@ -17,6 +17,9 @@ def train_model_task(
 ) -> Word2Vec:
     logger = prefect.context.get("logger")
     beg = datetime.datetime.now()
+    logger.info(
+        f"Started training model for {iterations} iterations and {window} window size."
+    )
 
     dgw = RedisSpectrumDataGateway()
     documents = dgw.read_documents_iter()
