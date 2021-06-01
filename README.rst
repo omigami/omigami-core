@@ -11,7 +11,7 @@ How to setup
 
     conda env create -f requirements/environment.frozen.yaml
     conda env update -f requirements/environment_test.yaml
-    conda activate spec2vec_mlops
+    conda activate omigami
     pip install -e .
 
 How to update all packages
@@ -19,7 +19,7 @@ How to update all packages
 To update all packages and create new frozen environments. Make sure you have correct
 environment activated. You'll need at least `conda>=4.9`::
 
-    conda activate spec2vec_mlops
+    conda activate omigami
     python requirements/dress.py env freeze requirements/environment.yaml
     conda env update -f requirements/environment_test.yaml
 
@@ -77,11 +77,11 @@ How to register the training flow manually
 To register the flow manually to Prefect you need to follow these steps:
 ::
 
-    conda activate spec2vec_mlops
+    conda activate omigami
     export AWS_PROFILE=<your data revenue profile>
     export PYTHONPATH=$(pwd)
     prefect backend server
-    python spec2vec_mlops/cli.py register-training-flow -i [image] [options]
+    python omigami/cli.py register-training-flow -i [image] [options]
 
 If the Prefect Server requires authentication, you can use the arguments to set it up:
 ::
@@ -143,4 +143,4 @@ Please black format you code before checking in. This should be done using the b
 version provided in the environment and the following command:
 ::
 
-    black --target-version py37 spec2vec_mlops
+    black --target-version py37 omigami
