@@ -51,19 +51,19 @@ def build_training_flow(
     Parameters
     ----------
     download_params:
-        Parameters of the DownloadData task
+        Parameters of the DownloadData task.
     process_params:
         Parameters of the ProcessSpectrum task
     chunk_size:
-        Size of the chunks to map the data processing task
+        Size of the chunks to map the data processing task.
     intensity_weighting_power:
-        Exponent used to scale intensity weights for each word
+        Exponent used to scale intensity weights for each word.
     allowed_missing_percentage:
-        Number of what percentage of a spectrum is allowed to be unknown to the model
+        Number of what percentage of a spectrum is allowed to be unknown to the model.
     flow_config: FlowConfig
         Configuration dataclass passed to prefect.Flow as a dict
     deploy_model:
-        Whether to create a seldon deployment with the result of the training flow
+        Whether to create a seldon deployment with the result of the training flow.
     Returns
     -------
 

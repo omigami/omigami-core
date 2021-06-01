@@ -44,11 +44,9 @@ def test_training_flow(flow_config):
         "CreateChunks",
         "DownloadData",
         "ProcessSpectrum",
-        "case(True)",
-        "check_condition",
         "MakeEmbeddings",
-        "RegisterModel",
-        "train_model_task",
+        "register_model_task",
+        "TrainModel",
     }
 
     flow = build_training_flow(
@@ -59,6 +57,7 @@ def test_training_flow(flow_config):
         process_params=ProcessSpectrumParameters(
             mock_spectrum_dgw, mock_input_dgw, 2, False
         ),
+        train_params=TrainModelParameters(mock_spectrum_dgw, 25, 500),
         model_output_dir="model-output",
         mlflow_server="mlflow-server",
         iterations=25,
@@ -93,6 +92,7 @@ def test_run_training_flow(tmpdir, flow_config):
     )
     spectrum_dgw = RedisSpectrumDataGateway()
     process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, True)
+    train_params = TrainModelParameters(spectrum_dgw, 25, 500)
 
     flow = build_training_flow(
         project_name="test",
@@ -100,8 +100,7 @@ def test_run_training_flow(tmpdir, flow_config):
         process_params=process_parameters,
         model_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
-        iterations=5,
-        window=500,
+        train_params=train_params,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=flow_config,
