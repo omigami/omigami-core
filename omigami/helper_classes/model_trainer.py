@@ -17,6 +17,7 @@ def spec2vec_settings(iterations: Union[List[int], int], **settings):
 
     # Set callbacks
     callbacks = []
+    # TODO: implement our own logger because this one doesn't work and doesn't log progress
     training_progress_logger = TrainingProgressLogger(num_of_epochs)
     callbacks.append(training_progress_logger)
 
