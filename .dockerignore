@@ -4,4 +4,4 @@
 notebooks
 *.egg-info
 **/.pytest_cache
-spec2vec_mlops/test/*/*
+omigami/test/*/*

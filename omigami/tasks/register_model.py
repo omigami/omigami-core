@@ -32,7 +32,9 @@ class RegisterModel(Task):
         super().__init__(**config)
 
     def run(self, model: Word2Vec = None) -> Dict[str, str]:
-        self.logger.info(f"Registering model to {self._server_uri}.")
+        self.logger.info(
+            f"Registering model to {self._server_uri} on URI: {self._path}."
+        )
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
             Predictor(
@@ -47,6 +49,10 @@ class RegisterModel(Task):
         )
         run = mlflow.get_run(run_id)
         self.logger.info(f"{run.info}")
+
+        if not isinstance(run.info.artifact_uri, str):
+            raise RuntimeError(f"Invalid uri: {run.info.artifact_uri}")
+
         model_uri = f"{run.info.artifact_uri}/model/"
         return {"model_uri": model_uri, "run_id": run_id}
 
