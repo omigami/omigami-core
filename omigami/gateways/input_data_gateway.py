@@ -114,6 +114,7 @@ class FSInputDataGateway(InputDataGateway):
     def load_spectrum_ids(
         self, path: str, spectrum_ids: List[str]
     ) -> SpectrumInputData:
+        spectrum_ids = set(spectrum_ids)
         if self.fs is None:
             self.fs = get_fs(path)
 
