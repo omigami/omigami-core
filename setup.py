@@ -10,7 +10,7 @@ setup(
     name="omigami-core",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    description="Omigami core package",
+    description="Omigami core package built using OpenMLOps tools.",
     author="Data Revenue GmbH",
     author_email="markus@datarevenue.com",
     install_requires=[],

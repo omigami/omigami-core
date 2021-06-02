@@ -7,8 +7,8 @@ config = confuse.Configuration("omigami", __name__)
 ROOT_DIR = Path(__file__).parents[0]
 
 # Data for download
-SOURCE_URI_COMPLETE_GNPS = config["uri"]["complete"].get(str)
-SOURCE_URI_PARTIAL_GNPS = config["uri"]["partial"].get(str)
+SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
+SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
 
 # Prefect
 API_SERVER = config["prefect"]["api_server"].get(dict)

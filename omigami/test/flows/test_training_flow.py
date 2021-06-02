@@ -18,9 +18,12 @@ from omigami.flows.training_flow import build_training_flow
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.data_gateway import SpectrumDataGateway
-from omigami.tasks import DeployModel
-from omigami.tasks.download_data import DownloadParameters
-from omigami.tasks.process_spectrum import ProcessSpectrumParameters
+from omigami.tasks import (
+    DeployModel,
+    DownloadParameters,
+    ProcessSpectrumParameters,
+    TrainModelParameters,
+)
 from omigami.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 
 os.chdir(Path(__file__).parents[3])
@@ -44,11 +47,9 @@ def test_training_flow(flow_config):
         "CreateChunks",
         "DownloadData",
         "ProcessSpectrum",
-        "case(True)",
-        "check_condition",
         "MakeEmbeddings",
         "RegisterModel",
-        "train_model_task",
+        "TrainModel",
     }
 
     flow = build_training_flow(
@@ -59,10 +60,9 @@ def test_training_flow(flow_config):
         process_params=ProcessSpectrumParameters(
             mock_spectrum_dgw, mock_input_dgw, 2, False
         ),
+        train_params=TrainModelParameters(mock_spectrum_dgw, 25, 500),
         model_output_dir="model-output",
         mlflow_server="mlflow-server",
-        iterations=25,
-        window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=flow_config,
@@ -93,6 +93,7 @@ def test_run_training_flow(tmpdir, flow_config):
     )
     spectrum_dgw = RedisSpectrumDataGateway()
     process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, True)
+    train_params = TrainModelParameters(spectrum_dgw, 25, 500)
 
     flow = build_training_flow(
         project_name="test",
@@ -100,8 +101,7 @@ def test_run_training_flow(tmpdir, flow_config):
         process_params=process_parameters,
         model_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
-        iterations=5,
-        window=500,
+        train_params=train_params,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         flow_config=flow_config,
@@ -126,7 +126,7 @@ def test_deploy_seldon_model():
     }
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
-        DeployModel(redis_db="0", env="dev", **TEST_TASK_CONFIG)(
+        DeployModel(redis_db="0", environment="dev", **TEST_TASK_CONFIG)(
             registered_model={
                 "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/750c60ddb52544289db228a4af8a52e3/artifacts/model/"
             }

@@ -16,9 +16,9 @@ logger = prefect.context.get("logger")
 
 
 class DeployModel(Task):
-    def __init__(self, redis_db: str, env: str = "dev", **kwargs):
+    def __init__(self, redis_db: str, environment: str = "dev", **kwargs):
         self.redis_db = redis_db
-        self.env = env
+        self.environment = environment
         config = merge_configs(kwargs)
         super().__init__(**config)
 
@@ -26,13 +26,14 @@ class DeployModel(Task):
 
         model_uri = registered_model["model_uri"]
         logger.info(
-            f"Deploying model {model_uri} to environment {SELDON_PARAMS['namespace']}"
+            f"Deploying model {model_uri} to environment {self.environment} and "
+            f"namespace {SELDON_PARAMS['namespace']}."
         )
 
         try:
             config.load_incluster_config()
         except ConfigException:
-            config.load_kube_config(context=CLUSTERS[self.env])
+            config.load_kube_config(context=CLUSTERS[self.environment])
 
         custom_api = client.CustomObjectsApi()
         seldon_deployment_path = Path(__file__).parent / "seldon_deployment.yaml"

@@ -21,8 +21,11 @@ from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
 )
-from omigami.tasks.download_data import DownloadParameters
-from omigami.tasks.process_spectrum import ProcessSpectrumParameters
+from omigami.tasks import (
+    DownloadParameters,
+    ProcessSpectrumParameters,
+    TrainModelParameters,
+)
 
 from omigami.flows.config import (
     make_flow_config,
@@ -86,21 +89,21 @@ def deploy_training_flow(
         n_decimals,
         skip_if_exists,
     )
+    train_model_parameters = TrainModelParameters(spectrum_dgw, iterations, window)
 
     flow_config = make_flow_config(
         image=image,
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db=redis_db,
-        env=environment,
+        environment=environment,
     )
 
     flow = build_training_flow(
         download_params=download_parameters,
         process_params=process_parameters,
+        train_params=train_model_parameters,
         chunk_size=chunk_size,
-        iterations=iterations,
-        window=window,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
         project_name=project_name,

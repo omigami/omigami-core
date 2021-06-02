@@ -2,25 +2,25 @@ import logging
 from dataclasses import dataclass
 from typing import Union
 
-from prefect import Flow, unmapped, case
 import prefect
+from prefect import Flow, unmapped
 
 from omigami.flows.config import FlowConfig
 from omigami.flows.utils import create_result
 from omigami.tasks import (
-    check_condition,
     DownloadData,
     MakeEmbeddings,
+    DeployModel,
+    DownloadParameters,
+    CreateChunks,
     ProcessSpectrum,
-    train_model_task,
+    TrainModel,
+    TrainModelParameters,
     RegisterModel,
 )
 from omigami.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
-from omigami.tasks.download_data import DownloadParameters
-from omigami.tasks.process_spectrum.create_chunks import CreateChunks
-from omigami.tasks.seldon import DeployModel
 
 logger = prefect.utilities.logging.get_logger()
 logging.basicConfig(level=logging.DEBUG)
@@ -36,13 +36,12 @@ def build_training_flow(
     project_name: str,
     download_params: DownloadParameters,
     process_params: ProcessSpectrumParameters,
+    train_params: TrainModelParameters,
     model_output_dir: str,
     mlflow_server: str,
     flow_config: FlowConfig,
     redis_db: str,
     chunk_size: int = 1000,
-    iterations: int = 25,
-    window: int = 500,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_name: str = "spec2vec-training-flow",
@@ -58,27 +57,25 @@ def build_training_flow(
     project_name: str
         Prefect parameter. The project name.
     download_params:
-        Parameters of the DownloadData task
+        Parameters of the DownloadData task.
     process_params:
-        Parameters of the ProcessSpectrum task
+        Parameters of the ProcessSpectrum task.
+    train params:
+        Parameters of the TrainModel task.
     model_output_dir:
-        Diretory for saving the model
+        Diretory for saving the model.
     mlflow_server:
-        Server used for MLFlow to save the model
+        Server used for MLFlow to save the model.
     chunk_size:
-        Size of the chunks to map the data processing task
-    iterations:
-        Number of training iterations
-    window:
-        Window size for context around the word
+        Size of the chunks to map the data processing task.
     intensity_weighting_power:
-        Exponent used to scale intensity weights for each word
+        Exponent used to scale intensity weights for each word.
     allowed_missing_percentage:
-        Number of what percentage of a spectrum is allowed to be unknown to the model
+        Number of what percentage of a spectrum is allowed to be unknown to the model.
     flow_config: FlowConfig
         Configuration dataclass passed to prefect.Flow as a dict
     deploy_model:
-        Whether to create a seldon deployment with the result of the training flow
+        Whether to create a seldon deployment with the result of the training flow.
     Returns
     -------
 
@@ -96,17 +93,18 @@ def build_training_flow(
             download_params.download_path, **process_params.kwargs
         ).map(spectrum_id_chunks)
 
-        # TODO: this case can be removed if we link train with clean data via input/output
-        with case(check_condition(all_spectrum_ids_chunks), True):
-            model = train_model_task(iterations, window)
-            model_registry = RegisterModel(
-                project_name,
-                model_output_dir,
-                process_params.n_decimals,
-                intensity_weighting_power,
-                allowed_missing_percentage,
-                mlflow_server,
-            )(model)
+        model = TrainModel(train_params.spectrum_dgw)(
+            train_params.iterations, train_params.window
+        )
+
+        model_registry = RegisterModel(
+            project_name,
+            model_output_dir,
+            process_params.n_decimals,
+            intensity_weighting_power,
+            allowed_missing_percentage,
+            mlflow_server,
+        )(model)
 
         # TODO: this task prob doesnt need chunking or can be done in larger chunks
         _ = MakeEmbeddings(
