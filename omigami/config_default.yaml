@@ -15,7 +15,7 @@ seldon:
 storage:
   dataset_dir:
     small: "downloaded_datasets/small/"
-    10k: "downloaded_datasets/test_10k/"
+    10k: "downloaded_datasets/10k/"
     full: "downloaded_datasets/full/2021-05-14/"
   model_folder:
     dev: "s3://omigami-dev/spec2vec/mlflow"
