@@ -130,10 +130,12 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         ]
         return spectrum_ids_within_range
 
-    def read_documents_iter(self) -> RedisHashesIterator:
+    def read_documents_iter(
+        self, spectrum_ids: List[str] = None
+    ) -> RedisHashesIterator:
         """Returns an iterator that yields Redis object one by one"""
         self._init_client()
-        return RedisHashesIterator(self, DOCUMENT_HASHES)
+        return RedisHashesIterator(self, DOCUMENT_HASHES, spectrum_ids)
 
     def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None) -> List:
         if spectrum_ids:
@@ -159,10 +161,15 @@ class RedisHashesIterator:
     Reading chunks is not supported by gensim word2vec at the moment.
     """
 
-    def __init__(self, dgw: RedisSpectrumDataGateway, hash_name: str):
+    def __init__(
+        self,
+        dgw: RedisSpectrumDataGateway,
+        hash_name: str,
+        spectrum_ids: List[str] = None,
+    ):
         self.dgw = dgw
         self.hash_name = hash_name
-        self.spectrum_ids = dgw.client.hkeys(hash_name)
+        self.spectrum_ids = spectrum_ids or dgw.client.hkeys(hash_name)
 
     def __iter__(self):
         for spectrum_id in self.spectrum_ids:

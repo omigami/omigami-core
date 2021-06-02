@@ -1,11 +1,15 @@
-import datetime
+from typing import List
 
 import gensim
 import prefect
 from attr import dataclass
 from prefect import Task
+from spec2vec.model_building import (
+    set_spec2vec_defaults,
+    learning_rates_to_gensim_style,
+)
+from spec2vec.utils import TrainingProgressLogger
 
-from omigami.helper_classes.model_trainer import spec2vec_settings
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.tasks.config import merge_configs
 
@@ -20,26 +24,58 @@ class TrainModelParameters:
     """
 
     spectrum_dgw: RedisSpectrumDataGateway
-    iterations: int = 25
+    epochs: int = 25
     window: int = 500
+
+    @property
+    def kwargs(self):
+        return {
+            "spectrum_dgw": self.spectrum_dgw,
+            "epochs": self.epochs,
+            "window": self.window,
+        }
 
 
 class TrainModel(Task):
-    def __init__(self, spectrum_dgw: RedisSpectrumDataGateway, **kwargs):
-        self.spectrum_dgw = spectrum_dgw
+    def __init__(
+        self,
+        spectrum_dgw: RedisSpectrumDataGateway,
+        epochs: int = 25,
+        window: int = 500,
+        **kwargs,
+    ):
+        self._spectrum_dgw = spectrum_dgw
+        self._epochs = epochs
+        self._window = window
 
         config = merge_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, iterations: int = 25, window: int = 500):
-        logger = prefect.context.get("logger")
-        beg = datetime.datetime.now()
+    def run(self, spectrum_ids_chunks: List[List[str]] = None):
+        self.logger.info("Loading the data.")
+        flatten_ids = [item for elem in spectrum_ids_chunks for item in elem]
+        documents = self._spectrum_dgw.read_documents_iter(flatten_ids)
 
-        documents = self.spectrum_dgw.read_documents_iter()
-        callbacks, settings = spec2vec_settings(iterations=iterations, window=window)
+        self.logger.info("Started training the Word2Vec model.")
+        callbacks, settings = self._create_spec2vec_settings(self._window, self._epochs)
         model = gensim.models.Word2Vec(
             sentences=documents, callbacks=callbacks, **settings
         )
-        logger.info(f"Train model in {datetime.datetime.now() - beg} hours.")
+        self.logger.info(f"Finished training the model.")
 
         return model
+
+    @staticmethod
+    def _create_spec2vec_settings(window: int, epochs: int):
+        settings = set_spec2vec_defaults(window=window)
+
+        # Convert spec2vec style arguments to gensim style arguments
+        settings = learning_rates_to_gensim_style(num_of_epochs=epochs, **settings)
+
+        # Set callbacks
+        callbacks = []
+        # TODO: implement our own logger because this one doesn't work and doesn't log progress
+        training_progress_logger = TrainingProgressLogger(epochs)
+        callbacks.append(training_progress_logger)
+
+        return callbacks, settings
