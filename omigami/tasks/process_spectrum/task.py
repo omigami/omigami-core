@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass
 from typing import List
 
@@ -35,35 +34,30 @@ class ProcessSpectrum(Task):
         self.logger.info(
             f"Processing {len(spectrum_ids)} spectra from the input data {self._download_path}"
         )
-        self.logger.info(f"Using Redis DB {REDIS_DB}")
-        spectrum_data = self._input_dgw.load_spectrum_ids(
-            self._download_path, spectrum_ids
-        )
 
         # TODO: refactor to use prefect's checkpoint functionality
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
             new_spectrum_ids = self._spectrum_dgw.list_spectra_not_exist(spectrum_ids)
-            spectrum_data = [
-                sp for sp in spectrum_data if sp.get("spectrum_id") in new_spectrum_ids
-            ]
             self.logger.info(
                 f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} spectra are new and will "
                 f"be processed."
             )
+            spectrum_ids = new_spectrum_ids
 
-        cleaned_data = [
-            self._processor.process_data(spectra_data) for spectra_data in spectrum_data
-        ]
-        cleaned_data = [spectrum for spectrum in cleaned_data if spectrum]
-        spectrum_data = [
+        self.logger.debug(f"Using Redis DB {REDIS_DB}")
+        spectra = self._input_dgw.load_spectrum_ids(self._download_path, spectrum_ids)
+
+        self.logger.info(f"Processing spectra and converting into documents.")
+        cleaned_spectra = self._processor.process_data(spectra)
+        spectrum_documents = [
             SpectrumDocumentData(spectrum, self._n_decimals)
-            for spectrum in cleaned_data
+            for spectrum in cleaned_spectra
         ]
 
         self.logger.info(f"Finished processing. saving into spectrum database.")
-        self._spectrum_dgw.write_spectrum_documents(spectrum_data)
-        return [sp.spectrum_id for sp in spectrum_data]
+        self._spectrum_dgw.write_spectrum_documents(spectrum_documents)
+        return [sp.spectrum_id for sp in spectrum_documents]
 
 
 @dataclass
