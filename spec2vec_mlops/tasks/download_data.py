@@ -55,6 +55,7 @@ class DownloadParameters:
     def checkpoint_path(self):
         return f"{self.output_dir}/{self.checkpoint}"
 
+    # TODO: You don't really need this, I think, if you use download_parameters.__dict__()
     @property
     def kwargs(self):
         return dict(

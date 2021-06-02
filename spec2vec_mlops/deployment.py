@@ -23,6 +23,7 @@ from spec2vec_mlops.gateways.redis_spectrum_gateway import (
 )
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
+from spec2vec_mlops.tasks.train_model import TrainModelParameters
 
 from spec2vec_mlops.flows.config import (
     make_flow_config,
@@ -85,6 +86,7 @@ def deploy_training_flow(
         n_decimals,
         skip_if_exists,
     )
+    train_model_parameters = TrainModelParameters(spectrum_dgw, iterations, window)
 
     flow_config = make_flow_config(
         image=image,
@@ -97,8 +99,7 @@ def deploy_training_flow(
     flow = build_training_flow(
         download_params=download_parameters,
         process_params=process_parameters,
-        iterations=iterations,
-        window=window,
+        train_params=train_model_parameters,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
         project_name=project_name,
