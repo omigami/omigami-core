@@ -93,7 +93,7 @@ def build_training_flow(
             download_params.download_path, **process_params.kwargs
         ).map(spectrum_id_chunks)
 
-        model = TrainModel(train_params.kwargs)(all_spectrum_ids_chunks)
+        model = TrainModel(**train_params.kwargs)(all_spectrum_ids_chunks)
 
         model_registry = RegisterModel(
             project_name,
