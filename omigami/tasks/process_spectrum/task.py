@@ -39,7 +39,9 @@ class ProcessSpectrum(Task):
         spectrum_data = self._input_dgw.load_spectrum_ids(
             self._download_path, spectrum_ids
         )
+
         # TODO: refactor to use prefect's checkpoint functionality
+        self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
             new_spectrum_ids = self._spectrum_dgw.list_spectra_not_exist(spectrum_ids)
             spectrum_data = [
