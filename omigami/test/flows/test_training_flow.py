@@ -93,7 +93,7 @@ def test_run_training_flow(tmpdir, flow_config):
     )
     spectrum_dgw = RedisSpectrumDataGateway()
     process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, True)
-    train_params = TrainModelParameters(spectrum_dgw, 25, 500)
+    train_params = TrainModelParameters(spectrum_dgw, 3, 200)
 
     flow = build_training_flow(
         project_name="test",
@@ -103,9 +103,9 @@ def test_run_training_flow(tmpdir, flow_config):
         mlflow_server="mlflow-server",
         train_params=train_params,
         intensity_weighting_power=0.5,
-        allowed_missing_percentage=5,
+        allowed_missing_percentage=25,
         flow_config=flow_config,
-        chunk_size=10,
+        chunk_size=100,
         redis_db="0",
         deploy_model=False,
     )

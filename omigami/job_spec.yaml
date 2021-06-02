@@ -9,3 +9,6 @@ spec:
       containers:
       - name: flow
         imagePullPolicy: Always
+        resources:
+          requests:
+            memory: 3Gi
