@@ -21,9 +21,6 @@ from spec2vec_mlops.tasks import (
 from spec2vec_mlops.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
-from spec2vec_mlops.tasks.download_data import DownloadParameters
-from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
-from spec2vec_mlops.tasks.seldon import DeployModelTask
 
 logger = prefect.utilities.logging.get_logger()
 logging.basicConfig(level=logging.DEBUG)

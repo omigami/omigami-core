@@ -93,7 +93,7 @@ def deploy_training_flow(
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db=redis_db,
-        env=environment,
+        environment=environment,
     )
 
     flow = build_training_flow(

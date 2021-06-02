@@ -45,7 +45,7 @@ def make_flow_config(
     storage_type: PrefectStorageMethods,
     executor_type: PrefectExecutorMethods,
     redis_db: str,
-    env: str = "dev",
+    environment: str = "dev",
 ) -> FlowConfig:
     """
     This will coordinate the creation of a flow config either with provided params or using the default values
@@ -63,7 +63,7 @@ def make_flow_config(
 
     # storage_type
     if storage_type == PrefectStorageMethods.S3:
-        storage = S3(DRPath(S3_BUCKET[env]).netloc)
+        storage = S3(DRPath(S3_BUCKET[environment]).netloc)
     else:
         raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
 

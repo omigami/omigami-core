@@ -113,7 +113,7 @@ def test_run_training_flow(tmpdir, flow_config):
 
     assert results.is_successful()
     results.result[d].is_cached()
-    assert 'model' in os.listdir(tmpdir / 'model-output')
+    assert "model" in os.listdir(tmpdir / "model-output")
 
 
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
@@ -124,7 +124,7 @@ def test_deploy_seldon_model():
     }
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
-        DeployModel(redis_db="0", env="dev", **TEST_TASK_CONFIG)(
+        DeployModel(redis_db="0", environment="dev", **TEST_TASK_CONFIG)(
             registered_model={
                 "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/750c60ddb52544289db228a4af8a52e3/artifacts/model/"
             }
