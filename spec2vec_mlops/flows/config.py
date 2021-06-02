@@ -1,11 +1,12 @@
 from enum import Enum
 
 from attr import dataclass
+from drfs import DRPath
 from prefect.executors import Executor, LocalDaskExecutor
 from prefect.run_configs import RunConfig, KubernetesRun
 from prefect.storage import Storage, S3
 
-from spec2vec_mlops.config import ROOT_DIR, S3_MODEL_BUCKET
+from spec2vec_mlops.config import ROOT_DIR, S3_BUCKET
 
 
 """
@@ -44,6 +45,7 @@ def make_flow_config(
     storage_type: PrefectStorageMethods,
     executor_type: PrefectExecutorMethods,
     redis_db: str,
+    environment: str = "dev",
 ) -> FlowConfig:
     """
     This will coordinate the creation of a flow config either with provided params or using the default values
@@ -61,7 +63,7 @@ def make_flow_config(
 
     # storage_type
     if storage_type == PrefectStorageMethods.S3:
-        storage = S3(S3_MODEL_BUCKET)
+        storage = S3(DRPath(S3_BUCKET[environment]).netloc)
     else:
         raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
 

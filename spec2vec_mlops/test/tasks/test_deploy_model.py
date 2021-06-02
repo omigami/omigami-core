@@ -3,7 +3,7 @@ import yaml
 from prefect import Flow
 
 from spec2vec_mlops.config import ROOT_DIR
-from spec2vec_mlops.tasks.seldon.deploy_model import DeployModelTask
+from spec2vec_mlops.tasks.seldon.deploy_model import DeployModel
 
 
 @pytest.mark.skip(
@@ -13,7 +13,7 @@ def test_deploy_model_task():
 
     # TODO: this needs assertions and a way of testing from outside kubernetes environment
     with Flow("test-flow") as test_flow:
-        deploy_task = DeployModelTask(redis_db="2")(
+        deploy_task = DeployModel(redis_db="2")(
             registered_model={"model_uri": "uri", "run_id": "1"}, overwrite=False
         )
 
@@ -28,7 +28,7 @@ def test_deploy_model_task():
 def test_update_seldon_configs():
     redis_db = "2"
     with Flow("test-flow") as test_flow:
-        deploy_task = DeployModelTask(redis_db=redis_db)(
+        deploy_task = DeployModel(redis_db=redis_db)(
             registered_model={"model_uri": "uri", "run_id": "1"}, overwrite=False
         )
 

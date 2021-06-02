@@ -18,11 +18,11 @@ from spec2vec_mlops.flows.training_flow import build_training_flow
 from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
 from spec2vec_mlops.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from spec2vec_mlops.data_gateway import SpectrumDataGateway
-from spec2vec_mlops.tasks import DeployModelTask
+from spec2vec_mlops.tasks import DeployModel
 from spec2vec_mlops.tasks.download_data import DownloadParameters
 from spec2vec_mlops.tasks.process_spectrum import ProcessSpectrumParameters
+from spec2vec_mlops.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 from spec2vec_mlops.tasks.train_model import TrainModelParameters
-from spec2vec_mlops.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[3])
 
@@ -46,7 +46,7 @@ def test_training_flow(flow_config):
         "DownloadData",
         "ProcessSpectrum",
         "MakeEmbeddings",
-        "register_model_task",
+        "RegisterModel",
         "TrainModel",
     }
 
@@ -113,7 +113,7 @@ def test_run_training_flow(tmpdir, flow_config):
 
     assert results.is_successful()
     results.result[d].is_cached()
-    assert 'model' in os.listdir(tmpdir / 'model-output')
+    assert "model" in os.listdir(tmpdir / "model-output")
 
 
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
@@ -124,10 +124,12 @@ def test_deploy_seldon_model():
     }
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
-        DeployModelTask(redis_db="0",)(
+        DeployModel(redis_db="0", environment="dev", **TEST_TASK_CONFIG)(
             registered_model={
                 "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/750c60ddb52544289db228a4af8a52e3/artifacts/model/"
             }
         )
 
     res = deploy.run()
+
+    assert res.is_successful()

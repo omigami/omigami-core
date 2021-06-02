@@ -8,11 +8,49 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
 
-from spec2vec_mlops.config import NECESSARY_KEYS
 from spec2vec_mlops.entities.data_models import SpectrumInputData
 from spec2vec_mlops.data_gateway import InputDataGateway
 
 logger = logging.getLogger(__name__)
+KEYS = [
+    "spectrum_id",
+    "source_file",
+    "task",
+    "scan",
+    "ms_level",
+    "library_membership",
+    "spectrum_status",
+    "peaks_json",
+    "splash",
+    "submit_user",
+    "Compound_Name",
+    "Ion_Source",
+    "Compound_Source",
+    "Instrument",
+    "PI",
+    "Data_Collector",
+    "Adduct",
+    "Scan",
+    "Precursor_MZ",
+    "ExactMass",
+    "Charge",
+    "CAS_Number",
+    "Pubmed_ID",
+    "Smiles",
+    "INCHI",
+    "INCHI_AUX",
+    "Library_Class",
+    "SpectrumID",
+    "Ion_Mode",
+    "create_time",
+    "task_id",
+    "user_id",
+    "InChIKey_smiles",
+    "InChIKey_inchi",
+    "Formula_smiles",
+    "Formula_inchi",
+    "url",
+]
 
 
 class FSInputDataGateway(InputDataGateway):
@@ -70,7 +108,7 @@ class FSInputDataGateway(InputDataGateway):
 
         with self.fs.open(DRPath(path), "rb") as f:
             items = ijson.items(f, "item", multiple_values=True)
-            results = [{k: item[k] for k in NECESSARY_KEYS} for item in items]
+            results = [{k: item[k] for k in KEYS} for item in items]
         return results
 
     def load_spectrum_ids(
@@ -82,7 +120,7 @@ class FSInputDataGateway(InputDataGateway):
         with self.fs.open(DRPath(path), "rb") as f:
             items = ijson.items(f, "item", multiple_values=True)
             results = [
-                {k: item[k] for k in NECESSARY_KEYS}
+                {k: item[k] for k in KEYS}
                 for item in items
                 if item["SpectrumID"] in spectrum_ids
             ]

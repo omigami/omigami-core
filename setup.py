@@ -7,10 +7,10 @@ import versioneer
 packages = find_packages()
 
 setup(
-    name="spec2vec_mlops",
+    name="omigami-core",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    description="Spec2Vec implementation leveraging MLOps architecture",
+    description="Omigami core package built using OpenMLOps tools.",
     author="Data Revenue GmbH",
     author_email="markus@datarevenue.com",
     install_requires=[],

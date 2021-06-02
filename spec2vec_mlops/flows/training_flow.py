@@ -10,18 +10,17 @@ from spec2vec_mlops.flows.utils import create_result
 from spec2vec_mlops.tasks import (
     DownloadData,
     MakeEmbeddings,
+    DeployModel,
+    DownloadParameters,
+    CreateChunks,
     ProcessSpectrum,
     TrainModel,
-    register_model_task,
+    TrainModelParameters,
+    RegisterModel,
 )
 from spec2vec_mlops.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
-from spec2vec_mlops.tasks.download_data import DownloadParameters
-from spec2vec_mlops.tasks.process_spectrum.create_chunks import CreateChunks
-from spec2vec_mlops.tasks.train_model import TrainModelParameters
-from spec2vec_mlops.tasks.seldon import DeployModelTask
-
 
 logger = prefect.utilities.logging.get_logger()
 logging.basicConfig(level=logging.DEBUG)
@@ -82,10 +81,6 @@ def build_training_flow(
 
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
-        logger.info(
-            f"Downloading and loading spectrum data from {download_params.input_uri} to "
-            f"{download_params.download_path}."
-        )
         spectrum_ids = DownloadData(
             **download_params.kwargs,
             **create_result(download_params.checkpoint_path),
@@ -93,9 +88,7 @@ def build_training_flow(
 
         spectrum_id_chunks = CreateChunks(chunk_size)(spectrum_ids)
 
-        logger.info("Started data cleaning and conversion to documents.")
-        # TODO: implement data caching like in DownloadData here. Will need to implement
-        # TODO: a new class like RedisResult
+        # TODO: implement data caching like in DownloadData on s3
         all_spectrum_ids_chunks = ProcessSpectrum(
             download_params.download_path, **process_params.kwargs
         ).map(spectrum_id_chunks)
@@ -104,18 +97,17 @@ def build_training_flow(
             train_params.iterations, train_params.window
         )
 
-        model_registry = register_model_task(
-            mlflow_server,
-            model,
+        model_registry = RegisterModel(
             project_name,
             model_output_dir,
             process_params.n_decimals,
             intensity_weighting_power,
             allowed_missing_percentage,
-        )
-        logger.info("Model training is complete.")
+            mlflow_server,
+        )(model)
 
         # TODO: this is make AND save embeddings. Prob need some refactor
+        # TODO: this task prob doesnt need chunking or can be done in larger chunks
         _ = MakeEmbeddings(
             process_params.spectrum_dgw,
             process_params.n_decimals,
@@ -124,6 +116,6 @@ def build_training_flow(
         ).map(unmapped(model), unmapped(model_registry), all_spectrum_ids_chunks)
         logger.info("Saving embedding is complete.")
         if deploy_model:
-            DeployModelTask(redis_db)(model_registry)
+            DeployModel(redis_db)(model_registry)
 
     return training_flow

@@ -1,14 +1,16 @@
 from typing import Optional
 
+from typing_extensions import Literal
+
 from spec2vec_mlops.config import (
     SOURCE_URI_PARTIAL_GNPS,
     API_SERVER,
     PROJECT_NAME,
-    OUTPUT_DIR,
     MODEL_DIR,
     MLFLOW_SERVER,
     DATASET_DIR,
     RedisDBDatasetSize,
+    S3_BUCKET,
 )
 from prefect import Client
 
@@ -39,26 +41,26 @@ def deploy_training_flow(
     dataset_name: str,
     n_decimals: int = 2,
     skip_if_exists: bool = True,
+    source_uri: str = SOURCE_URI_PARTIAL_GNPS,
+    output_dir: str = S3_BUCKET,
+    project_name: str = PROJECT_NAME,
+    model_output_dir: str = MODEL_DIR,
+    mlflow_server: str = MLFLOW_SERVER,
+    flow_name: str = "spec2vec-training-flow",
+    environment: Literal["dev", "prod"] = "dev",
+    deploy_model: bool = False,
     auth: bool = False,
     auth_url: Optional[str] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
-    api_server: str = API_SERVER,
-    source_uri: str = SOURCE_URI_PARTIAL_GNPS,
-    output_dir: str = OUTPUT_DIR,
-    project_name: str = PROJECT_NAME,
-    model_output_dir: str = MODEL_DIR,
-    mlflow_server: str = MLFLOW_SERVER,
-    redis_db: str = "2",
-    flow_name: str = "spec2vec-training-flow",
 ):
 
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)
         session_token = authenticator.authenticate()
-        client = Client(api_server=api_server, api_token=session_token)
+        client = Client(api_server=API_SERVER[environment], api_token=session_token)
     else:
-        client = Client(api_server=api_server)
+        client = Client(api_server=API_SERVER[environment])
     client.create_project(project_name)
 
     # config values
@@ -91,6 +93,7 @@ def deploy_training_flow(
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db=redis_db,
+        environment=environment,
     )
 
     flow = build_training_flow(
@@ -105,6 +108,7 @@ def deploy_training_flow(
         flow_config=flow_config,
         redis_db=redis_db,
         flow_name=flow_name,
+        deploy_model=deploy_model,
     )
 
     training_flow_id = client.register(

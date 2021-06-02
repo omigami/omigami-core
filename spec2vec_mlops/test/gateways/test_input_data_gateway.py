@@ -6,17 +6,16 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 
 from spec2vec_mlops.config import (
-    NECESSARY_KEYS,
     SOURCE_URI_PARTIAL_GNPS,
     SOURCE_URI_COMPLETE_GNPS,
 )
-from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway
+from spec2vec_mlops.gateways.input_data_gateway import FSInputDataGateway, KEYS
 
 
 def test_load_gnps(local_gnps_small_json):
     for res in FSInputDataGateway().load_spectrum(local_gnps_small_json):
         assert isinstance(res, dict)
-        for k in NECESSARY_KEYS:
+        for k in KEYS:
             assert k in res
 
 
