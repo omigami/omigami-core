@@ -16,9 +16,12 @@ logger = prefect.context.get("logger")
 
 
 class DeployModel(Task):
-    def __init__(self, redis_db: str, environment: str = "dev", **kwargs):
+    def __init__(
+        self, redis_db: str, environment: str = "dev", overwrite: bool = True, **kwargs
+    ):
         self.redis_db = redis_db
         self.environment = environment
+        self.overwrite = overwrite
         config = merge_configs(kwargs)
         super().__init__(**config)
 
@@ -77,7 +80,7 @@ class DeployModel(Task):
             **SELDON_PARAMS,
             body=deployment,
         )
-        logger.info("Deployment created. status='%s'" % resp["status"]["state"])
+        logger.info("Deployment created.")
 
     @staticmethod
     def _update_deployment(custom_api, deployment, model_uri):
