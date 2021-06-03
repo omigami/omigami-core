@@ -126,7 +126,7 @@ class FSInputDataGateway(InputDataGateway):
         if self.fs is None:
             self.fs = get_fs(gnps_path)
 
-        chunks_output_dir = DRPath(gnps_path).parent / "chunks"
+        chunks_output_dir = f"{str(DRPath(gnps_path).parent)}/chunks"
 
         with self.fs.open(DRPath(gnps_path), "rb") as f:
             chunk = []
@@ -138,7 +138,7 @@ class FSInputDataGateway(InputDataGateway):
                 chunk.append({k: item[k] for k in KEYS})
 
                 if len(chunk) == chunk_size:
-                    chunk_path = chunks_output_dir / f"chunk_{chunk_ix}.json"
+                    chunk_path = f"chunks_output_dir/chunk_{chunk_ix}.json"
                     chunk_paths.append(chunk_path)
                     with self.fs.open(chunk_path, "wb") as f:
                         f.write(json.dumps(chunk).encode("UTF-8"))

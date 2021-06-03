@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import List, Optional
 
-from drfs import DRPath
 from prefect import Task
 
 from omigami.data_gateway import InputDataGateway
