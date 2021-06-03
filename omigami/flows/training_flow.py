@@ -110,7 +110,7 @@ def build_training_flow(
             process_params.n_decimals,
             intensity_weighting_power,
             allowed_missing_percentage,
-        ).map(unmapped(model), unmapped(model_registry), all_spectrum_ids_chunks)
+        ).map(unmapped(model), unmapped(model_registry), spectrum_id_chunks)
         logger.info("Saving embedding is complete.")
         if deploy_model:
             DeployModel(redis_db)(model_registry)
