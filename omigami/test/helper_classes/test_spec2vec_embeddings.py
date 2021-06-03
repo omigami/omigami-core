@@ -11,7 +11,7 @@ def spec2vec_embeddings_similarity(word2vec_model):
     return Spec2VecEmbeddings(
         model=word2vec_model,
         intensity_weighting_power=0.5,
-        allowed_missing_percentage=5.0,
+        allowed_missing_percentage=25,
     )
 
 
@@ -20,7 +20,7 @@ def spec2vec_documents_similarity(word2vec_model):
     return Spec2Vec(
         model=word2vec_model,
         intensity_weighting_power=0.5,
-        allowed_missing_percentage=5.0,
+        allowed_missing_percentage=25,
     )
 
 

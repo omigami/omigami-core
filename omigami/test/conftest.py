@@ -61,7 +61,7 @@ def documents_data():
 
 @pytest.fixture(scope="module")
 def word2vec_model():
-    path = str(ASSETS_DIR / "model.pickle")
+    path = str(ASSETS_DIR / "word2vec_model.pickle")
     with open(path, "rb") as handle:
         model = pickle.load(handle)
     return model
