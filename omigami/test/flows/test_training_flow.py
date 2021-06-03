@@ -89,14 +89,15 @@ def test_run_training_flow(tmpdir, flow_config):
 
     input_dgw = FSInputDataGateway()
     download_parameters = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, "SMALL_GNPS.json", input_dgw
+        SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, "SMALL_GNPS.json"
     )
     spectrum_dgw = RedisSpectrumDataGateway()
-    process_parameters = ProcessSpectrumParameters(spectrum_dgw, input_dgw, 2, True)
+    process_parameters = ProcessSpectrumParameters(spectrum_dgw, 2, True)
     train_params = TrainModelParameters(spectrum_dgw, 3, 200)
 
     flow = build_training_flow(
         project_name="test",
+        input_dgw=input_dgw,
         download_params=download_parameters,
         process_params=process_parameters,
         model_output_dir=f"{tmpdir}/model-output",

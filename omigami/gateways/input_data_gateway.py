@@ -1,6 +1,7 @@
+import json
 import logging
 import pickle
-from typing import List, Optional
+from typing import List, Optional, Any
 
 import ijson
 import requests
@@ -95,13 +96,6 @@ class FSInputDataGateway(InputDataGateway):
                 for chunk in r.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
                     f.write(chunk)
 
-    def save_spectrum_ids(self, checkpoint_path: str, spectrum_ids: List[str]):
-        if self.fs is None:
-            self.fs = get_fs(checkpoint_path)
-
-        with self.fs.open(checkpoint_path, "wb") as f:
-            pickle.dump(spectrum_ids, f)
-
     def load_spectrum(self, path: str) -> SpectrumInputData:
         if self.fs is None:
             self.fs = get_fs(path)
@@ -127,6 +121,35 @@ class FSInputDataGateway(InputDataGateway):
             ]
         return results
 
+    # TODO: docstring and test
+    def chunk_gnps(self, gnps_path: str, chunk_size: int) -> List[str]:
+        chunks_output_dir = DRPath(gnps_path).parent / "chunks"
+
+        with self.fs.open(DRPath(gnps_path), "rb") as f:
+            chunk = []
+            chunk_ix = 0
+            chunk_paths = []
+
+            items = ijson.items(f, "item", multiple_values=True)
+            for item in items:
+                chunk.append({k: item[k] for k in KEYS})
+
+                if len(chunk) == chunk_size:
+                    chunk_path = chunks_output_dir / f"chunk_{chunk_ix}.json"
+                    chunk_paths.append(chunk_path)
+                    with self.fs.open(chunk_path, "wb") as f:
+                        f.write(json.dumps(chunk).encode("UTF-8"))
+                        chunk = []
+                        chunk_ix += 1
+
+            if chunk:
+                chunk_path = chunks_output_dir / f"chunk_{chunk_ix}.json"
+                chunk_paths.append(chunk_path)
+                with self.fs.open(chunk_path, "wb") as f:
+                    f.write(json.dumps(chunk).encode("UTF-8"))
+
+        return chunk_paths
+
     def get_spectrum_ids(self, path: str) -> List[str]:
         if self.fs is None:
             self.fs = get_fs(path)
@@ -136,3 +159,10 @@ class FSInputDataGateway(InputDataGateway):
             ids = [item["SpectrumID"] for item in items]
 
         return ids
+
+    # TODO: docstring and test
+    def serialize_to_file(self, path: str, obj: Any) -> bool:
+        with self.fs.open(path, "wb") as f:
+            pickle.dump(obj, f)
+
+        return True

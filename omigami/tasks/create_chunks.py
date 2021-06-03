@@ -1,26 +1,37 @@
 from typing import List, Optional
 
+from drfs import DRPath
 from prefect import Task
 
-from omigami.tasks.config import DEFAULT_CONFIG
+from omigami.data_gateway import InputDataGateway
+from omigami.tasks.config import merge_configs
 
 
 class CreateChunks(Task):
     def __init__(
         self,
+        file_path: str,
+        input_dgw: InputDataGateway,
         chunk_size: Optional[int] = None,
+        **kwargs,
     ):
+        self._input_dgw = input_dgw
         self._chunk_size = chunk_size
+        self._file_path = file_path
 
-        super().__init__(**DEFAULT_CONFIG)
+        config = merge_configs(kwargs)
+
+        super().__init__(**config, checkpoint=True)
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
-        chunked_spectrum_data = [
-            spectrum_ids[i : i + self._chunk_size]
-            for i in range(0, len(spectrum_ids), self._chunk_size)
-        ]
+        chunk_paths = self._input_dgw.chunk_gnps(self._file_path, self._chunk_size)
         self.logger.info(
-            f"Split spectra into {len(chunked_spectrum_data)} chunks of size"
+            f"Split spectra into {len(chunk_paths)} chunks of size"
             f"{self._chunk_size}"
         )
-        return chunked_spectrum_data
+
+        chunk_paths_file = DRPath(self._file_path).parent / "chunk_paths.pickle"
+        self.logger.info(f"Saving pickle with file paths to {chunk_paths_file}")
+        self._input_dgw.serialize_to_file(chunk_paths_file, chunk_paths)
+
+        return chunk_paths

@@ -16,20 +16,21 @@ from omigami.config import (
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.2070920",
-        iterations=15,
-        window=500,
+        image="drtools/prefect:omigami-SNAPSHOT.31721c5",
+        iterations=2,
+        window=300,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         n_decimals=2,
         skip_if_exists=True,
+        chunk_size=2500,
         environment="dev",
         dataset_name="10k",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
@@ -38,7 +39,7 @@ def test_deploy_training_flow():
         model_output_dir=MODEL_DIR["dev"],
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow/10k",
-        deploy_model=True,
+        deploy_model=False,
         auth=True,
         **login_config,
     )

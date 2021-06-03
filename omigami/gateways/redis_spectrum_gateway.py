@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import pickle
-from typing import List
+from typing import List, Set
 
 import redis
 from matchms import Spectrum
@@ -80,12 +80,12 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         return [id_.decode() for id_ in self.client.hkeys(SPECTRUM_HASHES)]
 
-    def list_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
+    def list_spectra_not_exist(self, spectrum_ids: List[str]) -> Set[str]:
         """Check whether spectra exist on Redis.
         Return a list of IDs that do not exist.
         """
         self._init_client()
-        return self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids)
+        return set(self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids))
 
     # Not used atm
     def list_documents_not_exist(self, spectrum_ids: List[str]) -> List[str]:

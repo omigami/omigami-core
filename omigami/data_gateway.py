@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Iterable
+from typing import List, Iterable, Any, Set
 
 from spec2vec import SpectrumDocument
 
@@ -31,6 +31,14 @@ class InputDataGateway(ABC):
     ) -> SpectrumInputData:
         pass
 
+    @abstractmethod
+    def chunk_gnps(self, gnps_path: str, chunk_size: int) -> List[str]:
+        pass
+
+    @abstractmethod
+    def serialize_to_file(self, path: str, object: Any) -> bool:
+        pass
+
 
 class SpectrumDataGateway(ABC):
     @abstractmethod
@@ -44,7 +52,7 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
-    def list_spectra_not_exist(self, spectrum_ids: List[str]):
+    def list_spectra_not_exist(self, spectrum_ids: List[str]) -> Set[str]:
         """Check whether spectra exist.
         Return a list of IDs that do not exist.
         """

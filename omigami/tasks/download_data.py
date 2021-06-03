@@ -31,7 +31,7 @@ class DownloadData(Task):
     def run(self) -> List[str]:
         self._input_dgw.download_gnps(self.input_uri, self.download_path)
         spectrum_ids = self._input_dgw.get_spectrum_ids(self.download_path)
-        self._input_dgw.save_spectrum_ids(self.checkpoint_path, spectrum_ids)
+        self._input_dgw.serialize_to_file(self.checkpoint_path, spectrum_ids)
         self.logger.info(
             f"Downloaded {len(spectrum_ids)} spectra from {self.download_path}."
         )
@@ -44,7 +44,6 @@ class DownloadParameters:
     input_uri: str
     output_dir: str
     dataset_name: str
-    input_dgw: InputDataGateway
     checkpoint: str = "spectrum_ids.pkl"
 
     @property
@@ -61,6 +60,5 @@ class DownloadParameters:
         return dict(
             input_uri=self.input_uri,
             download_path=self.download_path,
-            input_dgw=self.input_dgw,
             checkpoint_path=self.checkpoint_path,
         )
