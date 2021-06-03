@@ -10,7 +10,7 @@ from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.tasks.process_spectrum import ProcessSpectrum
 from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from omigami.data_gateway import SpectrumDataGateway
-from omigami.test.conftest import TEST_TASK_CONFIG
+from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 
 
 def test_process_spectrum_task_calls(local_gnps_small_json, spectrum_ids):
@@ -20,13 +20,13 @@ def test_process_spectrum_task_calls(local_gnps_small_json, spectrum_ids):
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(
             local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
-        )(spectrum_ids[:10])
+        )(ASSETS_DIR / "chunks/chunk_0.json")
 
     res = test_flow.run()
     data = res.result[process_task].result
 
     assert res.is_successful()
-    assert set(data) == set(spectrum_ids[:10])
+    assert set(data) == set(spectrum_ids[:50])
     spectrum_gtw.list_spectra_not_exist.assert_not_called()
     spectrum_gtw.write_spectrum_documents.assert_called_once()
 
@@ -43,13 +43,13 @@ def test_process_spectrum_task(local_gnps_small_json, spectrum_ids):
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(
             local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
-        )(spectrum_ids[:10])
+        )(ASSETS_DIR / "chunks/chunk_0.json")
 
     res = test_flow.run()
     data = res.result[process_task].result
 
-    assert set(data) == set(spectrum_ids[:10])
-    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids[:10])
+    assert set(data) == set(spectrum_ids[:50])
+    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids[:50])
 
 
 @pytest.mark.skipif(
@@ -59,19 +59,22 @@ def test_process_spectrum_task(local_gnps_small_json, spectrum_ids):
 @pytest.mark.slow
 def test_process_spectrum_task_map(local_gnps_small_json, spectrum_ids):
     spectrum_gtw = RedisSpectrumDataGateway()
-    spectrum_gtw.delete_spectra(spectrum_ids[:30])
     input_gtw = FSInputDataGateway()
-    chunked_ids = [spectrum_ids[:10], spectrum_ids[10:20], spectrum_ids[20:30]]
+    chunked_paths = [
+        ASSETS_DIR / "chunks/chunk_0.json",
+        ASSETS_DIR / "chunks/chunk_1.json",
+    ]
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(
             local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
-        ).map(chunked_ids)
+        ).map(chunked_paths)
 
     res = test_flow.run()
     data = res.result[process_task].result
 
-    assert all(set(data[i]) == set(chunked_ids[i]) for i in range(len(chunked_ids)))
-    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids[:30])
+    assert set(data[0]) == set(spectrum_ids[:50])
+    assert set(data[1]) == set(spectrum_ids[50:])
+    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids)
 
 
 def test_clean_data(loaded_data):

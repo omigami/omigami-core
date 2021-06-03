@@ -30,12 +30,13 @@ def test_pair(
     spec2vec_embeddings_similarity,
     spec2vec_documents_similarity,
 ):
-    similarity_score_from_embeddings = spec2vec_embeddings_similarity.pair(
-        embeddings[0], embeddings[1]
-    )
-    similarity_score_from_documents = spec2vec_documents_similarity.pair(
-        documents_data[0], documents_data[1]
-    )
+    spectrum_ids = ["CCMSLIB00000072099", "CCMSLIB00000001778"]
+    docs = [d for d in documents_data if d.metadata["spectrum_id"] in spectrum_ids]
+    embs = [e for e in embeddings if e.spectrum_id in spectrum_ids]
+
+    similarity_score_from_embeddings = spec2vec_embeddings_similarity.pair(*embs)
+    similarity_score_from_documents = spec2vec_documents_similarity.pair(*docs)
+
     assert similarity_score_from_embeddings == similarity_score_from_documents
 
 
