@@ -11,6 +11,7 @@ from spec2vec.model_building import (
 from spec2vec.utils import TrainingProgressLogger
 
 from omigami.data_gateway import SpectrumDataGateway
+from omigami.helper_classes.train_logger import CustomTrainingProgressLogger
 from omigami.tasks.config import merge_configs
 
 
@@ -65,8 +66,7 @@ class TrainModel(Task):
 
         return model
 
-    @staticmethod
-    def _create_spec2vec_settings(window: int, epochs: int):
+    def _create_spec2vec_settings(self, window: int, epochs: int):
         settings = set_spec2vec_defaults(window=window)
 
         # Convert spec2vec style arguments to gensim style arguments
@@ -74,8 +74,7 @@ class TrainModel(Task):
 
         # Set callbacks
         callbacks = []
-        # TODO: implement our own logger because this one doesn't work and doesn't log progress
-        training_progress_logger = TrainingProgressLogger(epochs)
+        training_progress_logger = CustomTrainingProgressLogger(epochs, self.logger)
         callbacks.append(training_progress_logger)
 
         return callbacks, settings

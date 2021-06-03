@@ -78,10 +78,10 @@ def test_training_flow(flow_config):
     assert task_names == expected_tasks
 
 
-@pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
+# @pytest.mark.skipif(
+#     os.getenv("SKIP_REDIS_TEST", True),
+#     reason="It can only be run if the Redis is up",
+# )
 def test_run_training_flow(tmpdir, flow_config):
     # remove results from previous runs
     fs = get_fs(ASSETS_DIR)
