@@ -165,6 +165,7 @@ class FSInputDataGateway(InputDataGateway):
 
     # TODO: docstring and test
     def serialize_to_file(self, path: str, obj: Any) -> bool:
+        path = DRPath(path)
         if self.fs is None:
             self.fs = get_fs(path)
 

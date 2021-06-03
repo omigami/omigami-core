@@ -11,6 +11,7 @@ class CreateChunks(Task):
     def __init__(
         self,
         file_path: str,
+        output_dir: str,
         input_dgw: InputDataGateway,
         chunk_size: Optional[int] = None,
         **kwargs,
@@ -18,6 +19,7 @@ class CreateChunks(Task):
         self._input_dgw = input_dgw
         self._chunk_size = chunk_size
         self._file_path = file_path
+        self._output_dir = output_dir
 
         config = merge_configs(kwargs)
 
@@ -30,7 +32,7 @@ class CreateChunks(Task):
             f"{self._chunk_size}"
         )
 
-        chunk_paths_file = str(Path(self._file_path).parent / "chunk_paths.pickle")
+        chunk_paths_file = f"{self._output_dir}/chunk_paths.pickle"
         self.logger.info(f"Saving pickle with file paths to {chunk_paths_file}")
         self._input_dgw.serialize_to_file(chunk_paths_file, chunk_paths)
 
