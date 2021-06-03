@@ -89,7 +89,7 @@ def test_run_training_flow(tmpdir, flow_config, mock_default_config):
         SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, "SMALL_GNPS.json"
     )
     spectrum_dgw = RedisSpectrumDataGateway()
-    process_parameters = ProcessSpectrumParameters(spectrum_dgw, 2, False)
+    process_parameters = ProcessSpectrumParameters(spectrum_dgw, 1, False)
     train_params = TrainModelParameters(spectrum_dgw, 3, 200)
 
     flow = build_training_flow(
@@ -130,7 +130,7 @@ def test_deploy_seldon_model():
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
         DeployModel(redis_db="0", environment="dev", **TEST_TASK_CONFIG)(
             registered_model={
-                "model_uri": "s3://dr-prefect/spec2vec-training-flow/mlflow/tests/750c60ddb52544289db228a4af8a52e3/artifacts/model/"
+                "model_uri": "s3://omigami-dev/spec2vec/mlflow/ece0dbc5aba84322ae3a2cc6ae97212b/artifacts/model/"
             }
         )
 

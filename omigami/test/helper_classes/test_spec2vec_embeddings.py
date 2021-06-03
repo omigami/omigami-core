@@ -37,7 +37,7 @@ def test_pair(
     similarity_score_from_embeddings = spec2vec_embeddings_similarity.pair(*embs)
     similarity_score_from_documents = spec2vec_documents_similarity.pair(*docs)
 
-    assert similarity_score_from_embeddings == similarity_score_from_documents
+    assert np.isclose(similarity_score_from_embeddings, similarity_score_from_documents)
 
 
 @pytest.mark.xfail
