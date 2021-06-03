@@ -60,7 +60,7 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
-    def read_documents_iter(self) -> Iterable:
+    def read_documents_iter(self, spectrum_ids: List[str]) -> Iterable:
         pass
 
     @abstractmethod

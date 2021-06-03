@@ -31,9 +31,10 @@ class MakeEmbeddings(Task):
         model_registry: Dict[str, str] = None,
         spectrum_ids: List[str] = None,
     ) -> List[str]:
+        self.logger.info(f"Creating {len(spectrum_ids)} embeddings.")
         documents = self._spectrum_dgw.read_documents(spectrum_ids)
+        self.logger.info(f"Loaded {len(documents)} embeddings from the database.")
 
-        self.logger.info(f"Make {len(documents)} embeddings")
         embeddings = [
             self._embedding_maker.make_embedding(
                 model,
@@ -43,5 +44,6 @@ class MakeEmbeddings(Task):
             )
             for document in documents
         ]
+        self.logger.info("Finished creating embeddings. Saving embeddings to database.")
         self._spectrum_dgw.write_embeddings(embeddings, model_registry["run_id"])
         return spectrum_ids
