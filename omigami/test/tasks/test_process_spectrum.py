@@ -77,12 +77,11 @@ def test_process_spectrum_task_map(local_gnps_small_json, spectrum_ids):
 def test_clean_data(loaded_data):
     dc = SpectrumProcessor()
 
-    for data in loaded_data:
-        cleaned_data = dc.process_data(data)
+    cleaned_data = dc.process_data(loaded_data)
 
-        assert isinstance(cleaned_data, Spectrum)
-        # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
-        assert cleaned_data.get("inchi") not in ["N/A", "NA", "n/a", None]
-        assert isinstance(cleaned_data.get("charge"), int)
-        assert cleaned_data.get("parent_mass")
-        assert cleaned_data.get("spectrum_id")
+    assert isinstance(cleaned_data[0], Spectrum)
+    # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
+    assert cleaned_data[0].get("inchi") not in ["N/A", "NA", "n/a", None]
+    assert isinstance(cleaned_data[0].get("charge"), int)
+    assert cleaned_data[0].get("parent_mass")
+    assert cleaned_data[0].get("spectrum_id")
