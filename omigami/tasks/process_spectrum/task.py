@@ -4,6 +4,7 @@ from typing import List
 from prefect import Task
 
 from omigami.entities.spectrum_document import SpectrumDocumentData
+from omigami.helper_classes.progress_logger import TaskProgressLogger
 from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from omigami.tasks.config import merge_configs
 from omigami.data_gateway import SpectrumDataGateway, InputDataGateway
@@ -37,7 +38,7 @@ class ProcessSpectrum(Task):
 
         # TODO: refactor to use prefect's checkpoint functionality
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
-        if self._skip_if_exists:
+        if not self._skip_if_exists:
             new_spectrum_ids = self._spectrum_dgw.list_spectra_not_exist(spectrum_ids)
             self.logger.info(
                 f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} spectra are new and will "
@@ -49,7 +50,12 @@ class ProcessSpectrum(Task):
         spectra = self._input_dgw.load_spectrum_ids(self._download_path, spectrum_ids)
 
         self.logger.info(f"Processing spectra and converting into documents.")
-        cleaned_spectra = self._processor.process_data(spectra)
+        progress_logger = TaskProgressLogger(
+            self.logger, len(spectra), 20, "Process Spectra task progress"
+        )
+        cleaned_spectra = self._processor.process_data(
+            spectra, progress_logger=progress_logger
+        )
         spectrum_documents = [
             SpectrumDocumentData(spectrum, self._n_decimals)
             for spectrum in cleaned_spectra
