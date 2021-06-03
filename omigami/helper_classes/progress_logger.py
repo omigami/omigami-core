@@ -1,5 +1,4 @@
 from logging import Logger
-from typing import Literal
 
 
 class TaskProgressLogger:
@@ -7,14 +6,15 @@ class TaskProgressLogger:
     Helper class that can be used inside prefect tasks to easily log the progress.
     Expects the Prefect Task's logger, the total number of items being iterated during the task,
     the frequency to log in percentage (e.g. 25) and a message to be displayed before the
-    progress percentage. Only works with percentages that can divide 100 perfectly.
+    progress percentage. Only works accuretly with percentages that can divide 100 perfectly
+    (10, 20, 25, 50).
     """
 
     def __init__(
         self,
         logger: Logger,
         num_of_items: int,
-        log_frequency_in_perc: Literal[10, 20, 25, 50],
+        log_frequency_in_perc: int,
         msg: str,
     ):
         self.logger = logger
