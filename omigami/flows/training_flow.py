@@ -91,6 +91,7 @@ def build_training_flow(
 
         gnps_chunks = CreateChunks(
             download_params.download_path,
+            download_params.output_dir,
             input_dgw,
             chunk_size,
             **create_result(f"{download_params.output_dir}/chunk_paths.pickle"),
