@@ -81,11 +81,10 @@ def deploy_training_flow(
     spectrum_dgw = RedisSpectrumDataGateway()
 
     download_parameters = DownloadParameters(
-        source_uri, output_dir, dataset_path, input_dgw, spectrum_ids_name
+        source_uri, output_dir, dataset_path, spectrum_ids_name
     )
     process_parameters = ProcessSpectrumParameters(
         spectrum_dgw,
-        input_dgw,
         n_decimals,
         skip_if_exists,
     )
@@ -100,6 +99,7 @@ def deploy_training_flow(
     )
 
     flow = build_training_flow(
+        input_dgw=input_dgw,
         download_params=download_parameters,
         process_params=process_parameters,
         train_params=train_model_parameters,

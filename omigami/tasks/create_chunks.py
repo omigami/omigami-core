@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Optional
 
 from drfs import DRPath
@@ -30,7 +31,7 @@ class CreateChunks(Task):
             f"{self._chunk_size}"
         )
 
-        chunk_paths_file = DRPath(self._file_path).parent / "chunk_paths.pickle"
+        chunk_paths_file = str(Path(self._file_path).parent / "chunk_paths.pickle")
         self.logger.info(f"Saving pickle with file paths to {chunk_paths_file}")
         self._input_dgw.serialize_to_file(chunk_paths_file, chunk_paths)
 
