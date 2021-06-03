@@ -123,6 +123,9 @@ class FSInputDataGateway(InputDataGateway):
 
     # TODO: docstring and test
     def chunk_gnps(self, gnps_path: str, chunk_size: int) -> List[str]:
+        if self.fs is None:
+            self.fs = get_fs(gnps_path)
+
         chunks_output_dir = DRPath(gnps_path).parent / "chunks"
 
         with self.fs.open(DRPath(gnps_path), "rb") as f:
@@ -162,6 +165,9 @@ class FSInputDataGateway(InputDataGateway):
 
     # TODO: docstring and test
     def serialize_to_file(self, path: str, obj: Any) -> bool:
+        if self.fs is None:
+            self.fs = get_fs(path)
+
         with self.fs.open(path, "wb") as f:
             pickle.dump(obj, f)
 

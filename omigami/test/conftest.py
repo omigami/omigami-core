@@ -7,11 +7,17 @@ import pytest
 import s3fs
 from moto import mock_s3
 
+import omigami.tasks.config
 from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
 
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
+
+
+@pytest.fixture
+def mock_default_config(monkeypatch):
+    monkeypatch.setattr(omigami.tasks.config, "DEFAULT_CONFIG", TEST_TASK_CONFIG)
 
 
 def pytest_addoption(parser):

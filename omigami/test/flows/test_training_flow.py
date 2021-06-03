@@ -54,12 +54,9 @@ def test_training_flow(flow_config):
 
     flow = build_training_flow(
         project_name="test",
-        download_params=DownloadParameters(
-            "source_uri", "datasets", "dataset-id", mock_input_dgw
-        ),
-        process_params=ProcessSpectrumParameters(
-            mock_spectrum_dgw, mock_input_dgw, 2, False
-        ),
+        input_dgw=mock_input_dgw,
+        download_params=DownloadParameters("source_uri", "datasets", "dataset-id"),
+        process_params=ProcessSpectrumParameters(mock_spectrum_dgw, 2, False),
         train_params=TrainModelParameters(mock_spectrum_dgw, 25, 500),
         model_output_dir="model-output",
         mlflow_server="mlflow-server",
@@ -82,8 +79,8 @@ def test_training_flow(flow_config):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow(tmpdir, flow_config):
-    # remove results from previous runs
+def test_run_training_flow(tmpdir, flow_config, mock_default_config):
+    # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
@@ -92,7 +89,7 @@ def test_run_training_flow(tmpdir, flow_config):
         SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, "SMALL_GNPS.json"
     )
     spectrum_dgw = RedisSpectrumDataGateway()
-    process_parameters = ProcessSpectrumParameters(spectrum_dgw, 2, True)
+    process_parameters = ProcessSpectrumParameters(spectrum_dgw, 2, False)
     train_params = TrainModelParameters(spectrum_dgw, 3, 200)
 
     flow = build_training_flow(
@@ -106,17 +103,21 @@ def test_run_training_flow(tmpdir, flow_config):
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
         flow_config=flow_config,
-        chunk_size=100,
+        chunk_size=50,
         redis_db="0",
         deploy_model=False,
     )
 
     results = flow.run()
     (d,) = flow.get_tasks("DownloadData")
+    (c,) = flow.get_tasks("CreateChunks")
 
     assert results.is_successful()
     results.result[d].is_cached()
+    results.result[c].is_cached()
     assert "model" in os.listdir(tmpdir / "model-output")
+    assert len(fs.ls(ASSETS_DIR / "chunks")) == 2
+    assert fs.exists(ASSETS_DIR / "chunk_paths.pickle")
 
 
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")

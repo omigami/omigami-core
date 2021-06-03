@@ -14,10 +14,6 @@ class InputDataGateway(ABC):
         pass
 
     @abstractmethod
-    def save_spectrum_ids(self, checkpoint_path: str, spectrum_ids: List[str]):
-        pass
-
-    @abstractmethod
     def get_spectrum_ids(self, path: str) -> List[str]:
         pass
 
