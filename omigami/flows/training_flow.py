@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Union
 
 import prefect
+from drfs import DRPath
 from prefect import Flow, unmapped
 
 from omigami.data_gateway import InputDataGateway
@@ -89,12 +90,14 @@ def build_training_flow(
             **create_result(download_params.checkpoint_path),
         )()
 
+        # TODO: this looks ugly atm - create a dataclass for this task later
         gnps_chunks = CreateChunks(
             download_params.download_path,
-            download_params.output_dir,
             input_dgw,
             chunk_size,
-            **create_result(f"{download_params.output_dir}/chunk_paths.pickle"),
+            **create_result(
+                f"{str(DRPath(download_params.download_path).parent)}/chunk_paths.pickle"
+            ),
         )(spectrum_ids)
 
         # TODO: implement data caching like in DownloadData on s3
