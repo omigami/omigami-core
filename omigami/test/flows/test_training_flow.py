@@ -17,7 +17,7 @@ from omigami.flows.config import (
 from omigami.flows.training_flow import build_training_flow
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
-from omigami.data_gateway import EmbeddingsDataGateway
+from omigami.data_gateway import SpectrumDataGateway
 from omigami.tasks import (
     DeployModel,
     DownloadParameters,
@@ -41,7 +41,7 @@ def flow_config():
 
 
 def test_training_flow(flow_config):
-    mock_spectrum_dgw = MagicMock(spec=EmbeddingsDataGateway)
+    mock_spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     expected_tasks = {
         "CreateChunks",

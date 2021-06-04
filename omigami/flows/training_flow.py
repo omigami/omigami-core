@@ -5,7 +5,7 @@ from typing import Union
 import prefect
 from prefect import Flow, unmapped
 
-from omigami.data_gateway import SpectrumDataGateway
+from omigami.data_gateway import InputDataGateway
 from omigami.flows.config import FlowConfig
 from omigami.flows.utils import create_result
 from omigami.tasks import (
@@ -35,7 +35,7 @@ class TrainingFlowParameters:
 
 def build_training_flow(
     project_name: str,
-    input_dgw: SpectrumDataGateway,
+    input_dgw: InputDataGateway,
     download_params: DownloadParameters,
     process_params: ProcessSpectrumParameters,
     train_params: TrainModelParameters,

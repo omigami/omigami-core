@@ -5,7 +5,7 @@ from prefect import Task
 
 from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from omigami.tasks.config import merge_configs
-from omigami.data_gateway import EmbeddingsDataGateway, SpectrumDataGateway
+from omigami.data_gateway import SpectrumDataGateway, InputDataGateway
 
 from omigami.gateways.redis_spectrum_gateway import REDIS_DB
 
@@ -14,8 +14,8 @@ class ProcessSpectrum(Task):
     def __init__(
         self,
         download_path: str,
-        spectrum_dgw: EmbeddingsDataGateway,
-        input_dgw: SpectrumDataGateway,
+        spectrum_dgw: SpectrumDataGateway,
+        input_dgw: InputDataGateway,
         n_decimals: int,
         skip_if_exists: bool = True,
         **kwargs,
@@ -62,7 +62,7 @@ class ProcessSpectrum(Task):
 
 @dataclass
 class ProcessSpectrumParameters:
-    spectrum_dgw: EmbeddingsDataGateway
+    spectrum_dgw: SpectrumDataGateway
     n_decimals: int = 2
     # TODO: deprecated parameter. see comments on clean data task
     skip_if_exists: bool = True

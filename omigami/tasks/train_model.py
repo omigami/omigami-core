@@ -10,7 +10,7 @@ from spec2vec.model_building import (
 )
 from spec2vec.utils import TrainingProgressLogger
 
-from omigami.data_gateway import EmbeddingsDataGateway
+from omigami.data_gateway import SpectrumDataGateway
 from omigami.tasks.config import merge_configs
 
 
@@ -23,7 +23,7 @@ class TrainModelParameters:
         Window size for context around the word
     """
 
-    spectrum_dgw: EmbeddingsDataGateway
+    spectrum_dgw: SpectrumDataGateway
     epochs: int = 25
     window: int = 500
 
@@ -39,7 +39,7 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
-        embeddings_dgw: EmbeddingsDataGateway,
+        embeddings_dgw: SpectrumDataGateway,
         epochs: int = 25,
         window: int = 500,
         **kwargs,

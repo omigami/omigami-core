@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from prefect import Task
 
-from omigami.data_gateway import SpectrumDataGateway
+from omigami.data_gateway import InputDataGateway
 from omigami.tasks.config import merge_configs
 
 
@@ -11,7 +11,7 @@ class CreateChunks(Task):
         self,
         file_path: str,
         output_dir: str,
-        input_dgw: SpectrumDataGateway,
+        input_dgw: InputDataGateway,
         chunk_size: Optional[int] = None,
         **kwargs,
     ):

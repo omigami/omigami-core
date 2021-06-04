@@ -5,13 +5,13 @@ from prefect import Task
 
 from omigami.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.tasks.config import merge_configs
-from omigami.data_gateway import EmbeddingsDataGateway
+from omigami.data_gateway import SpectrumDataGateway
 
 
 class MakeEmbeddings(Task):
     def __init__(
         self,
-        spectrum_dgw: EmbeddingsDataGateway,
+        spectrum_dgw: SpectrumDataGateway,
         n_decimals: int,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
