@@ -10,7 +10,7 @@ from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
 
 from omigami.entities.data_models import SpectrumInputData
-from omigami.data_gateway import InputDataGateway
+from omigami.data_gateway import SpectrumDataGateway
 
 logger = logging.getLogger(__name__)
 KEYS = [
@@ -54,7 +54,7 @@ KEYS = [
 ]
 
 
-class FSInputDataGateway(InputDataGateway):
+class FSInputDataGateway(SpectrumDataGateway):
     def __init__(self, fs: Optional[FileSystemBase] = None):
         self.fs = fs
 

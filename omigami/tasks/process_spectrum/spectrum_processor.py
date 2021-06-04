@@ -15,11 +15,13 @@ from matchms.filtering import (
 )
 from matchms.importing.load_from_json import as_spectrum
 
+from omigami.entities.spectrum_document import SpectrumDocumentData
+
 
 class SpectrumProcessor:
     def process_data(
-        self, spectrum_dicts: List[Dict], min_peaks: int = 0
-    ) -> List[Spectrum]:
+        self, spectrum_dicts: List[Dict], min_peaks: int = 0, n_decimals: int = 2
+    ) -> List[SpectrumDocumentData]:
         processed = []
         for spectrum_dict in spectrum_dicts:
             spectrum = as_spectrum(spectrum_dict)
@@ -27,7 +29,7 @@ class SpectrumProcessor:
                 spectrum = self._apply_filters(spectrum)
                 spectrum = self._harmonize_spectrum(spectrum)
                 spectrum = self._convert_metadata(spectrum)
-                processed.append(spectrum)
+                processed.append(SpectrumDocumentData(spectrum, n_decimals))
 
         return processed
 

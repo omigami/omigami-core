@@ -8,7 +8,7 @@ from omigami.entities.embedding import Embedding
 from omigami.entities.spectrum_document import SpectrumDocumentData
 
 
-class InputDataGateway(ABC):
+class SpectrumDataGateway(ABC):
     @abstractmethod
     def download_gnps(self, uri: str, output_path: str):
         pass
@@ -36,7 +36,7 @@ class InputDataGateway(ABC):
         pass
 
 
-class SpectrumDataGateway(ABC):
+class EmbeddingsDataGateway(ABC):
     @abstractmethod
     def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
         """Write spectrum and document to Redis. Also write a sorted set of spectrum_ids."""

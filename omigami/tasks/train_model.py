@@ -10,7 +10,7 @@ from spec2vec.model_building import (
 )
 from spec2vec.utils import TrainingProgressLogger
 
-from omigami.data_gateway import SpectrumDataGateway
+from omigami.data_gateway import EmbeddingsDataGateway
 from omigami.tasks.config import merge_configs
 
 
@@ -23,7 +23,7 @@ class TrainModelParameters:
         Window size for context around the word
     """
 
-    spectrum_dgw: SpectrumDataGateway
+    spectrum_dgw: EmbeddingsDataGateway
     epochs: int = 25
     window: int = 500
 
@@ -39,12 +39,12 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
-        spectrum_dgw: SpectrumDataGateway,
+        embeddings_dgw: EmbeddingsDataGateway,
         epochs: int = 25,
         window: int = 500,
         **kwargs,
     ):
-        self._spectrum_dgw = spectrum_dgw
+        self._spectrum_dgw = embeddings_dgw
         self._epochs = epochs
         self._window = window
 
@@ -52,8 +52,10 @@ class TrainModel(Task):
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
     def run(self, spectrum_ids_chunks: List[List[str]] = None):
-        self.logger.info("Loading the data.")
         flatten_ids = [item for elem in spectrum_ids_chunks for item in elem]
+        self.logger.info(
+            f"Connecting to the data. {len(flatten_ids)} documents will be used on training."
+        )
         documents = self._spectrum_dgw.read_documents_iter(flatten_ids)
 
         self.logger.info("Started training the Word2Vec model.")

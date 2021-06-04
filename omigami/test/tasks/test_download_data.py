@@ -9,13 +9,13 @@ from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.flows.utils import create_result
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.tasks import DownloadData
-from omigami.data_gateway import InputDataGateway
+from omigami.data_gateway import SpectrumDataGateway
 from omigami.tasks.download_data import DownloadParameters
 from omigami.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 
 
 def test_download_data():
-    input_dgw = MagicMock(spec=InputDataGateway)
+    input_dgw = MagicMock(spec=SpectrumDataGateway)
     input_dgw.download_gnps.return_value = "download"
     input_dgw.get_spectrum_ids.return_value = "spectrum_ids"
     download_params = DownloadParameters("input-uri", "dir", "file_name")

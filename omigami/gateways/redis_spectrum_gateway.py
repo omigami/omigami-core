@@ -16,7 +16,7 @@ from omigami.config import (
 )
 from omigami.entities.spectrum_document import SpectrumDocumentData
 from omigami.entities.embedding import Embedding
-from omigami.data_gateway import SpectrumDataGateway
+from omigami.data_gateway import EmbeddingsDataGateway
 
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
@@ -34,7 +34,7 @@ def get_redis_client():
     return client
 
 
-class RedisSpectrumDataGateway(SpectrumDataGateway):
+class RedisSpectrumDataGateway(EmbeddingsDataGateway):
     """Data gateway for Redis storage."""
 
     def __init__(self):

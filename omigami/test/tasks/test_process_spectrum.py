@@ -9,12 +9,12 @@ from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.tasks.process_spectrum import ProcessSpectrum
 from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
-from omigami.data_gateway import SpectrumDataGateway
+from omigami.data_gateway import EmbeddingsDataGateway
 from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 
 
 def test_process_spectrum_task_calls(local_gnps_small_json, spectrum_ids):
-    spectrum_gtw = MagicMock(spec=SpectrumDataGateway)
+    spectrum_gtw = MagicMock(spec=EmbeddingsDataGateway)
     input_gtw = FSInputDataGateway()
     spectrum_gtw.list_spectra_not_exist.side_effect = lambda x: x
     with Flow("test-flow") as test_flow:

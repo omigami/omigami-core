@@ -3,10 +3,9 @@ from typing import List
 
 from prefect import Task
 
-from omigami.entities.spectrum_document import SpectrumDocumentData
 from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 from omigami.tasks.config import merge_configs
-from omigami.data_gateway import SpectrumDataGateway, InputDataGateway
+from omigami.data_gateway import EmbeddingsDataGateway, SpectrumDataGateway
 
 from omigami.gateways.redis_spectrum_gateway import REDIS_DB
 
@@ -15,8 +14,8 @@ class ProcessSpectrum(Task):
     def __init__(
         self,
         download_path: str,
-        spectrum_dgw: SpectrumDataGateway,
-        input_dgw: InputDataGateway,
+        spectrum_dgw: EmbeddingsDataGateway,
+        input_dgw: SpectrumDataGateway,
         n_decimals: int,
         skip_if_exists: bool = True,
         **kwargs,
@@ -53,20 +52,17 @@ class ProcessSpectrum(Task):
             spectra = [sp for sp in spectra if sp["SpectrumID"] not in new_spectrum_ids]
 
         self.logger.info(f"Processing spectra and converting into documents.")
-        cleaned_spectra = self._processor.process_data(spectra)
-        spectrum_documents = [
-            SpectrumDocumentData(spectrum, self._n_decimals)
-            for spectrum in cleaned_spectra
-        ]
+        spectrum_documents = self._processor.process_data(spectra, self._n_decimals)
 
         self.logger.info(f"Finished processing. saving into spectrum database.")
         self._spectrum_dgw.write_spectrum_documents(spectrum_documents)
+
         return [sp.spectrum_id for sp in spectrum_documents]
 
 
 @dataclass
 class ProcessSpectrumParameters:
-    spectrum_dgw: SpectrumDataGateway
+    spectrum_dgw: EmbeddingsDataGateway
     n_decimals: int = 2
     # TODO: deprecated parameter. see comments on clean data task
     skip_if_exists: bool = True

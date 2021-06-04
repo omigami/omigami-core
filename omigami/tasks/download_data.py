@@ -4,13 +4,13 @@ from typing import List
 from prefect import Task
 
 from omigami.tasks.config import merge_configs
-from omigami.data_gateway import InputDataGateway
+from omigami.data_gateway import SpectrumDataGateway
 
 
 class DownloadData(Task):
     def __init__(
         self,
-        input_dgw: InputDataGateway,
+        input_dgw: SpectrumDataGateway,
         input_uri: str,
         download_path: str,
         checkpoint_path: str,
