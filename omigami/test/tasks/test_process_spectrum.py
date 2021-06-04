@@ -2,9 +2,9 @@ import os
 from unittest.mock import MagicMock
 
 import pytest
-from matchms import Spectrum
 from prefect import Flow
 
+from omigami.entities.spectrum_document import SpectrumDocumentData
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.tasks.process_spectrum import ProcessSpectrum
@@ -82,9 +82,9 @@ def test_clean_data(loaded_data):
 
     cleaned_data = dc.create_documents(loaded_data)
 
-    assert isinstance(cleaned_data[0], Spectrum)
+    assert isinstance(cleaned_data[0], SpectrumDocumentData)
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
-    assert cleaned_data[0].get("inchi") not in ["N/A", "NA", "n/a", None]
-    assert isinstance(cleaned_data[0].get("charge"), int)
-    assert cleaned_data[0].get("parent_mass")
-    assert cleaned_data[0].get("spectrum_id")
+    assert cleaned_data[0].spectrum.get("inchi") not in ["N/A", "NA", "n/a", None]
+    assert isinstance(cleaned_data[0].spectrum.get("charge"), int)
+    assert cleaned_data[0].spectrum.get("parent_mass")
+    assert cleaned_data[0].spectrum.get("spectrum_id")
