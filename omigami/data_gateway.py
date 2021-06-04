@@ -28,7 +28,7 @@ class InputDataGateway(ABC):
         pass
 
     @abstractmethod
-    def chunk_gnps(self, gnps_path: str, chunk_size: int) -> List[str]:
+    def chunk_gnps(self, gnps_path: str, chunk_size: int, logger=None) -> List[str]:
         pass
 
     @abstractmethod

@@ -24,7 +24,10 @@ class CreateChunks(Task):
         super().__init__(**config, checkpoint=True)
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
-        chunk_paths = self._input_dgw.chunk_gnps(self._file_path, self._chunk_size)
+        self.logger.info(f"Loading file {self._file_path} for chunking.")
+        chunk_paths = self._input_dgw.chunk_gnps(
+            self._file_path, self._chunk_size, self.logger
+        )
         self.logger.info(
             f"Split spectra into {len(chunk_paths)} chunks of size"
             f"{self._chunk_size}"

@@ -12,7 +12,6 @@ from drfs.filesystems.base import FileSystemBase
 from omigami.entities.data_models import SpectrumInputData
 from omigami.data_gateway import InputDataGateway
 
-logger = logging.getLogger(__name__)
 KEYS = [
     "spectrum_id",
     "source_file",
@@ -66,7 +65,6 @@ class FSInputDataGateway(InputDataGateway):
 
     def _download_and_serialize(self, uri: str, output_path: DRPath):
         """solution is from https://stackoverflow.com/a/16696317/15485553"""
-        logger.info(f"Loading data from {uri}... This might take a while.")
         chunk_size = 10 * 1024 * 1024
         try:
             with requests.get(uri, stream=True) as r:
@@ -122,7 +120,9 @@ class FSInputDataGateway(InputDataGateway):
         return results
 
     # TODO: docstring and test
-    def chunk_gnps(self, gnps_path: str, chunk_size: int) -> List[str]:
+    def chunk_gnps(
+        self, gnps_path: str, chunk_size: int, logger: logging.Logger = None
+    ) -> List[str]:
         if self.fs is None:
             self.fs = get_fs(gnps_path)
 
@@ -144,6 +144,8 @@ class FSInputDataGateway(InputDataGateway):
                         f.write(json.dumps(chunk).encode("UTF-8"))
                         chunk = []
                         chunk_ix += 1
+                    if logger:
+                        logger.info(f"Saved chunk to path {chunk_path}.")
 
             if chunk:
                 chunk_path = f"{chunks_output_dir}/chunk_{chunk_ix}.json"
