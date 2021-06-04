@@ -39,12 +39,12 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
-        embeddings_dgw: SpectrumDataGateway,
+        spectrum_dgw: SpectrumDataGateway,
         epochs: int = 25,
         window: int = 500,
         **kwargs,
     ):
-        self._spectrum_dgw = embeddings_dgw
+        self._spectrum_dgw = spectrum_dgw
         self._epochs = epochs
         self._window = window
 

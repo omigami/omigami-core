@@ -80,7 +80,7 @@ def test_process_spectrum_task_map(local_gnps_small_json, spectrum_ids):
 def test_clean_data(loaded_data):
     dc = SpectrumProcessor()
 
-    cleaned_data = dc.process_data(loaded_data)
+    cleaned_data = dc.create_documents(loaded_data)
 
     assert isinstance(cleaned_data[0], Spectrum)
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None

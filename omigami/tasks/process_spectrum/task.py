@@ -52,7 +52,9 @@ class ProcessSpectrum(Task):
             spectra = [sp for sp in spectra if sp["SpectrumID"] not in new_spectrum_ids]
 
         self.logger.info(f"Processing spectra and converting into documents.")
-        spectrum_documents = self._processor.process_data(spectra, self._n_decimals)
+        spectrum_documents = self._processor.create_documents(
+            spectra, n_decimals=self._n_decimals
+        )
 
         self.logger.info(f"Finished processing. saving into spectrum database.")
         self._spectrum_dgw.write_spectrum_documents(spectrum_documents)
