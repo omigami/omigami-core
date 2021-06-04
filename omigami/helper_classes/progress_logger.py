@@ -6,7 +6,7 @@ class TaskProgressLogger:
     Helper class that can be used inside prefect tasks to easily log the progress.
     Expects the Prefect Task's logger, the total number of items being iterated during the task,
     the frequency to log in percentage (e.g. 25) and a message to be displayed before the
-    progress percentage. Only works accuretly with percentages that can divide 100 perfectly
+    progress percentage. Only works accurately with percentages that can divide 100 perfectly
     (10, 20, 25, 50).
     """
 
