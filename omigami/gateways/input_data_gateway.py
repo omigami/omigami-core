@@ -123,6 +123,26 @@ class FSInputDataGateway(InputDataGateway):
     def chunk_gnps(
         self, gnps_path: str, chunk_size: int, logger: logging.Logger = None
     ) -> List[str]:
+        """
+        The chunking works as following:
+        1. Open a stream to the gnps_path json file
+        2. Start looping through the spectra and appending each one to a list
+        3. When the size of the list reaches `chunk_size`:
+          a. save the list to a json identified by the chunk index
+          b. empty the list to start looping again
+          c. add the path to the chunk that was just saved to a list of paths
+        4. Repeat the previous steps until all file has been read
+
+        Parameters
+        ----------
+        gnps_path
+        chunk_size
+        logger
+
+        Returns
+        -------
+
+        """
         if self.fs is None:
             self.fs = get_fs(gnps_path)
 
@@ -138,6 +158,7 @@ class FSInputDataGateway(InputDataGateway):
                 chunk.append({k: item[k] for k in KEYS})
 
                 if len(chunk) == chunk_size:
+
                     chunk_path = f"{chunks_output_dir}/chunk_{chunk_ix}.json"
                     chunk_paths.append(chunk_path)
                     with self.fs.open(chunk_path, "wb") as f:

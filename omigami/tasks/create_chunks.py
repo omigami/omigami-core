@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from drfs import DRPath
 from prefect import Task
@@ -12,7 +12,7 @@ class CreateChunks(Task):
         self,
         file_path: str,
         input_dgw: InputDataGateway,
-        chunk_size: Optional[int] = None,
+        chunk_size: int,
         **kwargs,
     ):
         self._input_dgw = input_dgw

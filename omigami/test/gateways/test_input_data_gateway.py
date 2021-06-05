@@ -10,6 +10,9 @@ from omigami.config import (
     SOURCE_URI_COMPLETE_GNPS,
 )
 from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
+import pickle
+
+from omigami.test.conftest import ASSETS_DIR
 
 
 def test_load_gnps(local_gnps_small_json):
@@ -74,3 +77,30 @@ def test_load_spectrum_ids(local_gnps_small_json, spectrum_ids):
 
     assert len(spectrum_data) == len(spectrum_ids[:10])
     assert set(spectrum_ids[:10]) == {d["SpectrumID"] for d in spectrum_data}
+
+
+def test_chunk_gnps_outputs(local_gnps_small_json, clean_chunk_files):
+    dgw = FSInputDataGateway()
+    fs = get_fs(ASSETS_DIR)
+    spectrum_ids = dgw.get_spectrum_ids(local_gnps_small_json)
+
+    dgw.chunk_gnps(local_gnps_small_json, chunk_size=15)
+
+    assert len(fs.ls(ASSETS_DIR / "chunks")) == (len(spectrum_ids) // 15 + 1)
+
+
+def test_chunk_gnps_data_consistency(local_gnps_small_json, clean_chunk_files):
+    dgw = FSInputDataGateway()
+    fs = get_fs(ASSETS_DIR)
+    spectrum_ids = dgw.get_spectrum_ids(local_gnps_small_json)
+
+    dgw.chunk_gnps(local_gnps_small_json, chunk_size=10)
+
+    paths = fs.ls(ASSETS_DIR / "chunks")
+    assert len(paths) == 10
+
+    chunked_ids = []
+    for p in paths:
+        chunked_ids += dgw.get_spectrum_ids(str(p))
+
+    assert set(chunked_ids) == set(spectrum_ids)

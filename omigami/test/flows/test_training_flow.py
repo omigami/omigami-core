@@ -79,7 +79,7 @@ def test_training_flow(flow_config):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow(tmpdir, flow_config, mock_default_config):
+def test_run_training_flow(tmpdir, flow_config, mock_default_config, clean_chunk_files):
     # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
@@ -114,7 +114,6 @@ def test_run_training_flow(tmpdir, flow_config, mock_default_config):
 
     assert results.is_successful()
     results.result[d].is_cached()
-    results.result[c].is_cached()
     assert "model" in os.listdir(tmpdir / "model-output")
     assert len(fs.ls(ASSETS_DIR / "chunks")) == 2
     assert fs.exists(ASSETS_DIR / "chunk_paths.pickle")

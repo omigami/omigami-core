@@ -169,7 +169,11 @@ class RedisHashesIterator:
     ):
         self.dgw = dgw
         self.hash_name = hash_name
-        self.spectrum_ids = spectrum_ids or dgw.client.hkeys(hash_name)
+        self.spectrum_ids = (
+            [s.encode() for s in spectrum_ids]
+            if spectrum_ids
+            else dgw.client.hkeys(hash_name)
+        )
 
     def __iter__(self):
         for spectrum_id in self.spectrum_ids:
