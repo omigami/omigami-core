@@ -171,6 +171,7 @@ class FSInputDataGateway(InputDataGateway):
                         f.write(json.dumps(chunk).encode("UTF-8"))
                         chunk = []
                         chunk_ix += 1
+                        chunk_bytes = 0
 
                     if logger:
                         logger.info(f"Saved chunk to path {chunk_path}.")
