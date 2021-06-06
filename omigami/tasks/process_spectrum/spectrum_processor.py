@@ -22,6 +22,8 @@ class SpectrumProcessor:
     def create_documents(
         self, spectrum_dicts: List[Dict], min_peaks: int = 0, n_decimals: int = 2
     ) -> List[SpectrumDocumentData]:
+        # TODO: there is something wrong with this code compared to what we had before.
+        # need to investigate.
         documents = []
         for spectrum_dict in spectrum_dicts:
             spectrum = as_spectrum(spectrum_dict)
