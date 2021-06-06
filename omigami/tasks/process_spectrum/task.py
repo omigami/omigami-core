@@ -49,7 +49,7 @@ class ProcessSpectrum(Task):
                 f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} spectra are new and will "
                 f"be processed."
             )
-            spectra = [sp for sp in spectra if sp["SpectrumID"] not in new_spectrum_ids]
+            spectra = [sp for sp in spectra if sp["SpectrumID"] in new_spectrum_ids]
 
         self.logger.info(f"Processing spectra and converting into documents.")
         spectrum_documents = self._processor.create_documents(
