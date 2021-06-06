@@ -177,5 +177,9 @@ class RedisHashesIterator:
 
     def __iter__(self):
         for spectrum_id in self.spectrum_ids:
-            data = self.dgw.client.hmget(self.hash_name, spectrum_id)[0]
+            data = self.dgw.client.hget(self.hash_name, spectrum_id)
+            if not data:
+                raise RuntimeError(
+                    f"There is no document for spectrum id {spectrum_id}."
+                )
             yield pickle.loads(data)
