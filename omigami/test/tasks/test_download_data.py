@@ -18,9 +18,10 @@ def test_download_data():
     input_dgw = MagicMock(spec=InputDataGateway)
     input_dgw.download_gnps.return_value = "download"
     input_dgw.get_spectrum_ids.return_value = "spectrum_ids"
-    download_params = DownloadParameters("input-uri", "dir", "file_name", input_dgw)
+    download_params = DownloadParameters("input-uri", "dir", "file_name")
     with Flow("test-flow") as test_flow:
         download = DownloadData(
+            input_dgw,
             **download_params.kwargs,
             **create_result(DRPath("")),
             **TEST_TASK_CONFIG,
@@ -34,7 +35,7 @@ def test_download_data():
         download_params.input_uri, download_params.download_path
     )
     input_dgw.get_spectrum_ids.assert_called_once_with(download_params.download_path)
-    input_dgw.save_spectrum_ids.assert_called_once_with(
+    input_dgw.serialize_to_file.assert_called_once_with(
         download_params.checkpoint_path, "spectrum_ids"
     )
 
@@ -44,12 +45,11 @@ def test_download_existing_data():
     input_dgw = FSInputDataGateway()
     input_dgw.download_gnps = lambda *args: None
     fs = get_fs(ASSETS_DIR)
-    params = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, file_name, input_dgw
-    )
+    params = DownloadParameters(SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, file_name)
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
+            input_dgw,
             **params.kwargs,
             **create_result(ASSETS_DIR / "spectrum_ids.pkl"),
             **TEST_TASK_CONFIG,

@@ -53,8 +53,10 @@ class TrainModel(Task):
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
     def run(self, spectrum_ids_chunks: List[List[str]] = None):
-        self.logger.info("Loading the data.")
         flatten_ids = [item for elem in spectrum_ids_chunks for item in elem]
+        self.logger.info(
+            f"Connecting to the data. {len(flatten_ids)} documents will be used on training."
+        )
         documents = self._spectrum_dgw.read_documents_iter(flatten_ids)
 
         self.logger.info("Started training the Word2Vec model.")

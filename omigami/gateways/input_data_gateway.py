@@ -1,6 +1,7 @@
+import json
 import logging
 import pickle
-from typing import List, Optional
+from typing import List, Optional, Any
 
 import ijson
 import requests
@@ -11,7 +12,6 @@ from drfs.filesystems.base import FileSystemBase
 from omigami.entities.data_models import SpectrumInputData
 from omigami.data_gateway import InputDataGateway
 
-logger = logging.getLogger(__name__)
 KEYS = [
     "spectrum_id",
     "source_file",
@@ -65,7 +65,6 @@ class FSInputDataGateway(InputDataGateway):
 
     def _download_and_serialize(self, uri: str, output_path: DRPath):
         """solution is from https://stackoverflow.com/a/16696317/15485553"""
-        logger.info(f"Loading data from {uri}... This might take a while.")
         chunk_size = 10 * 1024 * 1024
         try:
             with requests.get(uri, stream=True) as r:
@@ -95,13 +94,6 @@ class FSInputDataGateway(InputDataGateway):
                 for chunk in r.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
                     f.write(chunk)
 
-    def save_spectrum_ids(self, checkpoint_path: str, spectrum_ids: List[str]):
-        if self.fs is None:
-            self.fs = get_fs(checkpoint_path)
-
-        with self.fs.open(checkpoint_path, "wb") as f:
-            pickle.dump(spectrum_ids, f)
-
     def load_spectrum(self, path: str) -> SpectrumInputData:
         if self.fs is None:
             self.fs = get_fs(path)
@@ -127,6 +119,63 @@ class FSInputDataGateway(InputDataGateway):
             ]
         return results
 
+    # TODO: docstring and test
+    def chunk_gnps(
+        self, gnps_path: str, chunk_size: int, logger: logging.Logger = None
+    ) -> List[str]:
+        """
+        The chunking works as following:
+        1. Open a stream to the gnps_path json file
+        2. Start looping through the spectra and appending each one to a list
+        3. When the size of the list reaches `chunk_size`:
+          a. save the list to a json identified by the chunk index
+          b. empty the list to start looping again
+          c. add the path to the chunk that was just saved to a list of paths
+        4. Repeat the previous steps until all file has been read
+
+        Parameters
+        ----------
+        gnps_path
+        chunk_size
+        logger
+
+        Returns
+        -------
+
+        """
+        if self.fs is None:
+            self.fs = get_fs(gnps_path)
+
+        chunks_output_dir = f"{str(DRPath(gnps_path).parent)}/chunks"
+
+        with self.fs.open(DRPath(gnps_path), "rb") as f:
+            chunk = []
+            chunk_ix = 0
+            chunk_paths = []
+
+            items = ijson.items(f, "item", multiple_values=True)
+            for item in items:
+                chunk.append({k: item[k] for k in KEYS})
+
+                if len(chunk) == chunk_size:
+
+                    chunk_path = f"{chunks_output_dir}/chunk_{chunk_ix}.json"
+                    chunk_paths.append(chunk_path)
+                    with self.fs.open(chunk_path, "wb") as f:
+                        f.write(json.dumps(chunk).encode("UTF-8"))
+                        chunk = []
+                        chunk_ix += 1
+                    if logger:
+                        logger.info(f"Saved chunk to path {chunk_path}.")
+
+            if chunk:
+                chunk_path = f"{chunks_output_dir}/chunk_{chunk_ix}.json"
+                chunk_paths.append(chunk_path)
+                with self.fs.open(chunk_path, "wb") as f:
+                    f.write(json.dumps(chunk).encode("UTF-8"))
+
+        return chunk_paths
+
     def get_spectrum_ids(self, path: str) -> List[str]:
         if self.fs is None:
             self.fs = get_fs(path)
@@ -136,3 +185,14 @@ class FSInputDataGateway(InputDataGateway):
             ids = [item["SpectrumID"] for item in items]
 
         return ids
+
+    # TODO: docstring and test
+    def serialize_to_file(self, path: str, obj: Any) -> bool:
+        path = DRPath(path)
+        if self.fs is None:
+            self.fs = get_fs(path)
+
+        with self.fs.open(path, "wb") as f:
+            pickle.dump(obj, f)
+
+        return True

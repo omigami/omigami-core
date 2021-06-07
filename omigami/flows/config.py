@@ -73,7 +73,7 @@ def make_flow_config(
             "DASK as a prefect executor is not supported at the moment."
         )
     elif executor_type == PrefectExecutorMethods.LOCAL_DASK:
-        executor = LocalDaskExecutor(scheduler="threads", num_workers=3)
+        executor = LocalDaskExecutor(scheduler="threads", num_workers=5)
     else:
         raise ValueError(f"Prefect flow executor type '{executor_type}' not supported.")
 
