@@ -37,7 +37,7 @@ class ProcessSpectrum(Task):
         )
         spectrum_ids = [sp["SpectrumID"] for sp in spectra]
         if "CCMSLIB00005885146" in spectrum_ids:
-            self.logger(f"Key CCMSLIB00005885146 found in {gnps_path}.")
+            self.logger.info(f"Key CCMSLIB00005885146 found in {gnps_path}.")
 
         # TODO: refactor to use prefect's checkpoint functionality
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
