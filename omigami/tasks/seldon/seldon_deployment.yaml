@@ -45,3 +45,5 @@ spec:
             env:
               - name: REDIS_HOST
                 value: "redis-master.redis"
+              - name: OMIGAMIDIR
+                value: "/mnt/models/code/omigami"

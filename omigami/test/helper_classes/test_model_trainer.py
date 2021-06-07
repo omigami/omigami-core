@@ -1,28 +1,14 @@
 import os
-import pickle
 
 import gensim
 import pytest
 from pytest_redis import factories
 from spec2vec.utils import TrainingProgressLogger
 
-from omigami.config import DOCUMENT_HASHES
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.tasks.train_model import TrainModel
 
 redis_db = factories.redisdb("redis_nooproc")
-
-
-@pytest.fixture()
-def documents_stored(redis_db, cleaned_data, documents_data):
-    pipe = redis_db.pipeline()
-    for i, document in enumerate(documents_data):
-        pipe.hset(
-            DOCUMENT_HASHES,
-            cleaned_data[i].metadata["spectrum_id"],
-            pickle.dumps(document),
-        )
-    pipe.execute()
 
 
 def test_spec2vec_settings():

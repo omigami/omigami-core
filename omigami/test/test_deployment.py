@@ -1,10 +1,5 @@
 import pytest
-
 from drfs import DRPath
-
-from omigami.deployment import (
-    deploy_training_flow,
-)
 
 from omigami.config import (
     SOURCE_URI_COMPLETE_GNPS,
@@ -13,6 +8,9 @@ from omigami.config import (
     MLFLOW_SERVER,
     config,
     SOURCE_URI_PARTIAL_GNPS,
+)
+from omigami.deployment import (
+    deploy_training_flow,
 )
 
 
@@ -23,22 +21,23 @@ def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.2070920",
-        iterations=15,
-        window=500,
+        image="drtools/prefect:omigami-SNAPSHOT.9f718d5",
+        iterations=1,
+        window=300,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         n_decimals=2,
-        skip_if_exists=True,
+        skip_if_exists=False,
+        chunk_size=2500,
         environment="dev",
         dataset_name="10k",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=S3_BUCKET["dev"],
-        project_name="spec2vec",
+        project_name="spec2vec-test",
         model_output_dir=MODEL_DIR["dev"],
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/10k",
-        deploy_model=True,
+        flow_name="training-flow/10k-chunked",
+        deploy_model=False,
         auth=True,
         **login_config,
     )

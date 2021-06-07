@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List
+from typing import Dict, List
 
 from matchms import Spectrum
 from matchms.filtering import (
@@ -15,21 +15,23 @@ from matchms.filtering import (
 )
 from matchms.importing.load_from_json import as_spectrum
 
+from omigami.entities.spectrum_document import SpectrumDocumentData
+
 
 class SpectrumProcessor:
-    def process_data(
-        self, spectrum_dicts: List[Dict], min_peaks: int = 0
-    ) -> List[Spectrum]:
-        processed = []
+    def create_documents(
+        self, spectrum_dicts: List[Dict], min_peaks: int = 0, n_decimals: int = 2
+    ) -> List[SpectrumDocumentData]:
+        documents = []
         for spectrum_dict in spectrum_dicts:
             spectrum = as_spectrum(spectrum_dict)
             if spectrum is not None and len(spectrum.peaks.mz) > min_peaks:
-                spectrum = self._apply_filters(spectrum)
-                spectrum = self._harmonize_spectrum(spectrum)
-                spectrum = self._convert_metadata(spectrum)
-                processed.append(spectrum)
+                processed_spectrum = self._convert_metadata(
+                    self._harmonize_spectrum(self._apply_filters(spectrum))
+                )
+                documents.append(SpectrumDocumentData(processed_spectrum, n_decimals))
 
-        return processed
+        return documents
 
     @staticmethod
     def _apply_filters(spectrum: Spectrum) -> Spectrum:
