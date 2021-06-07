@@ -16,20 +16,28 @@ from matchms.filtering import (
 from matchms.importing.load_from_json import as_spectrum
 
 from omigami.entities.spectrum_document import SpectrumDocumentData
+from omigami.helper_classes.progress_logger import TaskProgressLogger
 
 
 class SpectrumProcessor:
     def create_documents(
-        self, spectrum_dicts: List[Dict], min_peaks: int = 0, n_decimals: int = 2
+        self,
+        spectrum_dicts: List[Dict],
+        min_peaks: int = 0,
+        n_decimals: int = 2,
+        progress_logger: TaskProgressLogger = None,
     ) -> List[SpectrumDocumentData]:
         documents = []
-        for spectrum_dict in spectrum_dicts:
+        for i, spectrum_dict in enumerate(spectrum_dicts):
             spectrum = as_spectrum(spectrum_dict)
             if spectrum is not None and len(spectrum.peaks.mz) > min_peaks:
                 processed_spectrum = self._convert_metadata(
                     self._harmonize_spectrum(self._apply_filters(spectrum))
                 )
                 documents.append(SpectrumDocumentData(processed_spectrum, n_decimals))
+
+                if progress_logger:
+                    progress_logger.log(i)
 
         return documents
 
