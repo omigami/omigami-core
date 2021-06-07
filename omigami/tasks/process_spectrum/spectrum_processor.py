@@ -31,7 +31,9 @@ class SpectrumProcessor:
                 processed_spectrum = self._convert_metadata(
                     self._harmonize_spectrum(self._apply_filters(spectrum))
                 )
-                documents.append(SpectrumDocumentData(processed_spectrum, n_decimals))
+                doc = SpectrumDocumentData(processed_spectrum, n_decimals)
+                if doc:
+                    documents.append(doc)
 
         return documents
 
