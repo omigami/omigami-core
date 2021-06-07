@@ -1,7 +1,7 @@
 import pytest
 from prefect.engine.results import S3Result, LocalResult
 
-from omigami.flows.utils import create_result
+from omigami.spec2vec.flows.utils import create_result
 
 
 def test_create_result():

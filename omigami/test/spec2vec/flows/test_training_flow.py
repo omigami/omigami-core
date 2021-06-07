@@ -9,16 +9,16 @@ from prefect.executors import LocalDaskExecutor
 from prefect.storage import S3
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.flows.config import (
+from omigami.data_gateway import SpectrumDataGateway
+from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
+from omigami.spec2vec.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.flows.training_flow import build_training_flow
-from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
-from omigami.data_gateway import SpectrumDataGateway
-from omigami.tasks import (
+from omigami.spec2vec.flows.training_flow import build_training_flow
+from omigami.spec2vec.tasks import (
     DeployModel,
     DownloadParameters,
     ProcessSpectrumParameters,

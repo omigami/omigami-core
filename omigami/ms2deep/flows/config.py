@@ -8,7 +8,6 @@ from prefect.storage import Storage, S3
 
 from omigami.config import ROOT_DIR, S3_BUCKET
 
-
 """
     Implemented Prefect flow configurations:
 """

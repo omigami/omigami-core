@@ -1,6 +1,6 @@
 from prefect import Flow
 
-from omigami.flows.config import (
+from omigami.spec2vec.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,

@@ -3,7 +3,7 @@ import pytest
 from matchms import calculate_scores
 from spec2vec import Spec2Vec
 
-from omigami.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
+from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
 
 @pytest.fixture()

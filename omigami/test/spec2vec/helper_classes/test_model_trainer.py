@@ -6,7 +6,7 @@ from pytest_redis import factories
 from spec2vec.utils import TrainingProgressLogger
 
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
-from omigami.tasks.train_model import TrainModel
+from omigami.spec2vec.tasks.train_model import TrainModel
 
 redis_db = factories.redisdb("redis_nooproc")
 
