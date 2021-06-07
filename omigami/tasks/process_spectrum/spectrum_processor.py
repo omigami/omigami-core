@@ -15,18 +15,18 @@ from matchms.filtering import (
 )
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.helper_classes.progress_logger import TaskProgressLogger
 from omigami.entities.spectrum_document import SpectrumDocumentData
+from omigami.helper_classes.progress_logger import TaskProgressLogger
 
 
 class SpectrumProcessor:
     def create_documents(
-            self,
-            spectrum_dicts: List[Dict],
-            min_peaks: int = 0,
-            n_decimals: int = 2,
-            progress_logger: TaskProgressLogger = None,
-    ) -> List[Spectrum]:
+        self,
+        spectrum_dicts: List[Dict],
+        min_peaks: int = 0,
+        n_decimals: int = 2,
+        progress_logger: TaskProgressLogger = None,
+    ) -> List[SpectrumDocumentData]:
         documents = []
         for i, spectrum_dict in enumerate(spectrum_dicts):
             spectrum = as_spectrum(spectrum_dict)
