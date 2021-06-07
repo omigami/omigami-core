@@ -12,7 +12,6 @@ import omigami.tasks.config
 from omigami.config import DOCUMENT_HASHES
 from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
 
-
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
 
@@ -110,7 +109,7 @@ def spectrum_ids(local_gnps_small_json):
     return ids
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def documents_stored(redis_db, cleaned_data, documents_data):
     pipe = redis_db.pipeline()
     for i, document in enumerate(documents_data):
