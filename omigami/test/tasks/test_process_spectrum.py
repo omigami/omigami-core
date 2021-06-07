@@ -4,12 +4,12 @@ from unittest.mock import MagicMock
 import pytest
 from prefect import Flow
 
+from omigami.data_gateway import SpectrumDataGateway
 from omigami.entities.spectrum_document import SpectrumDocumentData
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.tasks.process_spectrum import ProcessSpectrum
 from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
-from omigami.data_gateway import SpectrumDataGateway
 from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 
 
@@ -26,7 +26,7 @@ def test_process_spectrum_task_calls(local_gnps_small_json, spectrum_ids):
     data = res.result[process_task].result
 
     assert res.is_successful()
-    assert set(data) == set(spectrum_ids[:50])
+    assert set(data) == set(spectrum_ids[:25])
     spectrum_gtw.list_spectra_not_exist.assert_not_called()
     spectrum_gtw.write_spectrum_documents.assert_called_once()
 
@@ -48,8 +48,8 @@ def test_process_spectrum_task(local_gnps_small_json, spectrum_ids):
     res = test_flow.run()
     data = res.result[process_task].result
 
-    assert set(data) == set(spectrum_ids[:50])
-    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids[:50])
+    assert set(data) == set(spectrum_ids[:25])
+    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids[:25])
 
 
 @pytest.mark.skipif(
@@ -72,9 +72,9 @@ def test_process_spectrum_task_map(local_gnps_small_json, spectrum_ids):
     res = test_flow.run()
     data = res.result[process_task].result
 
-    assert set(data[0]) == set(spectrum_ids[:50])
-    assert set(data[1]) == set(spectrum_ids[50:])
-    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids)
+    assert set(data[0]) == set(spectrum_ids[:25])
+    assert set(data[1]) == set(spectrum_ids[25:50])
+    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids[:50])
 
 
 def test_clean_data(loaded_data):
