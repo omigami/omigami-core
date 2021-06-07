@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 
 import confuse
@@ -30,3 +31,4 @@ RedisDBDatasetSize = {"small": "2", "10k": "1", "full": "0"}
 DATASET_DIR = config["storage"]["dataset_dir"].get(dict)
 
 CLUSTERS = config["clusters"].get(dict)
+DEFAULT_CONFIG = dict(max_retries=3, retry_delay=datetime.timedelta(seconds=10))
