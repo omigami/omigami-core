@@ -32,7 +32,9 @@ class SpectrumProcessor:
                     self._harmonize_spectrum(self._apply_filters(spectrum))
                 )
                 doc = SpectrumDocumentData(processed_spectrum, n_decimals)
-                if doc:
+                # cz: I'm not sure why this check is needed. looks like some bad implementation
+                # somewhere. We should try to investigate this if we have the time
+                if doc.spectrum and doc.document:
                     documents.append(doc)
 
         return documents
