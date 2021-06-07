@@ -1,10 +1,5 @@
 import pytest
-
 from drfs import DRPath
-
-from omigami.deployment import (
-    deploy_training_flow,
-)
 
 from omigami.config import (
     SOURCE_URI_COMPLETE_GNPS,
@@ -14,11 +9,14 @@ from omigami.config import (
     config,
     SOURCE_URI_PARTIAL_GNPS,
 )
+from omigami.deployment import (
+    deploy_training_flow,
+)
 
 
-# @pytest.mark.skip(
-#     reason="This test uses internet connection and deploys a test flow to prefect."
-# )
+@pytest.mark.skip(
+    reason="This test uses internet connection and deploys a test flow to prefect."
+)
 def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")

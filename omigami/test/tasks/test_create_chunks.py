@@ -10,9 +10,9 @@ def test_create_chunks(local_gnps_small_json, spectrum_ids, clean_chunk_files):
     input_dgw = FSInputDataGateway()
     with Flow("test-flow") as test_flow:
         chunks = CreateChunks(
-            local_gnps_small_json,
-            input_dgw,
-            25,
+            file_path=local_gnps_small_json,
+            input_dgw=input_dgw,
+            chunk_size=25,
             **create_result(ASSETS_DIR / "chunk_paths.pickle"),
             **TEST_TASK_CONFIG,
         )(spectrum_ids)
