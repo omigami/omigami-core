@@ -4,8 +4,8 @@ from typing import Union, List, Dict, Any, Tuple
 import numpy as np
 from gensim.models import Word2Vec
 from matchms import calculate_scores
-from matchms.importing.load_from_json import as_spectrum
 from matchms.filtering import normalize_intensities
+from matchms.importing.load_from_json import as_spectrum
 from mlflow.pyfunc import PythonModel
 
 from omigami.entities.embedding import Embedding
@@ -14,8 +14,8 @@ from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
-
 log = getLogger(__name__)
+SpectrumMatch = List[Dict[str, Union[int, Any]]]
 
 
 class Predictor(PythonModel):
@@ -40,6 +40,7 @@ class Predictor(PythonModel):
         context,
         data_input_and_parameters: Dict[str, Union[Dict, List]],
         mz_range: int = 1,
+        include_metadata: List[str] = [],
     ) -> List[List[Dict]]:
         """Match spectra from a json payload input with spectra having the highest similarity scores
         in the GNPS spectra library.
@@ -60,7 +61,7 @@ class Predictor(PythonModel):
         )
         log.info("Getting best matches.")
 
-        all_best_matches = []
+        best_matches = []
         for ref_spectrum_ids, input_spectrum_emb in zip(
             reference_spectra_ids, input_spectra_embeddings
         ):
@@ -68,16 +69,19 @@ class Predictor(PythonModel):
                 ref_spectrum_ids, reference_embeddings
             )
             input_spectrum_number = reference_spectra_ids.index(ref_spectrum_ids) + 1
-            spectrum_best_matches = self._get_best_matches(  # SP1+SP2+SP3
+            spectrum_best_matches = self._get_best_matches(
                 input_spectrum_ref_emb,
                 input_spectrum_emb,
                 input_spectrum_number,
                 **parameters,
             )
-            all_best_matches.append(spectrum_best_matches)
+            best_matches.append(spectrum_best_matches)
+
+        if include_metadata:
+            best_matches = self._add_metadata(best_matches, include_metadata)
 
         log.info("Finishing prediction.")
-        return all_best_matches
+        return best_matches
 
     def set_run_id(self, run_id: str):
         self.run_id = run_id
@@ -157,7 +161,7 @@ class Predictor(PythonModel):
         input_spectrum_number: int,
         n_best_spectra: int = 10,
         **parameters,
-    ) -> List[Dict[str, Union[int, Any]]]:
+    ) -> SpectrumMatch:
         spec2vec_embeddings_similarity = Spec2VecEmbeddings(
             model=self.model,
             intensity_weighting_power=self.intensity_weighting_power,
@@ -194,3 +198,11 @@ class Predictor(PythonModel):
             if sp_id in ref_embeddings
         ]
         return ref_emb_for_input
+
+    def _add_metadata(
+        self, best_matches: List[SpectrumMatch], metadata_keys: List[str]
+    ) -> List[SpectrumMatch]:
+        # list the spectrum ids we need
+        # load spectra from redis for those ids
+        # add columns to the dataframe for the user specified keys
+        pass
