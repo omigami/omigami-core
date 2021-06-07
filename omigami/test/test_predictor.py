@@ -12,11 +12,9 @@ from omigami.config import (
 )
 from omigami.entities.embedding import Embedding
 from omigami.helper_classes.embedding_maker import EmbeddingMaker
-
-from omigami.tasks.register_model import ModelRegister
 from omigami.predictor import Predictor
+from omigami.tasks.register_model import ModelRegister
 from omigami.test.conftest import ASSETS_DIR
-
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -135,7 +133,7 @@ def test_get_best_matches(model, embeddings):
     n_best_spectra = 2
     best_matches = []
     for query in embeddings:
-        input_best_matches = model._get_best_matches(
+        input_best_matches = model._calculate_best_matches(
             embeddings,
             query,
             input_spectrum_number=0,
@@ -153,10 +151,6 @@ def test_get_best_matches(model, embeddings):
 )
 @pytest.mark.skipif(
     not os.path.exists(str(ASSETS_DIR / "full_data/test_model.pkl")),
-    reason="test_model.pkl is git ignored",
-)
-@pytest.mark.skipif(
-    os.getenv("CI", "False").title(),
     reason="test_model.pkl is git ignored",
 )
 def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_stored):
@@ -235,3 +229,22 @@ def test_get_input_ref_embeddings(model, spectra_and_embeddings_stored):
     assert isinstance(ref_emb_for_input[0], Embedding)
     assert len(ref_emb_for_input) == len(input_ref_spectrum_ids)
     assert ref_emb_for_input[0].spectrum_id == input_ref_spectrum_ids[0]
+
+
+def test_add_metadata(model, embeddings, spectra_and_embeddings_stored):
+    n_best_spectra = 3
+    best_matches = []
+    for query in embeddings:
+        input_best_matches = model._calculate_best_matches(
+            embeddings,
+            query,
+            input_spectrum_number=0,
+            n_best_spectra=n_best_spectra,
+        )
+        best_matches.append(input_best_matches)
+
+    best_matches = model._add_metadata(
+        best_matches, metadata_keys=["SMILES", "Compound_Name"]
+    )
+
+    assert best_matches

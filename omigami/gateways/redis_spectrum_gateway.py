@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import pickle
-from typing import List
+from typing import List, Iterable, Dict
 
 import redis
 from matchms import Spectrum
@@ -14,9 +14,9 @@ from omigami.config import (
     DOCUMENT_HASHES,
     EMBEDDING_HASHES,
 )
-from omigami.entities.spectrum_document import SpectrumDocumentData
-from omigami.entities.embedding import Embedding
 from omigami.data_gateway import SpectrumDataGateway
+from omigami.entities.embedding import Embedding
+from omigami.entities.spectrum_document import SpectrumDocumentData
 
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
@@ -96,11 +96,12 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         return self._list_spectrum_ids_not_exist(DOCUMENT_HASHES, spectrum_ids)
 
     # Not used atm
-    def read_spectra(self, spectrum_ids: List[str] = None) -> List[Spectrum]:
+    def read_spectra(self, spectrum_ids: Iterable[str] = None) -> Dict[str, Spectrum]:
         """Read the spectra information from spectra IDs.
         Return a list of Spectrum objects."""
         self._init_client()
-        return self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
+        spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
+        return {spectrum.spectrum_id: spectrum for spectrum in spectra}
 
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
         """Read the document information from spectra IDs.
