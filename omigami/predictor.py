@@ -197,8 +197,7 @@ class Predictor(PythonModel):
         self, best_matches: Dict[str, SpectrumMatch], metadata_keys: List[str]
     ) -> Dict[str, SpectrumMatch]:
         # list the spectrum ids we need
-        spectrum_ids = []
-        _ = [spectrum_ids + list(match.keys()) for match in best_matches.values()]
+        spectrum_ids = [key for match in best_matches.values() for key in match.keys()]
 
         # load spectra from redis for those ids
         spectra = self.dgw.read_spectra(set(spectrum_ids))

@@ -95,13 +95,12 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         return self._list_spectrum_ids_not_exist(DOCUMENT_HASHES, spectrum_ids)
 
-    # Not used atm
     def read_spectra(self, spectrum_ids: Iterable[str] = None) -> Dict[str, Spectrum]:
         """Read the spectra information from spectra IDs.
         Return a list of Spectrum objects."""
         self._init_client()
         spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
-        return {spectrum.spectrum_id: spectrum for spectrum in spectra}
+        return {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}
 
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
         """Read the document information from spectra IDs.
