@@ -1,3 +1,4 @@
+from datetime import timedelta
 from enum import Enum
 from typing import Optional
 
@@ -36,7 +37,7 @@ class FlowConfig:
     run_config: RunConfig
     storage: Storage
     executor: Executor
-    schedule: IntervalSchedule
+    schedule: IntervalSchedule = None
 
     @property
     def kwargs(self):
@@ -49,7 +50,7 @@ def make_flow_config(
     executor_type: PrefectExecutorMethods,
     redis_db: str,
     environment: str = "dev",
-    schedule: IntervalSchedule = None,
+    schedule: timedelta = None,
 ) -> FlowConfig:
     """
     This will coordinate the creation of a flow config either with provided params or using the default values
@@ -83,6 +84,6 @@ def make_flow_config(
 
     flow_config = FlowConfig(run_config=run_config, storage=storage, executor=executor)
     if schedule:
-        flow_config.schedule = schedule
+        flow_config.schedule = IntervalSchedule(interval=schedule)
 
     return flow_config

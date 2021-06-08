@@ -98,6 +98,7 @@ def deploy_training_flow(
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db=redis_db,
         environment=environment,
+        schedule=schedule,
     )
 
     flow = build_training_flow(
