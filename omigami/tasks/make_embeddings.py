@@ -4,6 +4,7 @@ from gensim.models import Word2Vec
 from prefect import Task
 
 from omigami.helper_classes.embedding_maker import EmbeddingMaker
+from omigami.helper_classes.progress_logger import TaskProgressLogger
 from omigami.tasks.config import merge_configs
 from omigami.data_gateway import SpectrumDataGateway
 
@@ -35,15 +36,19 @@ class MakeEmbeddings(Task):
         documents = self._spectrum_dgw.read_documents(spectrum_ids)
         self.logger.info(f"Loaded {len(documents)} embeddings from the database.")
 
-        embeddings = [
+        embeddings = []
+        progress_logger = TaskProgressLogger(
+            self.logger, len(documents), 25, "Make Embeddings task progress"
+        )
+        for i, document in enumerate(documents):
             self._embedding_maker.make_embedding(
                 model,
                 document,
                 self._intensity_weighting_power,
                 self._allowed_missing_percentage,
             )
-            for document in documents
-        ]
+            progress_logger.log(i)
+
         self.logger.info("Finished creating embeddings. Saving embeddings to database.")
         self._spectrum_dgw.write_embeddings(embeddings, model_registry["run_id"])
         return spectrum_ids
