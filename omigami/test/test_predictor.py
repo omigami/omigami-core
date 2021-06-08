@@ -103,7 +103,7 @@ def saved_model_run_id(word2vec_model, tmpdir):
 def model(word2vec_model):
     return Predictor(
         word2vec_model,
-        n_decimals=2,
+        n_decimals=1,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
         run_id="1",
@@ -119,7 +119,7 @@ def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
     data = [d for d in loaded_data if d["SpectrumID"] == "CCMSLIB00000072099"]
     embeddings_from_model = model._pre_process_data(data)
 
-    em = EmbeddingMaker(n_decimals=2)
+    em = EmbeddingMaker(n_decimals=1)
     embedding_from_flow = em.make_embedding(
         model=word2vec_model,
         document=documents_data[0],

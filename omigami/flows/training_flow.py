@@ -3,8 +3,10 @@ from dataclasses import dataclass
 from typing import Union
 
 import prefect
+from drfs import DRPath
 from prefect import Flow, unmapped
 
+from omigami.data_gateway import InputDataGateway
 from omigami.flows.config import FlowConfig
 from omigami.flows.utils import create_result
 from omigami.tasks import (
@@ -34,6 +36,7 @@ class TrainingFlowParameters:
 
 def build_training_flow(
     project_name: str,
+    input_dgw: InputDataGateway,
     download_params: DownloadParameters,
     process_params: ProcessSpectrumParameters,
     train_params: TrainModelParameters,
@@ -41,7 +44,7 @@ def build_training_flow(
     mlflow_server: str,
     flow_config: FlowConfig,
     redis_db: str,
-    chunk_size: int = 1000,
+    chunk_size: int = 1000000,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_name: str = "spec2vec-training-flow",
@@ -82,18 +85,27 @@ def build_training_flow(
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
         spectrum_ids = DownloadData(
+            input_dgw,
             **download_params.kwargs,
             **create_result(download_params.checkpoint_path),
         )()
 
-        spectrum_id_chunks = CreateChunks(chunk_size)(spectrum_ids)
+        # TODO: this looks ugly atm - create a dataclass for this task later
+        gnps_chunks = CreateChunks(
+            download_params.download_path,
+            input_dgw,
+            chunk_size,
+            **create_result(
+                f"{str(DRPath(download_params.download_path).parent)}/chunk_paths.pickle"
+            ),
+        )(spectrum_ids)
 
         # TODO: implement data caching like in DownloadData on s3
-        all_spectrum_ids_chunks = ProcessSpectrum(
-            download_params.download_path, **process_params.kwargs
-        ).map(spectrum_id_chunks)
+        spectrum_ids_chunks = ProcessSpectrum(
+            download_params.download_path, input_dgw=input_dgw, **process_params.kwargs
+        ).map(gnps_chunks)
 
-        model = TrainModel(**train_params.kwargs)(all_spectrum_ids_chunks)
+        model = TrainModel(**train_params.kwargs)(spectrum_ids_chunks)
 
         model_registry = RegisterModel(
             project_name,
@@ -110,7 +122,8 @@ def build_training_flow(
             process_params.n_decimals,
             intensity_weighting_power,
             allowed_missing_percentage,
-        ).map(unmapped(model), unmapped(model_registry), spectrum_id_chunks)
+        ).map(unmapped(model), unmapped(model_registry), spectrum_ids_chunks)
+
         logger.info("Saving embedding is complete.")
         if deploy_model:
             DeployModel(redis_db)(model_registry)

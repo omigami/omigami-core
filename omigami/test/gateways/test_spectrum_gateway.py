@@ -187,6 +187,17 @@ def test_read_documents_iter(documents_stored):
     assert all_words == all_words_no_iterator
 
 
+def test_iter_documents_from_ids(documents_stored, spectrum_ids):
+    dgw = RedisSpectrumDataGateway()
+    doc_iter = dgw.read_documents_iter(spectrum_ids[:15])
+
+    res = 0
+    for doc in doc_iter:
+        res += 1
+
+    assert res == 15
+
+
 def test_delete_spectrum_ids(spectra_stored):
     dgw = RedisSpectrumDataGateway()
     stored_ids = dgw.list_spectrum_ids()

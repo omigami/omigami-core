@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List
+from typing import Dict, List
 
 from matchms import Spectrum
 from matchms.filtering import (
@@ -15,21 +15,37 @@ from matchms.filtering import (
 )
 from matchms.importing.load_from_json import as_spectrum
 
+from omigami.entities.spectrum_document import SpectrumDocumentData
+from omigami.helper_classes.progress_logger import TaskProgressLogger
+
 
 class SpectrumProcessor:
-    def process_data(
-        self, spectrum_dicts: List[Dict], min_peaks: int = 0
-    ) -> List[Spectrum]:
-        processed = []
-        for spectrum_dict in spectrum_dicts:
+    def create_documents(
+        self,
+        spectrum_dicts: List[Dict],
+        min_peaks: int = 0,
+        n_decimals: int = 2,
+        progress_logger: TaskProgressLogger = None,
+    ) -> List[SpectrumDocumentData]:
+        # TODO: there is something wrong with this code compared to what we had before.
+        # need to investigate.
+        documents = []
+        for i, spectrum_dict in enumerate(spectrum_dicts):
             spectrum = as_spectrum(spectrum_dict)
             if spectrum is not None and len(spectrum.peaks.mz) > min_peaks:
-                spectrum = self._apply_filters(spectrum)
-                spectrum = self._harmonize_spectrum(spectrum)
-                spectrum = self._convert_metadata(spectrum)
-                processed.append(spectrum)
+                processed_spectrum = self._convert_metadata(
+                    self._harmonize_spectrum(self._apply_filters(spectrum))
+                )
+                doc = SpectrumDocumentData(processed_spectrum, n_decimals)
+                # cz: I'm not sure why this check is needed. looks like some bad implementation
+                # somewhere. We should try to investigate this if we have the time
+                if doc.spectrum and doc.document:
+                    documents.append(doc)
 
-        return processed
+                if progress_logger:
+                    progress_logger.log(i)
+
+        return documents
 
     @staticmethod
     def _apply_filters(spectrum: Spectrum) -> Spectrum:
