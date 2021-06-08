@@ -12,7 +12,7 @@ def test_create_chunks(local_gnps_small_json, spectrum_ids, clean_chunk_files):
         chunks = CreateChunks(
             file_path=local_gnps_small_json,
             input_dgw=input_dgw,
-            chunk_size=25,
+            chunk_size=150000,
             **create_result(ASSETS_DIR / "chunk_paths.pickle"),
             **TEST_TASK_CONFIG,
         )(spectrum_ids)
@@ -23,5 +23,5 @@ def test_create_chunks(local_gnps_small_json, spectrum_ids, clean_chunk_files):
     assert res.is_successful()
     assert res_2.result[chunks].is_cached()
     assert input_dgw.fs.exists(ASSETS_DIR / "chunk_paths.pickle")
-    assert len(input_dgw.fs.ls(ASSETS_DIR / "chunks")) == 4
+    assert len(input_dgw.fs.ls(ASSETS_DIR / "chunks")) == 6
     assert set(res.result[chunks].result) == set(res_2.result[chunks].result)

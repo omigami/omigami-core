@@ -1,5 +1,7 @@
 from logging import Logger
 
+import numpy as np
+
 
 class TaskProgressLogger:
     """
@@ -19,7 +21,7 @@ class TaskProgressLogger:
     ):
         self.logger = logger
         self.log_freq = log_frequency_in_perc
-        self.log_freq_in_items = int(num_of_items / (100 / log_frequency_in_perc))
+        self.log_freq_in_items = np.ceil(num_of_items / (100 / log_frequency_in_perc))
         self.msg = msg
         self.progress_count = 0
 

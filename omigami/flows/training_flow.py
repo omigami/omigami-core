@@ -44,7 +44,7 @@ def build_training_flow(
     mlflow_server: str,
     flow_config: FlowConfig,
     redis_db: str,
-    chunk_size: int = 1000,
+    chunk_size: int = 1000000,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_name: str = "spec2vec-training-flow",

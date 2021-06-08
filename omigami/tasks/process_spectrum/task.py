@@ -3,12 +3,11 @@ from typing import List
 
 from prefect import Task
 
-from omigami.helper_classes.progress_logger import TaskProgressLogger
-from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
-from omigami.tasks.config import merge_configs
 from omigami.data_gateway import SpectrumDataGateway, InputDataGateway
-
 from omigami.gateways.redis_spectrum_gateway import REDIS_DB
+from omigami.helper_classes.progress_logger import TaskProgressLogger
+from omigami.tasks.config import merge_configs
+from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 
 
 class ProcessSpectrum(Task):
@@ -37,8 +36,6 @@ class ProcessSpectrum(Task):
             f"Processing {len(spectra)} spectra from the input data {gnps_path}"
         )
         spectrum_ids = [sp["SpectrumID"] for sp in spectra]
-        if "CCMSLIB00005885146" in spectrum_ids:
-            self.logger.info(f"Key CCMSLIB00005885146 found in {gnps_path}.")
 
         # TODO: refactor to use prefect's checkpoint functionality
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
