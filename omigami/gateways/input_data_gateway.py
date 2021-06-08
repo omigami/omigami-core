@@ -1,6 +1,7 @@
 import json
 import logging
 import pickle
+import sys
 from typing import List, Optional, Any
 
 import ijson
@@ -152,19 +153,26 @@ class FSInputDataGateway(InputDataGateway):
             chunk = []
             chunk_ix = 0
             chunk_paths = []
+            chunk_bytes = 0
 
             items = ijson.items(f, "item", multiple_values=True)
             for item in items:
-                chunk.append({k: item[k] for k in KEYS})
+                spectrum = {k: item[k] for k in KEYS}
+                chunk.append(spectrum)
+                chunk_bytes += sys.getsizeof(spectrum) + sys.getsizeof(
+                    spectrum["peaks_json"]
+                )
 
-                if len(chunk) == chunk_size:
-
+                if chunk_bytes >= chunk_size:
                     chunk_path = f"{chunks_output_dir}/chunk_{chunk_ix}.json"
                     chunk_paths.append(chunk_path)
+
                     with self.fs.open(chunk_path, "wb") as f:
                         f.write(json.dumps(chunk).encode("UTF-8"))
                         chunk = []
                         chunk_ix += 1
+                        chunk_bytes = 0
+
                     if logger:
                         logger.info(f"Saved chunk to path {chunk_path}.")
 

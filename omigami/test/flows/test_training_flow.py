@@ -9,6 +9,7 @@ from prefect.executors import LocalDaskExecutor
 from prefect.storage import S3
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.data_gateway import SpectrumDataGateway
 from omigami.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -17,7 +18,6 @@ from omigami.flows.config import (
 from omigami.flows.training_flow import build_training_flow
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
-from omigami.data_gateway import SpectrumDataGateway
 from omigami.tasks import (
     DeployModel,
     DownloadParameters,
@@ -103,19 +103,18 @@ def test_run_training_flow(tmpdir, flow_config, mock_default_config, clean_chunk
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
         flow_config=flow_config,
-        chunk_size=50,
+        chunk_size=150000,
         redis_db="0",
         deploy_model=False,
     )
 
     results = flow.run()
     (d,) = flow.get_tasks("DownloadData")
-    (c,) = flow.get_tasks("CreateChunks")
 
     assert results.is_successful()
     results.result[d].is_cached()
     assert "model" in os.listdir(tmpdir / "model-output")
-    assert len(fs.ls(ASSETS_DIR / "chunks")) == 2
+    assert len(fs.ls(ASSETS_DIR / "chunks")) == 6
     assert fs.exists(ASSETS_DIR / "chunk_paths.pickle")
 
 

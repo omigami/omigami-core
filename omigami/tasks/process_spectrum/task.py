@@ -3,12 +3,11 @@ from typing import List
 
 from prefect import Task
 
-from omigami.helper_classes.progress_logger import TaskProgressLogger
-from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
-from omigami.tasks.config import merge_configs
 from omigami.data_gateway import SpectrumDataGateway, InputDataGateway
-
 from omigami.gateways.redis_spectrum_gateway import REDIS_DB
+from omigami.helper_classes.progress_logger import TaskProgressLogger
+from omigami.tasks.config import merge_configs
+from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 
 
 class ProcessSpectrum(Task):
@@ -50,7 +49,7 @@ class ProcessSpectrum(Task):
                 f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} spectra are new and will "
                 f"be processed."
             )
-            spectra = [sp for sp in spectra if sp["SpectrumID"] not in new_spectrum_ids]
+            spectra = [sp for sp in spectra if sp["SpectrumID"] in new_spectrum_ids]
 
         self.logger.info(f"Processing spectra and converting into documents.")
         progress_logger = TaskProgressLogger(

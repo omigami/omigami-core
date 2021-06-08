@@ -25,6 +25,7 @@ class CreateChunks(Task):
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
         self.logger.info(f"Loading file {self._file_path} for chunking.")
+        # maybe we should save which ids are on each chunk in the pickle file
         chunk_paths = self._input_dgw.chunk_gnps(
             self._file_path, self._chunk_size, self.logger
         )
