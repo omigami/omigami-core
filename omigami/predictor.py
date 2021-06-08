@@ -41,7 +41,7 @@ class Predictor(PythonModel):
         data_input_and_parameters: Dict[str, Union[Dict, List]],
         mz_range: int = 1,
         include_metadata: List[str] = [],
-    ) -> List[List[Dict]]:
+    ) -> Dict[str, SpectrumMatch]:
         """Match spectra from a json payload input with spectra having the highest similarity scores
         in the GNPS spectra library.
         Return a list matches of IDs and scores for each input spectrum.
@@ -68,10 +68,11 @@ class Predictor(PythonModel):
             spectrum_best_matches = self._calculate_best_matches(
                 input_spectrum_ref_emb,
                 input_spectrum,
-                i,
                 **parameters,
             )
-            best_matches[input_spectrum.spectrum_id] = spectrum_best_matches
+            best_matches[
+                input_spectrum.spectrum_id or f"spectrum-{i}"
+            ] = spectrum_best_matches
 
         if include_metadata:
             best_matches = self._add_metadata(best_matches, include_metadata)

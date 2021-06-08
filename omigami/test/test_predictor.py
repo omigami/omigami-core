@@ -2,6 +2,7 @@ import os
 import pickle
 from pathlib import Path
 
+import pandas as pd
 import pytest
 from pytest_redis import factories
 
@@ -24,7 +25,7 @@ os.chdir(Path(__file__).parents[3])
 @pytest.fixture
 def small_payload():
     small_payload = {
-        "parameters": {"n_best_spectra": 10},
+        "parameters": {"n_best_spectra": 2},
         "data": [
             {
                 "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
@@ -38,7 +39,7 @@ def small_payload():
 @pytest.fixture
 def big_payload():
     big_payload = {
-        "parameters": {"n_best_spectra": 10},
+        "parameters": {"n_best_spectra": 2},
         "data": [
             {
                 "peaks_json": "[[80.060677, 157.0], [81.072548, 295.0], [83.088249, 185.0], [91.057564, 601.0], "
@@ -131,18 +132,19 @@ def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
 
 def test_get_best_matches(model, embeddings):
     n_best_spectra = 2
-    best_matches = []
-    for query in embeddings:
+    best_matches = {}
+    for query in embeddings[:2]:
         input_best_matches = model._calculate_best_matches(
             embeddings,
             query,
-            input_spectrum_number=0,
             n_best_spectra=n_best_spectra,
         )
-        best_matches.append(input_best_matches)
-    for query, best_match in zip(embeddings, best_matches):
+        best_matches[query.spectrum_id] = input_best_matches
+
+    for query, (best_match_id, best_match) in zip(embeddings, best_matches.items()):
         assert len(best_match) == n_best_spectra
-        assert query.spectrum_id == best_match[0]["match_spectrum_id"]
+        assert query.spectrum_id == best_match_id
+        assert "score" in pd.DataFrame(best_match).T.columns
 
 
 @pytest.mark.skipif(
@@ -150,11 +152,11 @@ def test_get_best_matches(model, embeddings):
     reason="It can only be run if the Redis is up",
 )
 @pytest.mark.skipif(
-    not os.path.exists(str(ASSETS_DIR / "full_data/test_model.pkl")),
+    not os.path.exists(str(ASSETS_DIR / "test_model.pkl")),
     reason="test_model.pkl is git ignored",
 )
 def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_stored):
-    path = str(ASSETS_DIR / "full_data/test_model.pkl")
+    path = str(ASSETS_DIR / "test_model.pkl")
 
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
@@ -168,8 +170,9 @@ def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_st
         data_input_and_parameters=small_payload, mz_range=10, context=""
     )
 
-    assert len(matches_small[0]) != 0
-    assert len(matches_big[0]) != 0
+    assert len(matches_small["spectrum-0"]) == 2
+    assert len(matches_big) == 2
+    assert len(matches_big["spectrum-0"]) == 2
 
 
 def test_parse_input(small_payload, model):
@@ -233,15 +236,14 @@ def test_get_input_ref_embeddings(model, spectra_and_embeddings_stored):
 
 def test_add_metadata(model, embeddings, spectra_and_embeddings_stored):
     n_best_spectra = 3
-    best_matches = []
-    for query in embeddings:
+    best_matches = {}
+    for i, query in enumerate(embeddings):
         input_best_matches = model._calculate_best_matches(
             embeddings,
             query,
-            input_spectrum_number=0,
             n_best_spectra=n_best_spectra,
         )
-        best_matches.append(input_best_matches)
+        best_matches[query.spectrum_id] = input_best_matches
 
     best_matches = model._add_metadata(
         best_matches, metadata_keys=["SMILES", "Compound_Name"]
