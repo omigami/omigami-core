@@ -3,14 +3,12 @@ from pathlib import Path
 import prefect
 import yaml
 from kubernetes import config, client
-from prefect import Task
 from kubernetes.config import ConfigException
-
-from omigami.helper_classes.exception import DeployingError
-
-from omigami.tasks.config import merge_configs
+from prefect import Task
 
 from omigami.config import SELDON_PARAMS, CLUSTERS
+from omigami.helper_classes.exception import DeployingError
+from omigami.tasks.config import merge_configs
 
 logger = prefect.context.get("logger")
 
@@ -22,6 +20,7 @@ class DeployModel(Task):
         self.redis_db = redis_db
         self.environment = environment
         self.overwrite = overwrite
+        self._ion_mode = ion_mode
         config = merge_configs(kwargs)
         super().__init__(**config)
 

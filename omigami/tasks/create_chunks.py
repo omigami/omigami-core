@@ -13,11 +13,13 @@ class CreateChunks(Task):
         file_path: str,
         input_dgw: InputDataGateway,
         chunk_size: int,
+        ion_mode: str,
         **kwargs,
     ):
         self._input_dgw = input_dgw
         self._chunk_size = chunk_size
-        self._file_path = file_path
+        self._file_path = file_path  # dataset-id/chunks -> dataset-id/ion-mode/chunks/
+        self._ion_mode = ion_mode
 
         config = merge_configs(kwargs)
 
@@ -27,7 +29,7 @@ class CreateChunks(Task):
         self.logger.info(f"Loading file {self._file_path} for chunking.")
         # maybe we should save which ids are on each chunk in the pickle file
         chunk_paths = self._input_dgw.chunk_gnps(
-            self._file_path, self._chunk_size, self.logger
+            self._file_path, self._chunk_size, self._ion_mode, self.logger
         )
         self.logger.info(
             f"Split spectra into {len(chunk_paths)} chunks of size"

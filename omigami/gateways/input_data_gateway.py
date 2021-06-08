@@ -10,8 +10,8 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
 
-from omigami.entities.data_models import SpectrumInputData
 from omigami.data_gateway import InputDataGateway
+from omigami.entities.data_models import SpectrumInputData
 
 KEYS = [
     "spectrum_id",
@@ -162,6 +162,8 @@ class FSInputDataGateway(InputDataGateway):
                 chunk_bytes += sys.getsizeof(spectrum) + sys.getsizeof(
                     spectrum["peaks_json"]
                 )
+                if spectrum ["Ion_mode"] != ion_mode:
+                    continue
 
                 if chunk_bytes >= chunk_size:
                     chunk_path = f"{chunks_output_dir}/chunk_{chunk_ix}.json"
