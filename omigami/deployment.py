@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Optional
 
 from typing_extensions import Literal
@@ -56,6 +57,7 @@ def deploy_training_flow(
     auth_url: Optional[str] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
+    schedule: timedelta = None,
 ):
 
     if auth:

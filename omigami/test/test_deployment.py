@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 from drfs import DRPath
 
@@ -14,9 +16,9 @@ from omigami.deployment import (
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
@@ -37,8 +39,10 @@ def test_deploy_training_flow():
         model_output_dir=MODEL_DIR["dev"],
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow/full-chunked",
-        deploy_model=True,
+        deploy_model=False,
         auth=True,
+        auth_url=config["auth_url"].get(str),
+        schedule=timedelta(minutes=3),
         **login_config,
     )
 
