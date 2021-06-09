@@ -15,7 +15,7 @@ from omigami.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
 log = getLogger(__name__)
-SpectrumMatch = Dict[str, Dict[str, Any]]
+SpectrumMatches = Dict[str, Dict[str, Any]]
 
 
 class Predictor(PythonModel):
@@ -40,8 +40,8 @@ class Predictor(PythonModel):
         context,
         data_input_and_parameters: Dict[str, Union[Dict, List]],
         mz_range: int = 1,
-        include_metadata: List[str] = [],
-    ) -> Dict[str, SpectrumMatch]:
+        include_metadata: List[str] = None,
+    ) -> Dict[str, SpectrumMatches]:
         """Match spectra from a json payload input with spectra having the highest similarity scores
         in the GNPS spectra library.
         Return a list matches of IDs and scores for each input spectrum.
@@ -159,7 +159,7 @@ class Predictor(PythonModel):
         query: Embedding,
         n_best_spectra: int = 10,
         **parameters,
-    ) -> SpectrumMatch:
+    ) -> SpectrumMatches:
         spec2vec_embeddings_similarity = Spec2VecEmbeddings(
             model=self.model,
             intensity_weighting_power=self.intensity_weighting_power,
@@ -194,19 +194,18 @@ class Predictor(PythonModel):
         return ref_emb_for_input
 
     def _add_metadata(
-        self, best_matches: Dict[str, SpectrumMatch], metadata_keys: List[str]
-    ) -> Dict[str, SpectrumMatch]:
-        # list the spectrum ids we need
+        self, best_matches: Dict[str, SpectrumMatches], metadata_keys: List[str]
+    ) -> Dict[str, SpectrumMatches]:
         spectrum_ids = [key for match in best_matches.values() for key in match.keys()]
 
-        # load spectra from redis for those ids
         spectra = self.dgw.read_spectra(set(spectrum_ids))
 
-        # add columns to the dataframe for the user specified keys
+        # add key/value pairs to the dictionary for the user specified keys
         for matches in best_matches.values():
-            # match: {"cc1": 10, "cc2": 25}
             for spectrum_id in matches.keys():
                 for key in metadata_keys:
-                    matches[spectrum_id][key] = spectra[spectrum_id].metadata[key]
+                    matches[spectrum_id][key] = spectra[spectrum_id].metadata[
+                        key.lower()
+                    ]
 
         return best_matches

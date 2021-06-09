@@ -1,5 +1,4 @@
 import os
-import pickle
 from typing import Iterable
 
 import pytest
@@ -11,12 +10,10 @@ from omigami.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     DOCUMENT_HASHES,
-    EMBEDDING_HASHES,
 )
 from omigami.entities.embedding import Embedding
 from omigami.entities.spectrum_document import SpectrumDocumentData
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
-
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -25,45 +22,6 @@ pytestmark = pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-
-
-@pytest.fixture()
-def spectra_stored(redis_db, cleaned_data):
-    pipe = redis_db.pipeline()
-    for spectrum in cleaned_data:
-        pipe.zadd(
-            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-            {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
-        )
-        pipe.hset(
-            SPECTRUM_HASHES, spectrum.metadata["spectrum_id"], pickle.dumps(spectrum)
-        )
-    pipe.execute()
-
-
-@pytest.fixture()
-def documents_stored(redis_db, cleaned_data, documents_data):
-    pipe = redis_db.pipeline()
-    for i, document in enumerate(documents_data):
-        pipe.hset(
-            DOCUMENT_HASHES,
-            cleaned_data[i].metadata["spectrum_id"],
-            pickle.dumps(document),
-        )
-    pipe.execute()
-
-
-@pytest.fixture()
-def embeddings_stored(redis_db, embeddings):
-    run_id = "1"
-    pipe = redis_db.pipeline()
-    for embedding in embeddings:
-        pipe.hset(
-            f"{EMBEDDING_HASHES}_{run_id}",
-            embedding.spectrum_id,
-            pickle.dumps(embedding),
-        )
-    pipe.execute()
 
 
 def test_write_spectrum_documents(redis_db, cleaned_data):
@@ -104,9 +62,9 @@ def test_read_spectra(cleaned_data, spectra_stored):
     dgw = RedisSpectrumDataGateway()
     spectra = dgw.read_spectra()
     assert len(spectra) == len(cleaned_data)
-    for spectrum in spectra:
-        assert isinstance(spectrum, Spectrum)
-        assert len(spectrum.peaks) > 0
+    for spectrum_id in spectra.keys():
+        assert isinstance(spectra[spectrum_id], Spectrum)
+        assert len(spectra[spectrum_id].peaks) > 0
 
 
 def test_read_documents(documents_data, documents_stored):
