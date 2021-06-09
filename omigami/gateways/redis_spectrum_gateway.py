@@ -94,7 +94,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         """
         self._init_client()
         existing = set(self.client.hkeys(SPECTRUM_HASHES))
-        return {sp_id for sp_id in spectrum_ids if sp_id in existing}
+        return {sp_id for sp_id in spectrum_ids if sp_id.encode() in existing}
 
     # Not used atm
     def list_documents_not_exist(self, spectrum_ids: List[str]) -> List[str]:

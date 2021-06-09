@@ -7,6 +7,7 @@ import pytest
 import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
+from pytest_redis import factories
 
 import omigami.tasks.config
 from omigami.config import (
@@ -19,6 +20,7 @@ from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
+redis_db = factories.redisdb("redis_nooproc")
 
 
 @pytest.fixture
