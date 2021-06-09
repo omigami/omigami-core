@@ -51,7 +51,7 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
-    def list_spectra_not_exist(self, spectrum_ids: List[str]) -> Set[str]:
+    def list_existing_spectra(self, spectrum_ids: List[str]) -> Set[str]:
         """Check whether spectra exist.
         Return a list of IDs that do not exist.
         """

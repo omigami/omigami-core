@@ -47,7 +47,7 @@ def test_list_spectrum_ids(cleaned_data, spectra_stored):
 def test_list_spectra_not_exist(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     dgw = RedisSpectrumDataGateway()
-    spectra = dgw.list_spectra_not_exist(spectrum_ids_stored)
+    spectra = dgw.list_existing_spectra(spectrum_ids_stored)
     assert len(spectra) == 0
 
 

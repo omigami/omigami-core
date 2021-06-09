@@ -1,4 +1,4 @@
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Set
 
 from gensim.models import Word2Vec
 from prefect import Task
@@ -31,7 +31,7 @@ class MakeEmbeddings(Task):
         self,
         model: Word2Vec = None,
         model_registry: Dict[str, str] = None,
-        spectrum_ids: List[str] = None,
+        spectrum_ids: Set[str] = None,
     ) -> List[str]:
         self.logger.info(f"Creating {len(spectrum_ids)} embeddings.")
         documents = self._spectrum_dgw.read_documents(spectrum_ids)

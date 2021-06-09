@@ -88,12 +88,13 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         return [id_.decode() for id_ in self.client.hkeys(SPECTRUM_HASHES)]
 
-    def list_spectra_not_exist(self, spectrum_ids: List[str]) -> Set[str]:
+    def list_existing_spectra(self, spectrum_ids: List[str]) -> Set[str]:
         """Check whether spectra exist on Redis.
         Return a list of IDs that do not exist.
         """
         self._init_client()
-        return set(self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids))
+        existing = set(self.client.hkeys(SPECTRUM_HASHES))
+        return {sp_id for sp_id in spectrum_ids if sp_id in existing}
 
     # Not used atm
     def list_documents_not_exist(self, spectrum_ids: List[str]) -> List[str]:

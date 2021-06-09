@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Set
 
 from prefect import Task
 
@@ -29,7 +29,7 @@ class ProcessSpectrum(Task):
         config = merge_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, gnps_path: str = None) -> List[str]:
+    def run(self, gnps_path: str = None) -> Set[str]:
         self.logger.info(f"Using Redis DB {REDIS_DB}")
         spectra = self._input_dgw.load_spectrum(gnps_path)
         self.logger.info(
@@ -40,10 +40,11 @@ class ProcessSpectrum(Task):
         # TODO: refactor to use prefect's checkpoint functionality
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
-            new_spectrum_ids = self._spectrum_dgw.list_spectra_not_exist(spectrum_ids)
+            existing_ids = self._spectrum_dgw.list_existing_spectra(spectrum_ids)
+            new_spectrum_ids = set(spectrum_ids) - set(existing_ids)
             if not new_spectrum_ids:
                 self.logger.info("All spectra have already been processed.")
-                return spectrum_ids
+                return existing_ids
 
             self.logger.info(
                 f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} spectra are new and will "
@@ -59,9 +60,9 @@ class ProcessSpectrum(Task):
             spectra, n_decimals=self._n_decimals, progress_logger=progress_logger
         )
 
-        if not spectrum_documents:
+        if self._skip_if_exists and not spectrum_documents:
             self.logger.info("No new documents have been processed.")
-            return spectrum_ids
+            return existing_ids
 
         self.logger.info(
             f"Finished processing {len(spectrum_documents)}. "
@@ -69,7 +70,7 @@ class ProcessSpectrum(Task):
         )
         self._spectrum_dgw.write_spectrum_documents(spectrum_documents)
 
-        return [sp.spectrum_id for sp in spectrum_documents]
+        return {sp.spectrum_id for sp in spectrum_documents}
 
 
 @dataclass
