@@ -126,7 +126,7 @@ class FSInputDataGateway(InputDataGateway):
         self,
         gnps_path: str,
         chunk_size: int,
-        ion_mode: str = IonModes.positive,
+        ion_mode: IonModes = "positive",
         logger: logging.Logger = None,
     ) -> List[str]:
         """
@@ -150,8 +150,6 @@ class FSInputDataGateway(InputDataGateway):
         -------
 
         """
-        if ion_mode not in [IonModes.positive, IonModes.negative]:
-            raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         if self.fs is None:
             self.fs = get_fs(gnps_path)

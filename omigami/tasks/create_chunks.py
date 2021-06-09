@@ -2,8 +2,10 @@ from typing import List
 
 from drfs import DRPath
 from prefect import Task
+from typing_extensions import Literal
 
 from omigami.data_gateway import InputDataGateway
+from omigami.flows.config import IonModes
 from omigami.tasks.config import merge_configs
 
 
@@ -13,13 +15,16 @@ class CreateChunks(Task):
         file_path: str,
         input_dgw: InputDataGateway,
         chunk_size: int,
-        ion_mode: str,
+        ion_mode: IonModes = "positive",
         **kwargs,
     ):
         self._input_dgw = input_dgw
         self._chunk_size = chunk_size
         self._file_path = file_path  # dataset-id/chunks -> dataset-id/ion-mode/chunks/
         self._ion_mode = ion_mode
+
+        if ion_mode not in ["positive", "negative"]:
+            raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         config = merge_configs(kwargs)
 

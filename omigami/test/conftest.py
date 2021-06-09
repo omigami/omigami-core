@@ -11,7 +11,6 @@ from moto import mock_s3
 import omigami.tasks.config
 from omigami.config import DOCUMENT_HASHES
 from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
-from omigami.flows.config import IonModes
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -128,6 +127,6 @@ def clean_chunk_files():
     if fs.exists(ASSETS_DIR / "chunk_paths.pickle"):
         fs.rm(ASSETS_DIR / "chunk_paths.pickle")
 
-    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / IonModes.positive)]
-    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / IonModes.negative)]
+    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "positive")]
+    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "negative")]
 

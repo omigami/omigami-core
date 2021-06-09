@@ -44,7 +44,7 @@ def deploy_training_flow(
     dataset_name: str,
     n_decimals: int = 2,
     chunk_size: int = 1000,
-    ion_mode: str = IonModes.positive,
+    ion_mode: IonModes = "positive",
     skip_if_exists: bool = True,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     output_dir: str = S3_BUCKET,

@@ -45,7 +45,7 @@ def build_training_flow(
     flow_config: FlowConfig,
     redis_db: str,
     chunk_size: int = 1000000,
-    ion_mode: str = IonModes.positive,
+    ion_mode: IonModes = "positive",
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_name: str = "spec2vec-training-flow",
