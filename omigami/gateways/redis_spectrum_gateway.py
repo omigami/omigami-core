@@ -65,14 +65,15 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         pipe.execute()
 
     def write_embeddings(
-        self, embeddings: List[Embedding], run_id: str, logger: Logger
+        self, embeddings: List[Embedding], run_id: str, logger: Logger = None
     ):
         """Write embeddings data on the redis database."""
         self._init_client()
-        logger.info(
-            f"Saving {len(embeddings)} to the client {self.client} on hash "
-            f"'{EMBEDDING_HASHES}_{run_id}'"
-        )
+        if logger:
+            logger.debug(
+                f"Saving {len(embeddings)} embeddings to the client {self.client}"
+                f" on hash '{EMBEDDING_HASHES}_{run_id}'."
+            )
         pipe = self.client.pipeline()
         for embedding in embeddings:
             pipe.hset(

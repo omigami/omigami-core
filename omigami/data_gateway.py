@@ -45,7 +45,7 @@ class SpectrumDataGateway(ABC):
 
     @abstractmethod
     def write_embeddings(
-        self, embeddings: List[Embedding], run_id: str, logger: Logger
+        self, embeddings: List[Embedding], run_id: str, logger: Logger = None
     ):
         """Write embeddings to Redis."""
         pass

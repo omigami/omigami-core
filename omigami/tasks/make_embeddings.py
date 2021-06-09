@@ -42,16 +42,20 @@ class MakeEmbeddings(Task):
             self.logger, len(documents), 25, "Make Embeddings task progress"
         )
         for i, document in enumerate(documents):
-            self._embedding_maker.make_embedding(
-                model,
-                document,
-                self._intensity_weighting_power,
-                self._allowed_missing_percentage,
+            embeddings.append(
+                self._embedding_maker.make_embedding(
+                    model,
+                    document,
+                    self._intensity_weighting_power,
+                    self._allowed_missing_percentage,
+                )
             )
             progress_logger.log(i)
 
-        self.logger.info("Finished creating embeddings. Saving embeddings to database.")
         self.logger.info(
+            f"Finished creating embeddings. Saving {len(embeddings)} embeddings to database."
+        )
+        self.logger.debug(
             f"Using Redis DB {REDIS_DB} and model id {model_registry['run_id']}."
         )
         self._spectrum_dgw.write_embeddings(
