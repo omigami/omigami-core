@@ -32,7 +32,7 @@ class MakeEmbeddings(Task):
         model: Word2Vec = None,
         model_registry: Dict[str, str] = None,
         spectrum_ids: Set[str] = None,
-    ) -> List[str]:
+    ) -> Set[str]:
         self.logger.info(f"Creating {len(spectrum_ids)} embeddings.")
         documents = self._spectrum_dgw.read_documents(spectrum_ids)
         self.logger.info(f"Loaded {len(documents)} documents from the database.")
