@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import pickle
+from logging import Logger
 from typing import List, Iterable, Dict, Set
 
 import redis
@@ -63,9 +64,15 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
                 pipe.hset(DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(document))
         pipe.execute()
 
-    def write_embeddings(self, embeddings: List[Embedding], run_id: str):
+    def write_embeddings(
+        self, embeddings: List[Embedding], run_id: str, logger: Logger
+    ):
         """Write embeddings data on the redis database."""
         self._init_client()
+        logger.info(
+            f"Saving {len(embeddings)} to the client {self.client} on hash "
+            f"'{EMBEDDING_HASHES}_{run_id}'"
+        )
         pipe = self.client.pipeline()
         for embedding in embeddings:
             pipe.hset(

@@ -54,5 +54,7 @@ class MakeEmbeddings(Task):
         self.logger.info(
             f"Using Redis DB {REDIS_DB} and model id {model_registry['run_id']}."
         )
-        self._spectrum_dgw.write_embeddings(embeddings, model_registry["run_id"])
+        self._spectrum_dgw.write_embeddings(
+            embeddings, model_registry["run_id"], self.logger
+        )
         return spectrum_ids

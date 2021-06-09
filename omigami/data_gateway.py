@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from logging import Logger
 from typing import List, Iterable, Any, Set
 
 from spec2vec import SpectrumDocument
@@ -43,7 +44,9 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
-    def write_embeddings(self, embeddings: List[Embedding], run_id: str):
+    def write_embeddings(
+        self, embeddings: List[Embedding], run_id: str, logger: Logger
+    ):
         """Write embeddings to Redis."""
         pass
 
