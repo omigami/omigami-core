@@ -13,8 +13,8 @@ spec:
       children: []
       implementation: MLFLOW_SERVER
       modelUri: dummy
-      name: spec2vec
-    name: default
+      name: positive
+    name: test
     replicas: 1
     traffic: 100
     componentSpecs:
@@ -25,7 +25,7 @@ spec:
           - name: spec2vec
             resources:
               requests:
-                memory: 8Gi
+                memory: 4Gi
             readinessProbe:
               failureThreshold: 10
               initialDelaySeconds: 120
