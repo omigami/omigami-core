@@ -129,8 +129,3 @@ def build_training_flow(
             DeployModel(redis_db)(model_registry)
 
     return training_flow
-
-
-# 1. implement separation of ion modes on chunks to s3 -> Pierre
-# 2. parametrize seldon deployment for both ion modes -> Carlos
-# 3. update omigami with an ion mode parameter to call different endpoints -> Bernardo
