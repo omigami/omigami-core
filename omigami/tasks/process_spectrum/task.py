@@ -61,6 +61,7 @@ class ProcessSpectrum(Task):
 
         self.logger.info(f"Finished processing. saving into spectrum database.")
         self._spectrum_dgw.write_spectrum_documents(spectrum_documents)
+        self.logger.info(f"Finished saving {len(spectrum_documents)} documents.")
 
         return [sp.spectrum_id for sp in spectrum_documents]
 
