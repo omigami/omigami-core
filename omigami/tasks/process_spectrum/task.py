@@ -59,9 +59,15 @@ class ProcessSpectrum(Task):
             spectra, n_decimals=self._n_decimals, progress_logger=progress_logger
         )
 
-        self.logger.info(f"Finished processing. saving into spectrum database.")
+        if not spectrum_documents:
+            self.logger.info("No new documents have been processed.")
+            return spectrum_ids
+
+        self.logger.info(
+            f"Finished processing {len(spectrum_documents)}. "
+            f"Saving into spectrum database."
+        )
         self._spectrum_dgw.write_spectrum_documents(spectrum_documents)
-        self.logger.info(f"Finished saving {len(spectrum_documents)} documents.")
 
         return [sp.spectrum_id for sp in spectrum_documents]
 
