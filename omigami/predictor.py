@@ -40,7 +40,6 @@ class Predictor(PythonModel):
         context,
         data_input_and_parameters: Dict[str, Union[Dict, List]],
         mz_range: int = 1,
-        include_metadata: List[str] = None,
     ) -> Dict[str, SpectrumMatches]:
         """Match spectra from a json payload input with spectra having the highest similarity scores
         in the GNPS spectra library.
@@ -74,8 +73,10 @@ class Predictor(PythonModel):
                 input_spectrum.spectrum_id or f"spectrum-{i}"
             ] = spectrum_best_matches
 
-        if include_metadata:
-            best_matches = self._add_metadata(best_matches, include_metadata)
+        if "include_metadata" in parameters:
+            best_matches = self._add_metadata(
+                best_matches, parameters["include_metadata"]
+            )
 
         log.info("Finishing prediction.")
         return best_matches
