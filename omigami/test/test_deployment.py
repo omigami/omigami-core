@@ -21,7 +21,7 @@ def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.343e90d",
+        image="drtools/prefect:omigami-SNAPSHOT.79cf86b",
         iterations=1,
         window=300,
         intensity_weighting_power=0.5,
@@ -36,7 +36,7 @@ def test_deploy_training_flow():
         project_name="spec2vec-test",
         model_output_dir=MODEL_DIR["dev"],
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/metadata-test",
+        flow_name="training-flow/embeddings-fix",
         deploy_model=True,
         auth=True,
         **login_config,
