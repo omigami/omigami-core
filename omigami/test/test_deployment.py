@@ -28,7 +28,7 @@ def test_deploy_training_flow():
         allowed_missing_percentage=5,
         n_decimals=2,
         skip_if_exists=True,
-        chunk_size=int(1e7),
+        chunk_size=int(1e8),
         environment="dev",
         dataset_name="10k",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
