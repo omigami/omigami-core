@@ -11,6 +11,7 @@ from omigami.config import (
 )
 from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
 from omigami.test.conftest import ASSETS_DIR
+from omigami.flows.config import SpectrumIonMode
 
 
 def test_load_gnps(local_gnps_small_json):
@@ -80,11 +81,13 @@ def test_load_spectrum_ids(local_gnps_small_json, spectrum_ids):
 @pytest.mark.parametrize(
     "ion_mode, expected_chunk_files",
     [
-        ("positive", 6),
-        ("negative", 1),
+        (SpectrumIonMode.POSITIVE.value, 6),
+        (SpectrumIonMode.NEGATIVE.value, 1),
     ],
 )
-def test_chunk_gnps_outputs(local_gnps_small_json, clean_chunk_files, ion_mode, expected_chunk_files):
+def test_chunk_gnps_outputs(
+    local_gnps_small_json, clean_chunk_files, ion_mode, expected_chunk_files
+):
     dgw = FSInputDataGateway()
     fs = get_fs(ASSETS_DIR)
 
@@ -96,11 +99,13 @@ def test_chunk_gnps_outputs(local_gnps_small_json, clean_chunk_files, ion_mode, 
 @pytest.mark.parametrize(
     "ion_mode, expected_chunk_files",
     [
-        ("positive", 6),
-        ("negative", 1),
+        (SpectrumIonMode.POSITIVE.value, 6),
+        (SpectrumIonMode.NEGATIVE.value, 1),
     ],
 )
-def test_chunk_gnps_data_consistency(local_gnps_small_json, clean_chunk_files, ion_mode, expected_chunk_files):
+def test_chunk_gnps_data_consistency(
+    local_gnps_small_json, clean_chunk_files, ion_mode, expected_chunk_files
+):
     dgw = FSInputDataGateway()
     fs = get_fs(ASSETS_DIR)
     spectrum_ids = dgw.get_spectrum_ids(local_gnps_small_json)

@@ -23,12 +23,17 @@ class PrefectExecutorMethods(Enum):
     LOCAL_DASK = 1
 
 
+class SpectrumIonMode(Enum):
+    POSITIVE = "positive"
+    NEGATIVE = "negative"
+
+
 @dataclass
 class FlowConfig:
     """
     Configuration options to be passed into Prefect's Flow() as arguments.
 
-    Therefore, should mirror expected Flow() arguments ~exatcly~.
+    Therefore, should mirror expected Flow() arguments ~exactly~.
     """
 
     run_config: RunConfig

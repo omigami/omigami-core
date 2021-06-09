@@ -12,6 +12,7 @@ from drfs.filesystems.base import FileSystemBase
 
 from omigami.data_gateway import InputDataGateway
 from omigami.entities.data_models import SpectrumInputData
+from omigami.flows.config import SpectrumIonMode
 
 KEYS = [
     "spectrum_id",
@@ -125,7 +126,7 @@ class FSInputDataGateway(InputDataGateway):
         self,
         gnps_path: str,
         chunk_size: int,
-        ion_mode: str = "positive",
+        ion_mode: str = SpectrumIonMode.POSITIVE.value,
         logger: logging.Logger = None,
     ) -> List[str]:
         """
@@ -149,9 +150,8 @@ class FSInputDataGateway(InputDataGateway):
         -------
 
         """
-        ion_mode = ion_mode.lower()
-        if ion_mode not in ["positive", "negative"]:
-            raise ValueError("Ion mode can only be either 'Positive' or 'Negative'")
+        if ion_mode not in [SpectrumIonMode.POSITIVE.value, SpectrumIonMode.NEGATIVE.value]:
+            raise ValueError("Ion mode can only be either 'positive' or 'negative'")
 
         if self.fs is None:
             self.fs = get_fs(gnps_path)
