@@ -104,6 +104,7 @@ def test_run_training_flow(tmpdir, flow_config, mock_default_config, clean_chunk
         allowed_missing_percentage=25,
         flow_config=flow_config,
         chunk_size=150000,
+        ion_mode="positive",
         redis_db="0",
         deploy_model=False,
     )

@@ -45,6 +45,7 @@ def build_training_flow(
     flow_config: FlowConfig,
     redis_db: str,
     chunk_size: int = 1000000,
+    ion_mode: str = "positive",
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_name: str = "spec2vec-training-flow",
@@ -66,11 +67,13 @@ def build_training_flow(
     train params:
         Parameters of the TrainModel task.
     model_output_dir:
-        Diretory for saving the model.
+        Directory for saving the model.
     mlflow_server:
         Server used for MLFlow to save the model.
     chunk_size:
         Size of the chunks to map the data processing task.
+    ion_mode:
+        The spectra ion mode used to train the model.
     intensity_weighting_power:
         Exponent used to scale intensity weights for each word.
     allowed_missing_percentage:
@@ -95,6 +98,7 @@ def build_training_flow(
             download_params.download_path,
             input_dgw,
             chunk_size,
+            ion_mode,
             **create_result(
                 f"{str(DRPath(download_params.download_path).parent)}/chunk_paths.pickle"
             ),

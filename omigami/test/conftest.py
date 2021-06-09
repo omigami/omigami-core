@@ -127,4 +127,6 @@ def clean_chunk_files():
     if fs.exists(ASSETS_DIR / "chunk_paths.pickle"):
         fs.rm(ASSETS_DIR / "chunk_paths.pickle")
 
-    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks")]
+    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "positive")]
+    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "negative")]
+

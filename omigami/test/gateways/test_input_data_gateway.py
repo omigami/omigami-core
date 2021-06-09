@@ -77,24 +77,38 @@ def test_load_spectrum_ids(local_gnps_small_json, spectrum_ids):
     assert set(spectrum_ids[:10]) == {d["SpectrumID"] for d in spectrum_data}
 
 
-def test_chunk_gnps_outputs(local_gnps_small_json, clean_chunk_files):
+@pytest.mark.parametrize(
+    "ion_mode, expected_chunk_files",
+    [
+        ("positive", 6),
+        ("negative", 1),
+    ],
+)
+def test_chunk_gnps_outputs(local_gnps_small_json, clean_chunk_files, ion_mode, expected_chunk_files):
     dgw = FSInputDataGateway()
     fs = get_fs(ASSETS_DIR)
 
-    dgw.chunk_gnps(local_gnps_small_json, chunk_size=150000)
+    dgw.chunk_gnps(local_gnps_small_json, chunk_size=150000, ion_mode=ion_mode)
 
-    assert len(fs.ls(ASSETS_DIR / "chunks")) == 6
+    assert len(fs.ls(ASSETS_DIR / "chunks" / ion_mode)) == expected_chunk_files
 
 
-def test_chunk_gnps_data_consistency(local_gnps_small_json, clean_chunk_files):
+@pytest.mark.parametrize(
+    "ion_mode, expected_chunk_files",
+    [
+        ("positive", 6),
+        ("negative", 1),
+    ],
+)
+def test_chunk_gnps_data_consistency(local_gnps_small_json, clean_chunk_files, ion_mode, expected_chunk_files):
     dgw = FSInputDataGateway()
     fs = get_fs(ASSETS_DIR)
     spectrum_ids = dgw.get_spectrum_ids(local_gnps_small_json)
 
-    dgw.chunk_gnps(local_gnps_small_json, chunk_size=150000)
+    dgw.chunk_gnps(local_gnps_small_json, chunk_size=150000, ion_mode=ion_mode)
 
-    paths = fs.ls(ASSETS_DIR / "chunks")
-    assert len(paths) == 6
+    paths = fs.ls(ASSETS_DIR / "chunks" / ion_mode)
+    assert len(paths) == expected_chunk_files
 
     chunked_ids = []
     for p in paths:
