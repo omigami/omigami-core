@@ -3,10 +3,11 @@ from typing import Union, List, Dict
 from gensim.models import Word2Vec
 from prefect import Task
 
+from omigami.data_gateway import SpectrumDataGateway
+from omigami.gateways.redis_spectrum_gateway import REDIS_DB
 from omigami.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.helper_classes.progress_logger import TaskProgressLogger
 from omigami.tasks.config import merge_configs
-from omigami.data_gateway import SpectrumDataGateway
 
 
 class MakeEmbeddings(Task):
@@ -34,7 +35,7 @@ class MakeEmbeddings(Task):
     ) -> List[str]:
         self.logger.info(f"Creating {len(spectrum_ids)} embeddings.")
         documents = self._spectrum_dgw.read_documents(spectrum_ids)
-        self.logger.info(f"Loaded {len(documents)} embeddings from the database.")
+        self.logger.info(f"Loaded {len(documents)} documents from the database.")
 
         embeddings = []
         progress_logger = TaskProgressLogger(
@@ -50,5 +51,8 @@ class MakeEmbeddings(Task):
             progress_logger.log(i)
 
         self.logger.info("Finished creating embeddings. Saving embeddings to database.")
+        self.logger.info(
+            f"Using Redis DB {REDIS_DB} and model id {model_registry['run_id']}."
+        )
         self._spectrum_dgw.write_embeddings(embeddings, model_registry["run_id"])
         return spectrum_ids

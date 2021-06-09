@@ -30,7 +30,7 @@ class ProcessSpectrum(Task):
         super().__init__(**config)
 
     def run(self, gnps_path: str = None) -> List[str]:
-        self.logger.debug(f"Using Redis DB {REDIS_DB}")
+        self.logger.info(f"Using Redis DB {REDIS_DB}")
         spectra = self._input_dgw.load_spectrum(gnps_path)
         self.logger.info(
             f"Processing {len(spectra)} spectra from the input data {gnps_path}"
