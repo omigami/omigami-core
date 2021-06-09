@@ -1,6 +1,7 @@
 import pytest
 from prefect import Flow
 
+from omigami.flows.config import SpectrumIonMode
 from omigami.flows.utils import create_result
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.tasks import CreateChunks
@@ -10,8 +11,8 @@ from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 @pytest.mark.parametrize(
     "ion_mode, expected_chunk_files",
     [
-        ("positive", 6),
-        ("negative", 1),
+        (SpectrumIonMode.POSITIVE.value, 6),
+        (SpectrumIonMode.NEGATIVE.value, 1),
     ],
 )
 def test_create_chunks(local_gnps_small_json, spectrum_ids, clean_chunk_files, ion_mode, expected_chunk_files):
