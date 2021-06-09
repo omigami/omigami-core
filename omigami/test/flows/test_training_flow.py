@@ -14,7 +14,7 @@ from omigami.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
-    SpectrumIonMode,
+    IonModes,
 )
 from omigami.flows.training_flow import build_training_flow
 from omigami.gateways.input_data_gateway import FSInputDataGateway
@@ -105,7 +105,7 @@ def test_run_training_flow(tmpdir, flow_config, mock_default_config, clean_chunk
         allowed_missing_percentage=25,
         flow_config=flow_config,
         chunk_size=150000,
-        ion_mode=SpectrumIonMode.POSITIVE.value,
+        ion_mode=IonModes.positive,
         redis_db="0",
         deploy_model=False,
     )

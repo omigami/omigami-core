@@ -23,9 +23,9 @@ class PrefectExecutorMethods(Enum):
     LOCAL_DASK = 1
 
 
-class SpectrumIonMode(Enum):
-    POSITIVE = "positive"
-    NEGATIVE = "negative"
+class IonModes:
+    positive = "positive"
+    negative = "negative"
 
 
 @dataclass

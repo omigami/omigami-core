@@ -7,7 +7,7 @@ from drfs import DRPath
 from prefect import Flow, unmapped
 
 from omigami.data_gateway import InputDataGateway
-from omigami.flows.config import FlowConfig, SpectrumIonMode
+from omigami.flows.config import FlowConfig, IonModes
 from omigami.flows.utils import create_result
 from omigami.tasks import (
     DownloadData,
@@ -45,7 +45,7 @@ def build_training_flow(
     flow_config: FlowConfig,
     redis_db: str,
     chunk_size: int = 1000000,
-    ion_mode: str = SpectrumIonMode.POSITIVE.value,
+    ion_mode: str = IonModes.positive,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     flow_name: str = "spec2vec-training-flow",

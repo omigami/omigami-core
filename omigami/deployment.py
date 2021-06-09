@@ -31,7 +31,7 @@ from omigami.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
-    SpectrumIonMode,
+    IonModes,
 )
 
 
@@ -44,7 +44,7 @@ def deploy_training_flow(
     dataset_name: str,
     n_decimals: int = 2,
     chunk_size: int = 1000,
-    ion_mode: str = SpectrumIonMode.POSITIVE.value,
+    ion_mode: str = IonModes.positive,
     skip_if_exists: bool = True,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     output_dir: str = S3_BUCKET,
