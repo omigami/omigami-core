@@ -5,6 +5,7 @@ from drfs import DRPath
 from prefect.executors import Executor, LocalDaskExecutor
 from prefect.run_configs import RunConfig, KubernetesRun
 from prefect.storage import Storage, S3
+from typing_extensions import Literal
 
 from omigami.config import ROOT_DIR, S3_BUCKET
 
@@ -23,12 +24,15 @@ class PrefectExecutorMethods(Enum):
     LOCAL_DASK = 1
 
 
+IonModes = Literal["positive", "negative"]
+
+
 @dataclass
 class FlowConfig:
     """
     Configuration options to be passed into Prefect's Flow() as arguments.
 
-    Therefore, should mirror expected Flow() arguments ~exatcly~.
+    Therefore, should mirror expected Flow() arguments ~exactly~.
     """
 
     run_config: RunConfig

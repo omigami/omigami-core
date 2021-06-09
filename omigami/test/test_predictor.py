@@ -178,7 +178,7 @@ def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_st
 def test_parse_input(small_payload, model):
     data_input, parameters = model._parse_input(small_payload)
 
-    assert parameters["n_best_spectra"] == 10
+    assert parameters["n_best_spectra"] == small_payload["parameters"]["n_best_spectra"]
     assert "peaks_json" and "Precursor_MZ" in data_input[0]
 
 

@@ -12,6 +12,7 @@ from drfs.filesystems.base import FileSystemBase
 
 from omigami.data_gateway import InputDataGateway
 from omigami.entities.data_models import SpectrumInputData
+from omigami.flows.config import IonModes
 
 KEYS = [
     "spectrum_id",
@@ -122,7 +123,11 @@ class FSInputDataGateway(InputDataGateway):
 
     # TODO: docstring and test
     def chunk_gnps(
-        self, gnps_path: str, chunk_size: int, logger: logging.Logger = None
+        self,
+        gnps_path: str,
+        chunk_size: int,
+        ion_mode: IonModes = "positive",
+        logger: logging.Logger = None,
     ) -> List[str]:
         """
         The chunking works as following:
@@ -138,39 +143,41 @@ class FSInputDataGateway(InputDataGateway):
         ----------
         gnps_path
         chunk_size
+        ion_mode
         logger
 
         Returns
         -------
 
         """
+
         if self.fs is None:
             self.fs = get_fs(gnps_path)
 
-        chunks_output_dir = f"{str(DRPath(gnps_path).parent)}/chunks"
+        chunks_output_dir = f"{str(DRPath(gnps_path).parent)}/chunks/{ion_mode}"
 
-        with self.fs.open(DRPath(gnps_path), "rb") as f:
+        with self.fs.open(DRPath(gnps_path), "rb") as gnps_file:
             chunk = []
             chunk_ix = 0
             chunk_paths = []
             chunk_bytes = 0
 
-            items = ijson.items(f, "item", multiple_values=True)
+            items = ijson.items(gnps_file, "item", multiple_values=True)
             for item in items:
                 spectrum = {k: item[k] for k in KEYS}
                 chunk.append(spectrum)
                 chunk_bytes += sys.getsizeof(spectrum) + sys.getsizeof(
                     spectrum["peaks_json"]
                 )
-                if spectrum ["Ion_mode"] != ion_mode:
+                if spectrum["Ion_Mode"].lower() != ion_mode:
                     continue
 
                 if chunk_bytes >= chunk_size:
                     chunk_path = f"{chunks_output_dir}/chunk_{chunk_ix}.json"
                     chunk_paths.append(chunk_path)
 
-                    with self.fs.open(chunk_path, "wb") as f:
-                        f.write(json.dumps(chunk).encode("UTF-8"))
+                    with self.fs.open(chunk_path, "wb") as chunk_file:
+                        chunk_file.write(json.dumps(chunk).encode("UTF-8"))
                         chunk = []
                         chunk_ix += 1
                         chunk_bytes = 0
@@ -181,8 +188,8 @@ class FSInputDataGateway(InputDataGateway):
             if chunk:
                 chunk_path = f"{chunks_output_dir}/chunk_{chunk_ix}.json"
                 chunk_paths.append(chunk_path)
-                with self.fs.open(chunk_path, "wb") as f:
-                    f.write(json.dumps(chunk).encode("UTF-8"))
+                with self.fs.open(chunk_path, "wb") as chunk_file:
+                    chunk_file.write(json.dumps(chunk).encode("UTF-8"))
 
         return chunk_paths
 

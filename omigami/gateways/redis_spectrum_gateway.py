@@ -101,7 +101,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         Return a list of Spectrum objects."""
         self._init_client()
         spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
-        return {spectrum.spectrum_id: spectrum for spectrum in spectra}
+        return {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}
 
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
         """Read the document information from spectra IDs.
