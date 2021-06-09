@@ -104,7 +104,7 @@ def test_read_spectra(cleaned_data, spectra_stored):
     dgw = RedisSpectrumDataGateway()
     spectra = dgw.read_spectra()
     assert len(spectra) == len(cleaned_data)
-    for spectrum in spectra:
+    for spectrum in spectra.values():
         assert isinstance(spectrum, Spectrum)
         assert len(spectrum.peaks) > 0
 
