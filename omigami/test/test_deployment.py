@@ -14,29 +14,29 @@ from omigami.deployment import (
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.4fd6f68",
-        iterations=5,
+        image="drtools/prefect:omigami-SNAPSHOT.93eb943",
+        iterations=1,
         window=300,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         n_decimals=2,
         skip_if_exists=True,
-        chunk_size=int(1e8),
+        chunk_size=int(1e7),
         environment="dev",
-        dataset_name="full",
+        dataset_name="10k",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=S3_BUCKET["dev"],
         project_name="spec2vec-test",
         model_output_dir=MODEL_DIR["dev"],
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/full-chunked",
+        flow_name="training-flow/metadata-test",
         deploy_model=True,
         auth=True,
         **login_config,
