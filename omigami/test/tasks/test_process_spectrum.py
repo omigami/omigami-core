@@ -16,7 +16,7 @@ from omigami.test.conftest import TEST_TASK_CONFIG
 def test_process_spectrum_task_calls(local_gnps_small_json, spectrum_ids):
     spectrum_gtw = MagicMock(spec=SpectrumDataGateway)
     input_gtw = FSInputDataGateway()
-    spectrum_gtw.list_spectra_not_exist.side_effect = lambda x: x
+    spectrum_gtw.list_existing_spectra.side_effect = lambda x: x
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(
             local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
@@ -27,7 +27,7 @@ def test_process_spectrum_task_calls(local_gnps_small_json, spectrum_ids):
 
     assert res.is_successful()
     assert set(data) == set(spectrum_ids)
-    spectrum_gtw.list_spectra_not_exist.assert_not_called()
+    spectrum_gtw.list_existing_spectra.assert_not_called()
     spectrum_gtw.write_spectrum_documents.assert_called_once()
 
 

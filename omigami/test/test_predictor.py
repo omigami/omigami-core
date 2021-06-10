@@ -2,21 +2,15 @@ import os
 import pickle
 from pathlib import Path
 
+import pandas as pd
 import pytest
 from pytest_redis import factories
 
-from omigami.config import (
-    EMBEDDING_HASHES,
-    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-    SPECTRUM_HASHES,
-)
 from omigami.entities.embedding import Embedding
 from omigami.helper_classes.embedding_maker import EmbeddingMaker
-
-from omigami.tasks.register_model import ModelRegister
 from omigami.predictor import Predictor
+from omigami.tasks.register_model import ModelRegister
 from omigami.test.conftest import ASSETS_DIR
-
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -26,7 +20,7 @@ os.chdir(Path(__file__).parents[3])
 @pytest.fixture
 def small_payload():
     small_payload = {
-        "parameters": {"n_best_spectra": 10},
+        "parameters": {"n_best_spectra": 2},
         "data": [
             {
                 "peaks_json": "[[80.060677, 157.0], [337.508301, 230.0]]",
@@ -40,7 +34,7 @@ def small_payload():
 @pytest.fixture
 def big_payload():
     big_payload = {
-        "parameters": {"n_best_spectra": 10},
+        "parameters": {"n_best_spectra": 2},
         "data": [
             {
                 "peaks_json": "[[80.060677, 157.0], [81.072548, 295.0], [83.088249, 185.0], [91.057564, 601.0], "
@@ -61,27 +55,6 @@ def big_payload():
         ],
     }
     return big_payload
-
-
-@pytest.fixture()
-def spectra_and_embeddings_stored(redis_db, cleaned_data, embeddings):
-    run_id = "1"
-    pipe = redis_db.pipeline()
-    for embedding in embeddings:
-        pipe.hset(
-            f"{EMBEDDING_HASHES}_{run_id}",
-            embedding.spectrum_id,
-            pickle.dumps(embedding),
-        )
-    for spectrum in cleaned_data:
-        pipe.zadd(
-            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-            {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
-        )
-        pipe.hset(
-            SPECTRUM_HASHES, spectrum.metadata["spectrum_id"], pickle.dumps(spectrum)
-        )
-    pipe.execute()
 
 
 @pytest.fixture
@@ -133,18 +106,19 @@ def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
 
 def test_get_best_matches(model, embeddings):
     n_best_spectra = 2
-    best_matches = []
-    for query in embeddings:
-        input_best_matches = model._get_best_matches(
+    best_matches = {}
+    for query in embeddings[:2]:
+        input_best_matches = model._calculate_best_matches(
             embeddings,
             query,
-            input_spectrum_number=0,
             n_best_spectra=n_best_spectra,
         )
-        best_matches.append(input_best_matches)
-    for query, best_match in zip(embeddings, best_matches):
+        best_matches[query.spectrum_id] = input_best_matches
+
+    for query, (best_match_id, best_match) in zip(embeddings, best_matches.items()):
         assert len(best_match) == n_best_spectra
-        assert query.spectrum_id == best_match[0]["match_spectrum_id"]
+        assert query.spectrum_id == best_match_id
+        assert "score" in pd.DataFrame(best_match).T.columns
 
 
 @pytest.mark.skipif(
@@ -152,15 +126,11 @@ def test_get_best_matches(model, embeddings):
     reason="It can only be run if the Redis is up",
 )
 @pytest.mark.skipif(
-    not os.path.exists(str(ASSETS_DIR / "full_data/test_model.pkl")),
+    not os.path.exists(str(ASSETS_DIR / "test_model.pkl")),
     reason="test_model.pkl is git ignored",
 )
-@pytest.mark.skipif(
-    os.getenv("CI", "False").title(),
-    reason="test_model.pkl is git ignored",
-)
-def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_stored):
-    path = str(ASSETS_DIR / "full_data/test_model.pkl")
+def test_local_predictions(small_payload, big_payload, redis_full_setup):
+    path = str(ASSETS_DIR / "test_model.pkl")
 
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
@@ -174,14 +144,15 @@ def test_local_predictions(small_payload, big_payload, spectra_and_embeddings_st
         data_input_and_parameters=small_payload, mz_range=10, context=""
     )
 
-    assert len(matches_small[0]) != 0
-    assert len(matches_big[0]) != 0
+    assert len(matches_small["spectrum-0"]) == 2
+    assert len(matches_big) == 2
+    assert len(matches_big["spectrum-0"]) == 2
 
 
 def test_parse_input(small_payload, model):
     data_input, parameters = model._parse_input(small_payload)
 
-    assert parameters["n_best_spectra"] == 10
+    assert parameters["n_best_spectra"] == 2
     assert "peaks_json" and "Precursor_MZ" in data_input[0]
 
 
@@ -189,9 +160,7 @@ def test_parse_input(small_payload, model):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_get_ref_ids_from_data_input(
-    small_payload, model, spectra_and_embeddings_stored
-):
+def test_get_ref_ids_from_data_input(small_payload, model, redis_full_setup):
     data_input = small_payload.get("data")
     spectrum_ids = model._get_ref_ids_from_data_input(data_input)
 
@@ -203,7 +172,7 @@ def test_get_ref_ids_from_data_input(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_load_unique_ref_embeddings(model, spectra_and_embeddings_stored):
+def test_load_unique_ref_embeddings(model, redis_full_setup):
     spectrum_ids = [["CCMSLIB00000006878", "CCMSLIB00000007092"]]
 
     ref_embeddings = model._load_unique_ref_embeddings(spectrum_ids)
@@ -216,7 +185,7 @@ def test_load_unique_ref_embeddings(model, spectra_and_embeddings_stored):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_get_input_ref_embeddings(model, spectra_and_embeddings_stored):
+def test_get_input_ref_embeddings(model, redis_full_setup):
     input_ref_spectrum_ids = ["CCMSLIB00000006878", "CCMSLIB00000007092"]
     all_ref_spectrum_ids = [
         [
@@ -235,3 +204,30 @@ def test_get_input_ref_embeddings(model, spectra_and_embeddings_stored):
     assert isinstance(ref_emb_for_input[0], Embedding)
     assert len(ref_emb_for_input) == len(input_ref_spectrum_ids)
     assert ref_emb_for_input[0].spectrum_id == input_ref_spectrum_ids[0]
+
+
+def test_add_metadata(model, embeddings, redis_full_setup):
+    n_best_spectra = 3
+    best_matches = {}
+    for i, query in enumerate(embeddings):
+        input_best_matches = model._calculate_best_matches(
+            embeddings,
+            query,
+            n_best_spectra=n_best_spectra,
+        )
+        best_matches[query.spectrum_id] = input_best_matches
+
+    best_matches = model._add_metadata(
+        best_matches, metadata_keys=["Smiles", "Compound_Name"]
+    )
+
+    assert best_matches
+    assert set(best_matches["CCMSLIB00000072099"]["CCMSLIB00000072099"].keys()) == {
+        "score",
+        "Smiles",
+        "Compound_Name",
+    }
+    assert (
+        best_matches["CCMSLIB00000072099"]["CCMSLIB00000072099"]["Compound_Name"]
+        == "Coproporphyrin I"
+    )

@@ -79,7 +79,9 @@ def test_training_flow(flow_config):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_run_training_flow(tmpdir, flow_config, mock_default_config, clean_chunk_files):
+def test_run_training_flow(
+    tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
+):
     # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
@@ -89,7 +91,7 @@ def test_run_training_flow(tmpdir, flow_config, mock_default_config, clean_chunk
         SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR.parent, "assets", "SMALL_GNPS.json"
     )
     spectrum_dgw = RedisSpectrumDataGateway()
-    process_parameters = ProcessSpectrumParameters(spectrum_dgw, 1, False)
+    process_parameters = ProcessSpectrumParameters(spectrum_dgw, 1, True)
     train_params = TrainModelParameters(spectrum_dgw, 3, 200)
 
     flow = build_training_flow(

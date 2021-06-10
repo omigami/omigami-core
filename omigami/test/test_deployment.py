@@ -17,8 +17,8 @@ def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.4fd6f68",
-        iterations=5,
+        image="drtools/prefect:omigami-SNAPSHOT.79cf86b",
+        iterations=1,
         window=300,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
@@ -30,7 +30,7 @@ def test_deploy_training_flow():
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         project_name="spec2vec-test",
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/full-chunked",
+        flow_name="training-flow/test-merge",
         deploy_model=False,
         auth=True,
         auth_url=config["auth_url"].get(str),
