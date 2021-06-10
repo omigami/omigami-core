@@ -86,7 +86,7 @@ def test_run_training_flow(tmpdir, flow_config, mock_default_config, clean_chunk
 
     input_dgw = FSInputDataGateway()
     download_parameters = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, "SMALL_GNPS.json"
+        SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR.parent, "assets", "SMALL_GNPS.json"
     )
     spectrum_dgw = RedisSpectrumDataGateway()
     process_parameters = ProcessSpectrumParameters(spectrum_dgw, 1, False)

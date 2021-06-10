@@ -14,9 +14,11 @@ seldon:
   namespace: "seldon"
 storage:
   dataset_dir:
-    small: "downloaded_datasets/small/"
-    10k: "downloaded_datasets/10k/"
-    full: "downloaded_datasets/full/2021-05-14/"
+    dev:
+      small: "downloaded_datasets/small"
+      10k: "downloaded_datasets/10k"
+      full: "downloaded_datasets/full"
+    prod: "downloaded_datasets"
   model_folder:
     dev: "s3://omigami-dev/spec2vec/mlflow"
     prod: "s3://omigami/spec2vec/mlflow"

@@ -1,12 +1,6 @@
-from datetime import timedelta
-
 import pytest
-from drfs import DRPath
 
 from omigami.config import (
-    SOURCE_URI_COMPLETE_GNPS,
-    S3_BUCKET,
-    MODEL_DIR,
     MLFLOW_SERVER,
     config,
     SOURCE_URI_PARTIAL_GNPS,
@@ -32,42 +26,15 @@ def test_deploy_training_flow():
         skip_if_exists=True,
         chunk_size=int(1e8),
         environment="dev",
-        dataset_name="small",
+        dev_dataset_name="small",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
-        output_dir=S3_BUCKET["dev"],
         project_name="spec2vec-test",
-        model_output_dir=MODEL_DIR["dev"],
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow/full-chunked",
         deploy_model=False,
         auth=True,
         auth_url=config["auth_url"].get(str),
-        # schedule=timedelta(minutes=20),
         **login_config,
     )
 
     assert flow_id
-
-
-@pytest.mark.skip(reason="This test uses internet connection.")
-def test_dataset_wrong_dataset_name():
-    with pytest.raises(ValueError):
-        flow_id = deploy_training_flow(
-            dataset_name="NOT-A-DATASET",
-            image="drtools/prefect:omigami-SNAPSHOT.f06b4f9",
-            iterations=5,
-            window=500,
-            intensity_weighting_power=0.5,
-            allowed_missing_percentage=5,
-            n_decimals=2,
-            skip_if_exists=True,
-            source_uri=SOURCE_URI_COMPLETE_GNPS,
-            environment="dev",
-            output_dir=S3_BUCKET,
-            project_name="spec2vec-mlops-10k",
-            model_output_dir=str(DRPath(f"{MODEL_DIR}/tests")),
-            mlflow_server=MLFLOW_SERVER,
-            flow_name="training-flow",
-            auth=True,
-            **config["login"]["dev"].get(dict),
-        )

@@ -43,16 +43,18 @@ class DownloadData(Task):
 class DownloadParameters:
     input_uri: str
     output_dir: str
-    dataset_name: str
-    checkpoint: str = "spectrum_ids.pkl"
+    dataset_folder: str
+    # these are changed from defaults during tests only
+    dataset_file: str = "gnps.json"
+    checkpoint_file: str = "spectrum_ids.pkl"
 
     @property
     def download_path(self):
-        return f"{self.output_dir}/{self.dataset_name}"
+        return f"{self.output_dir}/{self.dataset_folder}/{self.dataset_file}"
 
     @property
     def checkpoint_path(self):
-        return f"{self.output_dir}/{self.checkpoint}"
+        return f"{self.output_dir}/{self.dataset_folder}/{self.checkpoint_file}"
 
     @property
     def kwargs(self):

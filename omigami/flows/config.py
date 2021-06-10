@@ -9,7 +9,7 @@ from prefect.run_configs import RunConfig, KubernetesRun
 from prefect.schedules import IntervalSchedule
 from prefect.storage import Storage, S3
 
-from omigami.config import ROOT_DIR, S3_BUCKET
+from omigami.config import ROOT_DIR, S3_BUCKETS
 
 
 """
@@ -68,7 +68,7 @@ def make_flow_config(
 
     # storage_type
     if storage_type == PrefectStorageMethods.S3:
-        storage = S3(DRPath(S3_BUCKET[environment]).netloc)
+        storage = S3(DRPath(S3_BUCKETS[environment]).netloc)
     else:
         raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
 
