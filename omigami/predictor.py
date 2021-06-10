@@ -4,8 +4,8 @@ from typing import Union, List, Dict, Any, Tuple
 import numpy as np
 from gensim.models import Word2Vec
 from matchms import calculate_scores
-from matchms.importing.load_from_json import as_spectrum
 from matchms.filtering import normalize_intensities
+from matchms.importing.load_from_json import as_spectrum
 from mlflow.pyfunc import PythonModel
 
 from omigami.entities.embedding import Embedding
@@ -14,8 +14,8 @@ from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
-
 log = getLogger(__name__)
+SpectrumMatches = Dict[str, Dict[str, Any]]
 
 
 class Predictor(PythonModel):
@@ -40,7 +40,7 @@ class Predictor(PythonModel):
         context,
         data_input_and_parameters: Dict[str, Union[Dict, List]],
         mz_range: int = 1,
-    ) -> List[List[Dict]]:
+    ) -> Dict[str, SpectrumMatches]:
         """Match spectra from a json payload input with spectra having the highest similarity scores
         in the GNPS spectra library.
         Return a list matches of IDs and scores for each input spectrum.
@@ -52,32 +52,34 @@ class Predictor(PythonModel):
 
         log.info("Loading reference embeddings.")
         reference_spectra_ids = self._get_ref_ids_from_data_input(data_input, mz_range)
-        self.check_spectrum_refs(reference_spectra_ids)
         log.info(f"Loaded {len(reference_spectra_ids)} IDs from the database.")
         reference_embeddings = self._load_unique_ref_embeddings(reference_spectra_ids)
-        log.info(
-            f"Loaded {len(reference_embeddings.keys())} embeddings from the database."
-        )
-        log.info("Getting best matches.")
+        log.info(f"Loaded {len(reference_embeddings)} embeddings from the database.")
 
-        all_best_matches = []
-        for ref_spectrum_ids, input_spectrum_emb in zip(
-            reference_spectra_ids, input_spectra_embeddings
-        ):
+        log.info("Calculating best matches.")
+        best_matches = {}
+
+        for i, input_spectrum in enumerate(input_spectra_embeddings):
+
             input_spectrum_ref_emb = self._get_input_ref_embeddings(
-                ref_spectrum_ids, reference_embeddings
+                reference_spectra_ids[i], reference_embeddings
             )
-            input_spectrum_number = reference_spectra_ids.index(ref_spectrum_ids) + 1
-            spectrum_best_matches = self._get_best_matches(  # SP1+SP2+SP3
+            spectrum_best_matches = self._calculate_best_matches(
                 input_spectrum_ref_emb,
-                input_spectrum_emb,
-                input_spectrum_number,
+                input_spectrum,
                 **parameters,
             )
-            all_best_matches.append(spectrum_best_matches)
+            best_matches[
+                input_spectrum.spectrum_id or f"spectrum-{i}"
+            ] = spectrum_best_matches
+
+        if "include_metadata" in parameters:
+            best_matches = self._add_metadata(
+                best_matches, parameters["include_metadata"]
+            )
 
         log.info("Finishing prediction.")
-        return all_best_matches
+        return best_matches
 
     def set_run_id(self, run_id: str):
         self.run_id = run_id
@@ -126,10 +128,12 @@ class Predictor(PythonModel):
             )
             ref_ids = self.dgw.get_spectrum_ids_within_range(min_mz, max_mz)
             ref_spectrum_ids.append(ref_ids)
+
+        self._check_spectrum_refs(ref_spectrum_ids)
         return ref_spectrum_ids
 
     @staticmethod
-    def check_spectrum_refs(reference_spectra_ids: List[List[str]]):
+    def _check_spectrum_refs(reference_spectra_ids: List[List[str]]):
         if [] in reference_spectra_ids:
             idx_null = [
                 idx
@@ -150,14 +154,13 @@ class Predictor(PythonModel):
         )
         return {emb.spectrum_id: emb for emb in unique_ref_embeddings}
 
-    def _get_best_matches(
+    def _calculate_best_matches(
         self,
         references: List[Embedding],
         query: Embedding,
-        input_spectrum_number: int,
         n_best_spectra: int = 10,
         **parameters,
-    ) -> List[Dict[str, Union[int, Any]]]:
+    ) -> SpectrumMatches:
         spec2vec_embeddings_similarity = Spec2VecEmbeddings(
             model=self.model,
             intensity_weighting_power=self.intensity_weighting_power,
@@ -172,15 +175,11 @@ class Predictor(PythonModel):
         all_scores = scores.scores_by_query(query, sort=True)
         all_scores = [(em, sc) for em, sc in all_scores if not np.isnan(sc)]
         spectrum_best_scores = all_scores[:n_best_spectra]
-        spectrum_best_matches = []
+        spectrum_best_matches = {}
         for spectrum_match in spectrum_best_scores:
-            spectrum_best_matches.append(
-                {
-                    "spectrum_input": input_spectrum_number,
-                    "match_spectrum_id": spectrum_match[0].spectrum_id,
-                    "score": spectrum_match[1],
-                }
-            )
+            spectrum_best_matches[spectrum_match[0].spectrum_id] = {
+                "score": spectrum_match[1]
+            }
         return spectrum_best_matches
 
     @staticmethod
@@ -194,3 +193,20 @@ class Predictor(PythonModel):
             if sp_id in ref_embeddings
         ]
         return ref_emb_for_input
+
+    def _add_metadata(
+        self, best_matches: Dict[str, SpectrumMatches], metadata_keys: List[str]
+    ) -> Dict[str, SpectrumMatches]:
+        spectrum_ids = [key for match in best_matches.values() for key in match.keys()]
+
+        spectra = self.dgw.read_spectra(set(spectrum_ids))
+
+        # add key/value pairs to the dictionary for the user specified keys
+        for matches in best_matches.values():
+            for spectrum_id in matches.keys():
+                for key in metadata_keys:
+                    matches[spectrum_id][key] = spectra[spectrum_id].metadata[
+                        key.lower()
+                    ]
+
+        return best_matches

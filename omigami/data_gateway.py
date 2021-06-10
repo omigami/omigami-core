@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from logging import Logger
 from typing import List, Iterable, Any, Set
 
 from spec2vec import SpectrumDocument
@@ -43,14 +44,27 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
-    def write_embeddings(self, embeddings: List[Embedding], run_id: str):
+    def write_embeddings(
+        self, embeddings: List[Embedding], run_id: str, logger: Logger = None
+    ):
         """Write embeddings to Redis."""
         pass
 
     @abstractmethod
-    def list_spectra_not_exist(self, spectrum_ids: List[str]) -> Set[str]:
-        """Check whether spectra exist.
-        Return a list of IDs that do not exist.
+    def list_existing_spectra(self, spectrum_ids: List[str]) -> Set[str]:
+        """Check whether the spectrum ids exist on the database.
+        Return a set of existing spectrum IDs.
+
+        Parameters
+        ----------
+        spectrum_ids:
+            List of spectrum ids that will be verified
+
+        Returns
+        -------
+        existing_spectrum_ids:
+            Subset of the input ids that exist on the database
+
         """
         pass
 
@@ -64,7 +78,7 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
-    def read_documents_iter(self, spectrum_ids: List[str]) -> Iterable:
+    def read_documents_iter(self, spectrum_ids: List[str] = None) -> Iterable:
         pass
 
     @abstractmethod

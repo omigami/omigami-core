@@ -7,13 +7,20 @@ import pytest
 import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
+from pytest_redis import factories
 
 import omigami.tasks.config
-from omigami.config import DOCUMENT_HASHES
+from omigami.config import (
+    DOCUMENT_HASHES,
+    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+    SPECTRUM_HASHES,
+    EMBEDDING_HASHES,
+)
 from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
+redis_db = factories.redisdb("redis_nooproc")
 
 
 @pytest.fixture
@@ -109,6 +116,20 @@ def spectrum_ids(local_gnps_small_json):
     return ids
 
 
+@pytest.fixture
+def spectra_stored(redis_db, cleaned_data):
+    pipe = redis_db.pipeline()
+    for spectrum in cleaned_data:
+        pipe.zadd(
+            SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+            {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
+        )
+        pipe.hset(
+            SPECTRUM_HASHES, spectrum.metadata["spectrum_id"], pickle.dumps(spectrum)
+        )
+    pipe.execute()
+
+
 @pytest.fixture()
 def documents_stored(redis_db, cleaned_data, documents_data):
     pipe = redis_db.pipeline()
@@ -122,8 +143,26 @@ def documents_stored(redis_db, cleaned_data, documents_data):
 
 
 @pytest.fixture()
+def embeddings_stored(redis_db, cleaned_data, embeddings):
+    run_id = "1"
+    pipe = redis_db.pipeline()
+    for embedding in embeddings:
+        pipe.hset(
+            f"{EMBEDDING_HASHES}_{run_id}",
+            embedding.spectrum_id,
+            pickle.dumps(embedding),
+        )
+    pipe.execute()
+
+
+@pytest.fixture()
+def redis_full_setup(spectra_stored, documents_stored, embeddings_stored):
+    pass
+
+
+@pytest.fixture()
 def clean_chunk_files():
-    fs = get_fs(ASSETS_DIR)
+    fs = get_fs(str(ASSETS_DIR))
     if fs.exists(ASSETS_DIR / "chunk_paths.pickle"):
         fs.rm(ASSETS_DIR / "chunk_paths.pickle")
 
