@@ -25,7 +25,7 @@ spec:
           - name: spec2vec
             resources:
               requests:
-                memory: 6Gi
+                memory: 8Gi
             readinessProbe:
               failureThreshold: 10
               initialDelaySeconds: 120
