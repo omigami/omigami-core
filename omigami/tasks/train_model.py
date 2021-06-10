@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 import gensim
 import prefect
@@ -8,7 +8,6 @@ from spec2vec.model_building import (
     set_spec2vec_defaults,
     learning_rates_to_gensim_style,
 )
-from spec2vec.utils import TrainingProgressLogger
 
 from omigami.data_gateway import SpectrumDataGateway
 from omigami.helper_classes.train_logger import CustomTrainingProgressLogger
@@ -52,7 +51,7 @@ class TrainModel(Task):
         config = merge_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, spectrum_ids_chunks: List[List[str]] = None):
+    def run(self, spectrum_ids_chunks: List[Set[str]] = None):
         flatten_ids = [item for elem in spectrum_ids_chunks for item in elem]
         self.logger.info(
             f"Connecting to the data. {len(flatten_ids)} documents will be used on training."

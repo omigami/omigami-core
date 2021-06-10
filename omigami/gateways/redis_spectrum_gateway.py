@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import pickle
+from logging import Logger
 from typing import List, Iterable, Dict, Set
 
 import redis
@@ -63,9 +64,16 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
                 pipe.hset(DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(document))
         pipe.execute()
 
-    def write_embeddings(self, embeddings: List[Embedding], run_id: str):
+    def write_embeddings(
+        self, embeddings: List[Embedding], run_id: str, logger: Logger = None
+    ):
         """Write embeddings data on the redis database."""
         self._init_client()
+        if logger:
+            logger.debug(
+                f"Saving {len(embeddings)} embeddings to the client {self.client}"
+                f" on hash '{EMBEDDING_HASHES}_{run_id}'."
+            )
         pipe = self.client.pipeline()
         for embedding in embeddings:
             pipe.hset(
@@ -80,12 +88,10 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         return [id_.decode() for id_ in self.client.hkeys(SPECTRUM_HASHES)]
 
-    def list_spectra_not_exist(self, spectrum_ids: List[str]) -> Set[str]:
-        """Check whether spectra exist on Redis.
-        Return a list of IDs that do not exist.
-        """
+    def list_existing_spectra(self, spectrum_ids: List[str]) -> Set[str]:
         self._init_client()
-        return set(self._list_spectrum_ids_not_exist(SPECTRUM_HASHES, spectrum_ids))
+        existing = set(self.client.hkeys(SPECTRUM_HASHES))
+        return {sp_id for sp_id in spectrum_ids if sp_id.encode() in existing}
 
     # Not used atm
     def list_documents_not_exist(self, spectrum_ids: List[str]) -> List[str]:
@@ -95,10 +101,22 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         return self._list_spectrum_ids_not_exist(DOCUMENT_HASHES, spectrum_ids)
 
-    # Not used atm
     def read_spectra(self, spectrum_ids: Iterable[str] = None) -> Dict[str, Spectrum]:
-        """Read the spectra information from spectra IDs.
-        Return a list of Spectrum objects."""
+        """
+        Read the spectra information from spectra IDs.
+        Return a dict of Spectrum objects.
+
+        Parameters
+        ----------
+        spectrum_ids:
+            List of spectrum ids to be read from the database
+
+        Returns
+        -------
+        spectra;
+            Dictionary of `spectrum_id: spectrum`
+
+        """
         self._init_client()
         spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
         return {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}
@@ -149,6 +167,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     def _list_spectrum_ids_not_exist(
         self, hash_name: str, spectrum_ids: List[str]
     ) -> List[str]:
+        self._init_client()
         return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]
 
     def delete_spectra(self, spectrum_ids: List[str]):
