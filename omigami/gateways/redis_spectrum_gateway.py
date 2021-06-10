@@ -89,9 +89,6 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         return [id_.decode() for id_ in self.client.hkeys(SPECTRUM_HASHES)]
 
     def list_existing_spectra(self, spectrum_ids: List[str]) -> Set[str]:
-        """Check whether spectra exist on Redis.
-        Return a list of IDs that do not exist.
-        """
         self._init_client()
         existing = set(self.client.hkeys(SPECTRUM_HASHES))
         return {sp_id for sp_id in spectrum_ids if sp_id.encode() in existing}
@@ -105,8 +102,21 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         return self._list_spectrum_ids_not_exist(DOCUMENT_HASHES, spectrum_ids)
 
     def read_spectra(self, spectrum_ids: Iterable[str] = None) -> Dict[str, Spectrum]:
-        """Read the spectra information from spectra IDs.
-        Return a list of Spectrum objects."""
+        """
+        Read the spectra information from spectra IDs.
+        Return a dict of Spectrum objects.
+
+        Parameters
+        ----------
+        spectrum_ids:
+            List of spectrum ids to be read from the database
+
+        Returns
+        -------
+        spectra;
+            Dictionary of `spectrum_id: spectrum`
+
+        """
         self._init_client()
         spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
         return {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}

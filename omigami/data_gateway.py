@@ -52,8 +52,19 @@ class SpectrumDataGateway(ABC):
 
     @abstractmethod
     def list_existing_spectra(self, spectrum_ids: List[str]) -> Set[str]:
-        """Check whether spectra exist.
-        Return a list of IDs that do not exist.
+        """Check whether the spectrum ids exist on the database.
+        Return a set of existing spectrum IDs.
+
+        Parameters
+        ----------
+        spectrum_ids:
+            List of spectrum ids that will be verified
+
+        Returns
+        -------
+        existing_spectrum_ids:
+            Subset of the input ids that exist on the database
+
         """
         pass
 
