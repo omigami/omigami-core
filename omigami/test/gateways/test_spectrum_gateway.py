@@ -46,9 +46,11 @@ def test_list_spectrum_ids(cleaned_data, spectra_stored):
 
 def test_list_spectra_not_exist(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
+    spectrum_ids_stored += ["batman", "ROBEN"]
+
     dgw = RedisSpectrumDataGateway()
     spectra = dgw._list_spectrum_ids_not_exist("spectrum_data", spectrum_ids_stored)
-    assert len(spectra) == 0
+    assert set(spectra) == {"batman", "ROBEN"}
 
 
 def test_list_documents_not_exist(cleaned_data, documents_stored):
