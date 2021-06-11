@@ -10,9 +10,9 @@ from omigami.deployment import (
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
@@ -26,11 +26,11 @@ def test_deploy_training_flow():
         skip_if_exists=True,
         chunk_size=int(1e8),
         environment="dev",
-        dev_dataset_name="small",
+        dataset_name="small",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         project_name="spec2vec-test",
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/test-merge",
+        flow_name="training-flow/test-dev-download-path",
         deploy_model=False,
         auth=True,
         auth_url=config["auth_url"].get(str),

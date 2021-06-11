@@ -10,7 +10,7 @@ from omigami.config import (
     MODEL_DIRECTORIES,
     MLFLOW_SERVER,
     DATASET_DIRECTORIES,
-    REDIS_DEV_DATABASES,
+    REDIS_DATABASES,
     S3_BUCKETS,
 )
 from prefect import Client
@@ -55,7 +55,7 @@ def deploy_training_flow(
     auth_url: Optional[str] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
-    dev_dataset_name: Optional[str] = None,
+    dataset_name: Optional[str] = None,
 ):
 
     # authenticate user credentials using the auth service endpoint
@@ -73,28 +73,16 @@ def deploy_training_flow(
         raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
     # process database and filesystem configs
-    output_dir: str
-    redis_db: str
-    dataset_folder: str
-    model_directories: str
-    if environment == "dev":
-        model_output_dir = MODEL_DIRECTORIES["dev"]
-        output_dir = S3_BUCKETS["dev"]
-        try:
-            redis_db = REDIS_DEV_DATABASES[dev_dataset_name]
-            dataset_folder = DATASET_DIRECTORIES["dev"][dev_dataset_name]
-        except KeyError:
-            raise ValueError(
-                f"No such option available for reference dataset: {dev_dataset_name}. Available options are:"
-                f"{list(REDIS_DEV_DATABASES.keys())}."
-            )
-    else:
-        model_output_dir = MODEL_DIRECTORIES["prod"]
-        output_dir = S3_BUCKETS["prod"]
-        redis_db = "0"
-        dataset_folder = (
-            f'{DATASET_DIRECTORIES["prod"]}/{datetime.today().strftime("%Y-%m-%d")}'
+    if dataset_name not in DATASET_DIRECTORIES[environment].keys():
+        raise ValueError(
+            f"No such option available for reference dataset: {dataset_name}. Available options are:"
+            f"{list(DATASET_DIRECTORIES[environment].keys())}."
         )
+
+    model_output_dir = MODEL_DIRECTORIES[environment]
+    dataset_folder = f'{DATASET_DIRECTORIES[environment][dataset_name]}/{datetime.today().strftime("%Y-%m")}'
+    redis_db = REDIS_DATABASES[environment][dataset_name]
+    output_dir = S3_BUCKETS[environment]
 
     # instantiate gateways
     input_dgw = FSInputDataGateway()
