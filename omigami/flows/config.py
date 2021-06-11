@@ -9,7 +9,6 @@ from typing_extensions import Literal
 
 from omigami.config import ROOT_DIR, S3_BUCKET
 
-
 """
     Implemented Prefect flow configurations:
 """
@@ -24,6 +23,7 @@ class PrefectExecutorMethods(Enum):
     LOCAL_DASK = 1
 
 
+ION_MODES = {"positive", "negative"}
 IonModes = Literal["positive", "negative"]
 
 

@@ -7,6 +7,7 @@ from kubernetes.config import ConfigException
 from prefect import Task
 
 from omigami.config import SELDON_PARAMS, CLUSTERS
+from omigami.flows.config import ION_MODES
 from omigami.helper_classes.exception import DeployingError
 from omigami.tasks.config import merge_configs
 
@@ -15,12 +16,20 @@ logger = prefect.context.get("logger")
 
 class DeployModel(Task):
     def __init__(
-        self, redis_db: str, environment: str = "dev", overwrite: bool = True, **kwargs
+        self,
+        redis_db: str,
+        environment: str = "dev",
+        overwrite: bool = True,
+        ion_mode: str = "positive",
+        **kwargs,
     ):
         self.redis_db = redis_db
         self.environment = environment
         self.overwrite = overwrite
+        if ion_mode not in ION_MODES:
+            raise ValueError
         self._ion_mode = ion_mode
+
         config = merge_configs(kwargs)
         super().__init__(**config)
 
