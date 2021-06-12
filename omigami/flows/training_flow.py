@@ -6,8 +6,9 @@ import prefect
 from drfs import DRPath
 from prefect import Flow, unmapped
 
+from omigami.config import IonModes
 from omigami.data_gateway import InputDataGateway
-from omigami.flows.config import FlowConfig, IonModes
+from omigami.flows.config import FlowConfig
 from omigami.flows.utils import create_result
 from omigami.tasks import (
     DownloadData,

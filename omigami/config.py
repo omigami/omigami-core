@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import confuse
+from typing_extensions import Literal
 
 config = confuse.Configuration("omigami", __name__)
 
@@ -30,3 +31,5 @@ RedisDBDatasetSize = {"small": "2", "10k": "1", "complete": "0"}
 DATASET_DIR = config["storage"]["dataset_dir"].get(dict)
 
 CLUSTERS = config["clusters"].get(dict)
+ION_MODES = {"positive", "negative"}
+IonModes = Literal["positive", "negative"]

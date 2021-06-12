@@ -1,7 +1,9 @@
 from typing import Optional
 
+from prefect import Client
 from typing_extensions import Literal
 
+from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     API_SERVER,
@@ -11,13 +13,15 @@ from omigami.config import (
     DATASET_DIR,
     RedisDBDatasetSize,
     S3_BUCKET,
+    IonModes,
 )
-from prefect import Client
-
+from omigami.flows.config import (
+    make_flow_config,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
 from omigami.flows.training_flow import build_training_flow
-from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.gateways.input_data_gateway import FSInputDataGateway
-
 from omigami.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
 )
@@ -25,13 +29,6 @@ from omigami.tasks import (
     DownloadParameters,
     ProcessSpectrumParameters,
     TrainModelParameters,
-)
-
-from omigami.flows.config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-    IonModes,
 )
 
 

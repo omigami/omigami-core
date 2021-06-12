@@ -10,9 +10,9 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
 
+from omigami.config import IonModes
 from omigami.data_gateway import InputDataGateway
 from omigami.entities.data_models import SpectrumInputData
-from omigami.flows.config import IonModes
 
 KEYS = [
     "spectrum_id",
