@@ -20,7 +20,7 @@ from omigami.flows.config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.flows.training_flow import build_training_flow
+from omigami.flows.training_flow import build_training_flow, TrainingFlowParameters
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
@@ -29,6 +29,7 @@ from omigami.tasks import (
     DownloadParameters,
     ProcessSpectrumParameters,
     TrainModelParameters,
+    ChunkingParameters,
 )
 
 
@@ -72,8 +73,8 @@ def deploy_training_flow(
         spectrum_ids_name = DATASET_DIR[dataset_name] + "spectrum_ids.pkl"
     except KeyError:
         raise ValueError(
-            f"No such option available for reference dataset: {dataset_name}. Available options are:"
-            f"{list(RedisDBDatasetSize.keys())}."
+            f"No such option available for reference dataset: {dataset_name}."
+            f"Available options are: {list(RedisDBDatasetSize.keys())}."
         )
 
     input_dgw = FSInputDataGateway()
@@ -82,12 +83,23 @@ def deploy_training_flow(
     download_parameters = DownloadParameters(
         source_uri, output_dir, dataset_path, spectrum_ids_name
     )
+    chunking_parameters = ChunkingParameters(
+        download_parameters.download_path, chunk_size, ion_mode
+    )
     process_parameters = ProcessSpectrumParameters(
         spectrum_dgw,
         n_decimals,
         skip_if_exists,
     )
     train_model_parameters = TrainModelParameters(spectrum_dgw, iterations, window)
+    flow_parameters = TrainingFlowParameters(
+        input_dgw,
+        spectrum_dgw,
+        download_parameters,
+        chunking_parameters,
+        process_parameters,
+        train_model_parameters,
+    )
 
     flow_config = make_flow_config(
         image=image,
@@ -98,15 +110,11 @@ def deploy_training_flow(
     )
 
     flow = build_training_flow(
-        input_dgw=input_dgw,
-        download_params=download_parameters,
-        process_params=process_parameters,
-        train_params=train_model_parameters,
-        chunk_size=chunk_size,
+        project_name,
+        flow_parameters,
         ion_mode=ion_mode,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
-        project_name=project_name,
         model_output_dir=model_output_dir,
         mlflow_server=mlflow_server,
         flow_config=flow_config,

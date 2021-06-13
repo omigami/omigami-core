@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List
 
 from drfs import DRPath
@@ -8,22 +9,33 @@ from omigami.data_gateway import InputDataGateway
 from omigami.tasks.config import merge_configs
 
 
+@dataclass
+class ChunkingParameters:
+    file_path: str
+    chunk_size: int
+    ion_mode: IonModes
+
+    @property
+    def chunk_paths_file(self) -> str:
+        return f"{str(DRPath(self.file_path).parent)}/chunk_paths.pickle"
+
+    def __post_init__(self):
+        if self.ion_mode not in ION_MODES:
+            raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
+
+
 class CreateChunks(Task):
     def __init__(
         self,
-        file_path: str,
         input_dgw: InputDataGateway,
-        chunk_size: int,
-        ion_mode: IonModes = "positive",
+        chunking_parameters: ChunkingParameters,
         **kwargs,
     ):
         self._input_dgw = input_dgw
-        self._chunk_size = chunk_size
-        self._file_path = file_path  # dataset-id/chunks -> dataset-id/ion-mode/chunks/
-        self._ion_mode = ion_mode
-
-        if ion_mode not in ION_MODES:
-            raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
+        self._chunk_size = chunking_parameters.chunk_size
+        self._file_path = chunking_parameters.file_path
+        self._ion_mode = chunking_parameters.ion_mode
+        self._chunk_paths_file = chunking_parameters.chunk_paths_file
 
         config = merge_configs(kwargs)
 
@@ -40,8 +52,7 @@ class CreateChunks(Task):
             f"{self._chunk_size}"
         )
 
-        chunk_paths_file = f"{str(DRPath(self._file_path).parent)}/chunk_paths.pickle"
-        self.logger.info(f"Saving pickle with file paths to {chunk_paths_file}")
-        self._input_dgw.serialize_to_file(chunk_paths_file, chunk_paths)
+        self.logger.info(f"Saving pickle with file paths to {self._chunk_paths_file}")
+        self._input_dgw.serialize_to_file(self._chunk_paths_file, chunk_paths)
 
         return chunk_paths

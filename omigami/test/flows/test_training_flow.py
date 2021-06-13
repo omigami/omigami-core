@@ -4,9 +4,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
-from prefect import Flow
-from prefect.executors import LocalDaskExecutor
-from prefect.storage import S3
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.data_gateway import SpectrumDataGateway
@@ -19,12 +16,11 @@ from omigami.flows.training_flow import build_training_flow
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.tasks import (
-    DeployModel,
     DownloadParameters,
     ProcessSpectrumParameters,
     TrainModelParameters,
 )
-from omigami.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
+from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[3])
 
@@ -55,9 +51,9 @@ def test_training_flow(flow_config):
     flow = build_training_flow(
         project_name="test",
         input_dgw=mock_input_dgw,
-        download_params=DownloadParameters("source_uri", "datasets", "dataset-id"),
-        process_params=ProcessSpectrumParameters(mock_spectrum_dgw, 2, False),
-        train_params=TrainModelParameters(mock_spectrum_dgw, 25, 500),
+        download_parameters=DownloadParameters("source_uri", "datasets", "dataset-id"),
+        processing_parameters=ProcessSpectrumParameters(mock_spectrum_dgw, 2, False),
+        training_parameters=TrainModelParameters(mock_spectrum_dgw, 25, 500),
         model_output_dir="model-output",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
@@ -97,11 +93,11 @@ def test_run_training_flow(
     flow = build_training_flow(
         project_name="test",
         input_dgw=input_dgw,
-        download_params=download_parameters,
-        process_params=process_parameters,
+        download_parameters=download_parameters,
+        processing_parameters=process_parameters,
         model_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
-        train_params=train_params,
+        training_parameters=train_params,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
         flow_config=flow_config,
@@ -119,22 +115,3 @@ def test_run_training_flow(
     assert "model" in os.listdir(tmpdir / "model-output")
     assert len(fs.ls(ASSETS_DIR / "chunks")) == 6
     assert fs.exists(ASSETS_DIR / "chunk_paths.pickle")
-
-
-@pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
-def test_deploy_seldon_model():
-    FLOW_CONFIG = {
-        "storage": S3("dr-prefect"),
-        "executor": LocalDaskExecutor(scheduler="threads", num_workers=5),
-    }
-
-    with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
-        DeployModel(redis_db="0", environment="dev", **TEST_TASK_CONFIG)(
-            registered_model={
-                "model_uri": "s3://omigami-dev/spec2vec/mlflow/ece0dbc5aba84322ae3a2cc6ae97212b/artifacts/model/"
-            }
-        )
-
-    res = deploy.run()
-
-    assert res.is_successful()

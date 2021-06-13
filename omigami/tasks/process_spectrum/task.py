@@ -10,22 +10,33 @@ from omigami.tasks.config import merge_configs
 from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
 
 
+@dataclass
+class ProcessSpectrumParameters:
+    spectrum_dgw: SpectrumDataGateway
+    n_decimals: int = 2
+    skip_if_exists: bool = True
+
+    @property
+    def kwargs(self):
+        return dict(
+            spectrum_dgw=self.spectrum_dgw,
+            n_decimals=self.n_decimals,
+            skip_if_exists=self.skip_if_exists,
+        )
+
+
 class ProcessSpectrum(Task):
     def __init__(
         self,
-        download_path: str,
-        spectrum_dgw: SpectrumDataGateway,
         input_dgw: InputDataGateway,
-        n_decimals: int,
-        skip_if_exists: bool = True,
+        process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
-        self._spectrum_dgw = spectrum_dgw
         self._input_dgw = input_dgw
-        self._n_decimals = n_decimals
-        self._skip_if_exists = skip_if_exists
+        self._spectrum_dgw = process_parameters.spectrum_dgw
+        self._n_decimals = process_parameters.n_decimals
+        self._skip_if_exists = process_parameters.skip_if_exists
         self._processor = SpectrumProcessor()
-        self._download_path = download_path
         config = merge_configs(kwargs)
         super().__init__(**config)
 
@@ -37,7 +48,8 @@ class ProcessSpectrum(Task):
         )
         spectrum_ids = [sp["SpectrumID"] for sp in spectra]
 
-        # TODO: refactor to use prefect's checkpoint functionality
+        # TODO: refactor to use prefect's checkpoint functionality - maybe add a
+        # TODO: checkpoint file to S3 for every processed chunk
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
             existing_ids = self._spectrum_dgw.list_existing_spectra(spectrum_ids)
@@ -71,19 +83,3 @@ class ProcessSpectrum(Task):
         self._spectrum_dgw.write_spectrum_documents(spectrum_documents)
 
         return {sp.spectrum_id for sp in spectrum_documents}
-
-
-@dataclass
-class ProcessSpectrumParameters:
-    spectrum_dgw: SpectrumDataGateway
-    n_decimals: int = 2
-    # TODO: deprecated parameter. see comments on clean data task
-    skip_if_exists: bool = True
-
-    @property
-    def kwargs(self):
-        return dict(
-            spectrum_dgw=self.spectrum_dgw,
-            n_decimals=self.n_decimals,
-            skip_if_exists=self.skip_if_exists,
-        )

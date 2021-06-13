@@ -27,26 +27,17 @@ class TrainModelParameters:
     epochs: int = 25
     window: int = 500
 
-    @property
-    def kwargs(self):
-        return {
-            "spectrum_dgw": self.spectrum_dgw,
-            "epochs": self.epochs,
-            "window": self.window,
-        }
-
 
 class TrainModel(Task):
     def __init__(
         self,
         spectrum_dgw: SpectrumDataGateway,
-        epochs: int = 25,
-        window: int = 500,
+        training_parameters: TrainModelParameters,
         **kwargs,
     ):
         self._spectrum_dgw = spectrum_dgw
-        self._epochs = epochs
-        self._window = window
+        self._epochs = training_parameters.epochs
+        self._window = training_parameters.window
 
         config = merge_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)

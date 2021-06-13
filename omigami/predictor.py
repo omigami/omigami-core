@@ -73,7 +73,7 @@ class Predictor(PythonModel):
                 input_spectrum.spectrum_id or f"spectrum-{i}"
             ] = spectrum_best_matches
 
-        if parameters["include_metadata"]:
+        if parameters.get("include_metadata", None):
             best_matches = self._add_metadata(
                 best_matches, parameters["include_metadata"]
             )
