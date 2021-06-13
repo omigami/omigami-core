@@ -10,11 +10,17 @@ from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 @pytest.mark.parametrize(
     "ion_mode, expected_chunk_files",
     [
-        ("positive", 6),
-        ("negative", 1),
+        ("positive", 3),
+        ("negative", 2),
     ],
 )
-def test_create_chunks(local_gnps_small_json, spectrum_ids, clean_chunk_files, ion_mode, expected_chunk_files):
+def test_create_chunks(
+    local_gnps_small_json,
+    spectrum_ids,
+    clean_chunk_files,
+    ion_mode,
+    expected_chunk_files,
+):
     input_dgw = FSInputDataGateway()
     with Flow("test-flow") as test_flow:
         chunks = CreateChunks(
@@ -22,7 +28,7 @@ def test_create_chunks(local_gnps_small_json, spectrum_ids, clean_chunk_files, i
             input_dgw=input_dgw,
             chunk_size=150000,
             ion_mode=ion_mode,
-            **create_result(ASSETS_DIR / "chunk_paths.pickle"),
+            **create_result(ASSETS_DIR / f"{ion_mode}/chunk_paths.pickle"),
             **TEST_TASK_CONFIG,
         )(spectrum_ids)
 
@@ -31,6 +37,8 @@ def test_create_chunks(local_gnps_small_json, spectrum_ids, clean_chunk_files, i
 
     assert res.is_successful()
     assert res_2.result[chunks].is_cached()
-    assert input_dgw.fs.exists(ASSETS_DIR / "chunk_paths.pickle")
-    assert len(input_dgw.fs.ls(ASSETS_DIR / "chunks" / ion_mode)) == expected_chunk_files
+    assert input_dgw.fs.exists(ASSETS_DIR / f"{ion_mode}/chunk_paths.pickle")
+    assert (
+        len(input_dgw.fs.ls(ASSETS_DIR / "chunks" / ion_mode)) == expected_chunk_files
+    )
     assert set(res.result[chunks].result) == set(res_2.result[chunks].result)

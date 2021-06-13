@@ -80,8 +80,8 @@ def test_load_spectrum_ids(local_gnps_small_json, spectrum_ids):
 @pytest.mark.parametrize(
     "ion_mode, expected_chunk_files",
     [
-        ("positive", 6),
-        ("negative", 1),
+        ("positive", 3),
+        ("negative", 2),
     ],
 )
 def test_chunk_gnps_outputs(
@@ -98,8 +98,8 @@ def test_chunk_gnps_outputs(
 @pytest.mark.parametrize(
     "ion_mode, expected_chunk_files",
     [
-        ("positive", 6),
-        ("negative", 1),
+        ("positive", 3),
+        ("negative", 2),
     ],
 )
 def test_chunk_gnps_data_consistency(
