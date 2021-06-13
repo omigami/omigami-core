@@ -64,14 +64,13 @@ def build_training_flow(
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
-    model_output_dir: str,  # TODO: add to parameters class
-    mlflow_server: str,  # TODO: add to parameters class
-    redis_db: str,  # TODO: add to parameters class
-    intensity_weighting_power: Union[float, int] = 0.5,  # TODO: add to parameters class
-    allowed_missing_percentage: Union[
-        float, int
-    ] = 5.0,  # TODO: add to parameters class
-    deploy_model: bool = False,  # TODO: add to parameters class
+    # TODO: incorporate the next parameters into data classes
+    model_output_dir: str,
+    mlflow_server: str,
+    redis_db: str,
+    intensity_weighting_power: Union[float, int] = 0.5,
+    allowed_missing_percentage: Union[float, int] = 5.0,
+    deploy_model: bool = False,
 ) -> Flow:
     """
     Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
