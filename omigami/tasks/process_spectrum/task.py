@@ -16,14 +16,6 @@ class ProcessSpectrumParameters:
     n_decimals: int = 2
     skip_if_exists: bool = True
 
-    @property
-    def kwargs(self):
-        return dict(
-            spectrum_dgw=self.spectrum_dgw,
-            n_decimals=self.n_decimals,
-            skip_if_exists=self.skip_if_exists,
-        )
-
 
 class ProcessSpectrum(Task):
     def __init__(

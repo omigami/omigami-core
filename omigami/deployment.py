@@ -25,12 +25,6 @@ from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
 )
-from omigami.tasks import (
-    DownloadParameters,
-    ProcessSpectrumParameters,
-    TrainModelParameters,
-    ChunkingParameters,
-)
 
 
 def deploy_training_flow(
@@ -80,25 +74,19 @@ def deploy_training_flow(
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
 
-    download_parameters = DownloadParameters(
-        source_uri, output_dir, dataset_path, spectrum_ids_name
-    )
-    chunking_parameters = ChunkingParameters(
-        download_parameters.download_path, chunk_size, ion_mode
-    )
-    process_parameters = ProcessSpectrumParameters(
-        spectrum_dgw,
-        n_decimals,
-        skip_if_exists,
-    )
-    train_model_parameters = TrainModelParameters(spectrum_dgw, iterations, window)
     flow_parameters = TrainingFlowParameters(
-        input_dgw,
-        spectrum_dgw,
-        download_parameters,
-        chunking_parameters,
-        process_parameters,
-        train_model_parameters,
+        input_dgw=input_dgw,
+        spectrum_dgw=spectrum_dgw,
+        source_uri=source_uri,
+        output_dir=output_dir,
+        dataset_path=dataset_path,
+        spectrum_ids_name=spectrum_ids_name,
+        chunk_size=chunk_size,
+        ion_mode=ion_mode,
+        n_decimals=n_decimals,
+        skip_if_exists=skip_if_exists,
+        iterations=iterations,
+        window=window,
     )
 
     flow_config = make_flow_config(
@@ -111,15 +99,14 @@ def deploy_training_flow(
 
     flow = build_training_flow(
         project_name,
+        flow_name,
+        flow_config,
         flow_parameters,
-        ion_mode=ion_mode,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
         model_output_dir=model_output_dir,
         mlflow_server=mlflow_server,
-        flow_config=flow_config,
         redis_db=redis_db,
-        flow_name=flow_name,
         deploy_model=deploy_model,
     )
 

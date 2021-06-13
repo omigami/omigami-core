@@ -1,9 +1,8 @@
-from dataclasses import dataclass
 from typing import Union
 
 from prefect import Flow, unmapped
 
-from omigami.config import IonModes
+from omigami.config import IonModes, ION_MODES
 from omigami.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flows.config import FlowConfig
 from omigami.flows.utils import create_result
@@ -24,28 +23,55 @@ from omigami.tasks.process_spectrum import (
 )
 
 
-@dataclass
 class TrainingFlowParameters:
-    input_dgw: InputDataGateway
-    spectrum_dgw: SpectrumDataGateway
-    downloading: DownloadParameters
-    chunking: ChunkingParameters
-    processing: ProcessSpectrumParameters
-    training: TrainModelParameters
+    def __init__(
+        self,
+        input_dgw: InputDataGateway,
+        spectrum_dgw: SpectrumDataGateway,
+        source_uri: str,
+        output_dir: str,
+        dataset_path: str,
+        spectrum_ids_name: str,
+        chunk_size: int,
+        ion_mode: IonModes,
+        n_decimals: int,
+        skip_if_exists: bool,
+        iterations: int,
+        window: int,
+    ):
+        self.input_dgw = input_dgw
+        self.spectrum_dgw = spectrum_dgw
+
+        if ion_mode not in ION_MODES:
+            raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
+
+        self.downloading = DownloadParameters(
+            source_uri, output_dir, dataset_path, spectrum_ids_name
+        )
+        self.chunking = ChunkingParameters(
+            self.downloading.download_path, chunk_size, ion_mode
+        )
+        self.processing = ProcessSpectrumParameters(
+            spectrum_dgw,
+            n_decimals,
+            skip_if_exists,
+        )
+        self.training = TrainModelParameters(spectrum_dgw, iterations, window)
 
 
 def build_training_flow(
     project_name: str,
-    flow_parameters: TrainingFlowParameters,
-    model_output_dir: str,
-    mlflow_server: str,
+    flow_name: str,
     flow_config: FlowConfig,
-    redis_db: str,
-    ion_mode: IonModes = "positive",
-    intensity_weighting_power: Union[float, int] = 0.5,
-    allowed_missing_percentage: Union[float, int] = 5.0,
-    flow_name: str = "spec2vec-training-flow",
-    deploy_model: bool = False,
+    flow_parameters: TrainingFlowParameters,
+    model_output_dir: str,  # TODO: add to parameters class
+    mlflow_server: str,  # TODO: add to parameters class
+    redis_db: str,  # TODO: add to parameters class
+    intensity_weighting_power: Union[float, int] = 0.5,  # TODO: add to parameters class
+    allowed_missing_percentage: Union[
+        float, int
+    ] = 5.0,  # TODO: add to parameters class
+    deploy_model: bool = False,  # TODO: add to parameters class
 ) -> Flow:
     """
     Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
@@ -60,8 +86,6 @@ def build_training_flow(
         Directory for saving the model.
     mlflow_server:
         Server used for MLFlow to save the model.
-    ion_mode:
-        The spectra ion mode used to train the model.
     intensity_weighting_power:
         Exponent used to scale intensity weights for each word.
     allowed_missing_percentage:

@@ -4,7 +4,7 @@ from typing import List
 from drfs import DRPath
 from prefect import Task
 
-from omigami.config import ION_MODES, IonModes
+from omigami.config import IonModes
 from omigami.data_gateway import InputDataGateway
 from omigami.tasks.config import merge_configs
 
@@ -18,10 +18,6 @@ class ChunkingParameters:
     @property
     def chunk_paths_file(self) -> str:
         return f"{str(DRPath(self.file_path).parent)}/chunk_paths.pickle"
-
-    def __post_init__(self):
-        if self.ion_mode not in ION_MODES:
-            raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
 
 class CreateChunks(Task):
