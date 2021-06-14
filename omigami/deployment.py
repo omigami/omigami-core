@@ -1,24 +1,27 @@
 from datetime import timedelta, datetime
 from typing import Optional
 
+from prefect import Client
 from typing_extensions import Literal
 
+from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     API_SERVER_URLS,
     PROJECT_NAME,
     MODEL_DIRECTORIES,
     MLFLOW_SERVER,
-    DATASET_DIRECTORIES,
+    DATASET_IDS,
     REDIS_DATABASES,
     S3_BUCKETS,
 )
-from prefect import Client
-
+from omigami.flows.config import (
+    make_flow_config,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
 from omigami.flows.training_flow import build_training_flow
-from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.gateways.input_data_gateway import FSInputDataGateway
-
 from omigami.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
 )
@@ -26,12 +29,6 @@ from omigami.tasks import (
     DownloadParameters,
     ProcessSpectrumParameters,
     TrainModelParameters,
-)
-
-from omigami.flows.config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
 )
 
 
@@ -73,14 +70,14 @@ def deploy_training_flow(
         raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
     # process database and filesystem configs
-    if dataset_name not in DATASET_DIRECTORIES[environment].keys():
+    if dataset_name not in DATASET_IDS[environment].keys():
         raise ValueError(
             f"No such option available for reference dataset: {dataset_name}. Available options are:"
-            f"{list(DATASET_DIRECTORIES[environment].keys())}."
+            f"{list(DATASET_IDS[environment].keys())}."
         )
 
     model_output_dir = MODEL_DIRECTORIES[environment]
-    dataset_folder = f'{DATASET_DIRECTORIES[environment][dataset_name]}/{datetime.today().strftime("%Y-%m")}'
+    dataset_id = DATASET_IDS[environment][dataset_name].format(date=datetime.today())
     redis_db = REDIS_DATABASES[environment][dataset_name]
     output_dir = S3_BUCKETS[environment]
 
@@ -89,7 +86,7 @@ def deploy_training_flow(
     spectrum_dgw = RedisSpectrumDataGateway()
 
     # instantiate required task parameters
-    download_parameters = DownloadParameters(source_uri, output_dir, dataset_folder)
+    download_parameters = DownloadParameters(source_uri, output_dir, dataset_id)
     process_parameters = ProcessSpectrumParameters(
         spectrum_dgw,
         n_decimals,
