@@ -65,7 +65,7 @@ def test_update_seldon_configs():
                         assert value == redis_db
 
 
-@pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
+# @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
 def test_deploy_seldon_model():
     FLOW_CONFIG = {
         "storage": S3("dr-prefect"),
@@ -74,7 +74,7 @@ def test_deploy_seldon_model():
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
         DeployModel(redis_db="0", environment="dev", **TEST_TASK_CONFIG)(
             registered_model={
-                "model_uri": "s3://omigami-dev/spec2vec/mlflow/ece0dbc5aba84322ae3a2cc6ae97212b/artifacts/model/"
+                "model_uri": "s3://omigami-dev/spec2vec/mlflow/tests/f9ba67b8b96040edae87c24f3161da68/artifacts/model/"
             }
         )
 

@@ -67,15 +67,13 @@ class DeployModel(Task):
             body=deployment,
         )
 
-        assert resp.status == 200
-
         # TODO: WIP. possibly remove these 4 lines below
         # try:
         #     self._create_deployment(custom_api, deployment, overwrite)
         # except:
         #     self._update_deployment(custom_api, deployment, model_uri)
 
-        return
+        return resp
 
     def _create_seldon_deployment(self, model_uri):
         with open(self._seldon_deployment_path) as yaml_file:
