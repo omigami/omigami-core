@@ -23,7 +23,6 @@ def test_download_data(mock_default_config):
         download = DownloadData(
             input_dgw,
             download_params,
-            **create_result(DRPath("")),
         )()
 
     res = test_flow.run()
@@ -50,7 +49,6 @@ def test_download_existing_data(mock_default_config):
         download = DownloadData(
             input_dgw,
             params,
-            **create_result(ASSETS_DIR / "spectrum_ids.pkl"),
         )()
 
     res = test_flow.run()

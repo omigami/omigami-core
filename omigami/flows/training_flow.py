@@ -5,7 +5,6 @@ from prefect import Flow, unmapped
 from omigami.config import IonModes, ION_MODES
 from omigami.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flows.config import FlowConfig
-from omigami.flows.utils import create_result
 from omigami.tasks import (
     DownloadData,
     MakeEmbeddings,
@@ -81,16 +80,22 @@ def build_training_flow(
     ----------
     project_name: str
         Prefect parameter. The project name.
+    flow_name:
+        Name of the flow
+    flow_config: FlowConfig
+        Configuration dataclass passed to prefect.Flow as a dict
+    flow_parameters:
+        Class containing all flow parameters
     model_output_dir:
         Directory for saving the model.
     mlflow_server:
         Server used for MLFlow to save the model.
+    redis_db:
+        Database used on redis
     intensity_weighting_power:
         Exponent used to scale intensity weights for each word.
     allowed_missing_percentage:
         Number of what percentage of a spectrum is allowed to be unknown to the model.
-    flow_config: FlowConfig
-        Configuration dataclass passed to prefect.Flow as a dict
     deploy_model:
         Whether to create a seldon deployment with the result of the training flow.
     Returns
@@ -101,13 +106,11 @@ def build_training_flow(
         spectrum_ids = DownloadData(
             flow_parameters.input_dgw,
             flow_parameters.downloading,
-            **create_result(flow_parameters.downloading.checkpoint_path),
         )()
 
         gnps_chunks = CreateChunks(
             flow_parameters.input_dgw,
             flow_parameters.chunking,
-            **create_result(flow_parameters.chunking.chunk_paths_file),
         )(spectrum_ids)
 
         spectrum_ids_chunks = ProcessSpectrum(

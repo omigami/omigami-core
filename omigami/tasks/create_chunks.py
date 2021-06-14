@@ -6,6 +6,7 @@ from prefect import Task
 
 from omigami.config import IonModes
 from omigami.data_gateway import InputDataGateway
+from omigami.flows.utils import create_result
 from omigami.tasks.config import merge_configs
 
 
@@ -38,7 +39,11 @@ class CreateChunks(Task):
 
         config = merge_configs(kwargs)
 
-        super().__init__(**config, checkpoint=True)
+        super().__init__(
+            **config,
+            **create_result(chunking_parameters.chunk_paths_file),
+            checkpoint=True,
+        )
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
         self.logger.info(f"Loading file {self._file_path} for chunking.")
