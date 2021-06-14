@@ -10,9 +10,9 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
 
+from omigami.config import IonModes
 from omigami.data_gateway import InputDataGateway
 from omigami.entities.data_models import SpectrumInputData
-from omigami.flows.config import IonModes
 
 KEYS = [
     "spectrum_id",
@@ -121,7 +121,6 @@ class FSInputDataGateway(InputDataGateway):
             ]
         return results
 
-    # TODO: docstring and test
     def chunk_gnps(
         self,
         gnps_path: str,
@@ -141,13 +140,19 @@ class FSInputDataGateway(InputDataGateway):
 
         Parameters
         ----------
-        gnps_path
-        chunk_size
-        ion_mode
-        logger
+        gnps_path:
+            Path to the gnps file
+        chunk_size:
+            Size in bytes of each chunk
+        ion_mode:
+            Ion mode selected for training (positive or negative)
+        logger:
+            Optional logger for progress
 
         Returns
         -------
+        List of paths:
+            A list of paths for the saved chunked files
 
         """
 
@@ -165,12 +170,13 @@ class FSInputDataGateway(InputDataGateway):
             items = ijson.items(gnps_file, "item", multiple_values=True)
             for item in items:
                 spectrum = {k: item[k] for k in KEYS}
+                if spectrum["Ion_Mode"].lower() != ion_mode:
+                    continue
+
                 chunk.append(spectrum)
                 chunk_bytes += sys.getsizeof(spectrum) + sys.getsizeof(
                     spectrum["peaks_json"]
                 )
-                if spectrum["Ion_Mode"].lower() != ion_mode:
-                    continue
 
                 if chunk_bytes >= chunk_size:
                     chunk_path = f"{chunks_output_dir}/chunk_{chunk_ix}.json"

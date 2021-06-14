@@ -49,12 +49,21 @@ def local_gnps_small_json():
     return path
 
 
-@pytest.fixture()
-def loaded_data(local_gnps_small_json, tmpdir):
+@pytest.fixture(scope="module")
+def loaded_data(local_gnps_small_json):
     with open(local_gnps_small_json, "rb") as f:
         items = ijson.items(f, "item", multiple_values=True)
         results = [{k: item[k] for k in KEYS} for item in items]
     return results
+
+
+@pytest.fixture(scope="module")
+def spectrum_ids_by_mode(loaded_data):
+    spectrum_ids = {"positive": [], "negative": []}
+
+    for spectrum in loaded_data:
+        spectrum_ids[spectrum["Ion_Mode"].lower()].append(spectrum["spectrum_id"])
+    return spectrum_ids
 
 
 @pytest.fixture(scope="module")
@@ -163,9 +172,5 @@ def redis_full_setup(spectra_stored, documents_stored, embeddings_stored):
 @pytest.fixture()
 def clean_chunk_files():
     fs = get_fs(str(ASSETS_DIR))
-    if fs.exists(ASSETS_DIR / "chunk_paths.pickle"):
-        fs.rm(ASSETS_DIR / "chunk_paths.pickle")
-
     _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "positive")]
     _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "negative")]
-

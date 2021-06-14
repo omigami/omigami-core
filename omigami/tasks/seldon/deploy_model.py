@@ -6,8 +6,7 @@ from kubernetes import config, client
 from kubernetes.config import ConfigException
 from prefect import Task
 
-from omigami.config import SELDON_PARAMS, CLUSTERS
-from omigami.flows.config import ION_MODES
+from omigami.config import SELDON_PARAMS, CLUSTERS, ION_MODES
 from omigami.helper_classes.exception import DeployingError
 from omigami.tasks.config import merge_configs
 

@@ -1,7 +1,9 @@
 from typing import Optional
 
+from prefect import Client
 from typing_extensions import Literal
 
+from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     API_SERVER,
@@ -11,27 +13,17 @@ from omigami.config import (
     DATASET_DIR,
     RedisDBDatasetSize,
     S3_BUCKET,
+    IonModes,
 )
-from prefect import Client
-
-from omigami.flows.training_flow import build_training_flow
-from omigami.authentication.authenticator import KratosAuthenticator
-from omigami.gateways.input_data_gateway import FSInputDataGateway
-
-from omigami.gateways.redis_spectrum_gateway import (
-    RedisSpectrumDataGateway,
-)
-from omigami.tasks import (
-    DownloadParameters,
-    ProcessSpectrumParameters,
-    TrainModelParameters,
-)
-
 from omigami.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
-    IonModes,
+)
+from omigami.flows.training_flow import build_training_flow, TrainingFlowParameters
+from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.redis_spectrum_gateway import (
+    RedisSpectrumDataGateway,
 )
 
 
@@ -75,22 +67,27 @@ def deploy_training_flow(
         spectrum_ids_name = DATASET_DIR[dataset_name] + "spectrum_ids.pkl"
     except KeyError:
         raise ValueError(
-            f"No such option available for reference dataset: {dataset_name}. Available options are:"
-            f"{list(RedisDBDatasetSize.keys())}."
+            f"No such option available for reference dataset: {dataset_name}."
+            f"Available options are: {list(RedisDBDatasetSize.keys())}."
         )
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
 
-    download_parameters = DownloadParameters(
-        source_uri, output_dir, dataset_path, spectrum_ids_name
+    flow_parameters = TrainingFlowParameters(
+        input_dgw=input_dgw,
+        spectrum_dgw=spectrum_dgw,
+        source_uri=source_uri,
+        output_dir=output_dir,
+        dataset_path=dataset_path,
+        spectrum_ids_name=spectrum_ids_name,
+        chunk_size=chunk_size,
+        ion_mode=ion_mode,
+        n_decimals=n_decimals,
+        skip_if_exists=skip_if_exists,
+        iterations=iterations,
+        window=window,
     )
-    process_parameters = ProcessSpectrumParameters(
-        spectrum_dgw,
-        n_decimals,
-        skip_if_exists,
-    )
-    train_model_parameters = TrainModelParameters(spectrum_dgw, iterations, window)
 
     flow_config = make_flow_config(
         image=image,
@@ -101,20 +98,15 @@ def deploy_training_flow(
     )
 
     flow = build_training_flow(
-        input_dgw=input_dgw,
-        download_params=download_parameters,
-        process_params=process_parameters,
-        train_params=train_model_parameters,
-        chunk_size=chunk_size,
-        ion_mode=ion_mode,
+        project_name,
+        flow_name,
+        flow_config,
+        flow_parameters,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
-        project_name=project_name,
         model_output_dir=model_output_dir,
         mlflow_server=mlflow_server,
-        flow_config=flow_config,
         redis_db=redis_db,
-        flow_name=flow_name,
         deploy_model=deploy_model,
     )
 

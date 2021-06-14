@@ -5,7 +5,6 @@ from drfs import DRPath
 from prefect.executors import Executor, LocalDaskExecutor
 from prefect.run_configs import RunConfig, KubernetesRun
 from prefect.storage import Storage, S3
-from typing_extensions import Literal
 
 from omigami.config import ROOT_DIR, S3_BUCKET
 
@@ -21,10 +20,6 @@ class PrefectStorageMethods(Enum):
 class PrefectExecutorMethods(Enum):
     DASK = 0
     LOCAL_DASK = 1
-
-
-ION_MODES = {"positive", "negative"}
-IonModes = Literal["positive", "negative"]
 
 
 @dataclass

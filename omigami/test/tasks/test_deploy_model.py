@@ -1,9 +1,11 @@
 import pytest
 import yaml
 from prefect import Flow
+from prefect.storage import S3
 
 from omigami.config import ROOT_DIR
 from omigami.tasks.seldon.deploy_model import DeployModel
+from omigami.test.conftest import TEST_TASK_CONFIG
 
 
 @pytest.mark.skip(
@@ -45,3 +47,21 @@ def test_update_seldon_configs():
                 for key, value in kvdict.items():
                     if key == "REDIS_DB":
                         assert value == redis_db
+
+
+@pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
+def test_deploy_seldon_model():
+    FLOW_CONFIG = {
+        "storage": S3("dr-prefect"),
+    }
+
+    with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
+        DeployModel(redis_db="0", environment="dev", **TEST_TASK_CONFIG)(
+            registered_model={
+                "model_uri": "s3://omigami-dev/spec2vec/mlflow/ece0dbc5aba84322ae3a2cc6ae97212b/artifacts/model/"
+            }
+        )
+
+    res = deploy.run()
+
+    assert res.is_successful()
