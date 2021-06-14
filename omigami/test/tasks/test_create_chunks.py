@@ -1,4 +1,5 @@
 import pytest
+from drfs.filesystems import get_fs
 from prefect import Flow
 
 from omigami.flows.utils import create_result
@@ -22,12 +23,13 @@ def test_create_chunks(
     expected_chunk_files,
 ):
     input_dgw = FSInputDataGateway()
+    fs = get_fs(local_gnps_small_json)
     chunking_parameters = ChunkingParameters(local_gnps_small_json, 150000, ion_mode)
     with Flow("test-flow") as test_flow:
         chunks = CreateChunks(
             input_dgw=input_dgw,
             chunking_parameters=chunking_parameters,
-            **create_result(ASSETS_DIR / f"{ion_mode}/chunk_paths.pickle"),
+            **create_result(chunking_parameters.chunk_paths_file),
             **TEST_TASK_CONFIG,
         )(spectrum_ids)
 
@@ -36,8 +38,6 @@ def test_create_chunks(
 
     assert res.is_successful()
     assert res_2.result[chunks].is_cached()
-    assert input_dgw.fs.exists(ASSETS_DIR / f"{ion_mode}/chunk_paths.pickle")
-    assert (
-        len(input_dgw.fs.ls(ASSETS_DIR / "chunks" / ion_mode)) == expected_chunk_files
-    )
+    assert fs.exists(ASSETS_DIR / f"chunks/{ion_mode}/chunk_paths.pickle")
+    assert len(fs.ls(ASSETS_DIR / "chunks" / ion_mode)) == expected_chunk_files + 1
     assert set(res.result[chunks].result) == set(res_2.result[chunks].result)

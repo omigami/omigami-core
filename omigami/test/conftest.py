@@ -172,11 +172,5 @@ def redis_full_setup(spectra_stored, documents_stored, embeddings_stored):
 @pytest.fixture()
 def clean_chunk_files():
     fs = get_fs(str(ASSETS_DIR))
-    if fs.exists(ASSETS_DIR / "positive/chunk_paths.pickle"):
-        fs.rm(ASSETS_DIR / "positive/chunk_paths.pickle")
-
-    if fs.exists(ASSETS_DIR / "negative/chunk_paths.pickle"):
-        fs.rm(ASSETS_DIR / "negative/chunk_paths.pickle")
-
     _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "positive")]
     _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "negative")]
