@@ -4,6 +4,7 @@ from typing import List
 from prefect import Task
 
 from omigami.data_gateway import InputDataGateway
+from omigami.flows.utils import create_result
 from omigami.tasks.config import merge_configs
 
 
@@ -39,6 +40,7 @@ class DownloadData(Task):
 
         super().__init__(
             **config,
+            **create_result(download_parameters.checkpoint_path),
             checkpoint=True,
         )
 

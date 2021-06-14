@@ -92,18 +92,18 @@ def test_run_training_flow(
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
     flow_params = TrainingFlowParameters(
-        input_dgw,
-        spectrum_dgw,
-        SOURCE_URI_PARTIAL_GNPS,
-        ASSETS_DIR,
-        "SMALL_GNPS.json",
-        "spectrum_ids.pkl",
-        150000,
-        "positive",
-        1,
-        True,
-        3,
-        200,
+        input_dgw=input_dgw,
+        spectrum_dgw=spectrum_dgw,
+        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        output_dir=ASSETS_DIR,
+        dataset_path="SMALL_GNPS.json",
+        spectrum_ids_name="spectrum_ids.pkl",
+        chunk_size=150000,
+        ion_mode="positive",
+        n_decimals=1,
+        skip_if_exists=True,
+        iterations=3,
+        window=200,
     )
 
     flow = build_training_flow(
