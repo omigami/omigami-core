@@ -77,7 +77,7 @@ def deploy_training_flow(
         )
 
     model_output_dir = MODEL_DIRECTORIES[environment]
-    dataset_folder = f'{DATASET_DIRECTORIES[environment][dataset_name]}/{datetime.today().strftime("%Y-%m")}'
+    dataset_id = DATASET_IDS[environment][dataset_name].format(date=datetime.today())
     redis_db = REDIS_DATABASES[environment][dataset_name]
     output_dir = S3_BUCKETS[environment]
 
