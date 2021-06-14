@@ -21,8 +21,8 @@ def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.79cf86b",
-        iterations=1,
+        image="drtools/prefect:omigami-SNAPSHOT.2c74c22",
+        iterations=3,
         window=300,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
@@ -30,13 +30,13 @@ def test_deploy_training_flow():
         skip_if_exists=True,
         chunk_size=int(1e8),
         environment="dev",
-        dataset_name="10k",
+        dataset_name="complete",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=S3_BUCKET["dev"],
         project_name="spec2vec-test",
         model_output_dir=MODEL_DIR["dev"],
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/embeddings-fix",
+        flow_name="training-flow/chunk-by-ion-mode",
         deploy_model=True,
         auth=True,
         **login_config,

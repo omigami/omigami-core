@@ -1,16 +1,13 @@
 from pathlib import Path
 
-import prefect
 import yaml
 from kubernetes import config, client
 from kubernetes.config import ConfigException
 from prefect import Task
 
-from omigami.config import SELDON_PARAMS, CLUSTERS, ION_MODES
+from omigami.config import SELDON_PARAMS, CLUSTERS
 from omigami.helper_classes.exception import DeployingError
 from omigami.tasks.config import merge_configs
-
-logger = prefect.context.get("logger")
 
 
 class DeployModel(Task):
@@ -22,63 +19,88 @@ class DeployModel(Task):
         ion_mode: str = "positive",
         **kwargs,
     ):
-        self.redis_db = redis_db
-        self.environment = environment
-        self.overwrite = overwrite
-        if ion_mode not in ION_MODES:
-            raise ValueError
+        self._redis_db = redis_db
+        self._environment = environment
+        self._overwrite = overwrite
         self._ion_mode = ion_mode
+        self._seldon_deployment_path = Path(__file__).parent / "seldon_deployment.yaml"
+        self._model_name = f"spec2vec-{self._ion_mode}"
 
         config = merge_configs(kwargs)
         super().__init__(**config)
 
     def run(self, registered_model: dict = None, overwrite: bool = True) -> None:
-
-        model_uri = registered_model["model_uri"]
-        logger.info(
-            f"Deploying model {model_uri} to environment {self.environment} and "
-            f"namespace {SELDON_PARAMS['namespace']}."
-        )
-
         try:
             config.load_incluster_config()
         except ConfigException:
-            config.load_kube_config(context=CLUSTERS[self.environment])
-
+            config.load_kube_config(context=CLUSTERS[self._environment])
         custom_api = client.CustomObjectsApi()
-        seldon_deployment_path = Path(__file__).parent / "seldon_deployment.yaml"
-        with open(seldon_deployment_path) as yaml_file:
-            deployment = yaml.safe_load(yaml_file)
-            configs = {"model_uri": model_uri}
-            deployment = self._update_seldon_configs(deployment, configs)
 
-        try:
-            self._create_deployment(custom_api, deployment, overwrite)
-        except:
-            self._update_deployment(custom_api, deployment, model_uri)
+        model_uri = registered_model["model_uri"]
+        self.logger.info(
+            f"Deploying model {model_uri} to environment {self._environment} and "
+            f"namespace {SELDON_PARAMS['namespace']}."
+        )
+
+        deployment = self._create_seldon_deployment(model_uri)
+
+        existing_deployments = [
+            obj["metadata"]["name"]
+            for obj in custom_api.list_namespaced_custom_object(**SELDON_PARAMS)[
+                "items"
+            ]
+        ]
+        if self._model_name in existing_deployments:
+            if self._overwrite:
+                custom_api.delete_namespaced_custom_object(
+                    **SELDON_PARAMS, name=self._model_name
+                )
+            else:
+                self.logger.warning(
+                    f"Did not update the seldon deployment because there is a deployment "
+                    f"named {self._model_name} in the cluster."
+                )
+                return
+
+        resp = custom_api.create_namespaced_custom_object(
+            **SELDON_PARAMS,
+            body=deployment,
+        )
+
+        assert resp.status == 200
+
+        # TODO: WIP. possibly remove these 4 lines below
+        # try:
+        #     self._create_deployment(custom_api, deployment, overwrite)
+        # except:
+        #     self._update_deployment(custom_api, deployment, model_uri)
 
         return
 
-    def _update_seldon_configs(self, deployment_yaml, configs):
+    def _create_seldon_deployment(self, model_uri):
+        with open(self._seldon_deployment_path) as yaml_file:
+            deployment = yaml.safe_load(yaml_file)
+
         try:
-            deployment_yaml["spec"]["predictors"][0]["graph"]["modelUri"] = configs[
-                "model_uri"
-            ]
+            deployment["spec"]["predictors"][0]["graph"]["modelUri"] = model_uri
 
             # sets redis database on seldom container env config
-            deployment_yaml["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
+            deployment["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                 "containers"
-            ][0]["env"].append({"name": "REDIS_DB", "value": self.redis_db})
+            ][0]["env"].append({"name": "REDIS_DB", "value": self._redis_db})
 
-            return deployment_yaml
+            # name according to ion mode
+            deployment["metadata"]["name"] = self._model_name
+            deployment["spec"]["name"] = self._model_name
+
+            return deployment
 
         except KeyError:
             raise DeployingError(
                 "Couldn't create a deployment because the configuration schema is not correct"
             )
 
-    @staticmethod
-    def _create_deployment(custom_api, deployment, overwrite):
+    def _create_deployment(self, custom_api, deployment, overwrite):
         if overwrite:
             custom_api.delete_namespaced_custom_object(
                 **SELDON_PARAMS, name=deployment["metadata"]["name"]
@@ -87,11 +109,10 @@ class DeployModel(Task):
             **SELDON_PARAMS,
             body=deployment,
         )
-        logger.info("Deployment created.")
+        self.logger.info("Deployment created.")
 
-    @staticmethod
-    def _update_deployment(custom_api, deployment, model_uri):
-        logger.info("Updating existing model")
+    def _update_deployment(self, custom_api, deployment, model_uri):
+        self.logger.info("Updating existing model")
         existent_deployment = custom_api.get_namespaced_custom_object(
             **SELDON_PARAMS,
             name=deployment["metadata"]["name"],

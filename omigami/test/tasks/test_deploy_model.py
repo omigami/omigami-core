@@ -15,8 +15,8 @@ def test_deploy_model_task():
 
     # TODO: this needs assertions and a way of testing from outside kubernetes environment
     with Flow("test-flow") as test_flow:
-        deploy_task = DeployModel(redis_db="2")(
-            registered_model={"model_uri": "uri", "run_id": "1"}, overwrite=False
+        deploy_task = DeployModel(redis_db="2", ion_mode="neutral", overwrite=True)(
+            registered_model={"model_uri": "uri"}
         )
 
         res = test_flow.run()
@@ -25,6 +25,22 @@ def test_deploy_model_task():
         assert res.is_successful()
 
     assert True
+
+
+def test_create_seldon_deployment():
+    task = DeployModel(redis_db="2", ion_mode="neutral")
+
+    deployment = task._create_seldon_deployment("model_uri")
+
+    assert deployment["spec"]["predictors"][0]["graph"]["modelUri"] == "model_uri"
+    assert (
+        deployment["spec"]["predictors"][0]["componentSpecs"][0]["spec"]["containers"][
+            0
+        ]["env"][-1]["value"]
+        == "2"
+    )
+    assert deployment["metadata"]["name"] == "spec2vec-neutral"
+    assert deployment["spec"]["name"] == "spec2vec-neutral"
 
 
 def test_update_seldon_configs():
