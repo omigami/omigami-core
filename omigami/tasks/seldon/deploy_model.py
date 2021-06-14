@@ -90,6 +90,10 @@ class DeployModel(Task):
             # name according to ion mode
             deployment["metadata"]["name"] = self._model_name
             deployment["spec"]["name"] = self._model_name
+            deployment["spec"]["predictors"][0]["graph"]["name"] = self._model_name
+            deployment["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
+                "containers"
+            ][0]["name"] = self._model_name
 
             return deployment
 
