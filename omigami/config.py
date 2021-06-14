@@ -30,6 +30,6 @@ REDIS_DATABASES = {
     "dev": {"small": "2", "10k": "1", "complete": "0"},
     "prod": {"complete": "0"},
 }
-DATASET_DIRECTORIES = config["storage"]["dataset_dir"].get(dict)
+DATASET_IDS = config["storage"]["dataset_dir"].get(dict)
 
 CLUSTERS = config["clusters"].get(dict)
