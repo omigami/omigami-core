@@ -65,7 +65,7 @@ def test_update_seldon_configs():
                         assert value == redis_db
 
 
-# @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
+@pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
 def test_deploy_seldon_model():
     FLOW_CONFIG = {
         "storage": S3("dr-prefect"),
