@@ -3,7 +3,7 @@ from prefect import Flow
 
 from omigami.flows.utils import create_result
 from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.tasks import CreateChunks
+from omigami.tasks import CreateChunks, ChunkingParameters
 from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 
 
@@ -22,12 +22,11 @@ def test_create_chunks(
     expected_chunk_files,
 ):
     input_dgw = FSInputDataGateway()
+    chunking_parameters = ChunkingParameters(local_gnps_small_json, 150000, ion_mode)
     with Flow("test-flow") as test_flow:
         chunks = CreateChunks(
-            file_path=local_gnps_small_json,
             input_dgw=input_dgw,
-            chunk_size=150000,
-            ion_mode=ion_mode,
+            chunking_parameters=chunking_parameters,
             **create_result(ASSETS_DIR / f"{ion_mode}/chunk_paths.pickle"),
             **TEST_TASK_CONFIG,
         )(spectrum_ids)

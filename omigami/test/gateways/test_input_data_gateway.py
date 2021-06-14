@@ -103,11 +103,14 @@ def test_chunk_gnps_outputs(
     ],
 )
 def test_chunk_gnps_data_consistency(
-    local_gnps_small_json, clean_chunk_files, ion_mode, expected_chunk_files
+    local_gnps_small_json,
+    clean_chunk_files,
+    ion_mode,
+    expected_chunk_files,
+    spectrum_ids_by_mode,
 ):
     dgw = FSInputDataGateway()
     fs = get_fs(ASSETS_DIR)
-    spectrum_ids = dgw.get_spectrum_ids(local_gnps_small_json)
 
     dgw.chunk_gnps(local_gnps_small_json, chunk_size=150000, ion_mode=ion_mode)
 
@@ -118,4 +121,4 @@ def test_chunk_gnps_data_consistency(
     for p in paths:
         chunked_ids += dgw.get_spectrum_ids(str(p))
 
-    assert set(chunked_ids) == set(spectrum_ids)
+    assert set(chunked_ids) == set(spectrum_ids_by_mode[ion_mode])

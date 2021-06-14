@@ -12,14 +12,9 @@ from omigami.flows.config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.flows.training_flow import build_training_flow
+from omigami.flows.training_flow import build_training_flow, TrainingFlowParameters
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
-from omigami.tasks import (
-    DownloadParameters,
-    ProcessSpectrumParameters,
-    TrainModelParameters,
-)
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[3])
@@ -47,25 +42,37 @@ def test_training_flow(flow_config):
         "RegisterModel",
         "TrainModel",
     }
+    flow_params = TrainingFlowParameters(
+        mock_input_dgw,
+        mock_spectrum_dgw,
+        "source_uri",
+        "datasets",
+        "dataset-id",
+        "spectrum-ids",
+        150000,
+        "positive",
+        2,
+        False,
+        25,
+        500,
+    )
 
     flow = build_training_flow(
         project_name="test",
-        input_dgw=mock_input_dgw,
-        download_parameters=DownloadParameters("source_uri", "datasets", "dataset-id"),
-        processing_parameters=ProcessSpectrumParameters(mock_spectrum_dgw, 2, False),
-        training_parameters=TrainModelParameters(mock_spectrum_dgw, 25, 500),
+        flow_name="test-flow",
+        flow_config=flow_config,
+        flow_parameters=flow_params,
         model_output_dir="model-output",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
-        allowed_missing_percentage=5,
-        flow_config=flow_config,
         redis_db="0",
+        allowed_missing_percentage=5,
         deploy_model=False,
     )
 
     assert flow
     assert len(flow.tasks) == len(expected_tasks)
-    assert flow.name == "spec2vec-training-flow"
+    assert flow.name == "test-flow"
 
     task_names = {t.name for t in flow.tasks}
     assert task_names == expected_tasks
@@ -83,26 +90,31 @@ def test_run_training_flow(
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
     input_dgw = FSInputDataGateway()
-    download_parameters = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, "SMALL_GNPS.json"
-    )
     spectrum_dgw = RedisSpectrumDataGateway()
-    process_parameters = ProcessSpectrumParameters(spectrum_dgw, 1, True)
-    train_params = TrainModelParameters(spectrum_dgw, 3, 200)
+    flow_params = TrainingFlowParameters(
+        input_dgw,
+        spectrum_dgw,
+        SOURCE_URI_PARTIAL_GNPS,
+        ASSETS_DIR,
+        "SMALL_GNPS.json",
+        "spectrum_ids.pkl",
+        150000,
+        "positive",
+        1,
+        True,
+        3,
+        200,
+    )
 
     flow = build_training_flow(
         project_name="test",
-        input_dgw=input_dgw,
-        download_parameters=download_parameters,
-        processing_parameters=process_parameters,
+        flow_config=flow_config,
+        flow_name="test-flow",
+        flow_parameters=flow_params,
         model_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
-        training_parameters=train_params,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
-        flow_config=flow_config,
-        chunk_size=150000,
-        ion_mode="positive",
         redis_db="0",
         deploy_model=False,
     )
@@ -113,5 +125,5 @@ def test_run_training_flow(
     assert results.is_successful()
     results.result[d].is_cached()
     assert "model" in os.listdir(tmpdir / "model-output")
-    assert len(fs.ls(ASSETS_DIR / "chunks")) == 6
-    assert fs.exists(ASSETS_DIR / "chunk_paths.pickle")
+    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
+    assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")

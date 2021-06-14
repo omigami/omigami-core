@@ -56,7 +56,7 @@ class TrainingFlowParameters:
             n_decimals,
             skip_if_exists,
         )
-        self.training = TrainModelParameters(spectrum_dgw, iterations, window)
+        self.training = TrainModelParameters(iterations, window)
 
 
 def build_training_flow(

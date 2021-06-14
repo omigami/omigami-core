@@ -17,7 +17,10 @@ class ChunkingParameters:
 
     @property
     def chunk_paths_file(self) -> str:
-        return f"{str(DRPath(self.file_path).parent)}/chunk_paths.pickle"
+        return (
+            f"{str(DRPath(self.file_path).parent)}/"
+            f"chunks/{self.ion_mode}/chunk_paths.pickle"
+        )
 
 
 class CreateChunks(Task):

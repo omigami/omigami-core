@@ -8,19 +8,18 @@ from omigami.data_gateway import SpectrumDataGateway
 from omigami.entities.spectrum_document import SpectrumDocumentData
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
+from omigami.tasks import ProcessSpectrumParameters
 from omigami.tasks.process_spectrum import ProcessSpectrum
 from omigami.tasks.process_spectrum.spectrum_processor import SpectrumProcessor
-from omigami.test.conftest import TEST_TASK_CONFIG
 
 
-def test_process_spectrum_task_calls(local_gnps_small_json, spectrum_ids):
+def test_process_spectrum_calls(local_gnps_small_json, spectrum_ids):
     spectrum_gtw = MagicMock(spec=SpectrumDataGateway)
     input_gtw = FSInputDataGateway()
+    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
     spectrum_gtw.list_existing_spectra.side_effect = lambda x: x
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(
-            local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
-        )(local_gnps_small_json)
+        process_task = ProcessSpectrum(input_gtw, parameters)(local_gnps_small_json)
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -36,14 +35,13 @@ def test_process_spectrum_task_calls(local_gnps_small_json, spectrum_ids):
     reason="It can only be run if the Redis is up",
 )
 @pytest.mark.slow
-def test_process_spectrum_task(local_gnps_small_json, spectrum_ids):
+def test_process_spectrum(local_gnps_small_json, spectrum_ids, mock_default_config):
     spectrum_gtw = RedisSpectrumDataGateway()
     spectrum_gtw.delete_spectra(spectrum_ids)
+    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
     input_gtw = FSInputDataGateway()
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(
-            local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
-        )(local_gnps_small_json)
+        process_task = ProcessSpectrum(input_gtw, parameters)(local_gnps_small_json)
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -57,17 +55,16 @@ def test_process_spectrum_task(local_gnps_small_json, spectrum_ids):
     reason="It can only be run if the Redis is up",
 )
 @pytest.mark.slow
-def test_process_spectrum_task_map(local_gnps_small_json, spectrum_ids):
+def test_process_spectrum_map(local_gnps_small_json, spectrum_ids, mock_default_config):
     spectrum_gtw = RedisSpectrumDataGateway()
     input_gtw = FSInputDataGateway()
+    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
     chunked_paths = [
         local_gnps_small_json,
         local_gnps_small_json,
     ]
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(
-            local_gnps_small_json, spectrum_gtw, input_gtw, 2, False, **TEST_TASK_CONFIG
-        ).map(chunked_paths)
+        process_task = ProcessSpectrum(input_gtw, parameters).map(chunked_paths)
 
     res = test_flow.run()
     data = res.result[process_task].result

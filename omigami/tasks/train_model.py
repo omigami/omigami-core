@@ -23,7 +23,6 @@ class TrainModelParameters:
         Window size for context around the word
     """
 
-    spectrum_dgw: SpectrumDataGateway
     epochs: int = 25
     window: int = 500
 
