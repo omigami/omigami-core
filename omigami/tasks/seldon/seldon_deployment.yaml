@@ -1,10 +1,10 @@
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
-  name: NAME
+  name: DUMMY_NAME
   namespace: seldon
 spec:
-  name: spec2vec
+  name: DUMMY_NAME
   annotations:
     seldon.io/rest-timeout: "600000"
     seldon.io/grpc-timeout: "600000"
