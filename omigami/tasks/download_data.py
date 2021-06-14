@@ -43,17 +43,13 @@ class DownloadData(Task):
 class DownloadParameters:
     input_uri: str
     output_dir: str
-    dataset_id: str = None
+    dataset_id: str
     # these are changed from defaults during tests only
     dataset_file: str = "gnps.json"
     checkpoint_file: str = "spectrum_ids.pkl"
 
     def __post_init__(self):
-        self.directory = (
-            f"{self.output_dir}/{self.dataset_id}"
-            if self.dataset_id
-            else self.output_dir
-        )
+        self.directory = f"{self.output_dir}/{self.dataset_id}"
 
     @property
     def download_path(self):
