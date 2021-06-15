@@ -12,7 +12,7 @@ from drfs.filesystems.base import FileSystemBase
 
 from omigami.config import IonModes
 from omigami.data_gateway import InputDataGateway
-from omigami.entities.data_models import SpectrumInputData
+from omigami.spec2vec.entities.data_models import SpectrumInputData
 
 KEYS = [
     "spectrum_id",

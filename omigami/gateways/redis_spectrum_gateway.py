@@ -16,8 +16,8 @@ from omigami.config import (
     EMBEDDING_HASHES,
 )
 from omigami.data_gateway import SpectrumDataGateway
-from omigami.entities.embedding import Embedding
-from omigami.entities.spectrum_document import SpectrumDocumentData
+from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,

@@ -1,6 +1,6 @@
 import click
 
-from omigami.deployment import deploy_training_flow
+from omigami.spec2vec.deployment import deploy_training_flow
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     API_SERVER,

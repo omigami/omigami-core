@@ -11,8 +11,8 @@ from omigami.config import (
     SPECTRUM_HASHES,
     DOCUMENT_HASHES,
 )
-from omigami.entities.embedding import Embedding
-from omigami.entities.spectrum_document import SpectrumDocumentData
+from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 
 redis_db = factories.redisdb("redis_nooproc")
