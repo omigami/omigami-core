@@ -2,20 +2,17 @@ import pytest
 from prefect import Flow
 from prefect.storage import S3
 
-from omigami.tasks.seldon.deploy_model import DeployModel
-from omigami.test.conftest import TEST_TASK_CONFIG
+from omigami.tasks import DeployModel, DeployModelParameters
 
 
 @pytest.mark.skip(
     reason="This test is actually deploying to seldon we should change asap"
 )
 def test_deploy_model_task():
-
+    params = DeployModelParameters("2", "neutral", False, "dev")
     # TODO: this needs assertions and a way of testing from outside kubernetes environment
     with Flow("test-flow") as test_flow:
-        deploy_task = DeployModel(redis_db="2", ion_mode="neutral", overwrite=True)(
-            registered_model={"model_uri": "uri"}
-        )
+        deploy_task = DeployModel(params)(registered_model={"model_uri": "uri"})
 
         res = test_flow.run()
         data = res.result[deploy_task].result
@@ -26,7 +23,8 @@ def test_deploy_model_task():
 
 
 def test_create_seldon_deployment():
-    task = DeployModel(redis_db="2", ion_mode="neutral")
+    params = DeployModelParameters("2", "neutral", False, "dev")
+    task = DeployModel(params)
     model_name = "spec2vec-neutral"
 
     deployment = task._create_seldon_deployment("model_uri")
@@ -50,13 +48,14 @@ def test_create_seldon_deployment():
 
 
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
-def test_deploy_seldon_model():
+def test_deploy_seldon_model(mock_default_config):
     FLOW_CONFIG = {
         "storage": S3("dr-prefect"),
     }
+    params = DeployModelParameters("2", "neutral", False, "dev")
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
-        DeployModel(redis_db="0", environment="dev", **TEST_TASK_CONFIG)(
+        DeployModel(params)(
             registered_model={
                 "model_uri": "s3://omigami-dev/spec2vec/mlflow/tests/f9ba67b8b96040edae87c24f3161da68/artifacts/model/"
             }

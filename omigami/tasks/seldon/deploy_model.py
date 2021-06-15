@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
@@ -10,19 +11,24 @@ from omigami.helper_classes.exception import DeployingError
 from omigami.tasks.config import merge_configs
 
 
+@dataclass
+class DeployModelParameters:
+    redis_db: str
+    ion_mode: str
+    overwrite: bool
+    environment: str = "dev"
+
+
 class DeployModel(Task):
     def __init__(
         self,
-        redis_db: str,
-        environment: str = "dev",
-        overwrite: bool = True,
-        ion_mode: str = "positive",
+        deploy_parameters: DeployModelParameters,
         **kwargs,
     ):
-        self._redis_db = redis_db
-        self._environment = environment
-        self._overwrite = overwrite
-        self._ion_mode = ion_mode
+        self._redis_db = deploy_parameters.redis_db
+        self._environment = deploy_parameters.environment
+        self._overwrite = deploy_parameters.overwrite
+        self._ion_mode = deploy_parameters.ion_mode
         self._model_name = f"spec2vec-{self._ion_mode}"
 
         config = merge_configs(kwargs)
