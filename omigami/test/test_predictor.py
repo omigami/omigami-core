@@ -206,6 +206,10 @@ def test_get_input_ref_embeddings(model, redis_full_setup):
     assert ref_emb_for_input[0].spectrum_id == input_ref_spectrum_ids[0]
 
 
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
 def test_add_metadata(model, embeddings, redis_full_setup):
     n_best_spectra = 3
     best_matches = {}
