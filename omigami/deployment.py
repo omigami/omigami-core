@@ -106,7 +106,6 @@ def deploy_training_flow(
         allowed_missing_percentage=allowed_missing_percentage,
         model_output_dir=model_output_dir,
         mlflow_server=mlflow_server,
-        redis_db=redis_db,
         deploy_model=deploy_model,
     )
 

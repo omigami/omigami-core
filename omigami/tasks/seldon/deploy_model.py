@@ -43,8 +43,8 @@ class DeployModel(Task):
 
         model_uri = registered_model["model_uri"]
         self.logger.info(
-            f"Deploying model {model_uri} to environment {self._environment} and "
-            f"namespace {SELDON_PARAMS['namespace']}."
+            f"Deploying model {model_uri} to environment '{self._environment}' and "
+            f"namespace '{SELDON_PARAMS['namespace']}'."
         )
 
         deployment = self._create_seldon_deployment(model_uri)
@@ -74,7 +74,7 @@ class DeployModel(Task):
             **SELDON_PARAMS,
             body=deployment,
         )
-        self.logger.info("Finished deployment. Model status")
+        self.logger.info("Finished deployment. Model status: TODO")
         return resp
 
     def _create_seldon_deployment(self, model_uri: str) -> dict:
