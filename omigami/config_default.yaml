@@ -34,3 +34,14 @@ storage:
 clusters:
   dev: "dev"
   prod: "prod"
+login:
+  prod:
+    auth_url: "url"
+    username: "user"
+    password: "pw"
+    token: "token"
+  dev:
+    auth_url: "url"
+    username: "user"
+    password: "pw"
+    token: "token"
