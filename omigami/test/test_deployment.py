@@ -1,4 +1,6 @@
 import pytest
+from typing_extensions import Literal
+
 
 from omigami.config import (
     MLFLOW_SERVER,
@@ -10,12 +12,20 @@ from omigami.deployment import (
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
-    login_config = config["login"]["dev"].get(dict)
+    # -- setup env --
+    # BE CAREFUL -> DO NOT set deploy_model=True and env="prod" unless you
+    # know exactly what you are doing.
+    # also, make sure to check that your source_uri reflects the dataset
+    # you want to be downloaded from GNPS and that you match it with the
+    # dataset_name monicker we use internally to represent each dataset.
+    env: Literal["dev", "prod"] = "prod"
+    login_config = config["login"][env].get(dict)
     login_config.pop("token")
+
     flow_id = deploy_training_flow(
         image="drtools/prefect:omigami-SNAPSHOT.79cf86b",
         iterations=1,
@@ -25,8 +35,8 @@ def test_deploy_training_flow():
         n_decimals=2,
         skip_if_exists=True,
         chunk_size=int(1e8),
-        environment="dev",
-        dataset_name="small",
+        environment=env,
+        dataset_name="complete",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         project_name="spec2vec-test",
         mlflow_server=MLFLOW_SERVER,

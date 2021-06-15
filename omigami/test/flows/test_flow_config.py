@@ -3,6 +3,7 @@ from datetime import timedelta
 from prefect import Flow
 from prefect.schedules import Schedule
 
+from omigami.config import DATASET_IDS
 from omigami.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -16,7 +17,7 @@ def test_make_flow_config():
         image="image-ref-name-test-harry-potter-XXII",
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db="2",
+        redis_db=DATASET_IDS["dev"]["small"],
         schedule=timedelta(seconds=2),
     )
 

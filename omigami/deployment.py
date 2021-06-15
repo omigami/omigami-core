@@ -54,8 +54,19 @@ def deploy_training_flow(
     password: Optional[str] = None,
     dataset_name: Optional[str] = None,
 ):
+    """
+    Deploys a model training flow to Prefect cloud and optionally deploys it as a Seldon deployment.
 
-    # authenticate user credentials using the auth service endpoint
+    1) authenticate user credentials using the auth service endpoint
+    2) process database and filesystem configs
+    3) instantiate gateways and task parameters
+    4) create prefect flow configuration
+    5) builds the training flow graph
+    6) pushes the flow to prefect cloud
+
+    """
+
+    # authentication step
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)
         session_token = authenticator.authenticate()
@@ -66,10 +77,10 @@ def deploy_training_flow(
         client = Client(api_server=API_SERVER_URLS[environment])
     client.create_project(project_name)
 
+    # validates parameters and use them to get task configuration variables
     if environment not in ["dev", "prod"]:
         raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
-    # process database and filesystem configs
     if dataset_name not in DATASET_IDS[environment].keys():
         raise ValueError(
             f"No such option available for reference dataset: {dataset_name}. Available options are:"
@@ -81,11 +92,9 @@ def deploy_training_flow(
     redis_db = REDIS_DATABASES[environment][dataset_name]
     output_dir = S3_BUCKETS[environment]
 
-    # instantiate gateways
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
 
-    # instantiate required task parameters
     download_parameters = DownloadParameters(source_uri, output_dir, dataset_id)
     process_parameters = ProcessSpectrumParameters(
         spectrum_dgw,
@@ -94,7 +103,6 @@ def deploy_training_flow(
     )
     train_model_parameters = TrainModelParameters(spectrum_dgw, iterations, window)
 
-    # create prefect flow configuration
     flow_config = make_flow_config(
         image=image,
         storage_type=PrefectStorageMethods.S3,
@@ -104,7 +112,6 @@ def deploy_training_flow(
         schedule=schedule,
     )
 
-    # executes the training flow procedure
     flow = build_training_flow(
         input_dgw=input_dgw,
         download_params=download_parameters,
@@ -122,7 +129,6 @@ def deploy_training_flow(
         deploy_model=deploy_model,
     )
 
-    # push the flow to prefect cloud
     training_flow_id = client.register(
         flow,
         project_name=project_name,

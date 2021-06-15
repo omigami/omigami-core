@@ -1,6 +1,5 @@
 from datetime import timedelta
 from enum import Enum
-from typing import Optional
 
 from attr import dataclass
 from drfs import DRPath
