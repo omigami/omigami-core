@@ -6,10 +6,10 @@ from drfs.filesystems import get_fs
 from prefect import Flow
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.data_gateway import InputDataGateway
 from omigami.flows.utils import create_result
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.tasks import DownloadData
-from omigami.data_gateway import InputDataGateway
 from omigami.tasks.download_data import DownloadParameters
 from omigami.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 
@@ -45,13 +45,18 @@ def test_download_existing_data():
     input_dgw = FSInputDataGateway()
     input_dgw.download_gnps = lambda *args: None
     fs = get_fs(ASSETS_DIR)
-    params = DownloadParameters(SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, file_name)
+    params = DownloadParameters(
+        SOURCE_URI_PARTIAL_GNPS,
+        ASSETS_DIR.parent,
+        ASSETS_DIR.name,
+        dataset_file=file_name,
+    )
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             input_dgw,
             **params.kwargs,
-            **create_result(ASSETS_DIR / "spectrum_ids.pkl"),
+            **create_result(params.checkpoint_path),
             **TEST_TASK_CONFIG,
         )()
 
@@ -73,13 +78,13 @@ def test_download_existing_data_s3():
     input_dgw = FSInputDataGateway()
     fs = get_fs(dir_)
     download_params = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS, dir_, file_name, input_dgw, checkpoint_name
+        SOURCE_URI_PARTIAL_GNPS, dir_, file_name, checkpoint_name
     )
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             **download_params.kwargs,
-            **create_result(download_params.download_path),
+            **create_result(download_params.checkpoint_path),
             **TEST_TASK_CONFIG,
         )()
 

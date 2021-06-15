@@ -3,8 +3,8 @@ from typing import List
 
 from prefect import Task
 
-from omigami.tasks.config import merge_configs
 from omigami.data_gateway import InputDataGateway
+from omigami.tasks.config import merge_configs
 
 
 class DownloadData(Task):
@@ -43,18 +43,21 @@ class DownloadData(Task):
 class DownloadParameters:
     input_uri: str
     output_dir: str
-    dataset_folder: str
+    dataset_id: str
     # these are changed from defaults during tests only
     dataset_file: str = "gnps.json"
     checkpoint_file: str = "spectrum_ids.pkl"
 
+    def __post_init__(self):
+        self.directory = f"{self.output_dir}/{self.dataset_id}"
+
     @property
     def download_path(self):
-        return f"{self.output_dir}/{self.dataset_folder}/{self.dataset_file}"
+        return f"{self.directory}/{self.dataset_file}"
 
     @property
     def checkpoint_path(self):
-        return f"{self.output_dir}/{self.dataset_folder}/{self.checkpoint_file}"
+        return f"{self.directory}/{self.checkpoint_file}"
 
     @property
     def kwargs(self):
