@@ -21,7 +21,7 @@ def test_deploy_training_flow():
     login_config = config["login"]["dev"].get(dict)
     login_config.pop("token")
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.2c74c22",
+        image="drtools/prefect:omigami-SNAPSHOT.bc19d2b",
         iterations=3,
         window=300,
         intensity_weighting_power=0.5,
@@ -30,6 +30,7 @@ def test_deploy_training_flow():
         skip_if_exists=True,
         chunk_size=int(1e8),
         environment="dev",
+        ion_mode="negative",
         dataset_name="complete",
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=S3_BUCKET["dev"],

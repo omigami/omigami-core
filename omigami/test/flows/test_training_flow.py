@@ -43,18 +43,18 @@ def test_training_flow(flow_config):
         "TrainModel",
     }
     flow_params = TrainingFlowParameters(
-        mock_input_dgw,
-        mock_spectrum_dgw,
-        "source_uri",
-        "datasets",
-        "dataset-id",
-        "spectrum-ids",
-        150000,
-        "positive",
-        2,
-        False,
-        25,
-        500,
+        input_dgw=mock_input_dgw,
+        spectrum_dgw=mock_spectrum_dgw,
+        source_uri="source_uri",
+        output_dir="datasets",
+        dataset_path="dataset-id",
+        spectrum_ids_name="spectrum-ids",
+        chunk_size=150000,
+        ion_mode="positive",
+        n_decimals=2,
+        skip_if_exists=False,
+        iterations=25,
+        window=500,
     )
 
     flow = build_training_flow(
@@ -65,7 +65,6 @@ def test_training_flow(flow_config):
         model_output_dir="model-output",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
-        redis_db="0",
         allowed_missing_percentage=5,
         deploy_model=False,
     )
@@ -115,7 +114,6 @@ def test_run_training_flow(
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
-        redis_db="0",
         deploy_model=False,
     )
 
