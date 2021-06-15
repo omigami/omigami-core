@@ -52,6 +52,9 @@ class DeployModel(Task):
         ]
         if self._model_name in existing_deployments:
             if self._overwrite:
+                self.logger.info(
+                    f"Overwriting existing deployment for model {self._model_name}"
+                )
                 custom_api.delete_namespaced_custom_object(
                     **SELDON_PARAMS, name=self._model_name
                 )
@@ -66,16 +69,10 @@ class DeployModel(Task):
             **SELDON_PARAMS,
             body=deployment,
         )
-
-        # TODO: WIP. possibly remove these 4 lines below
-        # try:
-        #     self._create_deployment(custom_api, deployment, overwrite)
-        # except:
-        #     self._update_deployment(custom_api, deployment, model_uri)
-
+        self.logger.info("Finished deployment. Model status")
         return resp
 
-    def _create_seldon_deployment(self, model_uri):
+    def _create_seldon_deployment(self, model_uri: str) -> dict:
         with open(self._seldon_deployment_path) as yaml_file:
             deployment = yaml.safe_load(yaml_file)
 
@@ -102,7 +99,10 @@ class DeployModel(Task):
                 "Couldn't create a deployment because the configuration schema is not correct"
             )
 
-    def _create_deployment(self, custom_api, deployment, overwrite):
+    def _create_deployment(
+        self, custom_api: client.CustomObjectsApi, deployment: dict, overwrite: bool
+    ):
+        """Not used at the moment."""
         if overwrite:
             custom_api.delete_namespaced_custom_object(
                 **SELDON_PARAMS, name=deployment["metadata"]["name"]
@@ -113,7 +113,10 @@ class DeployModel(Task):
         )
         self.logger.info("Deployment created.")
 
-    def _update_deployment(self, custom_api, deployment, model_uri):
+    def _update_deployment(
+        self, custom_api: client.CustomObjectsApi, deployment: dict, model_uri: str
+    ):
+        """Not used at the moment."""
         self.logger.info("Updating existing model")
         existent_deployment = custom_api.get_namespaced_custom_object(
             **SELDON_PARAMS,

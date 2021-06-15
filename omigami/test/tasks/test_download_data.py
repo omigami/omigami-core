@@ -18,7 +18,7 @@ def test_download_data(mock_default_config):
     input_dgw = MagicMock(spec=InputDataGateway)
     input_dgw.download_gnps.return_value = "download"
     input_dgw.get_spectrum_ids.return_value = "spectrum_ids"
-    download_params = DownloadParameters("input-uri", "dir", "file_name")
+    download_params = DownloadParameters("input-uri", "dir", "file_name", "checkpoint")
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             input_dgw,
