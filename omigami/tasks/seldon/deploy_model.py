@@ -23,7 +23,6 @@ class DeployModel(Task):
         self._environment = environment
         self._overwrite = overwrite
         self._ion_mode = ion_mode
-        self._seldon_deployment_path = Path(__file__).parent / "seldon_deployment.yaml"
         self._model_name = f"spec2vec-{self._ion_mode}"
 
         config = merge_configs(kwargs)
@@ -73,7 +72,8 @@ class DeployModel(Task):
         return resp
 
     def _create_seldon_deployment(self, model_uri: str) -> dict:
-        with open(self._seldon_deployment_path) as yaml_file:
+        seldon_deployment_path = Path(__file__).parent / "seldon_deployment.yaml"
+        with open(seldon_deployment_path) as yaml_file:
             deployment = yaml.safe_load(yaml_file)
 
         try:
