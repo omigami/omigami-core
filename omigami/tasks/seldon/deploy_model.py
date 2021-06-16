@@ -34,7 +34,7 @@ class DeployModel(Task):
         config = merge_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, registered_model: dict = None, overwrite: bool = True) -> None:
+    def run(self, registered_model: dict = None) -> None:
         try:
             config.load_incluster_config()
         except ConfigException:
@@ -43,8 +43,8 @@ class DeployModel(Task):
 
         model_uri = registered_model["model_uri"]
         self.logger.info(
-            f"Deploying model {model_uri} to environment '{self._environment}' and "
-            f"namespace '{SELDON_PARAMS['namespace']}'."
+            f"Deploying model '{self._model_name}' from uri {model_uri}. \nUsing environment"
+            f" '{self._environment}' and namespace '{SELDON_PARAMS['namespace']}'."
         )
 
         deployment = self._create_seldon_deployment(model_uri)
@@ -74,7 +74,10 @@ class DeployModel(Task):
             **SELDON_PARAMS,
             body=deployment,
         )
-        self.logger.info("Finished deployment. Model status: TODO")
+        (status,) = custom_api.get_namespaced_custom_object(
+            **SELDON_PARAMS, name=self._model_name
+        )["status"]["deploymentStatus"].values()
+        self.logger.info(f"Finished deployment. Deployment status: {status}")
         return resp
 
     def _create_seldon_deployment(self, model_uri: str) -> dict:
@@ -104,40 +107,3 @@ class DeployModel(Task):
             raise DeployingError(
                 "Couldn't create a deployment because the configuration schema is not correct"
             )
-
-    def _create_deployment(
-        self, custom_api: client.CustomObjectsApi, deployment: dict, overwrite: bool
-    ):
-        """Not used at the moment."""
-        if overwrite:
-            custom_api.delete_namespaced_custom_object(
-                **SELDON_PARAMS, name=deployment["metadata"]["name"]
-            )
-        resp = custom_api.create_namespaced_custom_object(
-            **SELDON_PARAMS,
-            body=deployment,
-        )
-        self.logger.info("Deployment created.")
-
-    def _update_deployment(
-        self, custom_api: client.CustomObjectsApi, deployment: dict, model_uri: str
-    ):
-        """Not used at the moment."""
-        self.logger.info("Updating existing model")
-        existent_deployment = custom_api.get_namespaced_custom_object(
-            **SELDON_PARAMS,
-            name=deployment["metadata"]["name"],
-        )
-        try:
-            existent_deployment["spec"]["predictors"][0]["graph"][
-                "modelUri"
-            ] = model_uri
-        except KeyError:
-            raise DeployingError(
-                "Couldn't update the deployment because the configuration schema is not correct"
-            )
-        resp = custom_api.replace_namespaced_custom_object(
-            **SELDON_PARAMS,
-            name=existent_deployment["metadata"]["name"],
-            body=existent_deployment,
-        )
