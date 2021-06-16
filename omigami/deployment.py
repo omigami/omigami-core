@@ -14,21 +14,17 @@ from omigami.config import (
     DATASET_IDS,
     REDIS_DATABASES,
     S3_BUCKETS,
+    IonModes,
 )
 from omigami.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.flows.training_flow import build_training_flow
+from omigami.flows.training_flow import build_training_flow, TrainingFlowParameters
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
-)
-from omigami.tasks import (
-    DownloadParameters,
-    ProcessSpectrumParameters,
-    TrainModelParameters,
 )
 
 
@@ -38,8 +34,10 @@ def deploy_training_flow(
     window: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
+    dataset_name: str,
     n_decimals: int = 2,
     chunk_size: int = 1000,
+    ion_mode: IonModes = "positive",
     skip_if_exists: bool = True,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     project_name: str = PROJECT_NAME,
@@ -52,7 +50,6 @@ def deploy_training_flow(
     auth_url: Optional[str] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
-    dataset_name: Optional[str] = None,
 ):
     """
     Deploys a model training flow to Prefect cloud and optionally deploys it as a Seldon deployment.
@@ -95,13 +92,19 @@ def deploy_training_flow(
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
 
-    download_parameters = DownloadParameters(source_uri, output_dir, dataset_id)
-    process_parameters = ProcessSpectrumParameters(
-        spectrum_dgw,
-        n_decimals,
-        skip_if_exists,
+    flow_parameters = TrainingFlowParameters(
+        input_dgw=input_dgw,
+        spectrum_dgw=spectrum_dgw,
+        source_uri=source_uri,
+        output_dir=output_dir,
+        dataset_id=dataset_id,
+        chunk_size=chunk_size,
+        ion_mode=ion_mode,
+        n_decimals=n_decimals,
+        skip_if_exists=skip_if_exists,
+        iterations=iterations,
+        window=window,
     )
-    train_model_parameters = TrainModelParameters(spectrum_dgw, iterations, window)
 
     flow_config = make_flow_config(
         image=image,
@@ -113,19 +116,14 @@ def deploy_training_flow(
     )
 
     flow = build_training_flow(
-        input_dgw=input_dgw,
-        download_params=download_parameters,
-        process_params=process_parameters,
-        train_params=train_model_parameters,
-        chunk_size=chunk_size,
+        project_name,
+        flow_name,
+        flow_config,
+        flow_parameters,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
-        project_name=project_name,
         model_output_dir=model_output_dir,
         mlflow_server=mlflow_server,
-        flow_config=flow_config,
-        redis_db=redis_db,
-        flow_name=flow_name,
         deploy_model=deploy_model,
     )
 

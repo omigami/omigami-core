@@ -1,19 +1,33 @@
+import pytest
+from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.flows.utils import create_result
 from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.tasks import CreateChunks
+from omigami.tasks import CreateChunks, ChunkingParameters
 from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 
 
-def test_create_chunks(local_gnps_small_json, spectrum_ids, clean_chunk_files):
+@pytest.mark.parametrize(
+    "ion_mode, expected_chunk_files",
+    [
+        ("positive", 3),
+        ("negative", 2),
+    ],
+)
+def test_create_chunks(
+    local_gnps_small_json,
+    spectrum_ids,
+    clean_chunk_files,
+    ion_mode,
+    expected_chunk_files,
+):
     input_dgw = FSInputDataGateway()
+    fs = get_fs(local_gnps_small_json)
+    chunking_parameters = ChunkingParameters(local_gnps_small_json, 150000, ion_mode)
     with Flow("test-flow") as test_flow:
         chunks = CreateChunks(
-            file_path=local_gnps_small_json,
             input_dgw=input_dgw,
-            chunk_size=150000,
-            **create_result(ASSETS_DIR / "chunk_paths.pickle"),
+            chunking_parameters=chunking_parameters,
             **TEST_TASK_CONFIG,
         )(spectrum_ids)
 
@@ -22,6 +36,6 @@ def test_create_chunks(local_gnps_small_json, spectrum_ids, clean_chunk_files):
 
     assert res.is_successful()
     assert res_2.result[chunks].is_cached()
-    assert input_dgw.fs.exists(ASSETS_DIR / "chunk_paths.pickle")
-    assert len(input_dgw.fs.ls(ASSETS_DIR / "chunks")) == 6
+    assert fs.exists(ASSETS_DIR / f"chunks/{ion_mode}/chunk_paths.pickle")
+    assert len(fs.ls(ASSETS_DIR / "chunks" / ion_mode)) == expected_chunk_files + 1
     assert set(res.result[chunks].result) == set(res_2.result[chunks].result)

@@ -11,22 +11,21 @@ from omigami.flows.utils import create_result
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.tasks import DownloadData
 from omigami.tasks.download_data import DownloadParameters
-from omigami.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
+from omigami.test.conftest import ASSETS_DIR
 
 
-def test_download_data():
+def test_download_data(mock_default_config, tmpdir):
     input_dgw = MagicMock(spec=InputDataGateway)
     input_dgw.download_gnps.return_value = "download"
     input_dgw.get_spectrum_ids.return_value = "spectrum_ids"
-    download_params = DownloadParameters("input-uri", "dir", "file_name")
+    download_params = DownloadParameters("input-uri", tmpdir, "file_name", "checkpoint")
+
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             input_dgw,
-            **download_params.kwargs,
-            **create_result(DRPath("")),
-            **TEST_TASK_CONFIG,
+            download_params,
         )()
-
+        download.checkpointing = False
     res = test_flow.run()
 
     assert res.is_successful()
@@ -40,7 +39,7 @@ def test_download_data():
     )
 
 
-def test_download_existing_data():
+def test_download_existing_data(mock_default_config):
     file_name = "SMALL_GNPS.json"
     input_dgw = FSInputDataGateway()
     input_dgw.download_gnps = lambda *args: None
@@ -55,9 +54,7 @@ def test_download_existing_data():
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             input_dgw,
-            **params.kwargs,
-            **create_result(params.checkpoint_path),
-            **TEST_TASK_CONFIG,
+            params,
         )()
 
     res = test_flow.run()
@@ -68,7 +65,7 @@ def test_download_existing_data():
 
 
 @pytest.mark.skip(reason="This test uses internet connection.")
-def test_download_existing_data_s3():
+def test_download_existing_data_s3(mock_default_config):
     file_name = "spec2vec-training-flow/downloaded_datasets/test_10k/gnps.json"
     dir_ = "s3://dr-prefect"
     bucket = "dr-prefect"
@@ -83,9 +80,9 @@ def test_download_existing_data_s3():
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
-            **download_params.kwargs,
-            **create_result(download_params.checkpoint_path),
-            **TEST_TASK_CONFIG,
+            input_dgw,
+            download_params,
+            **create_result(download_params.download_path),
         )()
 
     res = test_flow.run()

@@ -152,7 +152,7 @@ def test_local_predictions(small_payload, big_payload, redis_full_setup):
 def test_parse_input(small_payload, model):
     data_input, parameters = model._parse_input(small_payload)
 
-    assert parameters["n_best_spectra"] == 2
+    assert parameters["n_best_spectra"] == small_payload["parameters"]["n_best_spectra"]
     assert "peaks_json" and "Precursor_MZ" in data_input[0]
 
 

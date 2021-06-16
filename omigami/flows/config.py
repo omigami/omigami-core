@@ -10,7 +10,6 @@ from prefect.storage import Storage, S3
 
 from omigami.config import ROOT_DIR, S3_BUCKETS
 
-
 """
     Implemented Prefect flow configurations:
 """
@@ -29,8 +28,7 @@ class PrefectExecutorMethods(Enum):
 class FlowConfig:
     """
     Configuration options to be passed into Prefect's Flow() as arguments.
-
-    Therefore, should mirror expected Flow() arguments ~exatcly~.
+    Therefore, should mirror expected Flow() arguments ~exactly~.
     """
 
     run_config: RunConfig

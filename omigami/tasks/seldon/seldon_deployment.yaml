@@ -1,10 +1,10 @@
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
-  name: spec2vec
+  name: DUMMY_NAME
   namespace: seldon
 spec:
-  name: spec2vec
+  name: DUMMY_NAME
   annotations:
     seldon.io/rest-timeout: "600000"
     seldon.io/grpc-timeout: "600000"
@@ -13,7 +13,7 @@ spec:
       children: []
       implementation: MLFLOW_SERVER
       modelUri: dummy
-      name: spec2vec
+      name: DUMMY_NAME
     name: default
     replicas: 1
     traffic: 100
@@ -22,28 +22,28 @@ spec:
         # We are setting high failureThreshold as installing conda dependencies
         # can take long time and we want to avoid k8s killing the container prematurely
         containers:
-          - name: spec2vec
-            resources:
-              requests:
-                memory: 8Gi
-            readinessProbe:
-              failureThreshold: 10
-              initialDelaySeconds: 120
-              periodSeconds: 30
-              successThreshold: 1
-              tcpSocket:
-                port: 9000
-              timeoutSeconds: 3
-            livenessProbe:
-              failureThreshold: 10
-              initialDelaySeconds: 120
-              periodSeconds: 30
-              successThreshold: 1
-              tcpSocket:
-                port: 9000
-              timeoutSeconds: 3
-            env:
-              - name: REDIS_HOST
-                value: "redis-master.redis"
-              - name: OMIGAMIDIR
-                value: "/mnt/models/code/omigami"
+        - name: DUMMY_NAME
+          resources:
+            requests:
+              memory: 5Gi
+          readinessProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 3
+          livenessProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 9000
+            timeoutSeconds: 3
+          env:
+            - name: REDIS_HOST
+              value: "redis-master.redis"
+            - name: OMIGAMIDIR
+              value: "/mnt/models/code/omigami"
