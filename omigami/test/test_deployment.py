@@ -12,9 +12,9 @@ from omigami.deployment import (
 )
 
 
-# @pytest.mark.skip(
-#     reason="This test uses internet connection and deploys a test flow to prefect."
-# )
+@pytest.mark.skip(
+    reason="This test uses internet connection and deploys a test flow to prefect."
+)
 def test_deploy_training_flow():
     # -- setup env --
     # BE CAREFUL -> DO NOT set deploy_model=True and env="prod" unless you
