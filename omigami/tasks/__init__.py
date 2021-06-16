@@ -6,5 +6,5 @@ from omigami.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
 from omigami.tasks.register_model import RegisterModel
-from omigami.tasks.seldon import DeployModel
+from omigami.tasks.seldon import DeployModel, DeployModelParameters
 from omigami.tasks.train_model import TrainModel, TrainModelParameters

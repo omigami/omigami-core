@@ -9,6 +9,7 @@ from omigami.tasks import (
     DownloadData,
     MakeEmbeddings,
     DeployModel,
+    DeployModelParameters,
     DownloadParameters,
     CreateChunks,
     ChunkingParameters,
@@ -37,6 +38,9 @@ class TrainingFlowParameters:
         skip_if_exists: bool,
         iterations: int,
         window: int,
+        redis_db: str = "0",
+        overwrite: bool = False,
+        environment: str = "dev",
     ):
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
@@ -56,6 +60,9 @@ class TrainingFlowParameters:
             skip_if_exists,
         )
         self.training = TrainModelParameters(iterations, window)
+        self.deploying = DeployModelParameters(
+            redis_db, ion_mode, overwrite, environment
+        )
 
 
 def build_training_flow(
@@ -66,7 +73,6 @@ def build_training_flow(
     # TODO: incorporate the next parameters into data classes
     model_output_dir: str,
     mlflow_server: str,
-    redis_db: str,
     intensity_weighting_power: Union[float, int] = 0.5,
     allowed_missing_percentage: Union[float, int] = 5.0,
     deploy_model: bool = False,
@@ -90,8 +96,6 @@ def build_training_flow(
         Directory for saving the model.
     mlflow_server:
         Server used for MLFlow to save the model.
-    redis_db:
-        Database used on redis
     intensity_weighting_power:
         Exponent used to scale intensity weights for each word.
     allowed_missing_percentage:
@@ -140,6 +144,6 @@ def build_training_flow(
         ).map(unmapped(model), unmapped(model_registry), spectrum_ids_chunks)
 
         if deploy_model:
-            DeployModel(redis_db)(model_registry)
+            DeployModel(flow_parameters.deploying)(model_registry)
 
     return training_flow
