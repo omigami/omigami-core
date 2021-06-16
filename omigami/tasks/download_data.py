@@ -46,6 +46,7 @@ class DownloadParameters:
     dataset_name: str
     checkpoint: str = "spectrum_ids.pkl"
 
+
     @property
     def download_path(self):
         return f"{self.output_dir}/{self.dataset_name}"
