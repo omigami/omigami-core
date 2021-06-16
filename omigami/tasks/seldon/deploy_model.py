@@ -65,8 +65,8 @@ class DeployModel(Task):
                 )
             else:
                 self.logger.warning(
-                    f"Did not update the seldon deployment because there is a deployment "
-                    f"named {self._model_name} in the cluster."
+                    f"Seldon deployment not updated: deployment named {self._model_name} already exists "
+                    f"in the cluster and 'overwrite' DeployModel task parameter was not set to True."
                 )
                 return
 
