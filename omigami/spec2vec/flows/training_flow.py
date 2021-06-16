@@ -30,14 +30,15 @@ class TrainingFlowParameters:
         spectrum_dgw: SpectrumDataGateway,
         source_uri: str,
         output_dir: str,
-        dataset_path: str,
-        spectrum_ids_name: str,
+        dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
         n_decimals: int,
         skip_if_exists: bool,
         iterations: int,
         window: int,
+        dataset_name: str = "gnps.json",
+        dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
         overwrite: bool = False,
         environment: str = "dev",
@@ -49,7 +50,7 @@ class TrainingFlowParameters:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         self.downloading = DownloadParameters(
-            source_uri, output_dir, dataset_path, spectrum_ids_name
+            source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
         )
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
