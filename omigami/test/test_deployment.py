@@ -16,13 +16,13 @@ from omigami.deployment import (
     reason="This test uses internet connection and deploys a test flow to prefect."
 )
 def test_deploy_training_flow():
-    # -- setup env --
-    # BE CAREFUL -> DO NOT set deploy_model=True and env="prod" unless you
-    # know exactly what you are doing.
-    # also, make sure to check that your source_uri reflects the dataset
-    # you want to be downloaded from GNPS and that you match it with the
-    # dataset_name monicker we use internally to represent each dataset.
-    env: Literal["dev", "prod"] = "prod"
+    """
+    BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
+    what you are doing. Also, make sure to check that your source_uri reflects the dataset
+    you want to be downloaded from GNPS and that you match it with the dataset_name
+    we use internally to represent each dataset.
+    """
+    env: Literal["dev", "prod"] = "dev"
     login_config = config["login"][env].get(dict)
     login_config.pop("token")
 
