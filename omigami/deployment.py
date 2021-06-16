@@ -1,3 +1,4 @@
+from datetime import timedelta, datetime
 from typing import Optional
 
 from prefect import Client
@@ -6,13 +7,13 @@ from typing_extensions import Literal
 from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
-    API_SERVER,
+    API_SERVER_URLS,
     PROJECT_NAME,
-    MODEL_DIR,
+    MODEL_DIRECTORIES,
     MLFLOW_SERVER,
-    DATASET_DIR,
-    RedisDBDatasetSize,
-    S3_BUCKET,
+    DATASET_IDS,
+    REDIS_DATABASES,
+    S3_BUCKETS,
     IonModes,
 )
 from omigami.flows.config import (
@@ -39,37 +40,54 @@ def deploy_training_flow(
     ion_mode: IonModes = "positive",
     skip_if_exists: bool = True,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
-    output_dir: str = S3_BUCKET,
     project_name: str = PROJECT_NAME,
-    model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
     flow_name: str = "spec2vec-training-flow",
     environment: Literal["dev", "prod"] = "dev",
     deploy_model: bool = False,
+    schedule: timedelta = None,
     auth: bool = False,
     auth_url: Optional[str] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
 ):
+    """
+    Deploys a model training flow to Prefect cloud and optionally deploys it as a Seldon deployment.
 
+    1) authenticate user credentials using the auth service endpoint
+    2) process database and filesystem configs
+    3) instantiate gateways and task parameters
+    4) create prefect flow configuration
+    5) builds the training flow graph
+    6) pushes the flow to prefect cloud
+
+    """
+
+    # authentication step
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)
         session_token = authenticator.authenticate()
-        client = Client(api_server=API_SERVER[environment], api_token=session_token)
+        client = Client(
+            api_server=API_SERVER_URLS[environment], api_token=session_token
+        )
     else:
-        client = Client(api_server=API_SERVER[environment])
+        client = Client(api_server=API_SERVER_URLS[environment])
     client.create_project(project_name)
 
-    # config values
-    try:
-        redis_db = RedisDBDatasetSize[dataset_name]
-        dataset_path = DATASET_DIR[dataset_name] + "gnps.json"
-        spectrum_ids_name = DATASET_DIR[dataset_name] + "spectrum_ids.pkl"
-    except KeyError:
+    # validates parameters and use them to get task configuration variables
+    if environment not in ["dev", "prod"]:
+        raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
+
+    if dataset_name not in DATASET_IDS[environment].keys():
         raise ValueError(
-            f"No such option available for reference dataset: {dataset_name}."
-            f"Available options are: {list(RedisDBDatasetSize.keys())}."
+            f"No such option available for reference dataset: {dataset_name}. Available options are:"
+            f"{list(DATASET_IDS[environment].keys())}."
         )
+
+    model_output_dir = MODEL_DIRECTORIES[environment]
+    dataset_id = DATASET_IDS[environment][dataset_name].format(date=datetime.today())
+    redis_db = REDIS_DATABASES[environment][dataset_name]
+    output_dir = S3_BUCKETS[environment]
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
@@ -95,6 +113,7 @@ def deploy_training_flow(
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db=redis_db,
         environment=environment,
+        schedule=schedule,
     )
 
     flow = build_training_flow(
@@ -113,8 +132,10 @@ def deploy_training_flow(
         flow,
         project_name=project_name,
     )
+
     flow_run_id = client.create_flow_run(
         flow_id=training_flow_id,
         run_name=f"run {project_name}",
     )
+
     return flow_run_id

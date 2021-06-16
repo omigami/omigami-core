@@ -44,7 +44,12 @@ def test_download_existing_data(mock_default_config):
     input_dgw = FSInputDataGateway()
     input_dgw.download_gnps = lambda *args: None
     fs = get_fs(ASSETS_DIR)
-    params = DownloadParameters(SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, file_name)
+    params = DownloadParameters(
+        SOURCE_URI_PARTIAL_GNPS,
+        ASSETS_DIR.parent,
+        ASSETS_DIR.name,
+        dataset_file=file_name,
+    )
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
