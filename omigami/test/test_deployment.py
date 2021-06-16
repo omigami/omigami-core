@@ -1,3 +1,4 @@
+import pytest
 from typing_extensions import Literal
 
 from omigami.config import (
@@ -10,9 +11,9 @@ from omigami.deployment import (
 )
 
 
-# @pytest.mark.skip(
-#     reason="This test uses internet connection and deploys a test flow to prefect."
-# )
+@pytest.mark.skip(
+    reason="This test uses internet connection and deploys a test flow to prefect."
+)
 def test_deploy_training_flow():
     """
     BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
@@ -34,12 +35,12 @@ def test_deploy_training_flow():
         skip_if_exists=True,
         chunk_size=int(1e8),
         environment=env,
-        ion_mode="negative",
+        ion_mode="positive",
         dataset_name="complete",
         source_uri=SOURCE_URI_COMPLETE_GNPS,
         project_name="spec2vec",
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/negative",
+        flow_name="training-flow/positive",
         deploy_model=True,
         overwrite=True,
         auth=True,
