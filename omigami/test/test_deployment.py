@@ -1,20 +1,18 @@
-import pytest
 from typing_extensions import Literal
-
 
 from omigami.config import (
     MLFLOW_SERVER,
     config,
-    SOURCE_URI_PARTIAL_GNPS,
+    SOURCE_URI_COMPLETE_GNPS,
 )
 from omigami.deployment import (
     deploy_training_flow,
 )
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     """
     BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
@@ -28,8 +26,8 @@ def test_deploy_training_flow():
 
     flow_id = deploy_training_flow(
         image="drtools/prefect:omigami-SNAPSHOT.bc19d2b",
-        iterations=3,
-        window=300,
+        iterations=15,
+        window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         n_decimals=2,
@@ -38,11 +36,12 @@ def test_deploy_training_flow():
         environment=env,
         ion_mode="negative",
         dataset_name="complete",
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
-        project_name="spec2vec-test",
+        source_uri=SOURCE_URI_COMPLETE_GNPS,
+        project_name="spec2vec",
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/chunk-by-ion-mode",
+        flow_name="training-flow/negative",
         deploy_model=True,
+        overwrite=True,
         auth=True,
         **login_config,
     )
