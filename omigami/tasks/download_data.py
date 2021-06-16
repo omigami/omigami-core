@@ -4,7 +4,37 @@ from typing import List
 from prefect import Task
 
 from omigami.data_gateway import InputDataGateway
+from omigami.flows.utils import create_result
 from omigami.tasks.config import merge_configs
+
+
+@dataclass
+class DownloadParameters:
+    input_uri: str
+    output_dir: str
+    dataset_id: str
+    # these are changed from defaults during tests only
+    dataset_file: str = "gnps.json"
+    checkpoint_file: str = "spectrum_ids.pkl"
+
+    def __post_init__(self):
+        self.directory = f"{self.output_dir}/{self.dataset_id}"
+
+    @property
+    def download_path(self):
+        return f"{self.directory}/{self.dataset_file}"
+
+    @property
+    def checkpoint_path(self):
+        return f"{self.directory}/{self.checkpoint_file}"
+
+    @property
+    def kwargs(self):
+        return dict(
+            input_uri=self.input_uri,
+            download_path=self.download_path,
+            checkpoint_path=self.checkpoint_path,
+        )
 
 
 class DownloadData(Task):
@@ -36,32 +66,3 @@ class DownloadData(Task):
         )
         self.logger.info(f"Saving spectrum ids to {self.checkpoint_path}")
         return spectrum_ids
-
-
-@dataclass
-class DownloadParameters:
-    input_uri: str
-    output_dir: str
-    dataset_id: str
-    # these are changed from defaults during tests only
-    dataset_file: str = "gnps.json"
-    checkpoint_file: str = "spectrum_ids.pkl"
-
-    def __post_init__(self):
-        self.directory = f"{self.output_dir}/{self.dataset_id}"
-
-    @property
-    def download_path(self):
-        return f"{self.directory}/{self.dataset_file}"
-
-    @property
-    def checkpoint_path(self):
-        return f"{self.directory}/{self.checkpoint_file}"
-
-    @property
-    def kwargs(self):
-        return dict(
-            input_uri=self.input_uri,
-            download_path=self.download_path,
-            checkpoint_path=self.checkpoint_path,
-        )

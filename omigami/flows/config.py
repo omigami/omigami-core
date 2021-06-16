@@ -28,7 +28,6 @@ class PrefectExecutorMethods(Enum):
 class FlowConfig:
     """
     Configuration options to be passed into Prefect's Flow() as arguments.
-
     Therefore, should mirror expected Flow() arguments ~exactly~.
     """
 
