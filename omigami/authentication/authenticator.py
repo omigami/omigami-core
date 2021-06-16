@@ -5,6 +5,14 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+class UnauthorizedError(Exception):
+    pass
+
+
+class BadRequestError(Exception):
+    pass
+
+
 class Authenticator:
     def __init__(self, username: str, password: str):
         self._username = username
@@ -61,6 +69,12 @@ class KratosAuthenticator(Authenticator):
         data = {"identifier": self._username, "password": self._password}
         headers = {"Accept": "application/json", "Content-Type": "application/json"}
         r = requests.post(action_url, json=data, headers=headers)
+        if r.status_code == 401:
+            raise UnauthorizedError("Please review your auth credentials.")
+        elif r.status_code == 404:
+            raise BadRequestError(
+                "Something went wrong while trying to get session token."
+            )
         json = r.json()
         try:
             session_token = json["session_token"]
