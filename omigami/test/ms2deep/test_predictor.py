@@ -3,12 +3,11 @@ from pathlib import Path
 
 import pytest
 from matchms.importing import load_from_mgf
-
 from ms2deepscore import MS2DeepScore
-from omigami.ms2deep.predictor import Predictor
 from ms2deepscore.models import load_model
-from omigami.test.conftest import ASSETS_DIR
 
+from omigami.ms2deep.predictor import Predictor
+from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[3])
 
@@ -59,6 +58,15 @@ def test_predictions(model, payload):
         context="",
     )
 
+    assert type(score) == float
+
+
+@pytest.mark.skipif(
+    not os.path.exists(str(ASSETS_DIR / "ms2deepscore_model.hdf5")),
+    reason="ms2deepscore_model.hdf5 is git ignored",
+)
+def test_score(model, spectrums):
+    score = model.score(spectrums[0], spectrums[1])
     assert type(score) == float
 
 
