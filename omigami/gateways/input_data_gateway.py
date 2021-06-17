@@ -65,6 +65,12 @@ class FSInputDataGateway(InputDataGateway):
         output_path = DRPath(output_path)
         self._download_and_serialize(uri, output_path)
 
+    def download_ms2deep_model(self, uri: str, output_path: str):
+        if self.fs is None:
+            self.fs = get_fs(output_path)
+        output_path = DRPath(output_path)
+        self._download_and_serialize(uri, output_path)
+
     def _download_and_serialize(self, uri: str, output_path: DRPath):
         """solution is from https://stackoverflow.com/a/16696317/15485553"""
         chunk_size = 10 * 1024 * 1024
@@ -88,7 +94,7 @@ class FSInputDataGateway(InputDataGateway):
             self._resume_download(file_size, uri, str(output_path))
 
     def _resume_download(self, file_size: int, uri: str, file_path: str):
-        """solution is from https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python """
+        """solution is from https://stackoverflow.com/questions/22894211/how-to-resume-file-download-in-python"""
         resume_header = {"Range": f"bytes={file_size}-"}
         with requests.get(uri, stream=True, headers=resume_header) as r:
             r.raise_for_status()

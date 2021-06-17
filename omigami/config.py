@@ -11,6 +11,9 @@ ROOT_DIR = Path(__file__).parents[0]
 SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
 
+# MS2Deep model uri
+MS2DEEP_MODEL_URI = config["ms2deep"]["model_uri"].get(str)
+
 # Prefect
 API_SERVER_URLS = config["prefect"]["api_server"].get(dict)
 PROJECT_NAME = config["prefect"]["project"].get(str)
