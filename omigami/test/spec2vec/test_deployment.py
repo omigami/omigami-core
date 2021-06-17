@@ -1,11 +1,10 @@
 import pytest
 from typing_extensions import Literal
 
-
 from omigami.config import (
     MLFLOW_SERVER,
     config,
-    SOURCE_URI_PARTIAL_GNPS,
+    SOURCE_URI_COMPLETE_GNPS,
 )
 from omigami.spec2vec.deployment import (
     deploy_training_flow,
@@ -28,21 +27,22 @@ def test_deploy_training_flow():
 
     flow_id = deploy_training_flow(
         image="drtools/prefect:omigami-SNAPSHOT.bc19d2b",
-        iterations=3,
-        window=300,
+        iterations=15,
+        window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         n_decimals=2,
         skip_if_exists=True,
         chunk_size=int(1e8),
         environment=env,
-        ion_mode="negative",
+        ion_mode="positive",
         dataset_name="complete",
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
-        project_name="spec2vec-test",
+        source_uri=SOURCE_URI_COMPLETE_GNPS,
+        project_name="spec2vec",
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/chunk-by-ion-mode",
+        flow_name="training-flow/positive",
         deploy_model=True,
+        overwrite=True,
         auth=True,
         **login_config,
     )

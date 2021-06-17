@@ -29,7 +29,7 @@ DOCUMENT_HASHES = config["storage"]["redis"]["document_hashes"].get(str)
 EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
 REDIS_DATABASES = {
     "dev": {"small": "2", "10k": "1", "complete": "0"},
-    "prod": {"complete": "0"},
+    "prod": {"small": "2", "complete": "0"},
 }
 DATASET_IDS = config["storage"]["dataset_dir"].get(dict)
 
