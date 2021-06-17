@@ -19,6 +19,7 @@ storage:
       10k: "datasets/10k"
       complete: "datasets/complete/{date:%Y-%m}"
     prod:
+      small: "datasets/small"
       complete: "datasets/complete/{date:%Y-%m}"
   model_folder:
     dev: "s3://omigami-dev/spec2vec/mlflow"
