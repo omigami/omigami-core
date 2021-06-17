@@ -20,18 +20,17 @@ def spectrums():
 
 @pytest.fixture
 def payload(spectrums):
-    spectrum_a = spectrums[0]
-    spectrum_b = spectrums[1]
+    reference = spectrums[0]
+    query = spectrums[1]
     payload = {
-        "parameters": {},
         "data": [
             {
-                "intensities": spectrum_a.peaks.intensities,
-                "mz": spectrum_a.peaks.mz,
+                "intensities": reference.peaks.intensities,
+                "mz": reference.peaks.mz,
             },
             {
-                "intensities": spectrum_b.peaks.intensities,
-                "mz": spectrum_b.peaks.mz,
+                "intensities": query.peaks.intensities,
+                "mz": query.peaks.mz,
             },
         ],
     }
@@ -51,10 +50,8 @@ def model():
     reason="ms2deepscore_model.hdf5 is git ignored",
 )
 def test_predictions(model, payload):
-    model.run_id = "1"
-
     score = model.predict(
-        data_input_and_parameters=payload,
+        data_input=payload,
         context="",
     )
 
@@ -71,7 +68,7 @@ def test_score(model, spectrums):
 
 
 def test_parse_input(payload, model):
-    data_input, parameters = model._parse_input(payload)
+    data_input = model._parse_input(payload)
 
     assert len(data_input) == 2
     assert "intensities" in data_input[0]
