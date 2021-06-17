@@ -3,10 +3,10 @@ import click
 from omigami.deployment import deploy_training_flow
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
-    API_SERVER,
+    API_SERVER_URLS,
     PROJECT_NAME,
-    S3_BUCKET,
-    MODEL_DIR,
+    S3_BUCKETS,
+    MODEL_DIRECTORIES,
     MLFLOW_SERVER,
 )
 from omigami.utils import add_options
@@ -15,14 +15,14 @@ from omigami.utils import add_options
 configuration_options = [
     click.option("--project-name", "-p", default=PROJECT_NAME),
     click.option("--source-uri", default=SOURCE_URI_PARTIAL_GNPS),
-    click.option("--output-dir", default=S3_BUCKET),
-    click.option("--model-output-dir", default=MODEL_DIR),
+    click.option("--output-dir", default=S3_BUCKETS),
+    click.option("--model-output-dir", default=MODEL_DIRECTORIES),
     click.option("--mlflow-server", default=MLFLOW_SERVER),
 ]
 
 auth_options = [
     click.option(
-        "--api-server", default=API_SERVER["dev"], help="URL to the prefect API"
+        "--api-server", default=API_SERVER_URLS["dev"], help="URL to the prefect API"
     ),
     click.option("--auth", default=False, help="Enable authentication"),
     click.option("--auth_url", default=None, help="Kratos Public URI"),

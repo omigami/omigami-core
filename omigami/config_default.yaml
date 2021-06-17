@@ -14,9 +14,13 @@ seldon:
   namespace: "seldon"
 storage:
   dataset_dir:
-    small: "datasets/small/"
-    10k: "datasets/10k/"
-    complete: "datasets/complete/2021-05-14/"
+    dev:
+      small: "datasets/small"
+      10k: "datasets/10k"
+      complete: "datasets/complete/{date:%Y-%m}"
+    prod:
+      small: "datasets/small"
+      complete: "datasets/complete/{date:%Y-%m}"
   model_folder:
     dev: "s3://omigami-dev/spec2vec/mlflow"
     prod: "s3://omigami/spec2vec/mlflow"
@@ -31,3 +35,14 @@ storage:
 clusters:
   dev: "dev"
   prod: "prod"
+login:
+  prod:
+    auth_url: "url"
+    username: "user"
+    password: "pw"
+    token: "token"
+  dev:
+    auth_url: "url"
+    username: "user"
+    password: "pw"
+    token: "token"

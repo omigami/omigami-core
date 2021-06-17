@@ -6,27 +6,26 @@ from drfs.filesystems import get_fs
 from prefect import Flow
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.data_gateway import InputDataGateway
 from omigami.flows.utils import create_result
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.tasks import DownloadData
-from omigami.data_gateway import InputDataGateway
 from omigami.tasks.download_data import DownloadParameters
-from omigami.test.conftest import ASSETS_DIR, TEST_TASK_CONFIG
+from omigami.test.conftest import ASSETS_DIR
 
 
-def test_download_data():
+def test_download_data(mock_default_config, tmpdir):
     input_dgw = MagicMock(spec=InputDataGateway)
     input_dgw.download_gnps.return_value = "download"
     input_dgw.get_spectrum_ids.return_value = "spectrum_ids"
-    download_params = DownloadParameters("input-uri", "dir", "file_name")
+    download_params = DownloadParameters("input-uri", tmpdir, "file_name", "checkpoint")
+
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             input_dgw,
-            **download_params.kwargs,
-            **create_result(DRPath("")),
-            **TEST_TASK_CONFIG,
+            download_params,
         )()
-
+        download.checkpointing = False
     res = test_flow.run()
 
     assert res.is_successful()
@@ -40,19 +39,22 @@ def test_download_data():
     )
 
 
-def test_download_existing_data():
+def test_download_existing_data(mock_default_config):
     file_name = "SMALL_GNPS.json"
     input_dgw = FSInputDataGateway()
     input_dgw.download_gnps = lambda *args: None
     fs = get_fs(ASSETS_DIR)
-    params = DownloadParameters(SOURCE_URI_PARTIAL_GNPS, ASSETS_DIR, file_name)
+    params = DownloadParameters(
+        SOURCE_URI_PARTIAL_GNPS,
+        ASSETS_DIR.parent,
+        ASSETS_DIR.name,
+        dataset_file=file_name,
+    )
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
             input_dgw,
-            **params.kwargs,
-            **create_result(ASSETS_DIR / "spectrum_ids.pkl"),
-            **TEST_TASK_CONFIG,
+            params,
         )()
 
     res = test_flow.run()
@@ -63,7 +65,7 @@ def test_download_existing_data():
 
 
 @pytest.mark.skip(reason="This test uses internet connection.")
-def test_download_existing_data_s3():
+def test_download_existing_data_s3(mock_default_config):
     file_name = "spec2vec-training-flow/downloaded_datasets/test_10k/gnps.json"
     dir_ = "s3://dr-prefect"
     bucket = "dr-prefect"
@@ -73,14 +75,14 @@ def test_download_existing_data_s3():
     input_dgw = FSInputDataGateway()
     fs = get_fs(dir_)
     download_params = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS, dir_, file_name, input_dgw, checkpoint_name
+        SOURCE_URI_PARTIAL_GNPS, dir_, file_name, checkpoint_name
     )
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
-            **download_params.kwargs,
+            input_dgw,
+            download_params,
             **create_result(download_params.download_path),
-            **TEST_TASK_CONFIG,
         )()
 
     res = test_flow.run()

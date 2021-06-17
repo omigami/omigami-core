@@ -1,104 +1,109 @@
+from dataclasses import dataclass
 from pathlib import Path
 
-import prefect
 import yaml
 from kubernetes import config, client
-from prefect import Task
 from kubernetes.config import ConfigException
-
-from omigami.helper_classes.exception import DeployingError
-
-from omigami.tasks.config import merge_configs
+from prefect import Task
 
 from omigami.config import SELDON_PARAMS, CLUSTERS
+from omigami.helper_classes.exception import DeployingError
+from omigami.tasks.config import merge_configs
 
-logger = prefect.context.get("logger")
+
+@dataclass
+class DeployModelParameters:
+    redis_db: str
+    ion_mode: str
+    overwrite: bool
+    environment: str = "dev"
 
 
 class DeployModel(Task):
     def __init__(
-        self, redis_db: str, environment: str = "dev", overwrite: bool = True, **kwargs
+        self,
+        deploy_parameters: DeployModelParameters,
+        **kwargs,
     ):
-        self.redis_db = redis_db
-        self.environment = environment
-        self.overwrite = overwrite
+        self._redis_db = deploy_parameters.redis_db
+        self._environment = deploy_parameters.environment
+        self._overwrite = deploy_parameters.overwrite
+        self._ion_mode = deploy_parameters.ion_mode
+        self._model_name = f"spec2vec-{self._ion_mode}"
+
         config = merge_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, registered_model: dict = None, overwrite: bool = True) -> None:
-
-        model_uri = registered_model["model_uri"]
-        logger.info(
-            f"Deploying model {model_uri} to environment {self.environment} and "
-            f"namespace {SELDON_PARAMS['namespace']}."
-        )
-
+    def run(self, registered_model: dict = None) -> None:
         try:
             config.load_incluster_config()
         except ConfigException:
-            config.load_kube_config(context=CLUSTERS[self.environment])
-
+            config.load_kube_config(context=CLUSTERS[self._environment])
         custom_api = client.CustomObjectsApi()
+
+        model_uri = registered_model["model_uri"]
+        self.logger.info(
+            f"Deploying model '{self._model_name}' from uri {model_uri}. \nUsing environment"
+            f" '{self._environment}' and namespace '{SELDON_PARAMS['namespace']}'."
+        )
+
+        deployment = self._create_seldon_deployment(model_uri)
+
+        existing_deployments = [
+            obj["metadata"]["name"]
+            for obj in custom_api.list_namespaced_custom_object(**SELDON_PARAMS)[
+                "items"
+            ]
+        ]
+        if self._model_name in existing_deployments:
+            if self._overwrite:
+                self.logger.info(
+                    f"Overwriting existing deployment for model {self._model_name}"
+                )
+                custom_api.delete_namespaced_custom_object(
+                    **SELDON_PARAMS, name=self._model_name
+                )
+            else:
+                self.logger.warning(
+                    f"Seldon deployment not updated: deployment named {self._model_name} already exists "
+                    f"in the cluster and 'overwrite' DeployModel task parameter was not set to True."
+                )
+                return
+
+        resp = custom_api.create_namespaced_custom_object(
+            **SELDON_PARAMS,
+            body=deployment,
+        )
+        (status,) = custom_api.get_namespaced_custom_object(
+            **SELDON_PARAMS, name=self._model_name
+        )["status"]["deploymentStatus"].values()
+        self.logger.info(f"Finished deployment. Deployment status: {status}")
+        return resp
+
+    def _create_seldon_deployment(self, model_uri: str) -> dict:
         seldon_deployment_path = Path(__file__).parent / "seldon_deployment.yaml"
         with open(seldon_deployment_path) as yaml_file:
             deployment = yaml.safe_load(yaml_file)
-            configs = {"model_uri": model_uri}
-            deployment = self._update_seldon_configs(deployment, configs)
 
         try:
-            self._create_deployment(custom_api, deployment, overwrite)
-        except:
-            self._update_deployment(custom_api, deployment, model_uri)
-
-        return
-
-    def _update_seldon_configs(self, deployment_yaml, configs):
-        try:
-            deployment_yaml["spec"]["predictors"][0]["graph"]["modelUri"] = configs[
-                "model_uri"
-            ]
+            deployment["spec"]["predictors"][0]["graph"]["modelUri"] = model_uri
 
             # sets redis database on seldom container env config
-            deployment_yaml["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
+            deployment["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                 "containers"
-            ][0]["env"].append({"name": "REDIS_DB", "value": self.redis_db})
+            ][0]["env"].append({"name": "REDIS_DB", "value": self._redis_db})
 
-            return deployment_yaml
+            # name according to ion mode
+            deployment["metadata"]["name"] = self._model_name
+            deployment["spec"]["name"] = self._model_name
+            deployment["spec"]["predictors"][0]["graph"]["name"] = self._model_name
+            deployment["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
+                "containers"
+            ][0]["name"] = self._model_name
+
+            return deployment
 
         except KeyError:
             raise DeployingError(
                 "Couldn't create a deployment because the configuration schema is not correct"
             )
-
-    @staticmethod
-    def _create_deployment(custom_api, deployment, overwrite):
-        if overwrite:
-            custom_api.delete_namespaced_custom_object(
-                **SELDON_PARAMS, name=deployment["metadata"]["name"]
-            )
-        resp = custom_api.create_namespaced_custom_object(
-            **SELDON_PARAMS,
-            body=deployment,
-        )
-        logger.info("Deployment created.")
-
-    @staticmethod
-    def _update_deployment(custom_api, deployment, model_uri):
-        logger.info("Updating existing model")
-        existent_deployment = custom_api.get_namespaced_custom_object(
-            **SELDON_PARAMS,
-            name=deployment["metadata"]["name"],
-        )
-        try:
-            existent_deployment["spec"]["predictors"][0]["graph"][
-                "modelUri"
-            ] = model_uri
-        except KeyError:
-            raise DeployingError(
-                "Couldn't update the deployment because the configuration schema is not correct"
-            )
-        resp = custom_api.replace_namespaced_custom_object(
-            **SELDON_PARAMS,
-            name=existent_deployment["metadata"]["name"],
-            body=existent_deployment,
-        )

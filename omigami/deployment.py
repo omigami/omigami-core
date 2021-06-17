@@ -1,36 +1,30 @@
+from datetime import timedelta, datetime
 from typing import Optional
 
+from prefect import Client
 from typing_extensions import Literal
 
+from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
-    API_SERVER,
+    API_SERVER_URLS,
     PROJECT_NAME,
-    MODEL_DIR,
+    MODEL_DIRECTORIES,
     MLFLOW_SERVER,
-    DATASET_DIR,
-    RedisDBDatasetSize,
-    S3_BUCKET,
+    DATASET_IDS,
+    REDIS_DATABASES,
+    S3_BUCKETS,
+    IonModes,
 )
-from prefect import Client
-
-from omigami.flows.training_flow import build_training_flow
-from omigami.authentication.authenticator import KratosAuthenticator
-from omigami.gateways.input_data_gateway import FSInputDataGateway
-
-from omigami.gateways.redis_spectrum_gateway import (
-    RedisSpectrumDataGateway,
-)
-from omigami.tasks import (
-    DownloadParameters,
-    ProcessSpectrumParameters,
-    TrainModelParameters,
-)
-
 from omigami.flows.config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
+)
+from omigami.flows.training_flow import build_training_flow, TrainingFlowParameters
+from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.redis_spectrum_gateway import (
+    RedisSpectrumDataGateway,
 )
 
 
@@ -42,53 +36,77 @@ def deploy_training_flow(
     allowed_missing_percentage: float,
     dataset_name: str,
     n_decimals: int = 2,
-    chunk_size: int = 1000,
+    chunk_size: int = int(1e8),
+    ion_mode: IonModes = "positive",
     skip_if_exists: bool = True,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
-    output_dir: str = S3_BUCKET,
     project_name: str = PROJECT_NAME,
-    model_output_dir: str = MODEL_DIR,
     mlflow_server: str = MLFLOW_SERVER,
     flow_name: str = "spec2vec-training-flow",
     environment: Literal["dev", "prod"] = "dev",
     deploy_model: bool = False,
+    overwrite: bool = False,
+    schedule: timedelta = None,
     auth: bool = False,
     auth_url: Optional[str] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
 ):
+    """
+    Deploys a model training flow to Prefect cloud and optionally deploys it as a Seldon deployment.
 
+    1) authenticate user credentials using the auth service endpoint
+    2) process database and filesystem configs
+    3) instantiate gateways and task parameters
+    4) create prefect flow configuration
+    5) builds the training flow graph
+    6) pushes the flow to prefect cloud
+
+    """
+
+    # authentication step
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)
         session_token = authenticator.authenticate()
-        client = Client(api_server=API_SERVER[environment], api_token=session_token)
+        client = Client(
+            api_server=API_SERVER_URLS[environment], api_token=session_token
+        )
     else:
-        client = Client(api_server=API_SERVER[environment])
+        client = Client(api_server=API_SERVER_URLS[environment])
     client.create_project(project_name)
 
-    # config values
-    try:
-        redis_db = RedisDBDatasetSize[dataset_name]
-        dataset_path = DATASET_DIR[dataset_name] + "gnps.json"
-        spectrum_ids_name = DATASET_DIR[dataset_name] + "spectrum_ids.pkl"
-    except KeyError:
+    # validates parameters and use them to get task configuration variables
+    if environment not in ["dev", "prod"]:
+        raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
+
+    if dataset_name not in DATASET_IDS[environment].keys():
         raise ValueError(
             f"No such option available for reference dataset: {dataset_name}. Available options are:"
-            f"{list(RedisDBDatasetSize.keys())}."
+            f"{list(DATASET_IDS[environment].keys())}."
         )
+
+    model_output_dir = MODEL_DIRECTORIES[environment]
+    dataset_id = DATASET_IDS[environment][dataset_name].format(date=datetime.today())
+    redis_db = REDIS_DATABASES[environment][dataset_name]
+    output_dir = S3_BUCKETS[environment]
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = RedisSpectrumDataGateway()
 
-    download_parameters = DownloadParameters(
-        source_uri, output_dir, dataset_path, spectrum_ids_name
+    flow_parameters = TrainingFlowParameters(
+        input_dgw=input_dgw,
+        spectrum_dgw=spectrum_dgw,
+        source_uri=source_uri,
+        output_dir=output_dir,
+        dataset_id=dataset_id,
+        chunk_size=chunk_size,
+        ion_mode=ion_mode,
+        n_decimals=n_decimals,
+        skip_if_exists=skip_if_exists,
+        iterations=iterations,
+        window=window,
+        overwrite=overwrite,
     )
-    process_parameters = ProcessSpectrumParameters(
-        spectrum_dgw,
-        n_decimals,
-        skip_if_exists,
-    )
-    train_model_parameters = TrainModelParameters(spectrum_dgw, iterations, window)
 
     flow_config = make_flow_config(
         image=image,
@@ -96,22 +114,18 @@ def deploy_training_flow(
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db=redis_db,
         environment=environment,
+        schedule=schedule,
     )
 
     flow = build_training_flow(
-        input_dgw=input_dgw,
-        download_params=download_parameters,
-        process_params=process_parameters,
-        train_params=train_model_parameters,
-        chunk_size=chunk_size,
+        project_name,
+        flow_name,
+        flow_config,
+        flow_parameters,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
-        project_name=project_name,
         model_output_dir=model_output_dir,
         mlflow_server=mlflow_server,
-        flow_config=flow_config,
-        redis_db=redis_db,
-        flow_name=flow_name,
         deploy_model=deploy_model,
     )
 
@@ -119,8 +133,10 @@ def deploy_training_flow(
         flow,
         project_name=project_name,
     )
+
     flow_run_id = client.create_flow_run(
         flow_id=training_flow_id,
         run_name=f"run {project_name}",
     )
+
     return flow_run_id
