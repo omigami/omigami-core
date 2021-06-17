@@ -9,7 +9,7 @@ from omigami.config import (
     MODEL_DIRECTORIES,
     MLFLOW_SERVER,
 )
-from omigami.utils import add_options
+from omigami.utils import add_click_options
 
 
 configuration_options = [
@@ -45,8 +45,8 @@ def cli():
 @click.option("--window", type=int, default=500)
 @click.option("--intensity-weighting-power", type=float, default=0.5)
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
-@add_options(auth_options)
-@add_options(configuration_options)
+@add_click_options(auth_options)
+@add_click_options(configuration_options)
 def deploy_training_flow_cli(*args, **kwargs):
     _ = deploy_training_flow(*args, **kwargs)
 
