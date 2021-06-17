@@ -9,7 +9,7 @@ from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     SOURCE_URI_COMPLETE_GNPS,
 )
-from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
+from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway, KEYS
 from omigami.test.conftest import ASSETS_DIR
 
 

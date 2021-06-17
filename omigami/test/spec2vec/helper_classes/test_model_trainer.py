@@ -5,7 +5,7 @@ import gensim
 import pytest
 from pytest_redis import factories
 
-from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )

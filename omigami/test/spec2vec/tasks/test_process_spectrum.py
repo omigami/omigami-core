@@ -6,8 +6,8 @@ from prefect import Flow
 
 from omigami.data_gateway import SpectrumDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
+from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.spec2vec.tasks import ProcessSpectrumParameters
 from omigami.spec2vec.tasks.process_spectrum import ProcessSpectrum
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (

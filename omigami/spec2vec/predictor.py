@@ -8,9 +8,9 @@ from matchms.filtering import normalize_intensities
 from matchms.importing.load_from_json import as_spectrum
 from mlflow.pyfunc import PythonModel
 
-from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
+from omigami.spec2vec.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
