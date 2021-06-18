@@ -56,6 +56,7 @@ def test_predictions(model, payload):
     )
 
     assert type(score) == float
+    assert 0 <= score <= 1
 
 
 @pytest.mark.skipif(
@@ -65,6 +66,10 @@ def test_predictions(model, payload):
 def test_score(model, spectra):
     score = model.score(spectra[0], spectra[1])
     assert type(score) == float
+    assert 0 <= score <= 1
+
+    score = model.score(spectra[1], spectra[1])
+    assert score == 1
 
 
 def test_parse_input(payload, model):
