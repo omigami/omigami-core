@@ -5,7 +5,8 @@ import requests_mock
 from drfs import DRPath
 from drfs.filesystems import get_fs
 
-from omigami.config import (
+from omigami.ms2deepscore.config import MS2DEEP_MODEL_URI
+from omigami.spec2vec.config import (
     SOURCE_URI_PARTIAL_GNPS,
     SOURCE_URI_COMPLETE_GNPS,
 )
@@ -29,10 +30,20 @@ def test_load_gnps(local_gnps_small_json):
         SOURCE_URI_COMPLETE_GNPS,
     ],
 )
-def test_download_and_serialize_to_local(uri, tmpdir):
+def test_download_gnps_and_serialize_to_local(uri, tmpdir):
     _ = FSInputDataGateway().download_gnps(uri=uri, output_path=tmpdir / "test-ds")
 
     assert (tmpdir / "test-ds").exists()
+
+
+@pytest.mark.skip("Uses internet connection.")
+@pytest.mark.slow
+def test_download_ms2deep_and_serialize_to_local(tmpdir):
+    _ = FSInputDataGateway().download_ms2deep_model(
+        uri=MS2DEEP_MODEL_URI, output_path=tmpdir / "test-ms2deep-model"
+    )
+
+    assert (tmpdir / "test-ms2deep-model").exists()
 
 
 def test_download_and_serialize_to_remote(loaded_data, s3_mock):

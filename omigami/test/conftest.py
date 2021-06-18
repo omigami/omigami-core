@@ -9,8 +9,8 @@ from drfs.filesystems import get_fs
 from moto import mock_s3
 from pytest_redis import factories
 
-import omigami.spec2vec.tasks.config
-from omigami.config import (
+import omigami
+from omigami.spec2vec.config import (
     DOCUMENT_HASHES,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,

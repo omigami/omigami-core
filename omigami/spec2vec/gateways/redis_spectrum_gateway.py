@@ -9,13 +9,13 @@ import redis
 from matchms import Spectrum
 from spec2vec import SpectrumDocument
 
-from omigami.config import (
+from omigami.data_gateway import SpectrumDataGateway
+from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     DOCUMENT_HASHES,
     EMBEDDING_HASHES,
 )
-from omigami.data_gateway import SpectrumDataGateway
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 

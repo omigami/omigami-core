@@ -4,8 +4,8 @@ from typing import Union, List, Dict, Any, Tuple
 import numpy as np
 from gensim.models import Word2Vec
 from matchms import calculate_scores
+from matchms.Spectrum import Spectrum
 from matchms.filtering import normalize_intensities
-from matchms.importing.load_from_json import as_spectrum
 from mlflow.pyfunc import PythonModel
 
 from omigami.spec2vec.entities.embedding import Embedding
@@ -98,7 +98,9 @@ class Predictor(PythonModel):
     def _pre_process_data(self, data_input: List[Dict[str, str]]) -> List[Embedding]:
         embeddings = []
         for data in data_input:
-            raw_spectrum = as_spectrum(data)
+            intensities = data.pop("intensities")
+            mz = data.pop("mz")
+            raw_spectrum = Spectrum(intensities=intensities, mz=mz, metadata=data)
             if raw_spectrum:
                 norm_spectrum = normalize_intensities(raw_spectrum)
                 spectrum_data = SpectrumDocumentData(norm_spectrum, self.n_decimals)
