@@ -4,9 +4,9 @@ from typing import List, Iterable, Any, Set
 
 from spec2vec import SpectrumDocument
 
-from omigami.entities.data_models import SpectrumInputData
-from omigami.entities.embedding import Embedding
-from omigami.entities.spectrum_document import SpectrumDocumentData
+from omigami.spec2vec.entities.data_models import SpectrumInputData
+from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 
 
 class InputDataGateway(ABC):
@@ -29,7 +29,9 @@ class InputDataGateway(ABC):
         pass
 
     @abstractmethod
-    def chunk_gnps(self, gnps_path: str, chunk_size: int, ion_mode: str, logger=None) -> List[str]:
+    def chunk_gnps(
+        self, gnps_path: str, chunk_size: int, ion_mode: str, logger=None
+    ) -> List[str]:
         pass
 
     @abstractmethod
