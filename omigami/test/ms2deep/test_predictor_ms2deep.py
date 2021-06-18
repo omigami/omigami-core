@@ -37,6 +37,24 @@ def payload(spectra):
     return payload
 
 
+@pytest.fixture
+def payload_identical_spectra(spectra):
+    reference = spectra[0]
+    payload = {
+        "data": [
+            {
+                "intensities": reference.peaks.intensities,
+                "mz": reference.peaks.mz,
+            },
+            {
+                "intensities": reference.peaks.intensities,
+                "mz": reference.peaks.mz,
+            },
+        ],
+    }
+    return payload
+
+
 @pytest.fixture()
 def model():
     path = str(ASSETS_DIR / "ms2deepscore_model.hdf5")
@@ -63,12 +81,12 @@ def test_predictions(model, payload):
     not os.path.exists(str(ASSETS_DIR / "ms2deepscore_model.hdf5")),
     reason="ms2deepscore_model.hdf5 is git ignored",
 )
-def test_score(model, spectra):
-    score = model.score(spectra[0], spectra[1])
-    assert type(score) == float
-    assert 0 <= score <= 1
+def test_predictions_identical_spectra(model, payload_identical_spectra):
+    score = model.predict(
+        data_input=payload_identical_spectra,
+        context="",
+    )
 
-    score = model.score(spectra[1], spectra[1])
     assert score == 1
 
 

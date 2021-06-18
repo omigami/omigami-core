@@ -51,27 +51,9 @@ class Predictor(PythonModel):
         reference = Spectrum(**data_input[0])
         query = Spectrum(**data_input[1])
 
-        score = self.score(reference, query)
+        score = self.model.pair(reference, query)
 
         log.info("Finishing prediction.")
-        return score
-
-    def score(self, reference: Spectrum, query: Spectrum) -> float:
-        """Calculate the MS2DeepScore similaritiy between a reference and a query spectrum.
-
-        Parameters
-        ----------
-        reference:
-            Reference spectrum.
-        query:
-            Query spectrum.
-
-        Returns
-        -------
-        ms2ds_similarity
-            MS2DeepScore similarity score.
-        """
-        score = self.model.pair(reference, query)
         return score
 
     def set_run_id(self, run_id: str):
