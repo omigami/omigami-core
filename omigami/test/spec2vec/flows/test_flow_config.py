@@ -3,7 +3,7 @@ from datetime import timedelta
 from prefect import Flow
 from prefect.schedules import Schedule
 
-from omigami.config import DATASET_IDS
+from omigami.spec2vec.config import DATASET_IDS
 from omigami.spec2vec.flows.config import (
     make_flow_config,
     PrefectStorageMethods,

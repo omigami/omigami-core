@@ -6,7 +6,7 @@ from mlflow.exceptions import MlflowException
 from prefect import Task
 
 from omigami.spec2vec.predictor import Predictor
-from omigami.spec2vec.tasks.config import merge_configs
+from omigami.config import merge_prefect_task_configs
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 
@@ -28,7 +28,7 @@ class RegisterModel(Task):
         self._intensity_weighting_power = intensity_weighting_power
         self._allowed_missing_percentage = allowed_missing_percentage
         self._server_uri = server_uri
-        config = merge_configs(kwargs)
+        config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
     def run(self, model: Word2Vec = None) -> Dict[str, str]:

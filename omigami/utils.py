@@ -24,11 +24,8 @@ def create_prefect_result_from_path(
     """
     Create a Prefect Result object from path.
     Supported Results: S3Result and LocalResult
-
-    Returns
-    -------
-        prefect.engine.result.Result
     """
+
     path = DRPath(path)
     protocol = getattr(path, "scheme", "file")
 

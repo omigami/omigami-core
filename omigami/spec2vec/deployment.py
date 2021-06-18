@@ -6,15 +6,17 @@ from typing_extensions import Literal
 
 from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
-    SOURCE_URI_PARTIAL_GNPS,
     API_SERVER_URLS,
     PROJECT_NAME,
-    MODEL_DIRECTORIES,
     MLFLOW_SERVER,
-    DATASET_IDS,
     REDIS_DATABASES,
     S3_BUCKETS,
     IonModes,
+)
+from omigami.spec2vec.config import (
+    SOURCE_URI_PARTIAL_GNPS,
+    MODEL_DIRECTORIES,
+    DATASET_IDS,
 )
 from omigami.spec2vec.flows.config import (
     make_flow_config,

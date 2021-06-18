@@ -6,7 +6,7 @@ from prefect import Task
 from omigami.data_gateway import SpectrumDataGateway, InputDataGateway
 from omigami.gateways.redis_spectrum_gateway import REDIS_DB
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
-from omigami.spec2vec.tasks.config import merge_configs
+from omigami.config import merge_prefect_task_configs
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
     SpectrumProcessor,
 )
@@ -31,7 +31,7 @@ class ProcessSpectrum(Task):
         self._n_decimals = process_parameters.n_decimals
         self._skip_if_exists = process_parameters.skip_if_exists
         self._processor = SpectrumProcessor()
-        config = merge_configs(kwargs)
+        config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
     def run(self, gnps_path: str = None) -> Set[str]:

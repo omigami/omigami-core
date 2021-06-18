@@ -5,7 +5,7 @@ from prefect import Task
 
 from omigami.data_gateway import InputDataGateway
 from omigami.utils import create_prefect_result_from_path
-from omigami.spec2vec.tasks.config import merge_configs
+from omigami.config import merge_prefect_task_configs
 
 
 @dataclass
@@ -49,7 +49,7 @@ class DownloadData(Task):
         self.download_path = download_parameters.download_path
         self.checkpoint_path = download_parameters.checkpoint_path
 
-        config = merge_configs(kwargs)
+        config = merge_prefect_task_configs(kwargs)
 
         super().__init__(
             **config,

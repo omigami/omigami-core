@@ -9,7 +9,7 @@ import redis
 from matchms import Spectrum
 from spec2vec import SpectrumDocument
 
-from omigami.config import (
+from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     DOCUMENT_HASHES,
