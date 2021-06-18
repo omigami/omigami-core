@@ -13,15 +13,15 @@ os.chdir(Path(__file__).parents[3])
 
 
 @pytest.fixture
-def spectrums():
-    spectrums = list(load_from_mgf(str(ASSETS_DIR / "pesticides_processed.mgf")))
-    return spectrums
+def spectra():
+    spectra = list(load_from_mgf(str(ASSETS_DIR / "spectra.mgf")))
+    return spectra
 
 
 @pytest.fixture
-def payload(spectrums):
-    reference = spectrums[0]
-    query = spectrums[1]
+def payload(spectra):
+    reference = spectra[0]
+    query = spectra[1]
     payload = {
         "data": [
             {
@@ -62,8 +62,8 @@ def test_predictions(model, payload):
     not os.path.exists(str(ASSETS_DIR / "ms2deepscore_model.hdf5")),
     reason="ms2deepscore_model.hdf5 is git ignored",
 )
-def test_score(model, spectrums):
-    score = model.score(spectrums[0], spectrums[1])
+def test_score(model, spectra):
+    score = model.score(spectra[0], spectra[1])
     assert type(score) == float
 
 
