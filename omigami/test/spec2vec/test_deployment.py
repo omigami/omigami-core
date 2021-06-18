@@ -1,11 +1,8 @@
 import pytest
 from typing_extensions import Literal
 
-from omigami.config import (
-    MLFLOW_SERVER,
-    config,
-    SOURCE_URI_COMPLETE_GNPS,
-)
+from omigami.config import config, MLFLOW_SERVER
+from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.spec2vec.deployment import (
     deploy_training_flow,
 )
@@ -36,13 +33,12 @@ def test_deploy_training_flow():
         chunk_size=int(1e8),
         environment=env,
         ion_mode="positive",
-        dataset_name="complete",
-        source_uri=SOURCE_URI_COMPLETE_GNPS,
+        dataset_name="small",
+        source_uri=SOURCE_URI_PARTIAL_GNPS,
         project_name="spec2vec",
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow/positive",
         deploy_model=True,
-        overwrite=True,
         auth=True,
         **login_config,
     )

@@ -3,11 +3,11 @@ from typing import Union, Dict, Set
 from gensim.models import Word2Vec
 from prefect import Task
 
+from omigami.config import merge_prefect_task_configs
 from omigami.data_gateway import SpectrumDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import REDIS_DB
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
-from omigami.spec2vec.tasks.config import merge_configs
 
 
 class MakeEmbeddings(Task):
@@ -24,7 +24,7 @@ class MakeEmbeddings(Task):
         self._intensity_weighting_power = intensity_weighting_power
         self._allowed_missing_percentage = allowed_missing_percentage
 
-        config = merge_configs(kwargs)
+        config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
     def run(

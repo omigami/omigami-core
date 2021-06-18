@@ -3,9 +3,9 @@ from typing import List
 
 from prefect import Task
 
+from omigami.config import merge_prefect_task_configs
 from omigami.data_gateway import InputDataGateway
-from omigami.spec2vec.flows.utils import create_result
-from omigami.spec2vec.tasks.config import merge_configs
+from omigami.utils import create_prefect_result_from_path
 
 
 @dataclass
@@ -49,11 +49,11 @@ class DownloadData(Task):
         self.download_path = download_parameters.download_path
         self.checkpoint_path = download_parameters.checkpoint_path
 
-        config = merge_configs(kwargs)
+        config = merge_prefect_task_configs(kwargs)
 
         super().__init__(
             **config,
-            **create_result(download_parameters.checkpoint_path),
+            **create_prefect_result_from_path(download_parameters.checkpoint_path),
             checkpoint=True,
         )
 
