@@ -32,8 +32,3 @@ IonModes = Literal["positive", "negative"]
 DEFAULT_PREFECT_TASK_CONFIG = dict(
     max_retries=3, retry_delay=datetime.timedelta(seconds=10)
 )
-
-
-def merge_prefect_task_configs(kwargs):
-    """helper function to merge DEFAULT CONFIG with kwargs"""
-    return {k: v for k, v in {**DEFAULT_PREFECT_TASK_CONFIG.copy(), **kwargs}.items()}

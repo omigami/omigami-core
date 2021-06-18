@@ -6,7 +6,7 @@ from mlflow.exceptions import MlflowException
 from prefect import Task
 
 from omigami.spec2vec.predictor import Predictor
-from omigami.config import merge_prefect_task_configs
+from omigami.utils import merge_prefect_task_configs
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 

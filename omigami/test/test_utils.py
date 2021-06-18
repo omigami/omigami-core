@@ -1,7 +1,8 @@
 import pytest
 from prefect.engine.results import S3Result, LocalResult
 
-from omigami.utils import create_prefect_result_from_path
+from omigami.config import DEFAULT_PREFECT_TASK_CONFIG
+from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
 
 def test_create_prefect_result_from_path():
@@ -21,3 +22,11 @@ def test_create_prefect_result_from_path():
 
     with pytest.raises(KeyError):
         assert create_prefect_result_from_path(gcs_path)
+
+
+def test_merge_prefect_task_configs():
+    kwargs = {"parameter_a": 1, "parameter_b": 2}
+
+    params = merge_prefect_task_configs(kwargs)
+
+    assert params == {**DEFAULT_PREFECT_TASK_CONFIG.copy(), **kwargs}

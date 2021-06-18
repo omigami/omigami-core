@@ -4,8 +4,7 @@ from typing import List
 from prefect import Task
 
 from omigami.data_gateway import InputDataGateway
-from omigami.utils import create_prefect_result_from_path
-from omigami.config import merge_prefect_task_configs
+from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
 
 @dataclass

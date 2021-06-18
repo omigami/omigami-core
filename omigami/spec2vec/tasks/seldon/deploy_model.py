@@ -6,7 +6,8 @@ from kubernetes import config, client
 from kubernetes.config import ConfigException
 from prefect import Task
 
-from omigami.config import SELDON_PARAMS, CLUSTERS, merge_prefect_task_configs
+from omigami.config import SELDON_PARAMS, CLUSTERS
+from omigami.utils import merge_prefect_task_configs
 from omigami.spec2vec.helper_classes.exception import DeployingError
 
 

@@ -32,26 +32,3 @@ login:
     username: "user"
     password: "pw"
     token: "token"
-
-
-spec2vec:
-  gnps_uri:
-    complete: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
-    partial: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json"
-  storage:
-    dataset_dir:
-      dev:
-        small: "datasets/small"
-        10k: "datasets/10k"
-        complete: "datasets/complete/{date:%Y-%m}"
-      prod:
-        complete: "datasets/complete/{date:%Y-%m}"
-    model_folder:
-      dev: "s3://omigami-dev/spec2vec/mlflow"
-      prod: "s3://omigami/spec2vec/mlflow"
-    redis:
-      spectrum_id_sorted_set: "spectrum_id_precursor_mz_sorted"
-      spectrum_hashes: "spectrum_data"
-      document_hashes: "document_data"
-      embedding_hashes: "embedding_data"
-
