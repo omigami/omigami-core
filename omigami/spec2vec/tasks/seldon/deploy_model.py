@@ -7,8 +7,8 @@ from kubernetes.config import ConfigException
 from prefect import Task
 
 from omigami.config import SELDON_PARAMS, CLUSTERS
+from omigami.utils import merge_prefect_task_configs
 from omigami.spec2vec.helper_classes.exception import DeployingError
-from omigami.spec2vec.tasks.config import merge_configs
 
 
 @dataclass
@@ -31,7 +31,7 @@ class DeployModel(Task):
         self._ion_mode = deploy_parameters.ion_mode
         self._model_name = f"spec2vec-{self._ion_mode}"
 
-        config = merge_configs(kwargs)
+        config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
     def run(self, registered_model: dict = None) -> None:

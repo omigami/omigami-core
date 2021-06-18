@@ -5,11 +5,11 @@ import requests_mock
 from drfs import DRPath
 from drfs.filesystems import get_fs
 
-from omigami.config import (
+from omigami.spec2vec.config import (
     SOURCE_URI_PARTIAL_GNPS,
     SOURCE_URI_COMPLETE_GNPS,
-    MS2DEEP_MODEL_URI,
 )
+from omigami.ms2deep.config import MS2DEEP_MODEL_URI
 from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
 from omigami.test.conftest import ASSETS_DIR
 

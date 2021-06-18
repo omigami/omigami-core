@@ -1,0 +1,10 @@
+
+
+model_uri: "https://zenodo.org/api/files/2ca8a77b-fa1e-4223-bc6d-50d6f074a962/MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
+
+storage:
+  model_directory:
+    dev:
+      pretreined_model: "model/pre_treined/{date:%Y-%m}"
+    prod:
+      pretreined_model: "model/pre_treined/{date:%Y-%m}"

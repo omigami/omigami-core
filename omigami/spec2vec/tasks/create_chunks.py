@@ -6,8 +6,7 @@ from prefect import Task
 
 from omigami.config import IonModes
 from omigami.data_gateway import InputDataGateway
-from omigami.utils import create_prefect_result_from_path
-from omigami.spec2vec.tasks.config import merge_configs
+from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
 
 @dataclass
@@ -37,7 +36,7 @@ class CreateChunks(Task):
         self._ion_mode = chunking_parameters.ion_mode
         self._chunk_paths_file = chunking_parameters.chunk_paths_file
 
-        config = merge_configs(kwargs)
+        config = merge_prefect_task_configs(kwargs)
 
         super().__init__(
             **config,
