@@ -42,4 +42,3 @@ class DownloadPreTrainedModel(Task):
         self.logger.info(f"Saving pre-trained MS2Deep model to {self.output_path}")
 
         return self.output_path
-˚
