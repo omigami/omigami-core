@@ -63,10 +63,6 @@ def model():
     return Predictor(model=model)
 
 
-@pytest.mark.skipif(
-    not os.path.exists(str(ASSETS_DIR / "ms2deepscore_model.hdf5")),
-    reason="ms2deepscore_model.hdf5 is git ignored",
-)
 def test_predictions(model, payload):
     score = model.predict(
         data_input=payload,
@@ -77,10 +73,6 @@ def test_predictions(model, payload):
     assert 0 <= score <= 1
 
 
-@pytest.mark.skipif(
-    not os.path.exists(str(ASSETS_DIR / "ms2deepscore_model.hdf5")),
-    reason="ms2deepscore_model.hdf5 is git ignored",
-)
 def test_predictions_identical_spectra(model, payload_identical_spectra):
     score = model.predict(
         data_input=payload_identical_spectra,
