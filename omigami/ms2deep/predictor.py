@@ -1,12 +1,11 @@
 from logging import getLogger
-from typing import Union, List, Dict, Any
+from typing import Union, List, Dict
 
 from matchms.Spectrum import Spectrum
 from mlflow.pyfunc import PythonModel
 from ms2deepscore import MS2DeepScore
 
 log = getLogger(__name__)
-SpectrumMatches = Dict[str, Dict[str, Any]]
 
 
 class Predictor(PythonModel):
