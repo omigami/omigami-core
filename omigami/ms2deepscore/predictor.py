@@ -1,7 +1,7 @@
 from logging import getLogger
 from typing import Union, List, Dict
 
-from matchms.Spectrum import Spectrum
+from matchms.importing.load_from_json import as_spectrum
 from mlflow.pyfunc import PythonModel
 from ms2deepscore import MS2DeepScore
 
@@ -47,8 +47,8 @@ class Predictor(PythonModel):
         log.info("Creating a prediction.")
         data_input = self._parse_input(data_input)
 
-        reference = Spectrum(**data_input[0])
-        query = Spectrum(**data_input[1])
+        reference = as_spectrum(data_input[0])
+        query = as_spectrum(data_input[1])
 
         score = self.model.pair(reference, query)
 

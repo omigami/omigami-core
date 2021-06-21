@@ -20,37 +20,41 @@ def spectra():
 
 @pytest.fixture
 def ms2deepscore_payload(spectra):
-    reference = spectra[0]
-    query = spectra[1]
     payload = {
         "data": [
             {
-                "intensities": reference.peaks.intensities,
-                "mz": reference.peaks.mz,
-            },
-            {
-                "intensities": query.peaks.intensities,
-                "mz": query.peaks.mz,
-            },
-        ],
+                "peaks_json": str(
+                    [
+                        [mz, intensity]
+                        for mz, intensity in zip(
+                            spectrum.peaks.mz, spectrum.peaks.intensities
+                        )
+                    ]
+                )
+            }
+            for spectrum in spectra
+        ]
     }
     return payload
 
 
 @pytest.fixture
 def payload_identical_spectra(spectra):
-    reference = spectra[0]
+    spectra = [spectra[0], spectra[0]]
     payload = {
         "data": [
             {
-                "intensities": reference.peaks.intensities,
-                "mz": reference.peaks.mz,
-            },
-            {
-                "intensities": reference.peaks.intensities,
-                "mz": reference.peaks.mz,
-            },
-        ],
+                "peaks_json": str(
+                    [
+                        [mz, intensity]
+                        for mz, intensity in zip(
+                            spectrum.peaks.mz, spectrum.peaks.intensities
+                        )
+                    ]
+                )
+            }
+            for spectrum in spectra
+        ]
     }
     return payload
 
@@ -63,8 +67,8 @@ def ms2deepscore_model():
     return Predictor(model=model)
 
 
-def test_predictions(model, ms2deepscore_payload):
-    score = model.predict(
+def test_predictions(ms2deepscore_model, ms2deepscore_payload, spectra):
+    score = ms2deepscore_model.predict(
         data_input=ms2deepscore_payload,
         context="",
     )
@@ -86,5 +90,4 @@ def test_parse_input(ms2deepscore_payload, ms2deepscore_model):
     data_input = ms2deepscore_model._parse_input(ms2deepscore_payload)
 
     assert len(data_input) == 2
-    assert "intensities" in data_input[0]
-    assert "mz" in data_input[0]
+    assert "peaks_json" in data_input[0]
