@@ -19,7 +19,7 @@ def spectra():
 
 
 @pytest.fixture
-def payload(spectra):
+def ms2deepscore_payload(spectra):
     reference = spectra[0]
     query = spectra[1]
     payload = {
@@ -56,16 +56,16 @@ def payload_identical_spectra(spectra):
 
 
 @pytest.fixture()
-def model():
+def ms2deepscore_model():
     path = str(ASSETS_DIR / "ms2deepscore_model.hdf5")
     model = load_model(path)
     model = MS2DeepScore(model)
     return Predictor(model=model)
 
 
-def test_predictions(model, payload):
+def test_predictions(model, ms2deepscore_payload):
     score = model.predict(
-        data_input=payload,
+        data_input=ms2deepscore_payload,
         context="",
     )
 
@@ -73,8 +73,8 @@ def test_predictions(model, payload):
     assert 0 <= score <= 1
 
 
-def test_predictions_identical_spectra(model, payload_identical_spectra):
-    score = model.predict(
+def test_predictions_identical_spectra(ms2deepscore_model, payload_identical_spectra):
+    score = ms2deepscore_model.predict(
         data_input=payload_identical_spectra,
         context="",
     )
@@ -82,8 +82,8 @@ def test_predictions_identical_spectra(model, payload_identical_spectra):
     assert score == 1
 
 
-def test_parse_input(payload, model):
-    data_input = model._parse_input(payload)
+def test_parse_input(ms2deepscore_payload, ms2deepscore_model):
+    data_input = ms2deepscore_model._parse_input(ms2deepscore_payload)
 
     assert len(data_input) == 2
     assert "intensities" in data_input[0]
