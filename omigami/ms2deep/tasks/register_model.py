@@ -1,12 +1,12 @@
-from typing import Union, Dict
+from typing import Dict
 
 import mlflow
 from gensim.models import Word2Vec
-from mlflow.exceptions import MlflowException
+from mlflow.pyfunc import PythonModel
 from prefect import Task
 
 from omigami.model_register import MLFlowModelRegister
-from omigami.spec2vec.predictor import Predictor
+from omigami.ms2deep.predictor import Predictor
 from omigami.utils import merge_prefect_task_configs
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
@@ -17,18 +17,13 @@ class RegisterModel(Task):
         self,
         experiment_name: str,
         path: str,
-        n_decimals: int,
-        intensity_weighting_power: Union[float, int],
-        allowed_missing_percentage: Union[float, int],
         server_uri: str,
         **kwargs,
     ):
         self._experiment_name = experiment_name
         self._path = path
-        self._n_decimals = n_decimals
-        self._intensity_weighting_power = intensity_weighting_power
-        self._allowed_missing_percentage = allowed_missing_percentage
         self._server_uri = server_uri
+
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
@@ -36,14 +31,10 @@ class RegisterModel(Task):
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._path}."
         )
+
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
-            Predictor(
-                model,
-                self._n_decimals,
-                self._intensity_weighting_power,
-                self._allowed_missing_percentage,
-            ),
+            Predictor(),
             self._experiment_name,
             self._path,
             CONDA_ENV_PATH,
@@ -58,30 +49,22 @@ class RegisterModel(Task):
 class ModelRegister(MLFlowModelRegister):
     def register_model(
         self,
-        model: Predictor,
+        model: PythonModel,
         experiment_name: str,
         path: str,
         conda_env_path: str = None,
-    ) -> str:
+    ):
         experiment_id = self._get_or_create_experiment_id(experiment_name, path)
         with mlflow.start_run(experiment_id=experiment_id) as run:
-            params = {
-                "n_decimals_for_documents": model.n_decimals,
-                "intensity_weighting_power": model.intensity_weighting_power,
-                "allowed_missing_percentage": model.allowed_missing_percentage,
-                "iter": model.model.epochs,
-                "window": model.model.window,
-            }
-            mlflow.log_params(params)
             run_id = run.info.run_id
             model.set_run_id(run_id)
+
             self.log_model(
                 model,
                 experiment_name,
                 path=path,
-                code_path=["omigami/spec2vec"],
+                code_path=["omigami/ms2deep"],
                 conda_env_path=conda_env_path,
             )
 
-            mlflow.log_metric("alpha", model.model.alpha)
             return run_id

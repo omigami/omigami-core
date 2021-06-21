@@ -11,5 +11,7 @@ class Predictor(PythonModel):
         pass
 
     def predict(self, context, **kwargs) -> Any:
-        """TODO"""
+        pass
+
+    def set_run_id(self, run_id: str):
         pass
