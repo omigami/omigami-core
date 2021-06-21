@@ -60,9 +60,5 @@ class Predictor(PythonModel):
 
     @staticmethod
     def _parse_input(data_input_and_parameters: Dict[str, Union[Dict, List]]) -> list:
-        if not isinstance(data_input_and_parameters, dict):
-            data_input_and_parameters = data_input_and_parameters.tolist()
-
         data_input = data_input_and_parameters.get("data")
-
         return data_input
