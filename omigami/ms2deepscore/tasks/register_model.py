@@ -6,7 +6,7 @@ from mlflow.pyfunc import PythonModel
 from prefect import Task
 
 from omigami.model_register import MLFlowModelRegister
-from omigami.ms2deep.predictor import Predictor
+from omigami.ms2deepscore.predictor import Predictor
 from omigami.utils import merge_prefect_task_configs
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
@@ -63,7 +63,7 @@ class ModelRegister(MLFlowModelRegister):
                 model,
                 experiment_name,
                 path=path,
-                code_path=["omigami/ms2deep"],
+                code_path=["omigami/ms2deepscore"],
                 conda_env_path=conda_env_path,
             )
 

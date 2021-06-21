@@ -1,12 +1,8 @@
 from unittest.mock import MagicMock
-
-from drfs import DRPath
-from drfs.filesystems import get_fs
 from prefect import Flow
-
 from omigami.data_gateway import InputDataGateway
 from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.ms2deep.tasks.download_pre_trained_model import (
+from omigami.ms2deepscore.tasks.download_pre_trained_model import (
     DownloadPreTrainedModelParameters,
     DownloadPreTrainedModel,
 )
@@ -21,7 +17,7 @@ def test_download_pre_trained_model(tmpdir, mock_default_config):
     input_dgw = MagicMock(spec=InputDataGateway)
     input_dgw.download_ms2deep_model.return_value = download_parameters.output_path
 
-    with Flow("ms2deep-test-flow") as flow:
+    with Flow("ms2deepscore-test-flow") as flow:
         download = DownloadPreTrainedModel(input_dgw, download_parameters)()
 
     res = flow.run()
@@ -41,11 +37,11 @@ def test_download_pretrained_model_existing(mock_default_config):
 
     download_parameters = DownloadPreTrainedModelParameters(
         model_uri="fake_uri",
-        output_dir=ASSETS_DIR / "ms2deep" / "pretrained",
+        output_dir=ASSETS_DIR / "ms2deepscore" / "pretrained",
         file_name="fake_pretrained_model.hdf5",
     )
 
-    with Flow("ms2deep-test-flow") as flow:
+    with Flow("ms2deepscore-test-flow") as flow:
         download = DownloadPreTrainedModel(input_dgw, download_parameters)()
 
     res = flow.run()
