@@ -133,3 +133,4 @@ dmypy.json
 
 .idea/
 /notebooks/.ipynb_checkpoints/
+**/test-output.xml
