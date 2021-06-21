@@ -6,7 +6,7 @@ from matchms.importing import load_from_mgf
 from ms2deepscore import MS2DeepScore
 from ms2deepscore.models import load_model
 
-from omigami.ms2deep.predictor import Predictor
+from omigami.ms2deepscore.predictor import Predictor
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[3])
