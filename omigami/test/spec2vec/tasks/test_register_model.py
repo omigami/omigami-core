@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 
-from omigami.spec2vec.tasks.register_model import ModelRegister
 from omigami.spec2vec.predictor import Predictor
+from omigami.spec2vec.tasks.register_model import ModelRegister
 
 os.chdir(Path(__file__).parents[4])
 

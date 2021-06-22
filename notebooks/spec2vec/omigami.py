@@ -1,6 +1,7 @@
+import json
+
 import pandas as pd
 import requests
-import json
 
 try:
     from matchms.importing import load_from_mgf
