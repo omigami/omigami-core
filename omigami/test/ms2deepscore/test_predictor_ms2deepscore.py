@@ -63,8 +63,8 @@ def ms2deepscore_model():
     return Predictor(model=model)
 
 
-def test_predictions(model, ms2deepscore_payload):
-    score = model.predict(
+def test_predictions(ms2deepscore_model, ms2deepscore_payload):
+    score = ms2deepscore_model.predict(
         data_input=ms2deepscore_payload,
         context="",
     )
