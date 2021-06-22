@@ -20,7 +20,7 @@ S3_BUCKETS = config["storage"]["s3_bucket"].get(dict)
 
 REDIS_DATABASES = {
     "dev": {"small": "2", "10k": "1", "complete": "0"},
-    "prod": {"complete": "0"},
+    "prod": {"small": "2", "complete": "0"},
 }
 
 

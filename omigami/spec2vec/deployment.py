@@ -27,8 +27,8 @@ from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.gateways.redis_spectrum_gateway import (
+from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     RedisSpectrumDataGateway,
 )
 
@@ -41,7 +41,7 @@ def deploy_training_flow(
     allowed_missing_percentage: float,
     dataset_name: str,
     n_decimals: int = 2,
-    chunk_size: int = 1000,
+    chunk_size: int = int(1e8),
     ion_mode: IonModes = "positive",
     skip_if_exists: bool = True,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
@@ -50,6 +50,7 @@ def deploy_training_flow(
     flow_name: str = "spec2vec-training-flow",
     environment: Literal["dev", "prod"] = "dev",
     deploy_model: bool = False,
+    overwrite: bool = False,
     schedule: timedelta = None,
     auth: bool = False,
     auth_url: Optional[str] = None,
@@ -109,6 +110,7 @@ def deploy_training_flow(
         skip_if_exists=skip_if_exists,
         iterations=iterations,
         window=window,
+        overwrite=overwrite,
     )
 
     flow_config = make_flow_config(

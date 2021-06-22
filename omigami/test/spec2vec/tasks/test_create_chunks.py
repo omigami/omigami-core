@@ -2,7 +2,7 @@ import pytest
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.tasks import CreateChunks, ChunkingParameters
 from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 

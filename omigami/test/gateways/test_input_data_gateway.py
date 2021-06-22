@@ -10,7 +10,7 @@ from omigami.spec2vec.config import (
     SOURCE_URI_COMPLETE_GNPS,
 )
 from omigami.ms2deepscore.config import MS2DEEP_MODEL_URI
-from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
+from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway, KEYS
 from omigami.test.conftest import ASSETS_DIR
 
 

@@ -1,16 +1,14 @@
 import click
 
-from omigami.spec2vec.deployment import deploy_training_flow
 from omigami.config import (
-    SOURCE_URI_PARTIAL_GNPS,
     API_SERVER_URLS,
     PROJECT_NAME,
     S3_BUCKETS,
-    MODEL_DIRECTORIES,
     MLFLOW_SERVER,
 )
+from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS, MODEL_DIRECTORIES
+from omigami.spec2vec.deployment import deploy_training_flow
 from omigami.utils import add_click_options
-
 
 configuration_options = [
     click.option("--project-name", "-p", default=PROJECT_NAME),

@@ -13,7 +13,7 @@ from omigami.spec2vec.config import (
 )
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 
 redis_db = factories.redisdb("redis_nooproc")
 

@@ -10,7 +10,7 @@ from mlflow.pyfunc import PythonModel
 
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
@@ -91,11 +91,7 @@ class Predictor(PythonModel):
         if not isinstance(data_input_and_parameters, dict):
             data_input_and_parameters = data_input_and_parameters.tolist()
 
-        parameters = (
-            data_input_and_parameters.get("parameters")
-            if data_input_and_parameters.get("parameters")
-            else {}
-        )
+        parameters = data_input_and_parameters.get("parameters", {})
         data_input = data_input_and_parameters.get("data")
         return data_input, parameters
 
