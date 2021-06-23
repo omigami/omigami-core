@@ -47,7 +47,7 @@ class SeldonDeployment:
         self,
         model_name: str,
         model_uri: str,
-        redis_db: str,
+        redis_db: str = "",
         overwrite_existing: bool = False,
     ):
         """
