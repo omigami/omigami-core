@@ -18,16 +18,18 @@ class RegisterModel(Task):
         experiment_name: str,
         path: str,
         server_uri: str,
+        ms2deepscore_model_path: str,
         **kwargs,
     ):
         self._experiment_name = experiment_name
         self._path = path
         self._server_uri = server_uri
+        self._ms2deepscore_model_path = ms2deepscore_model_path
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, model: Word2Vec = None) -> Dict[str, str]:
+    def run(self) -> Dict[str, str]:
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._path}."
         )
@@ -38,6 +40,7 @@ class RegisterModel(Task):
             self._experiment_name,
             self._path,
             CONDA_ENV_PATH,
+            artifacts={"ms2deepscore_model_path": self._ms2deepscore_model_path},
         )
         run = mlflow.get_run(run_id)
         self.logger.info(f"{run.info}")
@@ -65,7 +68,7 @@ class ModelRegister(MLFlowModelRegister):
                 model,
                 experiment_name,
                 path=path,
-                code_path=["omigami/ms2deepscore"],
+                code_path=[],
                 conda_env_path=conda_env_path,
                 artifacts=artifacts,
                 **kwargs,
