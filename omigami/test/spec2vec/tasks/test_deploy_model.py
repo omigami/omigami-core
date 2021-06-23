@@ -9,8 +9,9 @@ from omigami.spec2vec.tasks import DeployModel, DeployModelParameters
     reason="This test is actually deploying to seldon we should change asap"
 )
 def test_deploy_model_task():
-    params = DeployModelParameters("2", "neutral", False, "dev")
-    # TODO: this needs assertions and a way of testing from outside kubernetes environment
+    params = DeployModelParameters(
+        redis_db="2", ion_mode="neutral", overwrite=True, environment="dev"
+    )
     with Flow("test-flow") as test_flow:
         deploy_task = DeployModel(params)(registered_model={"model_uri": "uri"})
 
@@ -27,7 +28,7 @@ def test_deploy_seldon_model(mock_default_config):
     FLOW_CONFIG = {
         "storage": S3("dr-prefect"),
     }
-    params = DeployModelParameters("2", "neutral", False, "dev")
+    params = DeployModelParameters("2", "neutral", True, "dev")
 
     with Flow("debugging-flow", **FLOW_CONFIG) as deploy:
         DeployModel(params)(

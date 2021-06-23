@@ -71,7 +71,7 @@ class SeldonDeployment:
                 log.info(f"Overwriting existing deployment for model {model_name}")
                 self._delete_existing_deployment(model_name)
             else:
-                log.warning(
+                raise SeldonDeploymentError(
                     f"Seldon deployment not updated: deployment named {model_name} already exists "
                     f"in the cluster and 'overwrite' DeployModel task parameter was not set to True."
                 )
@@ -86,8 +86,6 @@ class SeldonDeployment:
         (status,) = self.client.get_namespaced_custom_object(
             **self.seldon_config, name=model_name
         )["status"]["deploymentStatus"].values()
-
-        log.info(f"Model deployment finished - Status: {status}")
 
         return res
 
