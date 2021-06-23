@@ -53,6 +53,7 @@ class ModelRegister(MLFlowModelRegister):
         experiment_name: str,
         path: str,
         conda_env_path: str = None,
+        **kwargs,
     ):
         experiment_id = self._get_or_create_experiment_id(experiment_name, path)
         with mlflow.start_run(experiment_id=experiment_id) as run:
@@ -65,6 +66,7 @@ class ModelRegister(MLFlowModelRegister):
                 path=path,
                 code_path=["omigami/ms2deepscore"],
                 conda_env_path=conda_env_path,
+                **kwargs,
             )
 
             return run_id

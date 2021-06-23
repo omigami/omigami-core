@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 import pytest
 from matchms.importing import load_from_mgf
 from ms2deepscore import MS2DeepScore
@@ -53,12 +51,19 @@ def payload_identical_spectra(spectra):
 
 
 @pytest.fixture()
-def ms2deepscore_model():
-    path = str(ASSETS_DIR / "ms2deepscore_model.hdf5")
-    model = load_model(path)
-    return MS2DeepScore(deepcopy(model))
+def ms2deepscore_model_path():
+    return str(ASSETS_DIR / "ms2deepscore_model.hdf5")
+
+
+@pytest.fixture()
+def ms2deepscore_model(ms2deepscore_model_path):
+    model = load_model(ms2deepscore_model_path)
+    return MS2DeepScore(model)
 
 
 @pytest.fixture()
 def ms2deepscore_predictor(ms2deepscore_model):
-    return Predictor(model=ms2deepscore_model)
+    predictor = Predictor()
+    predictor.model = ms2deepscore_model
+
+    return predictor

@@ -25,6 +25,7 @@ class MLFlowModelRegister(ABC):
         path: str,
         code_path: List[str],
         conda_env_path: str = None,
+        **kwargs,
     ):
         try:
             mlflow.pyfunc.log_model(
@@ -33,6 +34,7 @@ class MLFlowModelRegister(ABC):
                 registered_model_name=experiment_name,
                 conda_env=conda_env_path,
                 code_path=code_path,
+                **kwargs,
             )
         # This is need to run the flow locally. mlflow.pyfunc.log_model is not
         # supported without a database.
@@ -42,6 +44,7 @@ class MLFlowModelRegister(ABC):
                 python_model=model,
                 conda_env=conda_env_path,
                 code_path=code_path,
+                **kwargs,
             )
 
     @abstractmethod
@@ -52,7 +55,7 @@ class MLFlowModelRegister(ABC):
         path: str,
         conda_env_path: str = None,
     ):
-        # TODO: Proper add docstring
+        # TODO: add docstring
         """
         Parameters
         ----------

@@ -3,7 +3,9 @@ from typing import Union, List, Dict
 
 from matchms.Spectrum import Spectrum
 from mlflow.pyfunc import PythonModel
+from ms2deepscore.models import load_model as ms2deepscore_load_model
 from ms2deepscore import MS2DeepScore
+
 
 log = getLogger(__name__)
 
@@ -11,11 +13,17 @@ log = getLogger(__name__)
 class Predictor(PythonModel):
     def __init__(
         self,
-        model: MS2DeepScore,
         run_id: str = None,
     ):
-        self.model = model
         self.run_id = run_id
+
+    def load_context(self, context):
+        model_path = context.artifacts["ms2deepscore_model_path"]
+        try:
+            siamese_model = ms2deepscore_load_model(model_path)
+            self.model = MS2DeepScore(siamese_model)
+        except FileNotFoundError:
+            log.error(f"Could not find MS2DeepScore model in {model_path}")
 
     def predict(
         self,

@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
 
+
 os.chdir(Path(__file__).parents[3])
 
 
-def test_predictions(ms2deepscore_predictor, ms2deepscore_payload):
+def test_predictions(ms2deepscore_payload, ms2deepscore_predictor):
     score = ms2deepscore_predictor.predict(
         data_input=ms2deepscore_payload,
         context="",

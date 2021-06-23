@@ -2,7 +2,6 @@ from typing import Union, Dict
 
 import mlflow
 from gensim.models import Word2Vec
-from mlflow.exceptions import MlflowException
 from prefect import Task
 
 from omigami.model_register import MLFlowModelRegister
