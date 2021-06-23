@@ -76,7 +76,7 @@ def test_run_minimal_flow(
 
     flow_params = MinimalFlowParameters(
         input_dgw=input_dgw,
-        output_dir=ASSETS_DIR.parent,
+        output_dir=ASSETS_DIR,
         model_uri=MS2DEEPSCORE_MODEL_URI,
     )
 
