@@ -8,7 +8,7 @@ from prefect import Task
 
 from omigami.config import SELDON_PARAMS, CLUSTERS
 from omigami.utils import merge_prefect_task_configs
-from omigami.spec2vec.helper_classes.exception import DeployingError
+from omigami.spec2vec.helper_classes.exception import SeldonDeploymentError
 
 
 @dataclass
@@ -104,6 +104,6 @@ class DeployModel(Task):
             return deployment
 
         except KeyError:
-            raise DeployingError(
+            raise SeldonDeploymentError(
                 "Couldn't create a deployment because the configuration schema is not correct"
             )

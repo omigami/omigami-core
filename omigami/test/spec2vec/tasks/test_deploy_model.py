@@ -22,31 +22,6 @@ def test_deploy_model_task():
     assert True
 
 
-def test_create_seldon_deployment():
-    params = DeployModelParameters("2", "neutral", False, "dev")
-    task = DeployModel(params)
-    model_name = "spec2vec-neutral"
-
-    deployment = task._create_seldon_deployment("model_uri")
-
-    assert deployment["spec"]["predictors"][0]["graph"]["modelUri"] == "model_uri"
-    assert (
-        deployment["spec"]["predictors"][0]["componentSpecs"][0]["spec"]["containers"][
-            0
-        ]["env"][-1]["value"]
-        == "2"
-    )
-    assert deployment["metadata"]["name"] == model_name
-    assert deployment["spec"]["name"] == model_name
-    assert deployment["spec"]["predictors"][0]["graph"]["name"] == model_name
-    assert (
-        deployment["spec"]["predictors"][0]["componentSpecs"][0]["spec"]["containers"][
-            0
-        ]["name"]
-        == model_name
-    )
-
-
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")
 def test_deploy_seldon_model(mock_default_config):
     FLOW_CONFIG = {

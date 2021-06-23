@@ -5,7 +5,7 @@ class EmbeddingMakerError(Exception):
     pass
 
 
-class DeployingError(Exception):
+class SeldonDeploymentError(Exception):
     pass
 
 
