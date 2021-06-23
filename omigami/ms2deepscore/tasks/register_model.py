@@ -56,7 +56,7 @@ class ModelRegister(MLFlowModelRegister):
         **kwargs,
     ):
         experiment_id = self._get_or_create_experiment_id(experiment_name, path)
-        with mlflow.start_run(experiment_id=experiment_id) as run:
+        with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
             run_id = run.info.run_id
             model.set_run_id(run_id)
 

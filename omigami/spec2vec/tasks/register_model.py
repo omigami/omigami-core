@@ -63,7 +63,7 @@ class ModelRegister(MLFlowModelRegister):
         conda_env_path: str = None,
     ) -> str:
         experiment_id = self._get_or_create_experiment_id(experiment_name, path)
-        with mlflow.start_run(experiment_id=experiment_id) as run:
+        with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
             params = {
                 "n_decimals_for_documents": model.n_decimals,
                 "intensity_weighting_power": model.intensity_weighting_power,
