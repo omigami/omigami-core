@@ -29,7 +29,7 @@ class RegisterModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self) -> Dict[str, str]:
+    def run(self, model=None) -> Dict[str, str]:
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._path}."
         )
