@@ -10,13 +10,13 @@ from moto import mock_s3
 from pytest_redis import factories
 
 import omigami
+import omigami.config
 from omigami.spec2vec.config import (
     DOCUMENT_HASHES,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
 )
-
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway, KEYS
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
