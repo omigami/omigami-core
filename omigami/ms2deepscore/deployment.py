@@ -32,7 +32,7 @@ def deploy_minimal_flow(
     model_uri: str = MS2DEEPSCORE_MODEL_URI,
     project_name: str = PROJECT_NAME,
     mlflow_server: str = MLFLOW_SERVER,
-    flow_name: str = "spec2vec-training-flow",
+    flow_name: str = "ms2deepscore-minimal-flow",
     environment: Literal["dev", "prod"] = "dev",
     deploy_model: bool = False,
     overwrite: bool = False,
@@ -70,7 +70,7 @@ def deploy_minimal_flow(
     if environment not in ["dev", "prod"]:
         raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
-    model_output_dir = MODEL_DIRECTORIES[environment]
+    model_output_dir = MODEL_DIRECTORIES[environment]["pre_trained_model"]
     output_dir = S3_BUCKETS[environment]
 
     input_dgw = FSInputDataGateway()

@@ -5,6 +5,6 @@ model_uri: "https://zenodo.org/api/files/2ca8a77b-fa1e-4223-bc6d-50d6f074a962/MS
 storage:
   model_folder:
     dev:
-      pre_trained_model: "model/pre_trained/{date:%Y-%m}"
+      pre_trained_model: "s3://omigami-dev/ms2deepscore/model/pre_trained/{date:%Y-%m}"
     prod:
-      pre_trained_model: "model/pre_trained/{date:%Y-%m}"
+      pre_trained_model: "s3://omigami/ms2deepscore/model/pre_trained/{date:%Y-%m}"
