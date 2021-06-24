@@ -68,7 +68,7 @@ class ModelRegister(MLFlowModelRegister):
                 model,
                 experiment_name,
                 path=path,
-                code_path=[],
+                code_path=["omigami/ms2deepscore"],
                 conda_env_path=conda_env_path,
                 artifacts=artifacts,
                 **kwargs,
