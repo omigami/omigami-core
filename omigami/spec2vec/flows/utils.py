@@ -1,4 +1,5 @@
 from typing import Union, Dict
+
 from drfs import DRPath
 from prefect.engine.result import Result
 from prefect.engine.results import S3Result, LocalResult
