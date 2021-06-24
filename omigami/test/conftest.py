@@ -9,8 +9,9 @@ from drfs.filesystems import get_fs
 from moto import mock_s3
 from pytest_redis import factories
 
-import omigami.spec2vec.tasks.config
-from omigami.config import (
+import omigami
+import omigami.config
+from omigami.spec2vec.config import (
     DOCUMENT_HASHES,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
@@ -25,9 +26,7 @@ redis_db = factories.redisdb("redis_nooproc")
 
 @pytest.fixture
 def mock_default_config(monkeypatch):
-    monkeypatch.setattr(
-        omigami.spec2vec.tasks.config, "DEFAULT_CONFIG", TEST_TASK_CONFIG
-    )
+    monkeypatch.setattr(omigami.config, "DEFAULT_PREFECT_TASK_CONFIG", TEST_TASK_CONFIG)
 
 
 def pytest_addoption(parser):

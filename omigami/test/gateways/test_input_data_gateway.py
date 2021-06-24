@@ -5,7 +5,7 @@ import requests_mock
 from drfs import DRPath
 from drfs.filesystems import get_fs
 
-from omigami.config import (
+from omigami.spec2vec.config import (
     SOURCE_URI_PARTIAL_GNPS,
     SOURCE_URI_COMPLETE_GNPS,
 )

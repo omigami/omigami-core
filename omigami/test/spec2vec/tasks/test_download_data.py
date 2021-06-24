@@ -5,8 +5,8 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.data_gateway import InputDataGateway
+from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.spec2vec.flows.utils import create_result
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.tasks import DownloadData
