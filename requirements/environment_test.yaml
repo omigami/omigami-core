@@ -1,4 +1,4 @@
-name: omigami-core
+name: omigami
 channels:
   - conda-forge
   - bioconda
