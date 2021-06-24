@@ -16,11 +16,9 @@ from typing_extensions import Literal
 
 from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
-    SOURCE_URI_PARTIAL_GNPS,
     API_SERVER_URLS,
     PROJECT_NAME,
     MODEL_DIRECTORIES,
-    MLFLOW_SERVER,
     S3_BUCKETS,
 )
 
@@ -29,10 +27,9 @@ def deploy_prediction_flow(
     image: str,
     chunk_size: int = int(1e8),
     skip_if_exists: bool = True,
-    source_uri: str = SOURCE_URI_PARTIAL_GNPS,
+    model_uri: str = MODEL_URI,
     project_name: str = PROJECT_NAME,
-    mlflow_server: str = MLFLOW_SERVER,
-    flow_name: str = "ms2deep-prediction-flow",
+    flow_name: str = "ms2deepscore-prediction-flow",
     environment: Literal["dev", "prod"] = "dev",
     deploy_model: bool = False,
     overwrite: bool = False,
@@ -77,7 +74,7 @@ def deploy_prediction_flow(
 
     flow_parameters = PredictionFlowParameters(
         input_dgw=input_dgw,
-        source_uri=source_uri,
+        model_uri=model_uri,
         output_dir=output_dir,
         chunk_size=chunk_size,
         skip_if_exists=skip_if_exists,
@@ -98,7 +95,6 @@ def deploy_prediction_flow(
         flow_config,
         flow_parameters,
         model_output_dir=model_output_dir,
-        mlflow_server=mlflow_server,
         deploy_model=deploy_model,
     )
 

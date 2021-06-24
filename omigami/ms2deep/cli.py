@@ -40,7 +40,7 @@ def cli():
 @add_options(auth_options)
 @add_options(configuration_options)
 def deploy_training_flow_cli(*args, **kwargs):
-    _ = deploy_training_flow(*args, **kwargs)
+    deploy_training_flow(*args, **kwargs)
 
 
 if __name__ == "__main__":

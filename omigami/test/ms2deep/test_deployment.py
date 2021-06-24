@@ -4,7 +4,7 @@ from typing_extensions import Literal
 from omigami.config import (
     MLFLOW_SERVER,
     config,
-    SOURCE_URI_COMPLETE_GNPS,
+    MODEL_URI,
 )
 from omigami.ms2deep.deployment import (
     deploy_prediction_flow,
@@ -30,8 +30,8 @@ def test_deploy_prediction_flow():
         skip_if_exists=True,
         chunk_size=int(1e8),
         environment=env,
-        source_uri=SOURCE_URI_COMPLETE_GNPS,
-        project_name="spec2vec",
+        model_uri=MODEL_URI,
+        project_name="ms2deepscore",
         mlflow_server=MLFLOW_SERVER,
         flow_name="prediction-flow",
         deploy_model=True,
