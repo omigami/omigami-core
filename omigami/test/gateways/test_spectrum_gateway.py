@@ -6,7 +6,7 @@ from matchms.Spectrum import Spectrum
 from pytest_redis import factories
 from spec2vec.SpectrumDocument import SpectrumDocument
 
-from omigami.config import (
+from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     DOCUMENT_HASHES,

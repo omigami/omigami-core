@@ -9,11 +9,11 @@ from spec2vec.model_building import (
     learning_rates_to_gensim_style,
 )
 
+from omigami.config import merge_prefect_task_configs
 from omigami.data_gateway import SpectrumDataGateway
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
-from omigami.spec2vec.tasks.config import merge_configs
 
 
 @dataclass
@@ -40,7 +40,7 @@ class TrainModel(Task):
         self._epochs = training_parameters.epochs
         self._window = training_parameters.window
 
-        config = merge_configs(kwargs)
+        config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
     def run(self, spectrum_ids_chunks: List[Set[str]] = None):
