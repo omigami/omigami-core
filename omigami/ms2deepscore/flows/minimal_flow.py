@@ -16,7 +16,7 @@ class MinimalFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        output_dir: str,
+        model_output_dir: str,
         model_uri: str = MS2DEEPSCORE_MODEL_URI,
         overwrite: bool = False,
         environment: str = "dev",
@@ -25,7 +25,7 @@ class MinimalFlowParameters:
 
         self.downloading = DownloadPreTrainedModelParameters(
             model_uri,
-            output_dir,
+            model_output_dir,
         )
         self.deploying = DeployModelParameters(overwrite, environment)
 

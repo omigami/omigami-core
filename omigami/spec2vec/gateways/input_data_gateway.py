@@ -59,17 +59,21 @@ class FSInputDataGateway(InputDataGateway):
     def __init__(self, fs: Optional[FileSystemBase] = None):
         self.fs = fs
 
-    def _download_from_url(self, uri: str, output_path: str):
+    def download_gnps(self, uri: str, output_path: str):
         if self.fs is None:
             self.fs = get_fs(output_path)
         output_path = DRPath(output_path)
         self._download_and_serialize(uri, output_path)
 
-    def download_gnps(self, uri: str, output_path: str):
-        self._download_from_url(uri, output_path)
-
     def download_ms2deep_model(self, uri: str, output_path: str):
-        self._download_from_url(uri, output_path)
+
+        try:
+            req = requests.get(url=uri)
+            with open(output_path, mode="wb") as f:
+                f.write(req.content)
+
+        except Exception:
+            logging.error("Unable to download ms2deepscore model")
 
     def _download_and_serialize(self, uri: str, output_path: DRPath):
         """solution is from https://stackoverflow.com/a/16696317/15485553"""

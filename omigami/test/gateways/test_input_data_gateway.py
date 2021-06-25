@@ -39,11 +39,11 @@ def test_download_gnps_and_serialize_to_local(uri, tmpdir):
 @pytest.mark.skip("Uses internet connection.")
 @pytest.mark.slow
 def test_download_ms2deep_and_serialize_to_local(tmpdir):
-    _ = FSInputDataGateway().download_ms2deep_model(
-        uri=MS2DEEPSCORE_MODEL_URI, output_path=tmpdir / "test-ms2deepscore-model"
+    output_path = str(tmpdir / "test-ms2deepscore-model.h5")
+    FSInputDataGateway().download_ms2deep_model(
+        uri=MS2DEEPSCORE_MODEL_URI, output_path=output_path
     )
-
-    assert (tmpdir / "test-ms2deepscore-model").exists()
+    assert (tmpdir / "test-ms2deepscore-model.h5").exists()
 
 
 def test_download_and_serialize_to_remote(loaded_data, s3_mock):

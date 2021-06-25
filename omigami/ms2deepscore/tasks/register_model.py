@@ -1,7 +1,6 @@
 from typing import Dict
 
 import mlflow
-from gensim.models import Word2Vec
 from mlflow.pyfunc import PythonModel
 from prefect import Task
 

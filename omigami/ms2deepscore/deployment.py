@@ -70,7 +70,7 @@ def deploy_minimal_flow(
     if environment not in ["dev", "prod"]:
         raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
-    model_output_dir = MODEL_DIRECTORIES[environment]["pre_trained_model"]
+    model_output_dir = MODEL_DIRECTORIES[environment]["pre-trained-model"]
     output_dir = S3_BUCKETS[environment]
 
     input_dgw = FSInputDataGateway()
@@ -78,7 +78,7 @@ def deploy_minimal_flow(
     flow_parameters = MinimalFlowParameters(
         input_dgw=input_dgw,
         model_uri=model_uri,
-        output_dir=output_dir,
+        model_output_dir=model_output_dir,
         overwrite=overwrite,
         environment=environment,
     )
