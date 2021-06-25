@@ -44,21 +44,11 @@ To run it, execute::
 
     bash deploy.sh
 
-How to set up a local Feast
+Spec2Vec
 -------------------------------------
-::
-
-    git clone https://github.com/feast-dev/feast.git
-    cd feast/infra/docker-compose
-    cp .env.sample .env
-
-And to run it:
-::
-
-    docker-compose pull && docker-compose up -d
 
 How to run tests that require Redis locally
--------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some tests that use feature store requires Redis to run.
 Start a Redis container and set these environment variables before running the test suite:
@@ -73,7 +63,7 @@ To run tests one by one via PyCharm, you can add this to your pytest Environment
     SKIP_REDIS_TEST=False;PREFECT__FLOWS__CHECKPOINTING=True;REDIS_HOST=localhost;REDIS_DB=0
 
 How to register the training flow manually
-------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To register the flow manually to Prefect you need to follow these steps:
 ::
@@ -82,7 +72,7 @@ To register the flow manually to Prefect you need to follow these steps:
     export AWS_PROFILE=<your data revenue profile>
     export PYTHONPATH=$(pwd)
     prefect backend server
-    python omigami/cli.py register-training-flow -i [image] [options]
+    python omigami/spec2vec/cli.py register-training-flow -i [image] [options]
 
 If the Prefect Server requires authentication, you can use the arguments to set it up:
 ::
@@ -136,6 +126,70 @@ The input data should look like:
 - `peaks_json` and `Precursor_MZ` are the only mandatory fields.
 - `Precursor_MZ` can be a string of int or a string of float. i.e. "800" or "800.00"
 - The optional `n_best_spectra` parameter controls the number of predicted spectra returned per set of peaks (10 by default).
+
+Ms2Deepscore
+-------------------------------------
+How to register the prediction flow manually
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To register the flow manually to Prefect you need to follow these steps:
+::
+
+    conda activate omigami
+    export AWS_PROFILE=<your data revenue profile>
+    export PYTHONPATH=$(pwd)
+    prefect backend server
+    python omigami/ms2deepscore/cli.py register-prediction-flow -i [image] [options]
+
+If the Prefect Server requires authentication, you can use the arguments to set it up:
+::
+
+    --auth (bool): Enables authentication, defaults to False
+    --auth_url (str): Authentication API Path. Ex.: https://mlops.datarevenue.com/.ory/kratos/public/ [Optional, only required if auth=True]
+    --username (str): Your username [Optional, only required if auth=True]
+    --password (str): Your password [Optional, only required if auth=True]
+
+Then you can check the flow here: https://prefect.mlops.datarevenue.com/default
+
+After the model has been deployed you can access the predictions endpoint in two ways:
+
+By making a curl request:
+::
+
+    curl -v https://mlops.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/predictions -H "Content-Type: application/json" -d 'input_data'
+
+::
+
+    curl -v https://mlops.datarevenue.com/seldon/seldon/s2deepscore/api/v0.1/predictions -H "Content-Type: application/json" -d @path_to/input.json
+
+By accessing the external API with the user interface at:
+::
+
+    https://mlops.datarevenue.com/seldon/seldon/s2deepscore/api/v0.1/doc/
+
+Or by querying the prediction API via the python request library (see notebook)
+
+The input data should look like:
+::
+
+    {
+       "data": {
+          "ndarray": {
+             "data":
+                 [
+                     {"intensities": [289.286377, 295.545288],
+                      "mz": [8068.000000, 22507.000000]},
+                     {"intensities": [289.286377, 295.545288],
+                      "mz": [8068.000000, 22507.000000]}
+                 ]
+          }
+       }
+    }
+
+- `data` contains an array of two dicts, with each dict containing mandatory `intensity` and `mz` fields
+- The `intensity` and `mz` fields both contain arrays of floats, with the two arrays being the same length
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Black format your code
 -------------------------------------
