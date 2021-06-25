@@ -41,7 +41,7 @@ def test_minimal_flow(flow_config):
     }
     flow_params = MinimalFlowParameters(
         input_dgw=mock_input_dgw,
-        output_dir="datasets",
+        model_output_dir="model-output",
         model_uri="model_uri",
     )
 

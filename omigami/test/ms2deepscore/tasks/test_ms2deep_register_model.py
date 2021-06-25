@@ -21,7 +21,7 @@ def test_register_model(ms2deepscore_model_path, tmpdir):
     assert run_id
     assert os.path.exists(f"{path}/model/python_model.pkl")
     assert os.path.exists(f"{path}/model/conda.yaml")
-    assert "ms2deepscore" in os.listdir(f"{path}/model/code")
+    assert "ms2deepscore" in os.listdir(f"{path}/model/code/omigami")
     assert "ms2deepscore_model.hdf5" in os.listdir(f"{path}/model/artifacts")
 
 
