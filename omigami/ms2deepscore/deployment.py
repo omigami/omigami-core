@@ -71,7 +71,7 @@ def deploy_minimal_flow(
         raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
     model_output_dir = MODEL_DIRECTORIES[environment]["pre-trained-model"]
-    output_dir = S3_BUCKETS[environment]
+    mlflow_output_dir = MODEL_DIRECTORIES[environment]["mlflow"]
 
     input_dgw = FSInputDataGateway()
 
@@ -96,7 +96,7 @@ def deploy_minimal_flow(
         flow_name,
         flow_config,
         flow_parameters,
-        model_output_dir=model_output_dir,
+        mlflow_output_dir=mlflow_output_dir,
         mlflow_server=mlflow_server,
         deploy_model=deploy_model,
     )

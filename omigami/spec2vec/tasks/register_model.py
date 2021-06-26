@@ -59,10 +59,10 @@ class ModelRegister(MLFlowModelRegister):
         self,
         model: Predictor,
         experiment_name: str,
-        path: str,
+        output_path: str = None,
         conda_env_path: str = None,
     ) -> str:
-        experiment_id = self._get_or_create_experiment_id(experiment_name, path)
+        experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
         with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
             params = {
                 "n_decimals_for_documents": model.n_decimals,
@@ -77,7 +77,7 @@ class ModelRegister(MLFlowModelRegister):
             self.log_model(
                 model,
                 experiment_name,
-                path=path,
+                output_path=output_path,
                 code_path=["omigami/spec2vec"],
                 conda_env_path=conda_env_path,
             )

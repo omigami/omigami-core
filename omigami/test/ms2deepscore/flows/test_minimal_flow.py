@@ -50,7 +50,7 @@ def test_minimal_flow(flow_config):
         flow_name="test-flow",
         flow_config=flow_config,
         flow_parameters=flow_params,
-        model_output_dir="model-output",
+        mlflow_output_dir="model-output",
         mlflow_server="mlflow-server",
         deploy_model=False,
     )
@@ -76,7 +76,7 @@ def test_run_minimal_flow(
 
     flow_params = MinimalFlowParameters(
         input_dgw=input_dgw,
-        output_dir=ASSETS_DIR,
+        model_output_dir=ASSETS_DIR,
         model_uri=MS2DEEPSCORE_MODEL_URI,
     )
 
@@ -85,7 +85,7 @@ def test_run_minimal_flow(
         flow_config=flow_config,
         flow_name="test-flow",
         flow_parameters=flow_params,
-        model_output_dir=f"{tmpdir}/model-output",
+        mlflow_output_dir=f"{tmpdir}/mlflow-model-output",
         mlflow_server="mlflow-server",
         deploy_model=False,
     )
@@ -94,5 +94,5 @@ def test_run_minimal_flow(
     (d,) = flow.get_tasks("DownloadPreTrainedModel")
 
     assert results.is_successful()
-    results.result[d].is_cached()
-    assert "model" in os.listdir(tmpdir / "model-output")
+    assert results.result[d].is_cached()
+    assert "model" in os.listdir(tmpdir / "mlflow-model-output")

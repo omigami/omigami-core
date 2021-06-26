@@ -11,7 +11,7 @@ class MLFlowModelRegister(ABC):
         mlflow.set_tracking_uri(server_uri)
 
     @staticmethod
-    def _get_or_create_experiment_id(experiment_name: str, path: str) -> str:
+    def _get_or_create_experiment_id(experiment_name: str, path: str = None) -> str:
         experiment = mlflow.get_experiment_by_name(experiment_name)
         if experiment:
             return experiment.experiment_id
@@ -22,9 +22,9 @@ class MLFlowModelRegister(ABC):
     def log_model(
         model: PythonModel,
         experiment_name: str,
-        path: str,
         code_path: List[str],
         conda_env_path: str = None,
+        output_path: str = None,
         **kwargs,
     ):
         try:
@@ -40,7 +40,7 @@ class MLFlowModelRegister(ABC):
         # supported without a database.
         except MlflowException:
             mlflow.pyfunc.save_model(
-                f"{path}/model",
+                path=f"{output_path}/model",
                 python_model=model,
                 conda_env=conda_env_path,
                 code_path=code_path,

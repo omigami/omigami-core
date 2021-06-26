@@ -15,31 +15,29 @@ class RegisterModel(Task):
     def __init__(
         self,
         experiment_name: str,
-        path: str,
+        mlflow_output_path: str,
         server_uri: str,
-        ms2deepscore_model_path: str,
         **kwargs,
     ):
         self._experiment_name = experiment_name
-        self._path = path
+        self._mlflow_output_path = mlflow_output_path
         self._server_uri = server_uri
-        self._ms2deepscore_model_path = ms2deepscore_model_path
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, model=None) -> Dict[str, str]:
+    def run(self, model_path: str) -> Dict[str, str]:
         self.logger.info(
-            f"Registering model to {self._server_uri} on URI: {self._path}."
+            f"Registering model to {self._server_uri} on URI: {self._mlflow_output_path}."
         )
 
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
             Predictor(),
             self._experiment_name,
-            self._path,
+            self._mlflow_output_path,
             CONDA_ENV_PATH,
-            artifacts={"ms2deepscore_model_path": self._ms2deepscore_model_path},
+            artifacts={"ms2deepscore_model_path": model_path},
         )
         run = mlflow.get_run(run_id)
         self.logger.info(f"{run.info}")
@@ -53,12 +51,12 @@ class ModelRegister(MLFlowModelRegister):
         self,
         model: PythonModel,
         experiment_name: str,
-        path: str,
+        output_path: str,
         conda_env_path: str = None,
         artifacts: Dict = None,
         **kwargs,
     ):
-        experiment_id = self._get_or_create_experiment_id(experiment_name, path)
+        experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
         with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
             run_id = run.info.run_id
             model.set_run_id(run_id)
@@ -66,7 +64,7 @@ class ModelRegister(MLFlowModelRegister):
             self.log_model(
                 model,
                 experiment_name,
-                path=path,
+                output_path=output_path,
                 code_path=[
                     "omigami",
                 ],

@@ -18,12 +18,12 @@ def test_deploy_minimal_flow():
     login_config.pop("token")
 
     flow_id = deploy_minimal_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.b95a55a",
+        image="drtools/prefect:omigami-SNAPSHOT.e0d3744",
         environment=env,
         model_uri=MS2DEEPSCORE_MODEL_URI,
         project_name="ms2deepscore-test",
         mlflow_server=MLFLOW_SERVER,
-        flow_name="first-flow-attempt",
+        flow_name="second-flow-attempt",
         deploy_model=True,
         overwrite=True,
         auth=True,

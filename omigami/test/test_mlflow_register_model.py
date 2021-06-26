@@ -1,6 +1,8 @@
 import os
+import pytest
 from pathlib import Path
 
+import mlflow
 from mlflow.pyfunc import PythonModel
 from omigami.model_register import MLFlowModelRegister
 from omigami.spec2vec.predictor import Predictor
@@ -8,7 +10,7 @@ from omigami.spec2vec.predictor import Predictor
 os.chdir(Path(__file__).parents[2])
 
 
-class TestABCModelRegister(MLFlowModelRegister):
+class MockABCModelRegister(MLFlowModelRegister):
     def register_model(
         self,
         model: PythonModel,
@@ -21,7 +23,7 @@ class TestABCModelRegister(MLFlowModelRegister):
 
 def test_get_or_create_experiment(tmpdir):
     path = f"{tmpdir}/mlflow/"
-    model_register = TestABCModelRegister(path)
+    model_register = MockABCModelRegister(path)
     experiment_name = "experiment"
     # create
     created_experiment_id = model_register._get_or_create_experiment_id(
@@ -32,9 +34,9 @@ def test_get_or_create_experiment(tmpdir):
     assert created_experiment_id == experiment_id
 
 
-def test_log_model(word2vec_model, tmpdir):
+def test_save_model(word2vec_model, tmpdir):
     path = f"{tmpdir}/mlflow/"
-    model_register = TestABCModelRegister(path)
+    model_register = MockABCModelRegister(path)
 
     model_register.log_model(
         model=Predictor(
@@ -44,9 +46,35 @@ def test_log_model(word2vec_model, tmpdir):
             allowed_missing_percentage=5.0,
         ),
         experiment_name="experiment",
-        path=path,
+        output_path=path,
         code_path=["omigami/spec2vec"],
     )
 
     assert os.path.exists(f"{path}/model/python_model.pkl")
     assert os.path.exists(f"{path}/model/conda.yaml")
+
+
+@pytest.mark.skip(
+    "Requires MLFlow Server running locally."
+    "mlflow server --backend-store-uri sqlite:///mydb.sqlite --default-artifact-root /tmp/mlflow"
+)
+def test_log_model(word2vec_model, tmpdir):
+
+    model_register = MockABCModelRegister("http://localhost:5000")
+    exp_id = model_register._get_or_create_experiment_id("experiment")
+
+    with mlflow.start_run(experiment_id=exp_id, nested=True):
+        model_register.log_model(
+            model=Predictor(
+                word2vec_model,
+                n_decimals=2,
+                intensity_weighting_power=0.5,
+                allowed_missing_percentage=5.0,
+            ),
+            experiment_name="experiment",
+            code_path=["omigami/spec2vec"],
+        )
+
+        path = mlflow.get_artifact_uri()
+        assert os.path.exists(f"{path}/model/python_model.pkl")
+        assert os.path.exists(f"{path}/model/conda.yaml")

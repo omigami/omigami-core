@@ -35,7 +35,7 @@ def build_minimal_flow(
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: MinimalFlowParameters,
-    model_output_dir: str,
+    mlflow_output_dir: str,
     mlflow_server: str,
     deploy_model: bool = False,
 ) -> Flow:
@@ -54,7 +54,7 @@ def build_minimal_flow(
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Class containing all flow parameters
-    model_output_dir:
+    mlflow_output_dir:
         Directory for saving the model.
     mlflow_server:
         Server used for MLFlow to save the model.
@@ -72,9 +72,8 @@ def build_minimal_flow(
 
         model_registry = RegisterModel(
             project_name,
-            model_output_dir,
+            mlflow_output_dir,
             mlflow_server,
-            flow_parameters.downloading.output_path,
         )(ms2deepscore_model_path)
 
         if deploy_model:
