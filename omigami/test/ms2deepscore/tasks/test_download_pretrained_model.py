@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 from prefect import Flow
 from omigami.data_gateway import InputDataGateway
+from omigami.ms2deepscore.config import MS2DEEPSCORE_MODEL_URI
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 from omigami.ms2deepscore.tasks.download_pre_trained_model import (
     DownloadPreTrainedModelParameters,
@@ -48,3 +49,17 @@ def test_download_pretrained_model_existing(mock_default_config):
 
     assert res.is_successful()
     assert res.result[download].is_cached()
+
+
+def test_download_pretrained_model_task(tmpdir):
+    with Flow("test-task") as flow:
+        download = DownloadPreTrainedModel(
+            input_datagateway=FSInputDataGateway(),
+            download_parameters=DownloadPreTrainedModelParameters(
+                model_uri=MS2DEEPSCORE_MODEL_URI,
+                output_dir=str(tmpdir / "pre-trained"),
+            ),
+        )()
+
+    state = flow.run()
+    assert state.is_successful()

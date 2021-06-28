@@ -12,6 +12,10 @@ CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 
 
 class RegisterModel(Task):
+    """
+    Prefect task to register a model to MLFlow
+    """
+
     def __init__(
         self,
         experiment_name: str,
@@ -47,6 +51,10 @@ class RegisterModel(Task):
 
 
 class ModelRegister(MLFlowModelRegister):
+    """
+    Class that implements MLFLowModelRegister to register ms2deepscore model to MLFlow
+    """
+
     def register_model(
         self,
         model: PythonModel,
@@ -56,6 +64,21 @@ class ModelRegister(MLFlowModelRegister):
         artifacts: Dict = None,
         **kwargs,
     ):
+        """
+        Method to register the MS2DeepScore to MLFlow.
+
+        Parameters
+        ----------
+        model: PythonModel class to execute the predictions
+        experiment_name: MLFlow Experiment name
+        output_path: path to save the artifacts
+        conda_env_path: Conda environment requirements file
+        artifacts: Dictionary of artifacts to be stored along with the model
+
+        Returns
+        -------
+            Return the MLFLow run ID
+        """
         experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
         with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
             run_id = run.info.run_id

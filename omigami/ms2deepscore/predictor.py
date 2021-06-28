@@ -20,6 +20,7 @@ class Predictor(PythonModel):
     def load_context(self, context):
         model_path = context.artifacts["ms2deepscore_model_path"]
         try:
+            log.info(f"Loading model from {model_path}")
             siamese_model = ms2deepscore_load_model(model_path)
             self.model = MS2DeepScore(siamese_model)
         except FileNotFoundError:

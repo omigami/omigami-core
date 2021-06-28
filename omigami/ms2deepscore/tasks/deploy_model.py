@@ -12,6 +12,10 @@ class DeployModelParameters:
 
 
 class DeployModel(Task):
+    """
+    Prefect task to deploy model to kubernetes
+    """
+
     def __init__(
         self,
         deploy_parameters: DeployModelParameters,

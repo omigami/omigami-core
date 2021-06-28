@@ -83,9 +83,11 @@ class SeldonDeployment:
             **self.seldon_config,
             body=deployment_spec,
         )
+
         (status,) = self.client.get_namespaced_custom_object(
             **self.seldon_config, name=model_name
         )["status"]["deploymentStatus"].values()
+
         log.info(f"Finished deployment. Deployment status: {status}")
 
         return res
