@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from prefect import Task
 
 from omigami.utils import merge_prefect_task_configs
-from omigami.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import InputDataGateway
 from omigami.utils import create_prefect_result_from_path
 
 

@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 from prefect import Flow
-from omigami.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.config import MS2DEEPSCORE_MODEL_URI
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 from omigami.ms2deepscore.tasks.download_pre_trained_model import (

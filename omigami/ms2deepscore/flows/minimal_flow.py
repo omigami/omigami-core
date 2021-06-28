@@ -1,7 +1,7 @@
 from omigami.ms2deepscore.config import MS2DEEPSCORE_MODEL_URI
 from prefect import Flow
 
-from omigami.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import InputDataGateway
 from omigami.flow_config import FlowConfig
 from omigami.ms2deepscore.tasks import (
     DownloadPreTrainedModel,

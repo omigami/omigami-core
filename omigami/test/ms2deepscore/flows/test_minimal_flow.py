@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
-from omigami.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.config import MS2DEEPSCORE_MODEL_URI
 
 from omigami.flow_config import (

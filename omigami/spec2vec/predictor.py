@@ -10,7 +10,9 @@ from omigami.predictor import Predictor
 
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
@@ -34,7 +36,7 @@ class Spec2VecPredictor(Predictor):
         self.allowed_missing_percentage = allowed_missing_percentage
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
-        self.dgw = RedisSpectrumDataGateway()
+        self.dgw = Spec2VecRedisSpectrumDataGateway()
 
     def predict(
         self,
