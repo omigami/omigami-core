@@ -34,7 +34,7 @@ def test_download_pre_trained_model(tmpdir, mock_default_config):
 def test_download_pretrained_model_existing(mock_default_config):
 
     input_dgw = FSInputDataGateway()
-    input_dgw.download_ms2deep_model = lambda *args: None
+    input_dgw.download_ms2deepscore_model = lambda *args: None
 
     download_parameters = DownloadPreTrainedModelParameters(
         model_uri="fake_uri",

@@ -43,7 +43,9 @@ class DownloadPreTrainedModel(Task):
 
     def run(self) -> str:
         self.logger.info(f"Downloading pre-trained MS2Deep model from {self.model_uri}")
-        self._input_datagateway.download_ms2deep_model(self.model_uri, self.output_path)
+        self._input_datagateway.download_ms2deepscore_model(
+            self.model_uri, self.output_path
+        )
         self.logger.info(f"Saving pre-trained MS2Deep model to {self.output_path}")
 
         return self.output_path

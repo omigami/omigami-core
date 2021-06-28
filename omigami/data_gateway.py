@@ -39,7 +39,7 @@ class InputDataGateway(ABC):
         pass
 
     @abstractmethod
-    def download_ms2deep_model(self, uri: str, output_path: str):
+    def download_ms2deepscore_model(self, uri: str, output_path: str):
         pass
 
 
