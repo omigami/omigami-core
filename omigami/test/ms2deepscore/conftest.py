@@ -28,6 +28,7 @@ def ms2deepscore_payload(spectra):
                 "mz": query.peaks.mz,
             },
         ],
+        "parameters": {"n_best": 2, "include_metadata": ["Compound_name"]},
     }
     return payload
 

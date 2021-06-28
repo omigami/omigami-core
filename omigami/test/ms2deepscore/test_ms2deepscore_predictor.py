@@ -28,11 +28,12 @@ def test_predictions_identical_spectra(
 
 
 def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
-    data_input = ms2deepscore_predictor._parse_input(ms2deepscore_payload)
+    data_input, parameters = ms2deepscore_predictor._parse_input(ms2deepscore_payload)
 
     assert len(data_input) == 2
     assert "intensities" in data_input[0]
     assert "mz" in data_input[0]
+    assert parameters["n_best"] == 2
 
 
 def test_clean_spectra(ms2deepscore_predictor):

@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Tuple
 
 import numpy as np
 from matchms.Spectrum import Spectrum
@@ -47,6 +47,7 @@ class Predictor(PythonModel):
                     "mz": query_mz,
                 },
             ],
+            "parameters": {"n_best": int, "include_metadata": List[str]}
         }
 
         Returns
@@ -55,7 +56,7 @@ class Predictor(PythonModel):
             MS2DeepScore similarity score.
         """
         log.info("Creating a prediction.")
-        data_input = self._parse_input(data_input)
+        data_input, parameters = self._parse_input(data_input)
         spectra = self._clean_spectra(data_input)
 
         reference = Spectrum(**spectra[0])
@@ -70,12 +71,16 @@ class Predictor(PythonModel):
         self.run_id = run_id
 
     @staticmethod
-    def _parse_input(data_input_and_parameters: Dict[str, Union[Dict, List]]) -> List:
+    def _parse_input(
+        data_input_and_parameters: Dict[str, Union[Dict, List]]
+    ) -> Tuple[Union[dict, list, None], Union[dict, list, None, dict]]:
         if not isinstance(data_input_and_parameters, dict):
             data_input_and_parameters = data_input_and_parameters.tolist()
 
         data_input = data_input_and_parameters.get("data")
-        return data_input
+        parameters = data_input_and_parameters.get("parameters")
+
+        return data_input, parameters
 
     def _clean_spectra(self, data_input: List) -> List:
         return [
