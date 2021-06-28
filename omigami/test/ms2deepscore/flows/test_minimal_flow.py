@@ -94,5 +94,4 @@ def test_run_minimal_flow(
     (d,) = flow.get_tasks("DownloadPreTrainedModel")
 
     assert results.is_successful()
-    assert results.result[d].is_cached()
     assert "model" in os.listdir(tmpdir / "mlflow-model-output")
