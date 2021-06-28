@@ -6,7 +6,7 @@ from gensim.models import Word2Vec
 from matchms import calculate_scores
 from matchms.filtering import normalize_intensities
 from matchms.importing.load_from_json import as_spectrum
-from omigami.predictor import Predictor
+from omigami.predictor import Predictor, SpectrumMatches
 
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
@@ -17,7 +17,6 @@ from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
 log = getLogger(__name__)
-SpectrumMatches = Dict[str, Dict[str, Any]]
 
 
 class Spec2VecPredictor(Predictor):
@@ -29,14 +28,13 @@ class Spec2VecPredictor(Predictor):
         allowed_missing_percentage: Union[float, int],
         run_id: str = None,
     ):
-        super().__init__()
         self.model = model
         self.n_decimals = n_decimals
         self.intensity_weighting_power = intensity_weighting_power
         self.allowed_missing_percentage = allowed_missing_percentage
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self.run_id = run_id
-        self.dgw = Spec2VecRedisSpectrumDataGateway()
+        super().__init__(Spec2VecRedisSpectrumDataGateway())
 
     def predict(
         self,
@@ -70,7 +68,6 @@ class Spec2VecPredictor(Predictor):
             spectrum_best_matches = self._calculate_best_matches(
                 input_spectrum_ref_emb,
                 input_spectrum,
-                **parameters,
             )
             best_matches[
                 input_spectrum.spectrum_id or f"spectrum-{i}"
@@ -129,7 +126,6 @@ class Spec2VecPredictor(Predictor):
         references: List[Embedding],
         query: Embedding,
         n_best_spectra: int = 10,
-        **parameters,
     ) -> SpectrumMatches:
         spec2vec_embeddings_similarity = Spec2VecEmbeddings(
             model=self.model,

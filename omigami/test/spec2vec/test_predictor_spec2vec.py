@@ -57,23 +57,6 @@ def big_payload():
     return big_payload
 
 
-@pytest.fixture
-def saved_model_run_id(word2vec_model, tmpdir):
-    path = f"{tmpdir}/mlflow/"
-    model_register = ModelRegister(f"file:/{path}")
-    run_id = model_register.register_model(
-        Spec2VecPredictor(
-            word2vec_model,
-            n_decimals=1,
-            intensity_weighting_power=0.5,
-            allowed_missing_percentage=5.0,
-        ),
-        "experiment",
-        path,
-    )
-    return run_id
-
-
 @pytest.fixture()
 def model(word2vec_model):
     return Spec2VecPredictor(

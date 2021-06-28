@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import os
 import pickle
+from logging import Logger
 from typing import List, Iterable, Dict, Set
 
 import redis
 from matchms import Spectrum
+from spec2vec import SpectrumDocument
 
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
@@ -16,6 +18,9 @@ from omigami.gateways.data_gateway import SpectrumDataGateway
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
 # which was defined during deployment by the 'dataset_name' param
+from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
+
 REDIS_HOST = str(os.getenv("REDIS_HOST"))
 REDIS_DB = str(os.getenv("REDIS_DB"))
 
@@ -73,8 +78,8 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     def get_spectrum_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1
     ) -> List[str]:
-        """Get the spectrum IDs of spectra stored on redis that have a Precursor_MZ within the given range.
-        Return a list spectrum IDs."""
+        """Get the spectrum IDs of spectra stored on redis that have a Precursor_MZ
+        within the given range. Return a list spectrum IDs."""
         self._init_client()
         spectrum_ids_within_range = [
             id_.decode()
@@ -96,6 +101,20 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         # Just used on tests atm. No abstract method.
         self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
+
+    def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
+        pass
+
+    def write_embeddings(
+        self, embeddings: List[Embedding], run_id: str, logger: Logger = None
+    ):
+        pass
+
+    def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
+        pass
+
+    def read_documents_iter(self, spectrum_ids: List[str] = None) -> Iterable:
+        pass
 
 
 class RedisHashesIterator:

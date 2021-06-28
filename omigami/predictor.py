@@ -1,17 +1,17 @@
 from logging import getLogger
 from typing import List, Dict, Any
 from mlflow.pyfunc import PythonModel
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
-)
+
+from omigami.gateways.data_gateway import SpectrumDataGateway
+
 
 log = getLogger(__name__)
 SpectrumMatches = Dict[str, Dict[str, Any]]
 
 
 class Predictor(PythonModel):
-    def __init__(self):
-        self.dgw = Spec2VecRedisSpectrumDataGateway()
+    def __init__(self, dgw: SpectrumDataGateway = None):
+        self.dgw = dgw
 
     def predict(self, context, model_input):
         """Match spectra from a json payload input with spectra having the highest
