@@ -40,7 +40,7 @@ def test_load_registered_model(
     )
 
     loaded_model = mlflow.pyfunc.load_model(f"{path}/model")
-    assert loaded_model.predict(payload_identical_spectra) == 1
+    assert loaded_model.predict(payload_identical_spectra)["score"] == 1
 
 
 def test_model_register_task(ms2deepscore_model_path, tmpdir):
