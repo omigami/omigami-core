@@ -1,6 +1,7 @@
 from logging import getLogger
 from typing import Union, List, Dict
 
+import numpy as np
 from matchms.Spectrum import Spectrum
 from mlflow.pyfunc import PythonModel
 from ms2deepscore.models import load_model as ms2deepscore_load_model
@@ -30,7 +31,7 @@ class Predictor(PythonModel):
         self,
         context,
         data_input: Dict[str, List],
-    ) -> float:
+    ) -> Dict:
         """Calculate the MS2DeepScore similarity between a reference and a query spectrum,
         which are extracted from the dict provided in data_input. An example of data_input
         is as follows:
@@ -55,19 +56,32 @@ class Predictor(PythonModel):
         """
         log.info("Creating a prediction.")
         data_input = self._parse_input(data_input)
+        spectra = self._clean_spectra(data_input)
 
-        reference = Spectrum(**data_input[0])
-        query = Spectrum(**data_input[1])
+        reference = Spectrum(**spectra[0])
+        query = Spectrum(**spectra[1])
 
         score = self.model.pair(reference, query)
 
         log.info("Finishing prediction.")
-        return score
+        return {"score": score}
 
     def set_run_id(self, run_id: str):
         self.run_id = run_id
 
     @staticmethod
-    def _parse_input(data_input_and_parameters: Dict[str, Union[Dict, List]]) -> list:
+    def _parse_input(data_input_and_parameters: Dict[str, Union[Dict, List]]) -> List:
+        if not isinstance(data_input_and_parameters, dict):
+            data_input_and_parameters = data_input_and_parameters.tolist()
+
         data_input = data_input_and_parameters.get("data")
         return data_input
+
+    def _clean_spectra(self, data_input: List) -> List:
+        return [
+            {
+                "intensities": np.asarray(spectrum["intensities"]),
+                "mz": np.asarray(spectrum["mz"]),
+            }
+            for spectrum in data_input
+        ]
