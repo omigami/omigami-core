@@ -31,7 +31,7 @@ class Predictor(PythonModel):
         self,
         context,
         data_input: Dict[str, List],
-    ) -> float:
+    ) -> Dict:
         """Calculate the MS2DeepScore similarity between a reference and a query spectrum,
         which are extracted from the dict provided in data_input. An example of data_input
         is as follows:
@@ -64,7 +64,7 @@ class Predictor(PythonModel):
         score = self.model.pair(reference, query)
 
         log.info("Finishing prediction.")
-        return score
+        return {"score": score}
 
     def set_run_id(self, run_id: str):
         self.run_id = run_id

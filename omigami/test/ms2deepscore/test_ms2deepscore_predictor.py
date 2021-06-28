@@ -12,8 +12,8 @@ def test_predictions(ms2deepscore_payload, ms2deepscore_predictor):
         context="",
     )
 
-    assert type(score) == float
-    assert 0 <= score <= 1
+    assert type(score["score"]) == float
+    assert 0 <= score["score"] <= 1
 
 
 def test_predictions_identical_spectra(
@@ -24,7 +24,7 @@ def test_predictions_identical_spectra(
         context="",
     )
 
-    assert score == 1
+    assert score["score"] == 1
 
 
 def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
