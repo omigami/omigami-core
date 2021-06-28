@@ -16,7 +16,7 @@ def test_download_pre_trained_model(tmpdir, mock_default_config):
         model_uri="fake_uri", output_dir=tmpdir
     )
     input_dgw = MagicMock(spec=InputDataGateway)
-    input_dgw.download_ms2deep_model.return_value = download_parameters.output_path
+    input_dgw.download_ms2deepscore_model.return_value = download_parameters.output_path
 
     with Flow("ms2deepscore-test-flow") as flow:
         download = DownloadPreTrainedModel(input_dgw, download_parameters)()
@@ -26,7 +26,7 @@ def test_download_pre_trained_model(tmpdir, mock_default_config):
     assert res.is_successful()
     assert res.result[download].result == download_parameters.output_path
 
-    input_dgw.download_ms2deep_model.assert_called_once_with(
+    input_dgw.download_ms2deepscore_model.assert_called_once_with(
         download_parameters.model_uri, download_parameters.output_path
     )
 
