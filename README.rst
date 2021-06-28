@@ -1,5 +1,5 @@
 ####################################################
-Spec2Vec and Ms2Deepscore on MLOps architecture
+Spec2Vec and MS2DeepScore on MLOps architecture
 ####################################################
 
 Development Environment
@@ -127,7 +127,7 @@ The input data should look like:
 - `Precursor_MZ` can be a string of int or a string of float. i.e. "800" or "800.00"
 - The optional `n_best_spectra` parameter controls the number of predicted spectra returned per set of peaks (10 by default).
 
-Ms2Deepscore
+MS2DeepScore
 -------------------------------------
 How to register the prediction flow manually
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
