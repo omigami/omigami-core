@@ -160,12 +160,12 @@ By making a curl request:
 
 ::
 
-    curl -v https://mlops.datarevenue.com/seldon/seldon/s2deepscore/api/v0.1/predictions -H "Content-Type: application/json" -d @path_to/input.json
+    curl -v https://mlops.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/predictions -H "Content-Type: application/json" -d @path_to/input.json
 
 By accessing the external API with the user interface at:
 ::
 
-    https://mlops.datarevenue.com/seldon/seldon/s2deepscore/api/v0.1/doc/
+    https://mlops.datarevenue.com/seldon/seldon/ms2deepscore/api/v0.1/doc/
 
 Or by querying the prediction API via the python request library (see notebook)
 
