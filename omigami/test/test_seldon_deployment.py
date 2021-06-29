@@ -1,3 +1,4 @@
+import os
 import pytest
 from typing import Optional
 from omigami.config import SELDON_PARAMS
