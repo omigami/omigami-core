@@ -32,24 +32,6 @@ def ms2deepscore_payload(spectra):
     return payload
 
 
-@pytest.fixture
-def payload_identical_spectra(spectra):
-    reference = spectra[0]
-    payload = {
-        "data": [
-            {
-                "intensities": reference.peaks.intensities,
-                "mz": reference.peaks.mz,
-            },
-            {
-                "intensities": reference.peaks.intensities,
-                "mz": reference.peaks.mz,
-            },
-        ],
-    }
-    return payload
-
-
 @pytest.fixture()
 def ms2deepscore_model_path():
     return str(ASSETS_DIR / "ms2deepscore_model.hdf5")
