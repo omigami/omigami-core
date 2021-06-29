@@ -4,11 +4,11 @@ from typing import Optional
 from omigami.config import SELDON_PARAMS
 from omigami.seldon.seldon_deployment import SeldonDeployment
 
-pytestmark = pytest.mark.skipif(
-    os.getenv("SELDON_DEPLOYMENT_TEST", True),
-    reason="It can only run if kubernetes cluster is available. "
-    "Needs to proper set the kubecontext.",
-)
+# pytestmark = pytest.mark.skipif(
+#     os.getenv("SELDON_DEPLOYMENT_TEST", True),
+#     reason="It can only run if kubernetes cluster is available. "
+#     "Needs to proper set the kubecontext.",
+# )
 
 
 @pytest.fixture

@@ -93,11 +93,11 @@ class SeldonDeployment:
             log.debug(f"deployment crd status  {status}")
 
             if "status" in status:
-                state = status["status"]["state"]
+                status = status["status"]["state"]
 
-        log.info(f"Finished deployment. Deployment status: {state}")
+        log.info(f"Finished deployment. Deployment status: {status}")
 
-        return res, state
+        return res, status
 
     def config_deployment_spec(self, model_name: str, model_uri: str, redis_db: str):
         """Config the deployment specification with the model data"""
