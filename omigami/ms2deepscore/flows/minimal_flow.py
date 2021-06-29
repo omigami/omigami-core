@@ -1,11 +1,9 @@
-from omigami.ms2deepscore.config import MS2DEEPSCORE_MODEL_URI
 from prefect import Flow
 
 from omigami.data_gateway import InputDataGateway
 from omigami.flow_config import FlowConfig
+from omigami.ms2deepscore.config import MODEL_DIRECTORIES
 from omigami.ms2deepscore.tasks import (
-    DownloadPreTrainedModel,
-    DownloadPreTrainedModelParameters,
     DeployModel,
     DeployModelParameters,
     RegisterModel,
@@ -16,17 +14,11 @@ class MinimalFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        model_output_dir: str,
-        model_uri: str = MS2DEEPSCORE_MODEL_URI,
         overwrite: bool = False,
         environment: str = "dev",
     ):
         self.input_dgw = input_dgw
-
-        self.downloading = DownloadPreTrainedModelParameters(
-            model_uri,
-            model_output_dir,
-        )
+        self.model_uri = MODEL_DIRECTORIES[environment]["pre-trained-model"]
         self.deploying = DeployModelParameters(overwrite, environment)
 
 
@@ -65,7 +57,7 @@ def build_minimal_flow(
 
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
-        ms2deepscore_model_path = flow_parameters.downloading.output_path
+        ms2deepscore_model_path = flow_parameters.model_uri
 
         model_registry = RegisterModel(
             project_name,

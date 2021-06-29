@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 from omigami.data_gateway import InputDataGateway
-from omigami.ms2deepscore.config import MS2DEEPSCORE_MODEL_URI
 
 from omigami.flow_config import (
     make_flow_config,
@@ -40,8 +39,6 @@ def test_minimal_flow(flow_config):
     }
     flow_params = MinimalFlowParameters(
         input_dgw=mock_input_dgw,
-        model_output_dir="model-output",
-        model_uri="model_uri",
     )
 
     flow = build_minimal_flow(
@@ -76,8 +73,6 @@ def test_run_minimal_flow(
 
     flow_params = MinimalFlowParameters(
         input_dgw=input_dgw,
-        model_output_dir=ASSETS_DIR,
-        model_uri=MS2DEEPSCORE_MODEL_URI,
     )
 
     flow = build_minimal_flow(

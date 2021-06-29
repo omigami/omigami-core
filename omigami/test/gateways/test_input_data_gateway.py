@@ -9,7 +9,6 @@ from omigami.spec2vec.config import (
     SOURCE_URI_PARTIAL_GNPS,
     SOURCE_URI_COMPLETE_GNPS,
 )
-from omigami.ms2deepscore.config import MS2DEEPSCORE_MODEL_URI
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway, KEYS
 from omigami.test.conftest import ASSETS_DIR
 
@@ -34,16 +33,6 @@ def test_download_gnps_and_serialize_to_local(uri, tmpdir):
     _ = FSInputDataGateway().download_gnps(uri=uri, output_path=tmpdir / "test-ds")
 
     assert (tmpdir / "test-ds").exists()
-
-
-@pytest.mark.skip("Uses internet connection.")
-@pytest.mark.slow
-def test_download_ms2deep_and_serialize_to_local(tmpdir):
-    output_path = str(tmpdir / "test-ms2deepscore-model.h5")
-    FSInputDataGateway().download_ms2deepscore_model(
-        uri=MS2DEEPSCORE_MODEL_URI, output_path=output_path
-    )
-    assert (tmpdir / "test-ms2deepscore-model.h5").exists()
 
 
 def test_download_and_serialize_to_remote(loaded_data, s3_mock):

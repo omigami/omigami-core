@@ -1,5 +1,4 @@
 import pytest
-from omigami.ms2deepscore.config import MS2DEEPSCORE_MODEL_URI
 from omigami.ms2deepscore.deployment import deploy_minimal_flow
 from typing_extensions import Literal
 from omigami.config import config, MLFLOW_SERVER
@@ -18,9 +17,8 @@ def test_deploy_minimal_flow():
     login_config.pop("token")
 
     flow_id = deploy_minimal_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.6b2e7bc",
+        image="drtools/prefect:omigami-SNAPSHOT.b151e08",
         environment=env,
-        model_uri=MS2DEEPSCORE_MODEL_URI,
         project_name="ms2deepscore-dev",
         mlflow_server=MLFLOW_SERVER,
         flow_name="running-dev",

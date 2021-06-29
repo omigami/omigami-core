@@ -9,10 +9,8 @@ from omigami.config import (
     API_SERVER_URLS,
     PROJECT_NAME,
     MLFLOW_SERVER,
-    S3_BUCKETS,
 )
 from omigami.ms2deepscore.config import (
-    MS2DEEPSCORE_MODEL_URI,
     MODEL_DIRECTORIES,
 )
 from omigami.flow_config import (
@@ -29,7 +27,6 @@ from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 
 def deploy_minimal_flow(
     image: str,
-    model_uri: str = MS2DEEPSCORE_MODEL_URI,
     project_name: str = PROJECT_NAME,
     mlflow_server: str = MLFLOW_SERVER,
     flow_name: str = "ms2deepscore-minimal-flow",
@@ -70,15 +67,12 @@ def deploy_minimal_flow(
     if environment not in ["dev", "prod"]:
         raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
-    model_output_dir = MODEL_DIRECTORIES[environment]["pre-trained-model"]
     mlflow_output_dir = MODEL_DIRECTORIES[environment]["mlflow"]
 
     input_dgw = FSInputDataGateway()
 
     flow_parameters = MinimalFlowParameters(
         input_dgw=input_dgw,
-        model_uri=model_uri,
-        model_output_dir=model_output_dir,
         overwrite=overwrite,
         environment=environment,
     )
