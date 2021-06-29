@@ -2,7 +2,6 @@ import pytest
 from matchms.importing import load_from_mgf
 from ms2deepscore import MS2DeepScore
 from ms2deepscore.models import load_model
-
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.test.conftest import ASSETS_DIR
 
@@ -15,17 +14,17 @@ def spectra():
 
 @pytest.fixture
 def ms2deepscore_payload(spectra):
-    reference = spectra[0]
-    query = spectra[1]
     payload = {
         "data": [
             {
-                "intensities": reference.peaks.intensities,
-                "mz": reference.peaks.mz,
+                "intensities": list(spectra[0].peaks.intensities),
+                "mz": list(spectra[0].peaks.mz),
+                "Precursor_MZ": spectra[0].metadata["precursor_mz"],
             },
             {
-                "intensities": query.peaks.intensities,
-                "mz": query.peaks.mz,
+                "intensities": list(spectra[1].peaks.intensities),
+                "mz": list(spectra[1].peaks.mz),
+                "Precursor_MZ": spectra[1].metadata["precursor_mz"],
             },
         ],
         "parameters": {"n_best": 2, "include_metadata": ["Compound_name"]},

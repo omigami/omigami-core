@@ -1,30 +1,24 @@
 import os
-import numpy as np
-from pathlib import Path
+import pandas as pd
+import pytest
+from matchms import Spectrum
 
 
-os.chdir(Path(__file__).parents[3])
-
-
-def test_predictions(ms2deepscore_payload, ms2deepscore_predictor):
-    score = ms2deepscore_predictor.predict(
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_predictions(
+    ms2deepscore_payload, ms2deepscore_predictor, redis_full_setup, spectra
+):
+    scores = ms2deepscore_predictor.predict(
         data_input=ms2deepscore_payload,
         context="",
+        mz_range=20,
     )
 
-    assert type(score["score"]) == float
-    assert 0 <= score["score"] <= 1
-
-
-def test_predictions_identical_spectra(
-    ms2deepscore_predictor, payload_identical_spectra
-):
-    score = ms2deepscore_predictor.predict(
-        data_input=payload_identical_spectra,
-        context="",
-    )
-
-    assert score["score"] == 1
+    assert isinstance(scores, dict)
+    assert len(scores["spectrum-0"]) == 3
 
 
 def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
@@ -38,9 +32,26 @@ def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
 
 def test_clean_spectra(ms2deepscore_predictor):
     data_input = [
-        {"intensities": "[80.060677, 337.508301]", "mz": "[157.0, 230.0]"},
-        {"intensities": "[81.060677, 339.508301]", "mz": "[158.0, 240.0]"},
+        {"intensities": [80.060677, 337.508301], "mz": [157.0, 230.0]},
+        {"intensities": [81.060677, 339.508301], "mz": [158.0, 240.0]},
     ]
     spectra = ms2deepscore_predictor._clean_spectra(data_input)
-    assert isinstance(spectra[0]["intensities"], np.ndarray)
-    assert isinstance(spectra[1]["mz"], np.ndarray)
+
+    assert isinstance(spectra[0], Spectrum)
+
+
+def test_get_best_matches(ms2deepscore_predictor, spectra):
+    n_best_spectra = 2
+    best_matches = {}
+    for query in spectra[:2]:
+        input_best_matches = ms2deepscore_predictor._calculate_best_matches(
+            spectra,
+            query,
+            n_best_spectra=n_best_spectra,
+        )
+        best_matches[query.metadata["spectrum_id"]] = input_best_matches
+
+    for query, (best_match_id, best_match) in zip(spectra, best_matches.items()):
+        assert len(best_match) == n_best_spectra
+        assert query.metadata["spectrum_id"] == best_match_id
+        assert "score" in pd.DataFrame(best_match).T.columns
