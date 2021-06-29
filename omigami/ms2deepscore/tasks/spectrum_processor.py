@@ -11,11 +11,11 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 class SpectrumProcessor(SpectrumCleaner):
-    def process_spectrum(self, spectrum_dicts: List[Dict], min_peaks=None):
+    def process_spectra(self, spectrum_dicts: List[Dict]):
         processed_spectrum_dicts = []
         for spectrum_dict in spectrum_dicts:
             spectrum = as_spectrum(spectrum_dict)
-            if spectrum is not None and len(spectrum.peaks.mz) > min_peaks:
+            if spectrum is not None:
                 spectrum = self._apply_filters(spectrum)
                 spectrum = self._harmonize_spectrum(spectrum)
                 spectrum = self._convert_metadata(spectrum)
