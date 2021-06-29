@@ -21,6 +21,21 @@ def test_predictions(
     assert len(scores["spectrum-0"]) == 3
 
 
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_predictions_that_fail(
+    ms2deepscore_payload, ms2deepscore_predictor, redis_full_setup, spectra
+):
+    with pytest.raises(AssertionError):
+        scores = ms2deepscore_predictor.predict(
+            data_input=ms2deepscore_payload,
+            context="",
+            mz_range=100,
+        )
+
+
 def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
     data_input, parameters = ms2deepscore_predictor._parse_input(ms2deepscore_payload)
 
