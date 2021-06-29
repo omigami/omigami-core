@@ -14,13 +14,13 @@ from omigami.spec2vec.config import (
     SPECTRUM_HASHES,
 )
 from omigami.gateways.data_gateway import SpectrumDataGateway
+from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
+
 
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
 # which was defined during deployment by the 'dataset_name' param
-from omigami.spec2vec.entities.embedding import Embedding
-from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-
 REDIS_HOST = str(os.getenv("REDIS_HOST"))
 REDIS_DB = str(os.getenv("REDIS_DB"))
 
