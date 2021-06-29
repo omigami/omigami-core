@@ -36,8 +36,8 @@ def test_download_gnps_and_serialize_to_local(uri, tmpdir):
     assert (tmpdir / "test-ds").exists()
 
 
-# @pytest.mark.skip("Uses internet connection.")
-# @pytest.mark.slow
+@pytest.mark.skip("Uses internet connection.")
+@pytest.mark.slow
 def test_download_ms2deep_and_serialize_to_local(tmpdir):
     output_path = str(tmpdir / "test-ms2deepscore-model.h5")
     FSInputDataGateway().download_ms2deepscore_model(
