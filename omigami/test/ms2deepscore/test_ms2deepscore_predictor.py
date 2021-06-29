@@ -9,7 +9,7 @@ from matchms import Spectrum
     reason="It can only be run if the Redis is up",
 )
 def test_predictions(
-    ms2deepscore_payload, ms2deepscore_predictor, redis_full_setup, spectra
+    ms2deepscore_payload, ms2deepscore_predictor, redis_full_setup, positive_spectra
 ):
     scores = ms2deepscore_predictor.predict(
         data_input=ms2deepscore_payload,
@@ -26,7 +26,7 @@ def test_predictions(
     reason="It can only be run if the Redis is up",
 )
 def test_predictions_that_fail(
-    ms2deepscore_payload, ms2deepscore_predictor, redis_full_setup, spectra
+    ms2deepscore_payload, ms2deepscore_predictor, redis_full_setup, positive_spectra
 ):
     with pytest.raises(AssertionError):
         scores = ms2deepscore_predictor.predict(
@@ -55,18 +55,20 @@ def test_clean_spectra(ms2deepscore_predictor):
     assert isinstance(spectra[0], Spectrum)
 
 
-def test_get_best_matches(ms2deepscore_predictor, spectra):
+def test_get_best_matches(ms2deepscore_predictor, positive_spectra):
     n_best_spectra = 2
     best_matches = {}
-    for query in spectra[:2]:
+    for query in positive_spectra[:2]:
         input_best_matches = ms2deepscore_predictor._calculate_best_matches(
-            spectra,
+            positive_spectra,
             query,
             n_best_spectra=n_best_spectra,
         )
         best_matches[query.metadata["spectrum_id"]] = input_best_matches
 
-    for query, (best_match_id, best_match) in zip(spectra, best_matches.items()):
+    for query, (best_match_id, best_match) in zip(
+        positive_spectra, best_matches.items()
+    ):
         assert len(best_match) == n_best_spectra
         assert query.metadata["spectrum_id"] == best_match_id
         assert "score" in pd.DataFrame(best_match).T.columns

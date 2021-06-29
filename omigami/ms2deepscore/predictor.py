@@ -76,7 +76,7 @@ class MS2DeepScorePredictor(Predictor):
         best_matches = {}
         for i, input_spectrum in enumerate(query_spectra):
             spectrum_best_matches = self._calculate_best_matches(
-                list(reference_spectra.values()),
+                reference_spectra,
                 input_spectrum,
             )
             best_matches[f"spectrum-{i}"] = spectrum_best_matches
@@ -137,4 +137,12 @@ class MS2DeepScorePredictor(Predictor):
 
     def _load_unique_spectra(self, spectrum_ids: List[List[str]]):
         unique_ids = set(item for elem in spectrum_ids for item in elem)
-        return self.dgw.read_spectra(list(unique_ids))
+        spectra = self.dgw.read_spectra(list(unique_ids))
+        # TODO: remove this logic once the training flow is done. We should adapt
+        #  self.dgw.read_spectra() instead to take a run_id argument
+        positive_spectra = [
+            spectrum
+            for spectrum in spectra.values()
+            if spectrum.metadata["ionmode"] == "positive"
+        ]
+        return positive_spectra
