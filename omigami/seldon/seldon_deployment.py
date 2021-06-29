@@ -49,7 +49,7 @@ class SeldonDeployment:
         model_uri: str,
         redis_db: str = "",
         overwrite_existing: bool = False,
-    ):
+    ) -> tuple:
         """
         Create a Custom Seldon Deployment to specified namespace
 
@@ -62,7 +62,7 @@ class SeldonDeployment:
 
         Returns
         -------
-            Reference to the model deployment
+            Reference to the model deployment and status of deployment
         """
         existing_deployments = self.list_deployments()
 
@@ -84,13 +84,14 @@ class SeldonDeployment:
             body=deployment_spec,
         )
 
-        (status,) = self.client.get_namespaced_custom_object(
-            **self.seldon_config, name=model_name
-        )["status"]["deploymentStatus"].values()
+        status = self.client.get_namespaced_custom_object_status(
+            **self.seldon_config,
+            name=model_name,
+        )["status"]["state"]
 
         log.info(f"Finished deployment. Deployment status: {status}")
 
-        return res
+        return res, status
 
     def config_deployment_spec(self, model_name: str, model_uri: str, redis_db: str):
         """Config the deployment specification with the model data"""

@@ -65,10 +65,7 @@ def build_minimal_flow(
 
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
-        ms2deepscore_model_path = DownloadPreTrainedModel(
-            flow_parameters.input_dgw,
-            flow_parameters.downloading,
-        )()
+        ms2deepscore_model_path = flow_parameters.downloading.output_path
 
         model_registry = RegisterModel(
             project_name,
