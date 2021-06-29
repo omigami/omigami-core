@@ -36,7 +36,6 @@ def flow_config():
 def test_minimal_flow(flow_config):
     mock_input_dgw = MagicMock(spec=InputDataGateway)
     expected_tasks = {
-        "DownloadPreTrainedModel",
         "RegisterModel",
     }
     flow_params = MinimalFlowParameters(
@@ -91,7 +90,6 @@ def test_run_minimal_flow(
     )
 
     results = flow.run()
-    (d,) = flow.get_tasks("DownloadPreTrainedModel")
 
     assert results.is_successful()
     assert "model" in os.listdir(tmpdir / "mlflow-model-output")

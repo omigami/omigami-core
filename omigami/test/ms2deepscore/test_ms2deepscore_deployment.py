@@ -5,9 +5,9 @@ from typing_extensions import Literal
 from omigami.config import config, MLFLOW_SERVER
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_minimal_flow():
     """
     BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
@@ -18,12 +18,12 @@ def test_deploy_minimal_flow():
     login_config.pop("token")
 
     flow_id = deploy_minimal_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.e0d3744",
+        image="drtools/prefect:omigami-SNAPSHOT.10d5384",
         environment=env,
         model_uri=MS2DEEPSCORE_MODEL_URI,
-        project_name="ms2deepscore-test",
+        project_name="ms2deepscore-dev",
         mlflow_server=MLFLOW_SERVER,
-        flow_name="second-flow-attempt",
+        flow_name="running-dev",
         deploy_model=True,
         overwrite=True,
         auth=True,

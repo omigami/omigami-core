@@ -84,14 +84,20 @@ class SeldonDeployment:
             body=deployment_spec,
         )
 
-        status = self.client.get_namespaced_custom_object_status(
-            **self.seldon_config,
-            name=model_name,
-        )["status"]["state"]
+        status = None
+        while status is None:
+            status = self.client.get_namespaced_custom_object_status(
+                **self.seldon_config,
+                name=model_name,
+            )
+            log.debug(f"deployment crd status  {status}")
 
-        log.info(f"Finished deployment. Deployment status: {status}")
+            if "status" in status:
+                state = status["status"]["state"]
 
-        return res, status
+        log.info(f"Finished deployment. Deployment status: {state}")
+
+        return res, state
 
     def config_deployment_spec(self, model_name: str, model_uri: str, redis_db: str):
         """Config the deployment specification with the model data"""
