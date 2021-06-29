@@ -62,6 +62,7 @@ def test_minimal_flow(flow_config):
     assert task_names == expected_tasks
 
 
+@pytest.mark.skip
 def test_run_minimal_flow(
     tmpdir,
     flow_config,
