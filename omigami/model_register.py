@@ -36,8 +36,6 @@ class MLFlowModelRegister(ABC):
                 code_path=code_path,
                 **kwargs,
             )
-        # This is need to run the flow locally. mlflow.pyfunc.log_model is not
-        # supported without a database.
         except MlflowException:
             mlflow.pyfunc.save_model(
                 path=f"{output_path}/model",
@@ -52,20 +50,17 @@ class MLFlowModelRegister(ABC):
         self,
         model: PythonModel,
         experiment_name: str,
-        path: str,
+        output_path: str,
         conda_env_path: str = None,
     ):
-        # TODO: add docstring
         """
+        Method to register to the MLFlow the model and the necessary metrics
+
         Parameters
         ----------
-        model
-        experiment_name
-        path
-        conda_env_path
-
-        Returns
-        -------
-
+        model: PythonModel: Predictor that will hold the model and score the database
+        experiment_name: MLFlow experiment name
+        output_path: path to save the artifacts:
+        conda_env_path: Conda environment requirements file
         """
         pass

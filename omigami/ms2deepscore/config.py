@@ -1,7 +1,11 @@
 import confuse
 
-config = confuse.Configuration("omigami/ms2deepscore", __name__)
+
+class Configuration(confuse.Configuration):
+    def config_dir(self):
+        return "omigami/ms2deepscore"
 
 
-MS2DEEPSCORE_MODEL_URI = config["model_uri"].get(str)
+config = Configuration("omigami/ms2deepscore", __name__)
+
 MODEL_DIRECTORIES = config["storage"]["model_folder"].get(dict)

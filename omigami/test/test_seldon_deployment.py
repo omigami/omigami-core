@@ -42,8 +42,13 @@ def test_deploy_model(kube, kubecontext):
     seldon_config["namespace"] = kube.namespace
 
     sd = SeldonDeployment(context=kubecontext, seldon_config=seldon_config)
-    res = sd.deploy_model(model_name="spec2vec-test", model_uri="s3://", redis_db="2")
+    (res, status) = sd.deploy_model(
+        model_name="spec2vec-test",
+        model_uri="s3://",
+        redis_db="2",
+    )
 
+    assert status
     assert "spec2vec-test" in sd.list_deployments()
 
 
