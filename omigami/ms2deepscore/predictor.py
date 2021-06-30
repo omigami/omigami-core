@@ -7,6 +7,7 @@ from matchms.Spectrum import Spectrum
 from ms2deepscore.models import load_model as ms2deepscore_load_model
 from ms2deepscore import MS2DeepScore
 from omigami.gateways.redis_spectrum_data_gateway import RedisSpectrumDataGateway
+from omigami.ms2deepscore.helper_classes.spectrum_processor import SpectrumProcessor
 from omigami.predictor import Predictor, SpectrumMatches
 
 log = getLogger(__name__)
@@ -16,6 +17,7 @@ class MS2DeepScorePredictor(Predictor):
     def __init__(self, run_id: str = None):
         super().__init__(RedisSpectrumDataGateway())
         self.run_id = run_id
+        self.spectrum_processor = SpectrumProcessor()
         self.model = None
 
     def load_context(self, context):
@@ -40,13 +42,11 @@ class MS2DeepScorePredictor(Predictor):
         {
             "data": [
                 {
-                    "intensities": List[float],
-                    "mz": List[float],
+                    "peaks_json": List[float],
                     "Precursor_MZ": float,
                 },
                 {
-                    "intensities": List[float],
-                    "mz": List[float],
+                    "peaks_json": List[float],
                     "Precursor_MZ": float,
                 },
             ],
@@ -69,8 +69,7 @@ class MS2DeepScorePredictor(Predictor):
         log.info(f"Loaded {len(reference_spectra)} spectra from the database.")
 
         log.info("Pre-processing data.")
-        query_spectra = self._clean_spectra(data_input)
-        # TODO: clean reference spectra
+        query_spectra = self.spectrum_processor.process_spectra(data_input)
 
         log.info("Calculating best matches.")
         best_matches = {}
@@ -104,15 +103,6 @@ class MS2DeepScorePredictor(Predictor):
 
         return data_input, parameters
 
-    def _clean_spectra(self, data_input: List[Dict]) -> List[Spectrum]:
-        return [
-            Spectrum(
-                np.asarray(spectrum["mz"]),
-                np.asarray(spectrum["intensities"]),
-            )
-            for spectrum in data_input
-        ]
-
     def _calculate_best_matches(
         self,
         references: List[Spectrum],
@@ -145,4 +135,7 @@ class MS2DeepScorePredictor(Predictor):
             for spectrum in spectra.values()
             if spectrum.metadata["ionmode"] == "positive"
         ]
+        # TODO: when the training flow is implemented, the cleaned spectra should be
+        #  saved
+        positive_spectra = self.spectrum_processor.process_spectra(positive_spectra)
         return positive_spectra

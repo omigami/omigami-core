@@ -134,3 +134,5 @@ dmypy.json
 .idea/
 /notebooks/.ipynb_checkpoints/
 **/test-output.xml
+
+/omigami/test/assets/ms2deepscore/pretrained/MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5

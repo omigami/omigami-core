@@ -1,61 +1,81 @@
 import os
 import pandas as pd
 import pytest
-from matchms import Spectrum
+from ms2deepscore import MS2DeepScore
+from ms2deepscore.models import load_model
+
+from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
+from omigami.test.conftest import ASSETS_DIR
+
+
+def get_ms2deepscore_predictor():
+    ms2deepscore_model_path = str(
+        ASSETS_DIR
+        / "ms2deepscore"
+        / "pretrained"
+        / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
+    )
+    ms2deepscore_model = MS2DeepScore(load_model(ms2deepscore_model_path))
+    ms2deepscore_predictor = MS2DeepScorePredictor()
+    ms2deepscore_predictor.model = ms2deepscore_model
+    return ms2deepscore_predictor
 
 
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
+@pytest.mark.skipif(
+    not os.path.exists(
+        str(
+            ASSETS_DIR
+            / "ms2deepscore"
+            / "pretrained"
+            / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
+        )
+    ),
+    reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
+    "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
+)
 def test_predictions(
-    ms2deepscore_payload, ms2deepscore_predictor, redis_full_setup, positive_spectra
+    ms2deepscore_payload,
+    redis_full_setup,
+    positive_spectra_data,
 ):
+    ms2deepscore_predictor = get_ms2deepscore_predictor()
     scores = ms2deepscore_predictor.predict(
         data_input=ms2deepscore_payload,
         context="",
-        mz_range=20,
+        mz_range=1,
     )
 
     assert isinstance(scores, dict)
-    assert len(scores["spectrum-0"]) == 3
-
-
-@pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
-def test_predictions_that_fail(
-    ms2deepscore_payload, ms2deepscore_predictor, redis_full_setup, positive_spectra
-):
-    with pytest.raises(AssertionError):
-        scores = ms2deepscore_predictor.predict(
-            data_input=ms2deepscore_payload,
-            context="",
-            mz_range=100,
-        )
+    assert len(scores["spectrum-1"]) == 4
 
 
 def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
     data_input, parameters = ms2deepscore_predictor._parse_input(ms2deepscore_payload)
 
     assert len(data_input) == 2
-    assert "intensities" in data_input[0]
-    assert "mz" in data_input[0]
+    assert "peaks_json" in data_input[0]
+    assert "Precursor_MZ" in data_input[0]
     assert parameters["n_best"] == 2
 
 
-def test_clean_spectra(ms2deepscore_predictor):
-    data_input = [
-        {"intensities": [80.060677, 337.508301], "mz": [157.0, 230.0]},
-        {"intensities": [81.060677, 339.508301], "mz": [158.0, 240.0]},
-    ]
-    spectra = ms2deepscore_predictor._clean_spectra(data_input)
-
-    assert isinstance(spectra[0], Spectrum)
-
-
-def test_get_best_matches(ms2deepscore_predictor, positive_spectra):
+@pytest.mark.skipif(
+    not os.path.exists(
+        str(
+            ASSETS_DIR
+            / "ms2deepscore"
+            / "pretrained"
+            / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
+        )
+    ),
+    reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
+    "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
+)
+def test_get_best_matches(positive_spectra):
+    ms2deepscore_predictor = get_ms2deepscore_predictor()
     n_best_spectra = 2
     best_matches = {}
     for query in positive_spectra[:2]:

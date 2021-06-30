@@ -1,32 +1,34 @@
 import pytest
-from matchms.importing.load_from_json import as_spectrum
 from ms2deepscore import MS2DeepScore
 from ms2deepscore.models import load_model
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
+from omigami.ms2deepscore.helper_classes.spectrum_processor import SpectrumProcessor
 from omigami.test.conftest import ASSETS_DIR
 
 
 @pytest.fixture
-def positive_spectra(loaded_data):
-    spectra = [
-        as_spectrum(data) for data in loaded_data if data["Ion_Mode"] == "Positive"
-    ]
+def positive_spectra_data(loaded_data):
+    spectra = [data for data in loaded_data if data["Ion_Mode"] == "Positive"]
     return spectra
 
 
 @pytest.fixture
-def ms2deepscore_payload(positive_spectra):
+def positive_spectra(positive_spectra_data):
+    spectra = SpectrumProcessor().process_spectra(positive_spectra_data)
+    return spectra
+
+
+@pytest.fixture
+def ms2deepscore_payload(positive_spectra_data):
     payload = {
         "data": [
             {
-                "intensities": list(positive_spectra[0].peaks.intensities),
-                "mz": list(positive_spectra[0].peaks.mz),
-                "Precursor_MZ": positive_spectra[0].metadata["precursor_mz"],
+                "peaks_json": positive_spectra_data[0]["peaks_json"],
+                "Precursor_MZ": positive_spectra_data[0]["Precursor_MZ"],
             },
             {
-                "intensities": list(positive_spectra[1].peaks.intensities),
-                "mz": list(positive_spectra[1].peaks.mz),
-                "Precursor_MZ": positive_spectra[1].metadata["precursor_mz"],
+                "peaks_json": positive_spectra_data[1]["peaks_json"],
+                "Precursor_MZ": positive_spectra_data[1]["Precursor_MZ"],
             },
         ],
         "parameters": {"n_best": 2, "include_metadata": ["Compound_name"]},
