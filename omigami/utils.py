@@ -4,6 +4,8 @@ from drfs import DRPath
 from prefect.engine.result import Result
 from prefect.engine.results import S3Result, LocalResult
 
+from omigami.config import DEFAULT_PREFECT_TASK_CONFIG
+
 
 def add_click_options(options):
     """
@@ -49,3 +51,8 @@ def create_prefect_result_from_path(
         "result": protocol_to_result[protocol](directory, **kwargs),
         "target": file_name,
     }
+
+
+def merge_prefect_task_configs(additional_config: dict) -> dict:
+    """helper function to merge DEFAULT CONFIG with additional task configurations"""
+    return {**DEFAULT_PREFECT_TASK_CONFIG.copy(), **additional_config}

@@ -1,7 +1,9 @@
 import pytest
 from typing_extensions import Literal
 
+
 from omigami.config import config, MLFLOW_SERVER
+
 from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.spec2vec.deployment import (
     deploy_training_flow,
@@ -23,7 +25,7 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.bc19d2b",
+        image="drtools/prefect:omigami-SNAPSHOT.e568c792",
         iterations=15,
         window=500,
         intensity_weighting_power=0.5,
@@ -39,6 +41,7 @@ def test_deploy_training_flow():
         mlflow_server=MLFLOW_SERVER,
         flow_name="training-flow/positive",
         deploy_model=True,
+        overwrite=True,
         auth=True,
         **login_config,
     )

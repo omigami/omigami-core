@@ -1,15 +1,14 @@
 import click
 
 from omigami.config import (
-    SOURCE_URI_PARTIAL_GNPS,
     API_SERVER_URLS,
     PROJECT_NAME,
     S3_BUCKETS,
-    MODEL_DIRECTORIES,
     MLFLOW_SERVER,
 )
+from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS, MODEL_DIRECTORIES
 from omigami.spec2vec.deployment import deploy_training_flow
-from omigami.utils import add_options
+from omigami.utils import add_click_options
 
 configuration_options = [
     click.option("--project-name", "-p", default=PROJECT_NAME),
@@ -44,8 +43,8 @@ def cli():
 @click.option("--window", type=int, default=500)
 @click.option("--intensity-weighting-power", type=float, default=0.5)
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
-@add_options(auth_options)
-@add_options(configuration_options)
+@add_click_options(auth_options)
+@add_click_options(configuration_options)
 def deploy_training_flow_cli(*args, **kwargs):
     _ = deploy_training_flow(*args, **kwargs)
 

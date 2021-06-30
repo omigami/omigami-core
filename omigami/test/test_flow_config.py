@@ -4,7 +4,7 @@ from prefect import Flow
 from prefect.schedules import Schedule
 
 from omigami.spec2vec.config import DATASET_IDS
-from omigami.spec2vec.flows.config import (
+from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
