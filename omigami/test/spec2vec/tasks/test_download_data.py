@@ -7,11 +7,11 @@ from prefect import Flow
 
 from omigami.data_gateway import InputDataGateway
 from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.spec2vec.flows.utils import create_result
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.tasks import DownloadData
 from omigami.spec2vec.tasks.download_data import DownloadParameters
 from omigami.test.conftest import ASSETS_DIR
+from omigami.utils import create_prefect_result_from_path
 
 
 def test_download_data(mock_default_config, tmpdir):
@@ -82,7 +82,7 @@ def test_download_existing_data_s3(mock_default_config):
         download = DownloadData(
             input_dgw,
             download_params,
-            **create_result(download_params.download_path),
+            **create_prefect_result_from_path(download_params.download_path),
         )()
 
     res = test_flow.run()

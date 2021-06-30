@@ -1,51 +1,47 @@
-from typing import Union, Dict
+from typing import Dict
 
 import mlflow
-from gensim.models import Word2Vec
+from mlflow.pyfunc import PythonModel
 from prefect import Task
 
 from omigami.model_register import MLFlowModelRegister
-from omigami.spec2vec.predictor import Predictor
+from omigami.ms2deepscore.predictor import Predictor
 from omigami.utils import merge_prefect_task_configs
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 
 
 class RegisterModel(Task):
+    """
+    Prefect task to register a model to MLFlow
+    """
+
     def __init__(
         self,
         experiment_name: str,
-        path: str,
-        n_decimals: int,
-        intensity_weighting_power: Union[float, int],
-        allowed_missing_percentage: Union[float, int],
+        mlflow_output_path: str,
         server_uri: str,
         **kwargs,
     ):
         self._experiment_name = experiment_name
-        self._path = path
-        self._n_decimals = n_decimals
-        self._intensity_weighting_power = intensity_weighting_power
-        self._allowed_missing_percentage = allowed_missing_percentage
+        self._mlflow_output_path = mlflow_output_path
         self._server_uri = server_uri
+
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, model: Word2Vec = None) -> Dict[str, str]:
+    def run(self, model_path: str) -> Dict[str, str]:
         self.logger.info(
-            f"Registering model to {self._server_uri} on URI: {self._path}."
+            f"Registering model to {self._server_uri} on URI: {self._mlflow_output_path}."
         )
+
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
-            Predictor(
-                model,
-                self._n_decimals,
-                self._intensity_weighting_power,
-                self._allowed_missing_percentage,
-            ),
+            Predictor(),
             self._experiment_name,
-            self._path,
+            self._mlflow_output_path,
             CONDA_ENV_PATH,
+            artifacts={"ms2deepscore_model_path": model_path},
         )
         run = mlflow.get_run(run_id)
         self.logger.info(f"{run.info}")
@@ -55,32 +51,49 @@ class RegisterModel(Task):
 
 
 class ModelRegister(MLFlowModelRegister):
+    """
+    Class that implements MLFLowModelRegister to register ms2deepscore model to MLFlow
+    """
+
     def register_model(
         self,
-        model: Predictor,
+        model: PythonModel,
         experiment_name: str,
-        output_path: str = None,
+        output_path: str,
         conda_env_path: str = None,
-    ) -> str:
+        artifacts: Dict = None,
+        **kwargs,
+    ):
+        """
+        Method to register the MS2DeepScore to MLFlow.
+
+        Parameters
+        ----------
+        model: PythonModel class to execute the predictions
+        experiment_name: MLFlow Experiment name
+        output_path: path to save the artifacts
+        conda_env_path: Conda environment requirements file
+        artifacts: Dictionary of artifacts to be stored along with the model
+
+        Returns
+        -------
+            Return the MLFLow run ID
+        """
         experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
         with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
-            params = {
-                "n_decimals_for_documents": model.n_decimals,
-                "intensity_weighting_power": model.intensity_weighting_power,
-                "allowed_missing_percentage": model.allowed_missing_percentage,
-                "iter": model.model.epochs,
-                "window": model.model.window,
-            }
-            mlflow.log_params(params)
             run_id = run.info.run_id
             model.set_run_id(run_id)
+
             self.log_model(
                 model,
                 experiment_name,
                 output_path=output_path,
-                code_path=["omigami"],
+                code_path=[
+                    "omigami",
+                ],
                 conda_env_path=conda_env_path,
+                artifacts=artifacts,
+                **kwargs,
             )
 
-            mlflow.log_metric("alpha", model.model.alpha)
             return run_id

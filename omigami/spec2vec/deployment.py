@@ -13,15 +13,15 @@ from omigami.config import (
     S3_BUCKETS,
     IonModes,
 )
+from omigami.flow_config import (
+    make_flow_config,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
 from omigami.spec2vec.config import (
     SOURCE_URI_PARTIAL_GNPS,
     MODEL_DIRECTORIES,
     DATASET_IDS,
-)
-from omigami.spec2vec.flows.config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
 )
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,

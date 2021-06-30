@@ -4,9 +4,9 @@ from typing import List
 from drfs import DRPath
 from prefect import Task
 
-from omigami.config import IonModes, merge_prefect_task_configs
+from omigami.config import IonModes
 from omigami.data_gateway import InputDataGateway
-from omigami.utils import create_prefect_result_from_path
+from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
 
 @dataclass

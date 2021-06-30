@@ -45,7 +45,7 @@ def make_flow_config(
     image: str,
     storage_type: PrefectStorageMethods,
     executor_type: PrefectExecutorMethods,
-    redis_db: str,
+    redis_db: str = "",
     environment: str = "dev",
     schedule: timedelta = None,
 ) -> FlowConfig:

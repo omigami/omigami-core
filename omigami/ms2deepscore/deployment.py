@@ -1,16 +1,6 @@
 from datetime import timedelta
 from typing import Optional
 
-from omigami.ms2deep.flows.config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
-from omigami.ms2deep.flows.prediction_flow import (
-    build_prediction_flow,
-    PredictionFlowParameters,
-)
-from omigami.ms2deep.gateways.input_data_gateway import FSInputDataGateway
 from prefect import Client
 from typing_extensions import Literal
 
@@ -18,18 +8,28 @@ from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     API_SERVER_URLS,
     PROJECT_NAME,
-    MODEL_DIRECTORIES,
-    S3_BUCKETS,
+    MLFLOW_SERVER,
 )
+from omigami.flow_config import (
+    make_flow_config,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
+from omigami.ms2deepscore.config import (
+    MODEL_DIRECTORIES,
+)
+from omigami.ms2deepscore.flows.minimal_flow import (
+    build_minimal_flow,
+    MinimalFlowParameters,
+)
+from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 
 
-def deploy_prediction_flow(
+def deploy_minimal_flow(
     image: str,
-    chunk_size: int = int(1e8),
-    skip_if_exists: bool = True,
-    model_uri: str = MODEL_URI,
     project_name: str = PROJECT_NAME,
-    flow_name: str = "ms2deepscore-prediction-flow",
+    mlflow_server: str = MLFLOW_SERVER,
+    flow_name: str = "ms2deepscore-minimal-flow",
     environment: Literal["dev", "prod"] = "dev",
     deploy_model: bool = False,
     overwrite: bool = False,
@@ -40,13 +40,14 @@ def deploy_prediction_flow(
     password: Optional[str] = None,
 ):
     """
-    Deploys a model prediction flow to Prefect cloud and optionally deploys it as a Seldon deployment.
+    Deploys a model minimal flow to Prefect cloud and optionally deploys it as a
+    Seldon deployment.
 
     1) authenticate user credentials using the auth service endpoint
     2) process database and filesystem configs
     3) instantiate gateways and task parameters
     4) create prefect flow configuration
-    5) builds the prediction flow graph
+    5) builds the minimal flow graph
     6) pushes the flow to prefect cloud
 
     """
@@ -66,19 +67,14 @@ def deploy_prediction_flow(
     if environment not in ["dev", "prod"]:
         raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
-    model_output_dir = MODEL_DIRECTORIES[environment]
-
-    output_dir = S3_BUCKETS[environment]
+    mlflow_output_dir = MODEL_DIRECTORIES[environment]["mlflow"]
 
     input_dgw = FSInputDataGateway()
 
-    flow_parameters = PredictionFlowParameters(
+    flow_parameters = MinimalFlowParameters(
         input_dgw=input_dgw,
-        model_uri=model_uri,
-        output_dir=output_dir,
-        chunk_size=chunk_size,
-        skip_if_exists=skip_if_exists,
         overwrite=overwrite,
+        environment=environment,
     )
 
     flow_config = make_flow_config(
@@ -89,22 +85,23 @@ def deploy_prediction_flow(
         schedule=schedule,
     )
 
-    flow = build_prediction_flow(
+    flow = build_minimal_flow(
         project_name,
         flow_name,
         flow_config,
         flow_parameters,
-        model_output_dir=model_output_dir,
+        mlflow_output_dir=mlflow_output_dir,
+        mlflow_server=mlflow_server,
         deploy_model=deploy_model,
     )
 
-    prediction_flow_id = client.register(
+    minimal_flow_id = client.register(
         flow,
         project_name=project_name,
     )
 
     flow_run_id = client.create_flow_run(
-        flow_id=prediction_flow_id,
+        flow_id=minimal_flow_id,
         run_name=f"run {project_name}",
     )
 
