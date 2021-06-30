@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 from matchms import Spectrum
 from matchms.filtering import (
@@ -11,16 +11,17 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 class SpectrumProcessor(SpectrumCleaner):
-    def process_spectra(self, spectrum_dicts: List[Dict]):
+    def process_spectra(self, spectra: Union[List[Dict], List[Spectrum]]):
         processed_spectrum_dicts = []
-        for spectrum_dict in spectrum_dicts:
-            spectrum = as_spectrum(spectrum_dict)
+        for spectrum in spectra:
+            if type(spectrum) == dict:
+                spectrum = as_spectrum(spectrum)
             if spectrum is not None:
                 spectrum = self._apply_filters(spectrum)
                 spectrum = self._harmonize_spectrum(spectrum)
-                spectrum = self._convert_metadata(spectrum)
+                # spectrum = self._convert_metadata(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
-                spectrum = self._check_inchikey(spectrum)
+                # spectrum = self._check_inchikey(spectrum)
 
                 if spectrum is not None:
                     processed_spectrum_dicts.append(spectrum)
@@ -29,7 +30,7 @@ class SpectrumProcessor(SpectrumCleaner):
 
     @staticmethod
     def _apply_ms2deepscore_filters(spectrum: Spectrum) -> Spectrum:
-        """We here remove spectra with less than 5 peaks with m/z values
+        """Remove spectra with less than 5 peaks with m/z values
         in the range between 10.0 and 1000.0 Da
         """
         spectrum = select_by_mz(spectrum, mz_from=10.0, mz_to=1000.0)
