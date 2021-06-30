@@ -116,7 +116,9 @@ class MS2DeepScorePredictor(Predictor):
             self.model,
         )
         all_scores = scores.scores_by_query(query, sort=True)
-        all_scores = [(em, sc) for em, sc in all_scores if not np.isnan(sc)]
+        all_scores = [
+            (spectrum, score) for spectrum, score in all_scores if not np.isnan(score)
+        ]
         spectrum_best_scores = all_scores[:n_best_spectra]
         spectrum_best_matches = {}
         for spectrum_match in spectrum_best_scores:
