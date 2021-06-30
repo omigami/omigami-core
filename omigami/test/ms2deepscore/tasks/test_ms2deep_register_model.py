@@ -3,7 +3,7 @@ from pathlib import Path
 import mlflow
 from prefect import Flow
 
-from omigami.ms2deepscore.predictor import Predictor
+from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.ms2deepscore.tasks.register_model import ModelRegister, RegisterModel
 
 os.chdir(Path(__file__).parents[4])
@@ -14,7 +14,7 @@ def test_register_model(ms2deepscore_model_path, tmpdir):
     model_register = ModelRegister(path)
 
     _ = model_register.register_model(
-        model=Predictor(),
+        model=MS2DeepScorePredictor(),
         experiment_name="experiment",
         output_path=path,
         artifacts={"ms2deepscore_model_path": ms2deepscore_model_path},
@@ -33,7 +33,7 @@ def test_load_registered_model(
     model_register = ModelRegister(path)
 
     model_register.register_model(
-        model=Predictor(),
+        model=MS2DeepScorePredictor(),
         experiment_name="experiment",
         output_path=path,
         artifacts={"ms2deepscore_model_path": ms2deepscore_model_path},

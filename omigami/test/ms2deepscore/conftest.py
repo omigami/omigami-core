@@ -3,7 +3,7 @@ from matchms.importing import load_from_mgf
 from ms2deepscore import MS2DeepScore
 from ms2deepscore.models import load_model
 
-from omigami.ms2deepscore.predictor import Predictor
+from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.test.conftest import ASSETS_DIR
 
 
@@ -28,6 +28,7 @@ def ms2deepscore_payload(spectra):
                 "mz": query.peaks.mz,
             },
         ],
+        "parameters": {"n_best": 2, "include_metadata": ["Compound_name"]},
     }
     return payload
 
@@ -63,7 +64,7 @@ def ms2deepscore_model(ms2deepscore_model_path):
 
 @pytest.fixture()
 def ms2deepscore_predictor(ms2deepscore_model):
-    predictor = Predictor()
+    predictor = MS2DeepScorePredictor()
     predictor.model = ms2deepscore_model
 
     return predictor

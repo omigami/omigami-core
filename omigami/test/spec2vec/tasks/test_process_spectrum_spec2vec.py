@@ -4,10 +4,12 @@ from unittest.mock import MagicMock
 import pytest
 from prefect import Flow
 
-from omigami.data_gateway import SpectrumDataGateway
+from omigami.gateways.data_gateway import SpectrumDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 from omigami.spec2vec.tasks import ProcessSpectrumParameters
 from omigami.spec2vec.tasks.process_spectrum import ProcessSpectrum
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
@@ -38,7 +40,7 @@ def test_process_spectrum_calls(local_gnps_small_json, spectrum_ids):
 )
 @pytest.mark.slow
 def test_process_spectrum(local_gnps_small_json, spectrum_ids, mock_default_config):
-    spectrum_gtw = RedisSpectrumDataGateway()
+    spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
     spectrum_gtw.delete_spectra(spectrum_ids)
     parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
     input_gtw = FSInputDataGateway()
@@ -58,7 +60,7 @@ def test_process_spectrum(local_gnps_small_json, spectrum_ids, mock_default_conf
 )
 @pytest.mark.slow
 def test_process_spectrum_map(local_gnps_small_json, spectrum_ids, mock_default_config):
-    spectrum_gtw = RedisSpectrumDataGateway()
+    spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
     input_gtw = FSInputDataGateway()
     parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
     chunked_paths = [

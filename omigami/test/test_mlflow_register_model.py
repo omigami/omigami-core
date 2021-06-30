@@ -5,7 +5,7 @@ from pathlib import Path
 import mlflow
 from mlflow.pyfunc import PythonModel
 from omigami.model_register import MLFlowModelRegister
-from omigami.spec2vec.predictor import Predictor
+from omigami.spec2vec.predictor import Spec2VecPredictor
 
 os.chdir(Path(__file__).parents[2])
 
@@ -39,7 +39,7 @@ def test_save_model(word2vec_model, tmpdir):
     model_register = MockABCModelRegister(path)
 
     model_register.log_model(
-        model=Predictor(
+        model=Spec2VecPredictor(
             word2vec_model,
             n_decimals=2,
             intensity_weighting_power=0.5,
@@ -65,7 +65,7 @@ def test_log_model(word2vec_model, tmpdir):
 
     with mlflow.start_run(experiment_id=exp_id, nested=True):
         model_register.log_model(
-            model=Predictor(
+            model=Spec2VecPredictor(
                 word2vec_model,
                 n_decimals=2,
                 intensity_weighting_power=0.5,

@@ -6,7 +6,7 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.data_gateway import SpectrumDataGateway
+from omigami.gateways.data_gateway import SpectrumDataGateway
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -17,7 +17,9 @@ from omigami.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
 )
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_gateway import RedisSpectrumDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
@@ -91,7 +93,7 @@ def test_run_training_flow(
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
     input_dgw = FSInputDataGateway()
-    spectrum_dgw = RedisSpectrumDataGateway()
+    spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
     flow_params = TrainingFlowParameters(
         input_dgw=input_dgw,
         spectrum_dgw=spectrum_dgw,

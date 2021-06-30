@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import List, Iterable, Any, Set
+from typing import List, Iterable, Any, Set, Dict
 
+from matchms import Spectrum
 from spec2vec import SpectrumDocument
 
 from omigami.spec2vec.entities.data_models import SpectrumInputData
@@ -86,4 +87,17 @@ class SpectrumDataGateway(ABC):
     @abstractmethod
     def delete_spectra(self, spectrum_ids: List[str]):
         """Deletes spectra using their IDs."""
+        pass
+
+    @abstractmethod
+    def read_spectra(self, spectrum_ids: Iterable[str] = None) -> Dict[str, Spectrum]:
+        """Read the spectra information from spectra IDs."""
+        pass
+
+    @abstractmethod
+    def get_spectrum_ids_within_range(
+        self, min_mz: float = 0, max_mz: float = -1
+    ) -> List[str]:
+        """Get the spectrum IDs of spectra stored on redis that have a Precursor_MZ
+        within the given range. Return a list spectrum IDs."""
         pass
