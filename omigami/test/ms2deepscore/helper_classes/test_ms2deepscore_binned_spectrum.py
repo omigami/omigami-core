@@ -1,9 +1,25 @@
+import os
+
 import pytest
 from matchms import calculate_scores
 from ms2deepscore import MS2DeepScore
 import numpy as np
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
+)
+from omigami.test.conftest import ASSETS_DIR
+
+pytest.mark.skipif(
+    not os.path.exists(
+        str(
+            ASSETS_DIR
+            / "ms2deepscore"
+            / "pretrained"
+            / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
+        )
+    ),
+    reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
+    "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
 )
 
 
