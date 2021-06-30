@@ -9,11 +9,11 @@ from spec2vec.model_building import (
     learning_rates_to_gensim_style,
 )
 
-from omigami.config import merge_prefect_task_configs
 from omigami.data_gateway import SpectrumDataGateway
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
+from omigami.utils import merge_prefect_task_configs
 
 
 @dataclass

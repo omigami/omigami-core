@@ -1,6 +1,12 @@
 import confuse
 
-config = confuse.Configuration("omigami/spec2vec", __name__)
+
+class Configuration(confuse.Configuration):
+    def config_dir(self):
+        return "omigami/spec2vec"
+
+
+config = Configuration("omigami/spec2vec", __name__)
 
 SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)

@@ -18,7 +18,7 @@ from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
     DATASET_IDS,
 )
-from omigami.spec2vec.flows.config import (
+from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,

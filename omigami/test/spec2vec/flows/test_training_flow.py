@@ -5,9 +5,9 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.data_gateway import SpectrumDataGateway
 from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.spec2vec.flows.config import (
+from omigami.data_gateway import SpectrumDataGateway
+from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,

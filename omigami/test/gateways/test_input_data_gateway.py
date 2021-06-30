@@ -29,7 +29,7 @@ def test_load_gnps(local_gnps_small_json):
         SOURCE_URI_COMPLETE_GNPS,
     ],
 )
-def test_download_and_serialize_to_local(uri, tmpdir):
+def test_download_gnps_and_serialize_to_local(uri, tmpdir):
     _ = FSInputDataGateway().download_gnps(uri=uri, output_path=tmpdir / "test-ds")
 
     assert (tmpdir / "test-ds").exists()

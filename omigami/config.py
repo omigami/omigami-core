@@ -20,7 +20,7 @@ S3_BUCKETS = config["storage"]["s3_bucket"].get(dict)
 
 REDIS_DATABASES = {
     "dev": {"small": "2", "10k": "1", "complete": "0"},
-    "prod": {"complete": "0"},
+    "prod": {"small": "2", "complete": "0"},
 }
 
 
@@ -32,8 +32,3 @@ IonModes = Literal["positive", "negative"]
 DEFAULT_PREFECT_TASK_CONFIG = dict(
     max_retries=3, retry_delay=datetime.timedelta(seconds=10)
 )
-
-
-def merge_prefect_task_configs(kwargs):
-    """helper function to merge DEFAULT CONFIG with kwargs"""
-    return {k: v for k, v in {**DEFAULT_PREFECT_TASK_CONFIG.copy(), **kwargs}.items()}
