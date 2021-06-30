@@ -3,10 +3,12 @@ from typing import Union, List, Dict, Tuple
 
 import numpy as np
 from matchms import calculate_scores
-from matchms.Spectrum import Spectrum
 from ms2deepscore.models import load_model as ms2deepscore_load_model
-from ms2deepscore import MS2DeepScore
+from ms2deepscore import BinnedSpectrum
 from omigami.gateways.redis_spectrum_data_gateway import RedisSpectrumDataGateway
+from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
+    MS2DeepScoreBinnedSpectrum,
+)
 from omigami.ms2deepscore.helper_classes.spectrum_processor import SpectrumProcessor
 from omigami.predictor import Predictor, SpectrumMatches
 
@@ -25,7 +27,7 @@ class MS2DeepScorePredictor(Predictor):
         try:
             log.info(f"Loading model from {model_path}")
             siamese_model = ms2deepscore_load_model(model_path)
-            self.model = MS2DeepScore(siamese_model)
+            self.model = MS2DeepScoreBinnedSpectrum(siamese_model)
         except FileNotFoundError:
             log.error(f"Could not find MS2DeepScore model in {model_path}")
 
@@ -63,19 +65,19 @@ class MS2DeepScorePredictor(Predictor):
 
         log.info("Loading reference spectra.")
         reference_spectra_ids = self._get_ref_ids_from_data_input(data_input, mz_range)
-        log.info(f"Loaded {len(reference_spectra_ids)} IDs from the database.")
-
         reference_spectra = self._load_unique_spectra(reference_spectra_ids)
         log.info(f"Loaded {len(reference_spectra)} spectra from the database.")
 
         log.info("Pre-processing data.")
         query_spectra = self.spectrum_processor.process_spectra(data_input)
+        query_binned_spectra = self.model.model.spectrum_binner.transform(query_spectra)
 
         log.info("Calculating best matches.")
         best_matches = {}
-        for i, input_spectrum in enumerate(query_spectra):
+        for i, input_spectrum in enumerate(query_binned_spectra):
             spectrum_best_matches = self._calculate_best_matches(
                 reference_spectra,
+                reference_spectra_ids[i],
                 input_spectrum,
             )
             best_matches[f"spectrum-{i}"] = spectrum_best_matches
@@ -105,11 +107,16 @@ class MS2DeepScorePredictor(Predictor):
 
     def _calculate_best_matches(
         self,
-        references: List[Spectrum],
-        query: Spectrum,
+        all_references: List[BinnedSpectrum],
+        references_ids: List[str],
+        query: BinnedSpectrum,
         n_best_spectra: int = 10,
     ) -> SpectrumMatches:
-
+        references = [
+            reference
+            for reference in all_references
+            if reference.metadata["spectrum_id"] in references_ids
+        ]
         scores = calculate_scores(
             references,
             [query],
@@ -137,7 +144,18 @@ class MS2DeepScorePredictor(Predictor):
             for spectrum in spectra.values()
             if spectrum.metadata["ionmode"] == "positive"
         ]
-        # TODO: when the training flow is implemented, the cleaned spectra should be
-        #  saved
+        # TODO: when the training flow is implemented, the cleaned and binned spectra
+        #  should be saved
         positive_spectra = self.spectrum_processor.process_spectra(positive_spectra)
-        return positive_spectra
+        positive_spectra_ids = [
+            spectrum.metadata["spectrum_id"] for spectrum in positive_spectra
+        ]
+        positive_binned_spectra = self.model.model.spectrum_binner.transform(
+            positive_spectra
+        )
+        positive_binned_spectra = [
+            spectrum.set("spectrum_id", positive_spectra_ids[i])
+            for i, spectrum in enumerate(positive_binned_spectra)
+        ]
+
+        return positive_binned_spectra
