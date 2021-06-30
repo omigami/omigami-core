@@ -50,7 +50,9 @@ def test_predictions(
     )
 
     assert isinstance(scores, dict)
-    assert len(scores["spectrum-1"]) == 4
+    assert len(scores["spectrum-0"]) == 4
+    scores_df = pd.DataFrame(scores["spectrum-1"]).T
+    assert scores_df["score"].between(0, 1).all()
 
 
 def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
