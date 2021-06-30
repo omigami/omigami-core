@@ -27,6 +27,21 @@ def test_process_spectra(loaded_data, spectrum_processor):
     assert cleaned_data[0].get("spectrum_id")
 
 
+def test_process_spectra_already_converted_type_spectrum(
+    loaded_data, spectrum_processor
+):
+    converted_spectra_data = [as_spectrum(s) for s in loaded_data]
+    cleaned_data = spectrum_processor.process_spectra(converted_spectra_data)
+
+    assert isinstance(cleaned_data[0], Spectrum)
+
+    # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
+    assert cleaned_data[0].get("inchi") not in ["N/A", "NA", "n/a", None]
+    assert isinstance(cleaned_data[0].get("charge"), int)
+    assert cleaned_data[0].get("parent_mass")
+    assert cleaned_data[0].get("spectrum_id")
+
+
 def test_apply_ms2deepscore_filters(spectrum, spectrum_processor):
     mz_from = 10.0
     mz_to = 1000.0
