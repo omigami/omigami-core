@@ -1,5 +1,5 @@
 ##############################
-Spec2Vec on MLOps architecture
+Omigami on MLOps architecture
 ##############################
 
 Development Environment
@@ -43,19 +43,6 @@ In order to publish this Docker Image, there's an auxiliary script to do this.
 To run it, execute::
 
     bash deploy.sh
-
-How to set up a local Feast
--------------------------------------
-::
-
-    git clone https://github.com/feast-dev/feast.git
-    cd feast/infra/docker-compose
-    cp .env.sample .env
-
-And to run it:
-::
-
-    docker-compose pull && docker-compose up -d
 
 How to run tests that require Redis locally
 -------------------------------------------
@@ -111,6 +98,34 @@ By accessing the external API with the user interface at:
     https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/doc/
 
 Or by querying the prediction API via the python request library (see notebook)
+
+
+The input data should look like:
+::
+
+    {
+       "data": {
+          "ndarray": {
+             "parameters":
+                 {
+                     "n_best_spectra": 10,
+                     "include_metadata": ["Compound_name"]
+                 },
+             "data":
+                 [
+                     {"peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
+                      "Precursor_MZ": "900"},
+                     {"peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
+                      "Precursor_MZ": "800"}
+                 ]
+          }
+       }
+    }
+
+- `peaks_json` and `Precursor_MZ` are the only mandatory fields.
+- `Precursor_MZ` can be a string of int or a string of float. i.e. "800" or "800.00"
+- The optional `n_best_spectra` parameter controls the number of predicted spectra returned per set of peaks (10 by default).
+- The optional `include_metadata` parameter controls the result spectra metadata returned to the user.
 
 The available endpoints are:
 
