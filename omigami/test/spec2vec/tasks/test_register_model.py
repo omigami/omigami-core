@@ -23,4 +23,4 @@ def test_register_model(word2vec_model, tmpdir):
     assert run_id
     assert os.path.exists(f"{path}/model/python_model.pkl")
     assert os.path.exists(f"{path}/model/conda.yaml")
-    assert "spec2vec" in os.listdir(f"{path}/model/code")
+    assert "spec2vec" in os.listdir(f"{path}/model/code/omigami")

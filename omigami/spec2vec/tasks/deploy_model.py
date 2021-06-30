@@ -39,7 +39,7 @@ class DeployModel(Task):
             f" '{self._environment}' and namespace '{SELDON_PARAMS['namespace']}'."
         )
 
-        res = sd.deploy_model(
+        res, status = sd.deploy_model(
             model_name=self._model_name,
             model_uri=model_uri,
             redis_db=self._redis_db,

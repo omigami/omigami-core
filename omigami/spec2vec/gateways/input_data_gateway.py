@@ -65,21 +65,6 @@ class FSInputDataGateway(InputDataGateway):
         output_path = DRPath(output_path)
         self._download_and_serialize(uri, output_path)
 
-    def download_ms2deep_model(self, uri: str, output_path: str):
-        if self.fs is None:
-            self.fs = get_fs(output_path)
-        try:
-            req = requests.get(url=uri)
-            req.raise_for_status()
-            logging.info(f"Response: {req.status_code} - {req.reason}")
-            logging.info(f"Response: {req.content}")
-
-            with self.fs.open(DRPath(output_path), mode="wb") as f:
-                f.write(req.content)
-        except Exception:
-            logging.error("Unable to download ms2deepscore model")
-            raise Exception
-
     def _download_and_serialize(self, uri: str, output_path: DRPath):
         """solution is from https://stackoverflow.com/a/16696317/15485553"""
         chunk_size = 10 * 1024 * 1024

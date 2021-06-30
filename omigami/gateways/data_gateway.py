@@ -39,10 +39,6 @@ class InputDataGateway(ABC):
     def serialize_to_file(self, path: str, object: Any) -> bool:
         pass
 
-    @abstractmethod
-    def download_ms2deep_model(self, uri: str, output_path: str):
-        pass
-
 
 class SpectrumDataGateway(ABC):
     @abstractmethod

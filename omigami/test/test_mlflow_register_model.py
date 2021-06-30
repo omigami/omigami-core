@@ -47,7 +47,7 @@ def test_save_model(word2vec_model, tmpdir):
         ),
         experiment_name="experiment",
         output_path=path,
-        code_path=["omigami/spec2vec"],
+        code_path=["omigami"],
     )
 
     assert os.path.exists(f"{path}/model/python_model.pkl")
@@ -72,7 +72,7 @@ def test_log_model(word2vec_model, tmpdir):
                 allowed_missing_percentage=5.0,
             ),
             experiment_name="experiment",
-            code_path=["omigami/spec2vec"],
+            code_path=["omigami"],
         )
 
         path = mlflow.get_artifact_uri()

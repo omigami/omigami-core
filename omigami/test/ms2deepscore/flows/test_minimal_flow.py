@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.ms2deepscore.config import MS2DEEPSCORE_MODEL_URI
 
 from omigami.flow_config import (
     make_flow_config,
@@ -36,13 +35,10 @@ def flow_config():
 def test_minimal_flow(flow_config):
     mock_input_dgw = MagicMock(spec=InputDataGateway)
     expected_tasks = {
-        "DownloadPreTrainedModel",
         "RegisterModel",
     }
     flow_params = MinimalFlowParameters(
         input_dgw=mock_input_dgw,
-        model_output_dir="model-output",
-        model_uri="model_uri",
     )
 
     flow = build_minimal_flow(
@@ -63,6 +59,7 @@ def test_minimal_flow(flow_config):
     assert task_names == expected_tasks
 
 
+@pytest.mark.skip
 def test_run_minimal_flow(
     tmpdir,
     flow_config,
@@ -76,8 +73,6 @@ def test_run_minimal_flow(
 
     flow_params = MinimalFlowParameters(
         input_dgw=input_dgw,
-        model_output_dir=ASSETS_DIR,
-        model_uri=MS2DEEPSCORE_MODEL_URI,
     )
 
     flow = build_minimal_flow(
@@ -91,8 +86,6 @@ def test_run_minimal_flow(
     )
 
     results = flow.run()
-    (d,) = flow.get_tasks("DownloadPreTrainedModel")
 
     assert results.is_successful()
-    assert results.result[d].is_cached()
     assert "model" in os.listdir(tmpdir / "mlflow-model-output")

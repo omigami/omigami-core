@@ -25,7 +25,7 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     flow_id = deploy_training_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.bc19d2b",
+        image="drtools/prefect:omigami-SNAPSHOT.e568c792",
         iterations=15,
         window=500,
         intensity_weighting_power=0.5,

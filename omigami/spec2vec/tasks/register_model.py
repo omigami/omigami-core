@@ -78,7 +78,7 @@ class ModelRegister(MLFlowModelRegister):
                 model,
                 experiment_name,
                 output_path=output_path,
-                code_path=["omigami/spec2vec"],
+                code_path=["omigami"],
                 conda_env_path=conda_env_path,
             )
 
