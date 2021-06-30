@@ -36,6 +36,8 @@ def test_apply_ms2deepscore_filters(spectrum, spectrum_processor):
     assert filtered_spectrum is not None
     assert all([mz_from <= mz <= mz_to for mz in filtered_spectrum.peaks.mz])
 
+
+def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processor):
     spectrum_with_not_enough_peaks = Spectrum(
         mz=spectrum.peaks.mz[:4], intensities=spectrum.peaks.intensities[:4]
     )

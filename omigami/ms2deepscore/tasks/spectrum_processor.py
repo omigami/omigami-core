@@ -29,7 +29,7 @@ class SpectrumProcessor(SpectrumCleaner):
 
     @staticmethod
     def _apply_ms2deepscore_filters(spectrum: Spectrum) -> Spectrum:
-        """We here remove spectra with less than 5 peaks with m/z values
+        """Remove spectra with less than 5 peaks with m/z values
         in the range between 10.0 and 1000.0 Da
         """
         spectrum = select_by_mz(spectrum, mz_from=10.0, mz_to=1000.0)
