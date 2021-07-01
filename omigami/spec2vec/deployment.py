@@ -29,7 +29,7 @@ from omigami.spec2vec.flows.training_flow import (
 )
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    RedisSpectrumDataGateway,
+    Spec2VecRedisSpectrumDataGateway,
 )
 
 
@@ -96,7 +96,7 @@ def deploy_training_flow(
     output_dir = S3_BUCKETS[environment]
 
     input_dgw = FSInputDataGateway()
-    spectrum_dgw = RedisSpectrumDataGateway()
+    spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
 
     flow_parameters = TrainingFlowParameters(
         input_dgw=input_dgw,

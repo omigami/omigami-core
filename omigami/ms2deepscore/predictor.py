@@ -1,20 +1,18 @@
 from logging import getLogger
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Tuple
 
 import numpy as np
 from matchms.Spectrum import Spectrum
-from mlflow.pyfunc import PythonModel
-from ms2deepscore import MS2DeepScore
 from ms2deepscore.models import load_model as ms2deepscore_load_model
+from ms2deepscore import MS2DeepScore
+from omigami.predictor import Predictor
 
 log = getLogger(__name__)
 
 
-class Predictor(PythonModel):
-    def __init__(
-        self,
-        run_id: str = None,
-    ):
+class MS2DeepScorePredictor(Predictor):
+    def __init__(self, run_id: str = None):
+        super().__init__()
         self.run_id = run_id
 
     def load_context(self, context):
@@ -40,12 +38,15 @@ class Predictor(PythonModel):
                 {
                     "intensities": reference_intensities,
                     "mz": reference_mz,
+                    "Precursor_MZ": float,
                 },
                 {
                     "intensities": query_intensities,
                     "mz": query_mz,
+                    "Precursor_MZ": float,
                 },
             ],
+            "parameters": {"n_best": int, "include_metadata": List[str]}
         }
 
         Returns
@@ -54,7 +55,9 @@ class Predictor(PythonModel):
             MS2DeepScore similarity score.
         """
         log.info("Creating a prediction.")
-        data_input = self._parse_input(data_input)
+        data_input, parameters = self._parse_input(data_input)
+        log.info("Pre-processing data.")
+
         spectra = self._clean_spectra(data_input)
 
         reference = Spectrum(**spectra[0])
@@ -69,12 +72,16 @@ class Predictor(PythonModel):
         self.run_id = run_id
 
     @staticmethod
-    def _parse_input(data_input_and_parameters: Dict[str, Union[Dict, List]]) -> List:
+    def _parse_input(
+        data_input_and_parameters: Dict[str, Union[Dict, List]]
+    ) -> Tuple[Union[dict, list, None], Union[dict, list, None, dict]]:
         if not isinstance(data_input_and_parameters, dict):
             data_input_and_parameters = data_input_and_parameters.tolist()
 
         data_input = data_input_and_parameters.get("data")
-        return data_input
+        parameters = data_input_and_parameters.get("parameters")
+
+        return data_input, parameters
 
     def _clean_spectra(self, data_input: List) -> List:
         return [

@@ -5,7 +5,7 @@ from gensim.models import Word2Vec
 from prefect import Task
 
 from omigami.model_register import MLFlowModelRegister
-from omigami.spec2vec.predictor import Predictor
+from omigami.spec2vec.predictor import Spec2VecPredictor
 from omigami.utils import merge_prefect_task_configs
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
@@ -37,7 +37,7 @@ class RegisterModel(Task):
         )
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
-            Predictor(
+            Spec2VecPredictor(
                 model,
                 self._n_decimals,
                 self._intensity_weighting_power,
@@ -57,7 +57,7 @@ class RegisterModel(Task):
 class ModelRegister(MLFlowModelRegister):
     def register_model(
         self,
-        model: Predictor,
+        model: Spec2VecPredictor,
         experiment_name: str,
         output_path: str = None,
         conda_env_path: str = None,
