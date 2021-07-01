@@ -3,8 +3,9 @@ from typing import Union, List, Dict, Tuple
 
 import numpy as np
 from matchms import calculate_scores
-from ms2deepscore.models import load_model as ms2deepscore_load_model
 from ms2deepscore import BinnedSpectrum
+from ms2deepscore.models import load_model as ms2deepscore_load_model
+
 from omigami.gateways.redis_spectrum_data_gateway import RedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
@@ -139,23 +140,25 @@ class MS2DeepScorePredictor(Predictor):
         spectra = self.dgw.read_spectra(list(unique_ids))
         # TODO: remove this logic once the training flow is done. We should adapt
         #  self.dgw.read_spectra() instead to take a run_id argument
-        positive_spectra = [
-            spectrum
-            for spectrum in spectra.values()
-            if spectrum.metadata["ionmode"] == "positive"
-        ]
+        positive_binned_spectra = []
+        for spectrum in spectra.values():
+            if spectrum.metadata["ionmode"] == "positive":
+                processed_spectra = self.spectrum_processor.process_spectra([spectrum])
+                if processed_spectra:
+                    spectrum = processed_spectra[0]
+                    positive_spectrum_id = spectrum.metadata["spectrum_id"]
+
+                    positive_binned_spectrum = (
+                        self.model.model.spectrum_binner.transform([spectrum])[0]
+                    )
+
+                    positive_binned_spectra.append(
+                        positive_binned_spectrum.set(
+                            "spectrum_id", positive_spectrum_id
+                        )
+                    )
+
         # TODO: when the training flow is implemented, the cleaned and binned spectra
         #  should be saved
-        positive_spectra = self.spectrum_processor.process_spectra(positive_spectra)
-        positive_spectra_ids = [
-            spectrum.metadata["spectrum_id"] for spectrum in positive_spectra
-        ]
-        positive_binned_spectra = self.model.model.spectrum_binner.transform(
-            positive_spectra
-        )
-        positive_binned_spectra = [
-            spectrum.set("spectrum_id", positive_spectra_ids[i])
-            for i, spectrum in enumerate(positive_binned_spectra)
-        ]
 
         return positive_binned_spectra
