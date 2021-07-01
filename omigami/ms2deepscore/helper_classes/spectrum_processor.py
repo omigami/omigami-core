@@ -11,27 +11,31 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 class SpectrumProcessor(SpectrumCleaner):
-    def process_spectra(self, spectra: Union[List[Dict], List[Spectrum]]):
-        processed_spectrum_dicts = []
+    def process_spectrum(self, spectrum: Union[Dict, Spectrum]) -> Spectrum:
+        if type(spectrum) == dict:
+            spectrum = as_spectrum(spectrum)
+        if spectrum is not None:
+            spectrum = self._apply_filters(spectrum)
+            spectrum = self._harmonize_spectrum(spectrum)
+            # spectrum = self._convert_metadata(spectrum)
+            spectrum = self._apply_ms2deepscore_filters(spectrum)
+            # spectrum = self._check_inchikey(spectrum)
+            return spectrum
+
+    def process_spectra(
+        self, spectra: Union[List[Dict], List[Spectrum]]
+    ) -> List[Spectrum]:
+        processed_spectra = []
         for spectrum in spectra:
-            if type(spectrum) == dict:
-                spectrum = as_spectrum(spectrum)
-            if spectrum is not None:
-                spectrum = self._apply_filters(spectrum)
-                spectrum = self._harmonize_spectrum(spectrum)
-                # spectrum = self._convert_metadata(spectrum)
-                spectrum = self._apply_ms2deepscore_filters(spectrum)
-                # spectrum = self._check_inchikey(spectrum)
-
-                if spectrum is not None:
-                    processed_spectrum_dicts.append(spectrum)
-
-        return processed_spectrum_dicts
+            processed_spectrum = self.process_spectrum(spectrum)
+            if processed_spectrum:
+                processed_spectra.append(processed_spectrum)
+        return processed_spectra
 
     @staticmethod
     def _apply_ms2deepscore_filters(spectrum: Spectrum) -> Spectrum:
         """Remove spectra with less than 5 peaks with m/z values
-        in the range between 10.0 and 1000.0 Da
+        in the range between 10.0 and 1000.0 Da.
         """
         spectrum = select_by_mz(spectrum, mz_from=10.0, mz_to=400.0)
         spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)

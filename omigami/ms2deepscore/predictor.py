@@ -143,18 +143,14 @@ class MS2DeepScorePredictor(Predictor):
         positive_binned_spectra = []
         for spectrum in spectra.values():
             if spectrum.metadata["ionmode"] == "positive":
-                processed_spectra = self.spectrum_processor.process_spectra([spectrum])
-                if processed_spectra:
-                    spectrum = processed_spectra[0]
-                    positive_spectrum_id = spectrum.metadata["spectrum_id"]
-
+                spectrum = self.spectrum_processor.process_spectrum(spectrum)
+                if spectrum:
                     positive_binned_spectrum = (
                         self.model.model.spectrum_binner.transform([spectrum])[0]
                     )
-
                     positive_binned_spectra.append(
                         positive_binned_spectrum.set(
-                            "spectrum_id", positive_spectrum_id
+                            "spectrum_id", spectrum.metadata["spectrum_id"]
                         )
                     )
 
