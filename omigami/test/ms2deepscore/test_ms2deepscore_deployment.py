@@ -1,7 +1,8 @@
 import pytest
-from omigami.ms2deepscore.deployment import deploy_minimal_flow
 from typing_extensions import Literal
+
 from omigami.config import config, MLFLOW_SERVER
+from omigami.ms2deepscore.deployment import deploy_minimal_flow
 
 
 @pytest.mark.skip(

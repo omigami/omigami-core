@@ -1,7 +1,7 @@
 import os
-import numpy as np
 from pathlib import Path
 
+import numpy as np
 
 os.chdir(Path(__file__).parents[3])
 
