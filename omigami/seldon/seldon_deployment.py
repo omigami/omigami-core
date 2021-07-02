@@ -1,7 +1,7 @@
+from logging import getLogger
 from pathlib import Path
 
 import yaml
-from logging import getLogger
 from kubernetes import config, client
 from kubernetes.config import ConfigException
 

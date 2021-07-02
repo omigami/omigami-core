@@ -6,10 +6,10 @@ from prefect import Task
 from omigami.gateways.data_gateway import SpectrumDataGateway, InputDataGateway
 from omigami.gateways.redis_spectrum_data_gateway import REDIS_DB
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
-from omigami.utils import merge_prefect_task_configs
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
     SpectrumProcessor,
 )
+from omigami.utils import merge_prefect_task_configs
 
 
 @dataclass

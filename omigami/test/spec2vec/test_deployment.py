@@ -1,9 +1,7 @@
 import pytest
 from typing_extensions import Literal
 
-
 from omigami.config import config, MLFLOW_SERVER
-
 from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.spec2vec.deployment import (
     deploy_training_flow,

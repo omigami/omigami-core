@@ -1,6 +1,8 @@
 import os
-import pytest
 from typing import Optional
+
+import pytest
+
 from omigami.config import SELDON_PARAMS
 from omigami.seldon.seldon_deployment import SeldonDeployment
 
