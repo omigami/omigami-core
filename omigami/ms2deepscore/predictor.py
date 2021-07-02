@@ -135,26 +135,30 @@ class MS2DeepScorePredictor(Predictor):
             }
         return spectrum_best_matches
 
-    def _load_unique_spectra(self, spectrum_ids: List[List[str]]):
+    def _load_unique_spectra(
+        self, spectrum_ids: List[List[str]]
+    ) -> List[BinnedSpectrum]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
+
         spectra = self.dgw.read_spectra(list(unique_ids))
-        # TODO: remove this logic once the training flow is done. We should adapt
-        #  self.dgw.read_spectra() instead to take a run_id argument
-        positive_binned_spectra = []
-        for spectrum in spectra.values():
-            if spectrum.metadata["ionmode"] == "positive":
-                spectrum = self.spectrum_processor.process_spectrum(spectrum)
-                if spectrum:
-                    positive_binned_spectrum = (
-                        self.model.model.spectrum_binner.transform([spectrum])[0]
-                    )
-                    positive_binned_spectra.append(
-                        positive_binned_spectrum.set(
-                            "spectrum_id", spectrum.metadata["spectrum_id"]
-                        )
-                    )
+        spectra_array = np.array(list(spectra.values()))
+
+        binned_spectra = np.vectorize(self._process_and_bin_spectrum)(spectra_array)
 
         # TODO: when the training flow is implemented, the cleaned and binned spectra
         #  should be saved
 
-        return positive_binned_spectra
+        return [b for b in binned_spectra if b is not None]
+
+    def _process_and_bin_spectrum(self, spectrum):
+        # TODO: remove this logic once the training flow is done. We should adapt
+        #  self.dgw.read_spectra() instead to take a run_id argument
+        if spectrum.metadata["ionmode"] == "positive":
+            spectrum = self.spectrum_processor.process_spectrum(spectrum)
+            if spectrum:
+                positive_binned_spectrum = self.model.model.spectrum_binner.transform(
+                    [spectrum]
+                )[0]
+                return positive_binned_spectrum.set(
+                    "spectrum_id", spectrum.metadata["spectrum_id"]
+                )
