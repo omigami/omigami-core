@@ -146,7 +146,7 @@ class MS2DeepScorePredictor(Predictor):
 
         with Pool(4) as pool:
             binned_spectra = pool.starmap(
-                process_and_bin_spectrum,
+                self._process_and_bin_spectrum,
                 zip(
                     list(spectra.values()),
                     repeat(self.spectrum_processor),
@@ -159,18 +159,18 @@ class MS2DeepScorePredictor(Predictor):
 
         return [b for b in binned_spectra if b is not None]
 
-
-def process_and_bin_spectrum(
-    spectrum: Spectrum,
-    spectrum_processor: SpectrumProcessor,
-    binning_function: Callable,
-):
-    # TODO: remove this logic once the training flow is done. We should adapt
-    #  self.dgw.read_spectra() instead to take a run_id argument
-    if spectrum.metadata["ionmode"] == "positive":
-        spectrum = spectrum_processor.process_spectrum(spectrum)
-        if spectrum:
-            positive_binned_spectrum = binning_function([spectrum])[0]
-            return positive_binned_spectrum.set(
-                "spectrum_id", spectrum.metadata["spectrum_id"]
-            )
+    @staticmethod
+    def _process_and_bin_spectrum(
+        spectrum: Spectrum,
+        spectrum_processor: SpectrumProcessor,
+        binning_function: Callable,
+    ):
+        # TODO: remove this logic once the training flow is done. We should adapt
+        #  self.dgw.read_spectra() instead to take a run_id argument
+        if spectrum.metadata["ionmode"] == "positive":
+            spectrum = spectrum_processor.process_spectrum(spectrum)
+            if spectrum:
+                positive_binned_spectrum = binning_function([spectrum])[0]
+                return positive_binned_spectrum.set(
+                    "spectrum_id", spectrum.metadata["spectrum_id"]
+                )
