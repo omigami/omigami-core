@@ -2,7 +2,9 @@ import pytest
 from matchms import Spectrum
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.ms2deepscore.helper_classes.spectrum_processor import SpectrumProcessor
+from omigami.ms2deepscore.tasks.process_spectrum.spectrum_processor import (
+    SpectrumProcessor,
+)
 
 
 @pytest.fixture

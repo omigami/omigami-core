@@ -9,7 +9,9 @@ from omigami.gateways.redis_spectrum_data_gateway import RedisSpectrumDataGatewa
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
 )
-from omigami.ms2deepscore.helper_classes.spectrum_processor import SpectrumProcessor
+from omigami.ms2deepscore.tasks.process_spectrum.spectrum_processor import (
+    SpectrumProcessor,
+)
 from omigami.predictor import Predictor, SpectrumMatches
 
 log = getLogger(__name__)

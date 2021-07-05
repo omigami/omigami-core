@@ -5,7 +5,9 @@ from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
 )
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
-from omigami.ms2deepscore.helper_classes.spectrum_processor import SpectrumProcessor
+from omigami.ms2deepscore.tasks.process_spectrum.spectrum_processor import (
+    SpectrumProcessor,
+)
 from omigami.test.conftest import ASSETS_DIR
 
 
