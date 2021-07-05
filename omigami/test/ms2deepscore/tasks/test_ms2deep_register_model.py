@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import mlflow
+from mlflow.pyfunc import PyFuncModel
 from prefect import Flow
 
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
@@ -27,9 +28,7 @@ def test_register_model(ms2deepscore_model_path, tmpdir):
     assert "ms2deepscore_model.hdf5" in os.listdir(f"{path}/model/artifacts")
 
 
-def test_load_registered_model(
-    ms2deepscore_model_path, payload_identical_spectra, tmpdir
-):
+def test_load_registered_model(ms2deepscore_model_path, tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = ModelRegister(path)
 
@@ -41,7 +40,7 @@ def test_load_registered_model(
     )
 
     loaded_model = mlflow.pyfunc.load_model(f"{path}/model")
-    assert loaded_model.predict(payload_identical_spectra)["score"] == 1
+    assert isinstance(loaded_model, PyFuncModel)
 
 
 def test_model_register_task(ms2deepscore_model_path, tmpdir):

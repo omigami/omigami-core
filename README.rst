@@ -1,5 +1,5 @@
 ##############################
-Spec2Vec on MLOps architecture
+Omigami on MLOps architecture
 ##############################
 
 Development Environment
@@ -44,19 +44,6 @@ To run it, execute::
 
     bash deploy.sh
 
-How to set up a local Feast
--------------------------------------
-::
-
-    git clone https://github.com/feast-dev/feast.git
-    cd feast/infra/docker-compose
-    cp .env.sample .env
-
-And to run it:
-::
-
-    docker-compose pull && docker-compose up -d
-
 How to run tests that require Redis locally
 -------------------------------------------
 
@@ -75,14 +62,14 @@ To run tests one by one via PyCharm, you can add this to your pytest Environment
 How to register the training flow manually
 ------------------------------------------
 
-To register the flow manually to Prefect you need to follow these steps:
+To register a flow manually to Prefect you need to follow these steps:
 ::
 
     conda activate omigami
     export AWS_PROFILE=<your data revenue profile>
     export PYTHONPATH=$(pwd)
     prefect backend server
-    python omigami/cli.py register-training-flow -i [image] [options]
+    python omigami/<tool_name>/cli.py register-training-flow -i [image] [options]
 
 If the Prefect Server requires authentication, you can use the arguments to set it up:
 ::
@@ -99,18 +86,19 @@ After the model has been deployed you can access the predictions endpoint in two
 By making a curl request:
 ::
 
-    curl -v https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions -H "Content-Type: application/json" -d 'input_data'
+    curl -v https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/predictions -H "Content-Type: application/json" -d 'input_data'
 
 ::
 
-    curl -v https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/predictions -H "Content-Type: application/json" -d @path_to/input.json
+    curl -v https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/predictions -H "Content-Type: application/json" -d @path_to/input.json
 
 By accessing the external API with the user interface at:
 ::
 
-    https://mlops.datarevenue.com/seldon/seldon/spec2vec/api/v0.1/doc/
+    https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/doc/
 
 Or by querying the prediction API via the python request library (see notebook)
+
 
 The input data should look like:
 ::
@@ -121,6 +109,7 @@ The input data should look like:
              "parameters":
                  {
                      "n_best_spectra": 10,
+                     "include_metadata": ["Compound_name"]
                  },
              "data":
                  [
@@ -136,6 +125,13 @@ The input data should look like:
 - `peaks_json` and `Precursor_MZ` are the only mandatory fields.
 - `Precursor_MZ` can be a string of int or a string of float. i.e. "800" or "800.00"
 - The optional `n_best_spectra` parameter controls the number of predicted spectra returned per set of peaks (10 by default).
+- The optional `include_metadata` parameter controls the result spectra metadata returned to the user.
+
+The available endpoints are:
+
+- `spec2vec-positive`
+- `spec2vec-negative`
+- `ms2deepscore`
 
 Black format your code
 -------------------------------------

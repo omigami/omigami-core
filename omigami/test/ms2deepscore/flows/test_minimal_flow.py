@@ -5,12 +5,12 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.gateways.data_gateway import InputDataGateway
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
+from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.flows.minimal_flow import (
     build_minimal_flow,
     MinimalFlowParameters,

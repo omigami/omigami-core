@@ -1,4 +1,5 @@
 import click
+
 from omigami.config import (
     API_SERVER_URLS,
     PROJECT_NAME,
@@ -6,7 +7,6 @@ from omigami.config import (
 )
 from omigami.ms2deepscore.deployment import deploy_minimal_flow
 from omigami.utils import add_click_options
-
 
 auth_options = [
     click.option(

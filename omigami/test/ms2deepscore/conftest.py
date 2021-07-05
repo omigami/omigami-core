@@ -1,52 +1,40 @@
 import pytest
-from matchms.importing import load_from_mgf
-from ms2deepscore import MS2DeepScore
 from ms2deepscore.models import load_model
 
+from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
+    MS2DeepScoreBinnedSpectrum,
+)
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
+from omigami.ms2deepscore.helper_classes.spectrum_processor import SpectrumProcessor
 from omigami.test.conftest import ASSETS_DIR
 
 
 @pytest.fixture
-def spectra():
-    spectra = list(load_from_mgf(str(ASSETS_DIR / "spectra.mgf")))
+def positive_spectra_data(loaded_data):
+    spectra = [data for data in loaded_data if data["Ion_Mode"] == "Positive"]
     return spectra
 
 
 @pytest.fixture
-def ms2deepscore_payload(spectra):
-    reference = spectra[0]
-    query = spectra[1]
-    payload = {
-        "data": [
-            {
-                "intensities": reference.peaks.intensities,
-                "mz": reference.peaks.mz,
-            },
-            {
-                "intensities": query.peaks.intensities,
-                "mz": query.peaks.mz,
-            },
-        ],
-        "parameters": {"n_best": 2, "include_metadata": ["Compound_name"]},
-    }
-    return payload
+def positive_spectra(positive_spectra_data):
+    spectra = SpectrumProcessor().process_spectra(positive_spectra_data)
+    return spectra
 
 
 @pytest.fixture
-def payload_identical_spectra(spectra):
-    reference = spectra[0]
+def ms2deepscore_payload(positive_spectra_data):
     payload = {
         "data": [
             {
-                "intensities": reference.peaks.intensities,
-                "mz": reference.peaks.mz,
+                "peaks_json": positive_spectra_data[0]["peaks_json"],
+                "Precursor_MZ": positive_spectra_data[0]["Precursor_MZ"],
             },
             {
-                "intensities": reference.peaks.intensities,
-                "mz": reference.peaks.mz,
+                "peaks_json": positive_spectra_data[1]["peaks_json"],
+                "Precursor_MZ": positive_spectra_data[1]["Precursor_MZ"],
             },
         ],
+        "parameters": {"n_best": 2, "include_metadata": ["Compound_name"]},
     }
     return payload
 
@@ -59,7 +47,13 @@ def ms2deepscore_model_path():
 @pytest.fixture()
 def ms2deepscore_model(ms2deepscore_model_path):
     model = load_model(ms2deepscore_model_path)
-    return MS2DeepScore(model)
+    return MS2DeepScoreBinnedSpectrum(model)
+
+
+@pytest.fixture()
+def ms2deepscore_spectrum_similarity(ms2deepscore_model_path):
+    model = load_model(ms2deepscore_model_path)
+    return MS2DeepScoreBinnedSpectrum(model)
 
 
 @pytest.fixture()
@@ -68,3 +62,33 @@ def ms2deepscore_predictor(ms2deepscore_model):
     predictor.model = ms2deepscore_model
 
     return predictor
+
+
+@pytest.fixture()
+def ms2deepscore_real_model():
+    ms2deepscore_model_path = str(
+        ASSETS_DIR
+        / "ms2deepscore"
+        / "pretrained"
+        / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
+    )
+    ms2deepscore_model = load_model(ms2deepscore_model_path)
+    return ms2deepscore_model
+
+
+@pytest.fixture()
+def ms2deepscore_real_predictor(ms2deepscore_real_model):
+    ms2deepscore_predictor = MS2DeepScorePredictor()
+    ms2deepscore_predictor.model = MS2DeepScoreBinnedSpectrum(ms2deepscore_real_model)
+    return ms2deepscore_predictor
+
+
+@pytest.fixture()
+def binned_spectra(ms2deepscore_real_predictor, positive_spectra):
+    binned_spectra = ms2deepscore_real_predictor.model.model.spectrum_binner.transform(
+        positive_spectra
+    )
+    return [
+        binned_spectrum.set("spectrum_id", positive_spectra[i].metadata["spectrum_id"])
+        for i, binned_spectrum in enumerate(binned_spectra)
+    ]
