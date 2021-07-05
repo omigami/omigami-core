@@ -9,7 +9,7 @@ from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
 )
 from omigami.test.conftest import ASSETS_DIR
 
-pytest.mark.skipif(
+pytestmark = pytest.mark.skipif(
     not os.path.exists(
         str(
             ASSETS_DIR
