@@ -1,8 +1,10 @@
+from itertools import repeat
 from logging import getLogger
-from typing import Union, List, Dict, Tuple
+from multiprocessing import Pool
+from typing import Union, List, Dict, Tuple, Callable
 
 import numpy as np
-from matchms import calculate_scores
+from matchms import calculate_scores, Spectrum
 from ms2deepscore import BinnedSpectrum
 from ms2deepscore.models import load_model as ms2deepscore_load_model
 
@@ -141,24 +143,34 @@ class MS2DeepScorePredictor(Predictor):
         unique_ids = set(item for elem in spectrum_ids for item in elem)
 
         spectra = self.dgw.read_spectra(list(unique_ids))
-        spectra_array = np.array(list(spectra.values()))
 
-        binned_spectra = np.vectorize(self._process_and_bin_spectrum)(spectra_array)
+        with Pool(4) as pool:
+            binned_spectra = pool.starmap(
+                process_and_bin_spectrum,
+                zip(
+                    list(spectra.values()),
+                    repeat(self.spectrum_processor),
+                    repeat(self.model.model.spectrum_binner.transform),
+                ),
+            )
 
         # TODO: when the training flow is implemented, the cleaned and binned spectra
         #  should be saved
 
         return [b for b in binned_spectra if b is not None]
 
-    def _process_and_bin_spectrum(self, spectrum):
-        # TODO: remove this logic once the training flow is done. We should adapt
-        #  self.dgw.read_spectra() instead to take a run_id argument
-        if spectrum.metadata["ionmode"] == "positive":
-            spectrum = self.spectrum_processor.process_spectrum(spectrum)
-            if spectrum:
-                positive_binned_spectrum = self.model.model.spectrum_binner.transform(
-                    [spectrum]
-                )[0]
-                return positive_binned_spectrum.set(
-                    "spectrum_id", spectrum.metadata["spectrum_id"]
-                )
+
+def process_and_bin_spectrum(
+    spectrum: Spectrum,
+    spectrum_processor: SpectrumProcessor,
+    binning_function: Callable,
+):
+    # TODO: remove this logic once the training flow is done. We should adapt
+    #  self.dgw.read_spectra() instead to take a run_id argument
+    if spectrum.metadata["ionmode"] == "positive":
+        spectrum = spectrum_processor.process_spectrum(spectrum)
+        if spectrum:
+            positive_binned_spectrum = binning_function([spectrum])[0]
+            return positive_binned_spectrum.set(
+                "spectrum_id", spectrum.metadata["spectrum_id"]
+            )
