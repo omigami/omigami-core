@@ -101,3 +101,15 @@ class SpectrumDataGateway(ABC):
         """Get the spectrum IDs of spectra stored on redis that have a Precursor_MZ
         within the given range. Return a list spectrum IDs."""
         pass
+
+    @abstractmethod
+    def list_binned_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
+        """Check whether document exist on Redis.
+        Return a list of IDs that do not exist.
+        """
+        pass
+
+    @abstractmethod
+    def write_binned_spectra(self, binned_spectra: List):
+        """Write binned spectra to Redis."""
+        pass
