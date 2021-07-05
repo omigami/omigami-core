@@ -10,13 +10,13 @@ from omigami.config import (
     PROJECT_NAME,
     MLFLOW_SERVER,
 )
-from omigami.ms2deepscore.config import (
-    MODEL_DIRECTORIES,
-)
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
+)
+from omigami.ms2deepscore.config import (
+    MODEL_DIRECTORIES,
 )
 from omigami.ms2deepscore.flows.minimal_flow import (
     build_minimal_flow,
@@ -38,6 +38,7 @@ def deploy_minimal_flow(
     auth_url: Optional[str] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
+    api_server: Optional[str] = None,
 ):
     """
     Deploys a model minimal flow to Prefect cloud and optionally deploys it as a
@@ -53,12 +54,11 @@ def deploy_minimal_flow(
     """
 
     # authentication step
+    api_server = api_server or API_SERVER_URLS[environment]
     if auth:
         authenticator = KratosAuthenticator(auth_url, username, password)
         session_token = authenticator.authenticate()
-        client = Client(
-            api_server=API_SERVER_URLS[environment], api_token=session_token
-        )
+        client = Client(api_server=api_server, api_token=session_token)
     else:
         client = Client(api_server=API_SERVER_URLS[environment])
     client.create_project(project_name)
