@@ -20,3 +20,10 @@ def test_write_binned_spectra(redis_db, binned_spectra):
     dgw.write_binned_spectra(binned_spectra)
 
     assert redis_db.hlen(BINNED_SPECTRUM_HASHES) == len(binned_spectra)
+
+
+def test_read_binned_spectra(binned_spectra_stored, binned_spectra):
+    dgw = MS2DeepScoreRedisSpectrumDataGateway()
+    retrieved_binned_spectra = dgw.read_binned_spectra()
+
+    assert len(retrieved_binned_spectra) == len(binned_spectra)

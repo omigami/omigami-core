@@ -40,3 +40,10 @@ class MS2DeepScoreRedisSpectrumDataGateway(RedisSpectrumDataGateway):
                 pickle.dumps(spectrum),
             )
         pipe.execute()
+
+    def read_binned_spectra(
+        self, spectrum_ids: List[str] = None
+    ) -> List[BinnedSpectrum]:
+        """Read the binned spectra from spectra IDs."""
+        self._init_client()
+        return self._read_hashes(f"{BINNED_SPECTRUM_HASHES}", spectrum_ids)

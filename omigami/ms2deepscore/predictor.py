@@ -67,8 +67,8 @@ class MS2DeepScorePredictor(Predictor):
 
         log.info("Loading reference spectra.")
         reference_spectra_ids = self._get_ref_ids_from_data_input(data_input, mz_range)
-        reference_spectra = self._load_unique_spectra(reference_spectra_ids)
-        log.info(f"Loaded {len(reference_spectra)} spectra from the database.")
+        reference_binned_spectra = self._load_binned_spectra(reference_spectra_ids)
+        log.info(f"Loaded {len(reference_binned_spectra)} spectra from the database.")
 
         log.info("Pre-processing data.")
         query_spectra = self.spectrum_processor.process_spectra(data_input)
@@ -78,7 +78,7 @@ class MS2DeepScorePredictor(Predictor):
         best_matches = {}
         for i, input_spectrum in enumerate(query_binned_spectra):
             spectrum_best_matches = self._calculate_best_matches(
-                reference_spectra,
+                reference_binned_spectra,
                 reference_spectra_ids[i],
                 input_spectrum,
             )
@@ -136,28 +136,9 @@ class MS2DeepScorePredictor(Predictor):
             }
         return spectrum_best_matches
 
-    def _load_unique_spectra(self, spectrum_ids: List[List[str]]):
+    def _load_binned_spectra(
+        self, spectrum_ids: List[List[str]]
+    ) -> List[BinnedSpectrum]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
-        spectra = self.dgw.read_spectra(list(unique_ids))
-        # TODO: remove this logic once the training flow is done. We should adapt
-        #  self.dgw.read_spectra() instead to take a run_id argument
-        positive_spectra = [
-            spectrum
-            for spectrum in spectra.values()
-            if spectrum.metadata["ionmode"] == "positive"
-        ]
-        # TODO: when the training flow is implemented, the cleaned and binned spectra
-        #  should be saved
-        positive_spectra = self.spectrum_processor.process_spectra(positive_spectra)
-        positive_spectra_ids = [
-            spectrum.metadata["spectrum_id"] for spectrum in positive_spectra
-        ]
-        positive_binned_spectra = self.model.model.spectrum_binner.transform(
-            positive_spectra
-        )
-        positive_binned_spectra = [
-            spectrum.set("spectrum_id", positive_spectra_ids[i])
-            for i, spectrum in enumerate(positive_binned_spectra)
-        ]
-
-        return positive_binned_spectra
+        binned_spectra = self.dgw.read_binned_spectra(list(unique_ids))
+        return binned_spectra

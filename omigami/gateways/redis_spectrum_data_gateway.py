@@ -117,6 +117,11 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     ):
         pass
 
+    def read_embeddings(
+        self, run_id: str, spectrum_ids: List[str] = None
+    ) -> List[Embedding]:
+        pass
+
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
         pass
 
@@ -127,6 +132,9 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         pass
 
     def write_binned_spectra(self, binned_spectra: List[BinnedSpectrum]):
+        pass
+
+    def read_binned_spectra(self, spectrum_ids: List[str] = None):
         pass
 
 

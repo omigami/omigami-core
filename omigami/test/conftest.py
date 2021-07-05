@@ -166,7 +166,9 @@ def embeddings_stored(redis_db, cleaned_data, embeddings):
 
 
 @pytest.fixture()
-def redis_full_setup(spectra_stored, documents_stored, embeddings_stored):
+def redis_full_setup(
+    spectra_stored, documents_stored, embeddings_stored, binned_spectra_stored
+):
     pass
 
 

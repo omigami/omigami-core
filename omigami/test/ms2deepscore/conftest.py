@@ -2,7 +2,9 @@ import pickle
 
 import pytest
 from ms2deepscore.models import load_model
+from pytest_redis import factories
 
+from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
 )
@@ -11,6 +13,9 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
 from omigami.test.conftest import ASSETS_DIR
+
+
+redis_db = factories.redisdb("redis_nooproc")
 
 
 @pytest.fixture
@@ -116,3 +121,15 @@ def binned_spectra():
     with open(path, "rb") as handle:
         binned_spectra = pickle.load(handle)
     return binned_spectra
+
+
+@pytest.fixture
+def binned_spectra_stored(redis_db, binned_spectra):
+    pipe = redis_db.pipeline()
+    for spectrum in binned_spectra:
+        pipe.hset(
+            f"{BINNED_SPECTRUM_HASHES}",
+            spectrum.metadata["spectrum_id"],
+            pickle.dumps(spectrum),
+        )
+    pipe.execute()
