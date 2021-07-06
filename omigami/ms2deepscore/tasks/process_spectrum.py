@@ -69,7 +69,7 @@ class ProcessSpectrum(Task):
             return set(spectra_ids)
 
         self.logger.info(
-            f"Finished processing {len(binned_spectra)}. "
+            f"Finished processing {len(binned_spectra)} binned spectra. "
             f"Saving into spectrum database."
         )
         self._spectrum_dgw.write_binned_spectra(binned_spectra)
