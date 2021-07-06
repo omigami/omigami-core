@@ -11,6 +11,7 @@ from pytest_redis import factories
 
 import omigami
 import omigami.config
+from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
     DOCUMENT_HASHES,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
@@ -161,6 +162,26 @@ def embeddings_stored(redis_db, cleaned_data, embeddings):
             f"{EMBEDDING_HASHES}_{run_id}",
             embedding.spectrum_id,
             pickle.dumps(embedding),
+        )
+    pipe.execute()
+
+
+@pytest.fixture(scope="module")
+def binned_spectra():
+    path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_binned_spectra.pickle")
+    with open(path, "rb") as handle:
+        binned_spectra = pickle.load(handle)
+    return binned_spectra
+
+
+@pytest.fixture
+def binned_spectra_stored(redis_db, binned_spectra):
+    pipe = redis_db.pipeline()
+    for spectrum in binned_spectra:
+        pipe.hset(
+            f"{BINNED_SPECTRUM_HASHES}",
+            spectrum.metadata["spectrum_id"],
+            pickle.dumps(spectrum),
         )
     pipe.execute()
 

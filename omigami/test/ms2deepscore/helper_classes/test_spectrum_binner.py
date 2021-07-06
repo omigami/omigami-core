@@ -5,7 +5,7 @@ from ms2deepscore import BinnedSpectrum
 from omigami.ms2deepscore.helper_classes.spectrum_binner import SpectrumBinner
 from omigami.test.conftest import ASSETS_DIR
 
-ppytestmark = pytest.mark.skipif(
+pytestmark = pytest.mark.skipif(
     not os.path.exists(
         str(
             ASSETS_DIR

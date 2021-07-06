@@ -23,11 +23,11 @@ class SpectrumProcessor(SpectrumCleaner):
             if type(spectrum) == dict:
                 spectrum = as_spectrum(spectrum)
             if spectrum is not None:
-                spectrum = self._select_ion_mode(spectrum)
                 spectrum = self._apply_filters(spectrum)
                 spectrum = self._harmonize_spectrum(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
                 if reference_spectra:
+                    spectrum = self._select_ion_mode(spectrum)
                     spectrum = self._convert_metadata(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
@@ -59,7 +59,8 @@ class SpectrumProcessor(SpectrumCleaner):
     def _select_ion_mode(self, spectrum: Spectrum) -> Optional[Spectrum]:
         # while we only support the already trained model, we just use the positive
         # spectra
-        ion_mode = spectrum.metadata.get("ionmode")
-        if ion_mode:
-            if ion_mode.lower() == "positive":
-                return spectrum
+        if spectrum:
+            ion_mode = spectrum.metadata.get("ionmode")
+            if ion_mode:
+                if ion_mode.lower() == "positive":
+                    return spectrum
