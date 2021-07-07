@@ -5,11 +5,13 @@ from prefect import Task
 
 from omigami.gateways.data_gateway import SpectrumDataGateway
 from omigami.gateways.redis_spectrum_data_gateway import REDIS_DB
-from omigami.ms2deepscore.helper_classes.spectrum_binner import SpectrumBinner
-from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
+from omigami.ms2deepscore.helper_classes.spectrum_binner import (
+    MS2DeepScoreSpectrumBinner,
+)
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
+from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
 
 
@@ -30,7 +32,7 @@ class ProcessSpectrum(Task):
         self._skip_if_exists = process_parameters.skip_if_exists
         self._model_path = process_parameters.model_path
         self._processor = SpectrumProcessor()
-        self._spectrum_binner = SpectrumBinner()
+        self._spectrum_binner = MS2DeepScoreSpectrumBinner()
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
