@@ -24,10 +24,10 @@ class SpectrumProcessor(SpectrumCleaner):
                 spectrum = as_spectrum(spectrum)
             if spectrum is not None:
                 spectrum = self._apply_filters(spectrum)
-                spectrum = self._harmonize_spectrum(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
                 if reference_spectra:
                     spectrum = self._select_ion_mode(spectrum)
+                    spectrum = self._harmonize_spectrum(spectrum)
                     spectrum = self._convert_metadata(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
