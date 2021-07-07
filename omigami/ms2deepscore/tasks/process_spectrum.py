@@ -28,8 +28,9 @@ class ProcessSpectrum(Task):
     ):
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._skip_if_exists = process_parameters.skip_if_exists
+        self._model_path = process_parameters.model_path
         self._processor = SpectrumProcessor()
-        self._spectrum_binner = SpectrumBinner(process_parameters.model_path)
+        self._spectrum_binner = SpectrumBinner()
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
@@ -62,7 +63,9 @@ class ProcessSpectrum(Task):
         cleaned_spectra = self._processor.process_spectra(
             list(spectra.values()), progress_logger=progress_logger
         )
-        binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
+        binned_spectra = self._spectrum_binner.bin_spectra(
+            cleaned_spectra, self._model_path
+        )
 
         if self._skip_if_exists and not binned_spectra:
             self.logger.info("No new spectra have been processed.")
