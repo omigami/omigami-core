@@ -8,7 +8,7 @@ from omigami.ms2deepscore.tasks import (
     DeployModelParameters,
     RegisterModel,
 )
-
+from omigami.spec2vec.tasks.download_data import DownloadData
 
 class MinimalFlowParameters:
     def __init__(
@@ -58,7 +58,10 @@ def build_minimal_flow(
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
         ms2deepscore_model_path = flow_parameters.model_uri
+        download_gnpsdata = DownloadData(
 
+
+        )
         model_registry = RegisterModel(
             project_name,
             mlflow_output_dir,
