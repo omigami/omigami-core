@@ -52,7 +52,7 @@ def build_training_flow(
     model_parameters: ModelGeneralParameters
 ) -> Flow:
     """
-    Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
+    Builds the MS2DeepScore machine learning pipeline. It Downloads and process data, trains the model, makes
     embeddings, registers the model and deploys it to the API.
 
 
