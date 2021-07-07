@@ -55,7 +55,7 @@ class KratosAuthenticator(Authenticator):
             r.raise_for_status()
         json = r.json()
         try:
-            action_url = json["methods"]["password"]["config"]["action"]
+            action_url = json["ui"]["action"]
         except KeyError as e:
             logger.error(
                 "Unable to get ORY's Login Flow. Please check the configuration"
@@ -66,7 +66,11 @@ class KratosAuthenticator(Authenticator):
 
     def _get_session_token(self, action_url):
         """Authenticate the user using the provided credentials"""
-        data = {"identifier": self._username, "password": self._password}
+        data = {
+            "method": "password",
+            "password_identifier": self._username,
+            "password": self._password,
+        }
         headers = {"Accept": "application/json", "Content-Type": "application/json"}
         r = requests.post(action_url, json=data, headers=headers)
         if r.status_code == 401:
