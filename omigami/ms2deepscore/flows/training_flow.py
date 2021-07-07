@@ -26,12 +26,19 @@ class TrainingFlowParameters:
             output_dir: str,
             dataset_id: str,
             ion_mode: IonModes,
+            schedule_task_days: int = 30,
             dataset_name: str = "gnps.json",
             dataset_checkpoint_name: str = "spectrum_ids.pkl",
-
     ):
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
+
+        self.scheduler = Schedule(
+            clocks=[
+                IntervalClock(
+                    start_date=date.today(),
+                    interval=timedelta(days=30))
+            ])
 
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
@@ -78,16 +85,8 @@ def build_training_flow(
 
     """
 
-    once_per_month_schedule = Schedule(
-        clocks=[
-            IntervalClock(
-                start_date=date.today(),
-                interval=timedelta(days=30))
-        ])
-
-    with Flow(name=flow_name, schedule=once_per_month_schedule, **flow_config.kwargs) as training_flow:
-
-        #TODO: Do we need a check here to see if the dataset is actually older then 30 days?
+    with Flow(name=flow_name, schedule=flow_parameters.scheduler, **flow_config.kwargs) as training_flow:
+        # TODO: Do we need a check here to see if the dataset is actually older then 30 days?
 
         spectrum_ids = DownloadData(
             flow_parameters.input_dgw,
