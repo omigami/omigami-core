@@ -3,27 +3,31 @@ from dataclasses import dataclass
 from typing import Union
 
 from prefect import Flow, unmapped
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
 
 from omigami.config import IonModes, ION_MODES
 from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
 from omigami.ms2deepscore.tasks import (
-   DownloadData,
-   DownloadParameters
+    DownloadData,
+    DownloadParameters
 )
 
-@dataclass
+from datetime import timedelta, date
+
+
 class TrainingFlowParameters:
     def __init__(
-        self,
-        input_dgw: InputDataGateway,
-        spectrum_dgw: SpectrumDataGateway,
-        source_uri: str,
-        output_dir: str,
-        dataset_id: str,
-        ion_mode: IonModes,
-        dataset_name: str = "gnps.json",
-        dataset_checkpoint_name: str = "spectrum_ids.pkl",
+            self,
+            input_dgw: InputDataGateway,
+            spectrum_dgw: SpectrumDataGateway,
+            source_uri: str,
+            output_dir: str,
+            dataset_id: str,
+            ion_mode: IonModes,
+            dataset_name: str = "gnps.json",
+            dataset_checkpoint_name: str = "spectrum_ids.pkl",
 
     ):
         self.input_dgw = input_dgw
@@ -36,6 +40,7 @@ class TrainingFlowParameters:
             source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
         )
 
+
 @dataclass
 class ModelGeneralParameters:
     model_output_dir: str
@@ -44,12 +49,13 @@ class ModelGeneralParameters:
     allowed_missing_percentage: Union[float, int] = 5.0
     deploy_model: bool = False
 
+
 def build_training_flow(
-    project_name: str,
-    flow_name: str,
-    flow_config: FlowConfig,
-    flow_parameters: TrainingFlowParameters,
-    model_parameters: ModelGeneralParameters
+        project_name: str,
+        flow_name: str,
+        flow_config: FlowConfig,
+        flow_parameters: TrainingFlowParameters,
+        model_parameters: ModelGeneralParameters
 ) -> Flow:
     """
     Builds the MS2DeepScore machine learning pipeline. It Downloads and process data, trains the model, makes
@@ -71,10 +77,21 @@ def build_training_flow(
     -------
 
     """
-    with Flow(flow_name, **flow_config.kwargs) as training_flow:
+
+    once_per_month_schedule = Schedule(
+        clocks=[
+            IntervalClock(
+                start_date=date.today(),
+                interval=timedelta(days=30))
+        ])
+
+    with Flow(name=flow_name, schedule=once_per_month_schedule, **flow_config.kwargs) as training_flow:
+
+        #TODO: Do we need a check here to see if the dataset is actually older then 30 days?
+
         spectrum_ids = DownloadData(
             flow_parameters.input_dgw,
             flow_parameters.downloading,
-        )()
+        ).run()
 
     return training_flow
