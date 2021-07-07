@@ -5,9 +5,9 @@ from omigami.config import config, MLFLOW_SERVER
 from omigami.ms2deepscore.deployment import deploy_minimal_flow
 
 
-# @pytest.mark.skip(
-#     reason="This test uses internet connection and deploys a test flow to prefect."
-# )
+@pytest.mark.skip(
+    reason="This test uses internet connection and deploys a test flow to prefect."
+)
 def test_deploy_minimal_flow():
     """
     BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
