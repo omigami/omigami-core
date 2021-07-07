@@ -18,7 +18,7 @@ def spectrum(loaded_data):
 
 
 def test_process_spectra(loaded_data, spectrum_processor):
-    cleaned_data = spectrum_processor.process_spectra(loaded_data, False)
+    cleaned_data = spectrum_processor.process_spectra(loaded_data, True)
     assert isinstance(cleaned_data[0], Spectrum)
 
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
