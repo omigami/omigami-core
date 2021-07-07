@@ -20,8 +20,10 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_bin_spectra(cleaned_data_ms2deep_score, ms2deepscore_real_model_path):
-    spectrum_binner = SpectrumBinner(model_path=ms2deepscore_real_model_path)
-    binned_spectra = spectrum_binner.bin_spectra(cleaned_data_ms2deep_score)
+    spectrum_binner = SpectrumBinner()
+    binned_spectra = spectrum_binner.bin_spectra(
+        cleaned_data_ms2deep_score, model_path=ms2deepscore_real_model_path
+    )
 
     assert isinstance(binned_spectra[0], BinnedSpectrum)
     assert (
