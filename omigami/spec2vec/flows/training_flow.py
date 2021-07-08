@@ -2,15 +2,17 @@ from typing import Union
 
 from prefect import Flow, unmapped
 
+import omigami.tasks.download_data
 from omigami.config import IonModes, ION_MODES
 from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
+
+from omigami.tasks import DownloadData, DownloadParameters
+
 from omigami.spec2vec.tasks import (
-    DownloadData,
     MakeEmbeddings,
     DeployModel,
     DeployModelParameters,
-    DownloadParameters,
     CreateChunks,
     ChunkingParameters,
     ProcessSpectrum,

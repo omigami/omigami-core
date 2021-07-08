@@ -9,26 +9,23 @@ from prefect.schedules.clocks import IntervalClock
 from omigami.config import IonModes, ION_MODES
 from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
-from omigami.ms2deepscore.tasks import (
-    DownloadData,
-    DownloadParameters
-)
+from omigami.tasks import DownloadData, DownloadParameters
 
 from datetime import timedelta, date, datetime
 
 
 class TrainingFlowParameters:
     def __init__(
-            self,
-            input_dgw: InputDataGateway,
-            spectrum_dgw: SpectrumDataGateway,
-            source_uri: str,
-            output_dir: str,
-            dataset_id: str,
-            ion_mode: IonModes,
-            schedule_task_days: int = 30,
-            dataset_name: str = "gnps.json",
-            dataset_checkpoint_name: str = "spectrum_ids.pkl",
+        self,
+        input_dgw: InputDataGateway,
+        spectrum_dgw: SpectrumDataGateway,
+        source_uri: str,
+        output_dir: str,
+        dataset_id: str,
+        ion_mode: IonModes,
+        schedule_task_days: int = 30,
+        dataset_name: str = "gnps.json",
+        dataset_checkpoint_name: str = "spectrum_ids.pkl",
     ):
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
@@ -37,8 +34,10 @@ class TrainingFlowParameters:
             clocks=[
                 IntervalClock(
                     start_date=datetime.combine(date.today(), datetime.min.time()),
-                    interval=timedelta(days=schedule_task_days))
-            ])
+                    interval=timedelta(days=schedule_task_days),
+                )
+            ]
+        )
 
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
@@ -58,11 +57,11 @@ class ModelGeneralParameters:
 
 
 def build_training_flow(
-        project_name: str,
-        flow_name: str,
-        flow_config: FlowConfig,
-        flow_parameters: TrainingFlowParameters,
-        model_parameters: ModelGeneralParameters
+    project_name: str,
+    flow_name: str,
+    flow_config: FlowConfig,
+    flow_parameters: TrainingFlowParameters,
+    model_parameters: ModelGeneralParameters,
 ) -> Flow:
     """
     Builds the MS2DeepScore machine learning pipeline. It Downloads and process data, trains the model, makes

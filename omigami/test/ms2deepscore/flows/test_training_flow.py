@@ -14,10 +14,11 @@ from omigami.flow_config import (
 from omigami.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
-    ModelGeneralParameters
+    ModelGeneralParameters,
 )
 
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
+
 os.chdir(Path(__file__).parents[4])
 
 
@@ -46,7 +47,7 @@ def test_training_flow(flow_config):
         source_uri="source_uri",
         output_dir="datasets",
         dataset_id="dataset-id",
-        ion_mode="positive"
+        ion_mode="positive",
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -60,7 +61,7 @@ def test_training_flow(flow_config):
         flow_name=flow_name,
         flow_config=flow_config,
         flow_parameters=flow_parameters,
-        model_parameters=model_parameters
+        model_parameters=model_parameters,
     )
 
     assert flow
@@ -71,7 +72,7 @@ def test_training_flow(flow_config):
     assert task_names == expected_tasks
 
 
-#def test_run_training_flow(
+# def test_run_training_flow(
 #        tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
-#):
+# ):
 #    assert True

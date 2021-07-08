@@ -54,7 +54,7 @@ KEYS = [
     "url",
 ]
 
-
+# TODO: This is used by the ms2DeepScore and spec2vec task. Should this also go to a general folder?
 class FSInputDataGateway(InputDataGateway):
     def __init__(self, fs: Optional[FileSystemBase] = None):
         self.fs = fs

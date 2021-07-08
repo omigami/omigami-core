@@ -9,8 +9,7 @@ from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.utils import create_prefect_result_from_path
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
-from omigami.spec2vec.tasks import DownloadData
-from omigami.spec2vec.tasks.download_data import DownloadParameters
+from omigami.tasks.download_data import DownloadParameters, DownloadData
 from omigami.test.conftest import ASSETS_DIR
 
 
