@@ -58,14 +58,22 @@ class ProcessSpectrum(Task):
         spectra = self._spectrum_dgw.read_spectra(spectra_ids)
         self.logger.info(f"Processing {len(spectra)} spectra")
 
-        self.logger.info(f"Cleaning spectra and binning them")
+        self.logger.info(f"Cleaning spectra")
         progress_logger = TaskProgressLogger(
             self.logger, len(spectra), 20, "Process Spectra task progress"
         )
+
         cleaned_spectra = self._processor.process_spectra(
             list(spectra.values()), progress_logger=progress_logger
         )
-        binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
+
+        self.logger.info(f"Binning spectra")
+        progress_logger = TaskProgressLogger(
+            self.logger, len(spectra), 20, "Binning Spectra task progress"
+        )
+        binned_spectra = self._spectrum_binner.bin_spectra(
+            cleaned_spectra, progress_logger=progress_logger
+        )
 
         if self._skip_if_exists and not binned_spectra:
             self.logger.info("No new spectra have been processed.")
