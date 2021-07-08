@@ -63,7 +63,7 @@ def test_download_existing_data(mock_default_config):
     assert res.result[download].is_cached()
 
 
-@pytest.mark.skip(reason="This test uses internet connection.")
+# @pytest.mark.skip(reason="This test uses internet connection.")
 def test_download_existing_data_s3(mock_default_config):
     file_name = "spec2vec-training-flow/downloaded_datasets/test_10k/gnps.json"
     dir_ = "s3://dr-prefect"
