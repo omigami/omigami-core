@@ -3,7 +3,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from drfs.filesystems import get_fs
 
+from omigami.ms2deepscore.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.gateways.data_gateway import SpectrumDataGateway
 
 from omigami.flow_config import (
@@ -18,6 +20,10 @@ from omigami.ms2deepscore.flows.training_flow import (
 )
 
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
+from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
 
@@ -72,7 +78,53 @@ def test_training_flow(flow_config):
     assert task_names == expected_tasks
 
 
-# def test_run_training_flow(
-#        tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
-# ):
-#    assert True
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_run_training_flow(
+    tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
+):
+    # remove mlflow models from previous runs
+    fs = get_fs(ASSETS_DIR)
+    _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
+
+    input_dgw = FSInputDataGateway()
+
+    # TODO: This is a Spec2Vec specific function, but is also needed for ms2deepscore
+    spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
+
+    flow_params = TrainingFlowParameters(
+        input_dgw=input_dgw,
+        spectrum_dgw=spectrum_dgw,
+        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        output_dir=ASSETS_DIR.parent,
+        dataset_id=ASSETS_DIR.name,
+        dataset_name="SMALL_GNPS.json",
+        ion_mode="positive",
+    )
+
+    model_parameters = ModelGeneralParameters(
+        model_output_dir=f"{tmpdir}/model-output",
+        mlflow_server="mlflow-server",
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=25,
+        deploy_model=False,
+    )
+
+    flow = build_training_flow(
+        project_name="test",
+        flow_config=flow_config,
+        flow_name="test-flow",
+        flow_parameters=flow_params,
+        model_parameters=model_parameters,
+    )
+
+    results = flow.run()
+    (d,) = flow.get_tasks("DownloadData")
+
+    assert results.is_successful()
+    results.result[d].is_cached()
+    assert "model" in os.listdir(tmpdir / "model-output")
+    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
+    assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
