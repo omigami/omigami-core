@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from drfs.filesystems import get_fs
 
 from omigami.gateways.data_gateway import SpectrumDataGateway
 
@@ -18,8 +17,7 @@ from omigami.ms2deepscore.flows.training_flow import (
     ModelGeneralParameters
 )
 
-from omigami.test.conftest import ASSETS_DIR
-
+from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 os.chdir(Path(__file__).parents[4])
 
 
@@ -35,6 +33,7 @@ def flow_config():
 
 
 def test_training_flow(flow_config):
+    mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     mock_spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
     flow_name = "test-flow"
     expected_tasks = {
@@ -42,11 +41,12 @@ def test_training_flow(flow_config):
     }
 
     flow_parameters = TrainingFlowParameters(
+        input_dgw=mock_input_dgw,
         spectrum_dgw=mock_spectrum_dgw,
         source_uri="source_uri",
         output_dir="datasets",
         dataset_id="dataset-id",
-        ion_mode="positive",
+        ion_mode="positive"
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -71,7 +71,7 @@ def test_training_flow(flow_config):
     assert task_names == expected_tasks
 
 
-def test_run_training_flow(
-        tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
-):
-    pass
+#def test_run_training_flow(
+#        tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
+#):
+#    assert True

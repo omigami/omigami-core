@@ -9,6 +9,7 @@ from omigami.ms2deepscore.tasks import (
     RegisterModel,
 )
 
+
 class MinimalFlowParameters:
     def __init__(
         self,

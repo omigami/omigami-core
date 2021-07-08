@@ -14,12 +14,13 @@ from omigami.ms2deepscore.tasks import (
     DownloadParameters
 )
 
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 
 
 class TrainingFlowParameters:
     def __init__(
             self,
+            input_dgw: InputDataGateway,
             spectrum_dgw: SpectrumDataGateway,
             source_uri: str,
             output_dir: str,
@@ -29,12 +30,13 @@ class TrainingFlowParameters:
             dataset_name: str = "gnps.json",
             dataset_checkpoint_name: str = "spectrum_ids.pkl",
     ):
+        self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
 
-        self.scheduler = Schedule(
+        self.schedule = Schedule(
             clocks=[
                 IntervalClock(
-                    start_date=date.today(),
+                    start_date=datetime.combine(date.today(), datetime.min.time()),
                     interval=timedelta(days=schedule_task_days))
             ])
 
@@ -83,12 +85,12 @@ def build_training_flow(
 
     """
 
-    with Flow(name=flow_name, schedule=flow_parameters.scheduler, **flow_config.kwargs) as training_flow:
+    with Flow(name=flow_name, **flow_config.kwargs) as training_flow:
         # TODO: Do we need a check here to see if the dataset is actually older then 30 days?
 
         spectrum_ids = DownloadData(
             flow_parameters.input_dgw,
             flow_parameters.downloading,
-        ).run()
+        )()
 
     return training_flow
