@@ -20,7 +20,6 @@ from datetime import timedelta, date
 class TrainingFlowParameters:
     def __init__(
             self,
-            input_dgw: InputDataGateway,
             spectrum_dgw: SpectrumDataGateway,
             source_uri: str,
             output_dir: str,
@@ -30,14 +29,13 @@ class TrainingFlowParameters:
             dataset_name: str = "gnps.json",
             dataset_checkpoint_name: str = "spectrum_ids.pkl",
     ):
-        self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
 
         self.scheduler = Schedule(
             clocks=[
                 IntervalClock(
                     start_date=date.today(),
-                    interval=timedelta(days=30))
+                    interval=timedelta(days=schedule_task_days))
             ])
 
         if ion_mode not in ION_MODES:
