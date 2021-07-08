@@ -72,7 +72,7 @@ class ProcessSpectrum(Task):
             self.logger, len(spectra), 20, "Binning Spectra task progress"
         )
         binned_spectra = self._spectrum_binner.bin_spectra(
-            cleaned_spectra, progress_logger=progress_logger
+            cleaned_spectra, progress_logger=progress_logger, logger=self.logger
         )
 
         if self._skip_if_exists and not binned_spectra:

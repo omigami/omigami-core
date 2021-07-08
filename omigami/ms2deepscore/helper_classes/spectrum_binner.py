@@ -1,3 +1,4 @@
+from logging import Logger
 from typing import List
 
 from matchms import Spectrum
@@ -16,31 +17,43 @@ class MS2DeepScoreSpectrumBinner:
         self.spectrum_binner = SpectrumBinner(number_of_bins=10000)
 
     def bin_spectra(
-        self, spectra: List[Spectrum], progress_logger: TaskProgressLogger = None
+        self,
+        spectra: List[Spectrum],
+        progress_logger: TaskProgressLogger = None,
+        logger: Logger = None,
     ) -> List[BinnedSpectrum]:
         spectra_ids = [spectrum.metadata["spectrum_id"] for spectrum in spectra]
-        binned_spectra = self.fit_transform(spectra, progress_logger=progress_logger)
+        binned_spectra = self.fit_transform(
+            spectra, progress_logger=progress_logger, logger=logger
+        )
         binned_spectra = [
             spectrum.set("spectrum_id", spectra_ids[i])
             for i, spectrum in enumerate(binned_spectra)
         ]
         return binned_spectra
 
+    # TODO: These two transform functions don't need to be reimplemented. Remove after debugging.
     def fit_transform(
-        self, spectrums: List[Spectrum], progress_logger: TaskProgressLogger = None
+        self,
+        spectrums: List[Spectrum],
+        progress_logger: TaskProgressLogger = None,
+        logger: Logger = None,
     ):
-        print("Collect spectrum peaks...")
+        if logger:
+            logger.info("Collect spectrum peaks...")
         peak_to_position, known_bins = unique_peaks_fixed(
             spectrums,
             self.spectrum_binner.d_bins,
             self.spectrum_binner.mz_max,
             self.spectrum_binner.mz_min,
         )
-        print(f"Calculated embedding dimension: {len(known_bins)}.")
+        if logger:
+            logger.info(f"Calculated embedding dimension: {len(known_bins)}.")
         self.spectrum_binner.peak_to_position = peak_to_position
         self.spectrum_binner.known_bins = known_bins
 
-        print("Convert spectrums to binned spectrums...")
+        if logger:
+            logger.info("Convert spectrums to binned spectrums...")
         return self.transform(spectrums, progress_logger=progress_logger)
 
     def transform(
