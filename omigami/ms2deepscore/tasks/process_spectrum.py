@@ -18,7 +18,6 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: SpectrumDataGateway
-    model_path: str
     skip_if_exists: bool = True
 
 

@@ -13,7 +13,7 @@ from tqdm import tqdm
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spectrum_cleaner import SpectrumCleaner
 
-NUM_CORES = multiprocessing.cpu_count()
+NUM_CORES = multiprocessing.cpu_count() + 8
 
 
 class SpectrumProcessor(SpectrumCleaner):
@@ -23,8 +23,7 @@ class SpectrumProcessor(SpectrumCleaner):
         reference_spectra: bool = True,
         progress_logger: TaskProgressLogger = None,
     ) -> List[Spectrum]:
-
-        processed_spectrum_dicts = Parallel(n_jobs=NUM_CORES)(
+        processed_spectrum_dicts = Parallel(n_jobs=NUM_CORES, verbose=10000)(
             delayed(self._process_spectra)(spectrum, reference_spectra)
             for spectrum in tqdm(spectra)
         )
