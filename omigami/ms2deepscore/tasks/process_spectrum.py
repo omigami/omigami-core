@@ -3,7 +3,7 @@ from typing import Set
 
 from prefect import Task
 
-from omigami.gateways.data_gateway import SpectrumDataGateway
+from omigami.gateways.data_gateway import SpectrumDataGateway, InputDataGateway
 from omigami.gateways.redis_spectrum_data_gateway import REDIS_DB
 from omigami.ms2deepscore.helper_classes.spectrum_binner import (
     MS2DeepScoreSpectrumBinner,
@@ -25,9 +25,11 @@ class ProcessSpectrumParameters:
 class ProcessSpectrum(Task):
     def __init__(
         self,
+        input_dgw: InputDataGateway,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
+        self._input_dgw = input_dgw
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._skip_if_exists = process_parameters.skip_if_exists
         self._model_path = process_parameters.model_path
@@ -38,7 +40,9 @@ class ProcessSpectrum(Task):
 
     def run(self, gnps_path: str = None) -> Set[str]:
         self.logger.info(f"Using Redis DB {REDIS_DB}")
-        spectra_ids = self._spectrum_dgw.list_spectrum_ids()
+
+        spectra = self._input_dgw.load_spectrum(gnps_path)
+        spectra_ids = [sp["SpectrumID"] for sp in spectra]
 
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
