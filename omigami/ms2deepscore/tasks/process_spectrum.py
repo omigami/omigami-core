@@ -36,7 +36,7 @@ class ProcessSpectrum(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self) -> Set[str]:
+    def run(self, gnps_path: str = None) -> Set[str]:
         self.logger.info(f"Using Redis DB {REDIS_DB}")
         spectra_ids = self._spectrum_dgw.list_spectrum_ids()
 
