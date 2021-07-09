@@ -58,8 +58,6 @@ def test_training_flow(flow_config):
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
         mlflow_server="mlflow-server",
-        intensity_weighting_power=0.5,
-        allowed_missing_percentage=5,
         deploy_model=False,
     )
     flow = build_training_flow(
@@ -107,8 +105,6 @@ def test_run_training_flow(
     model_parameters = ModelGeneralParameters(
         model_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
-        intensity_weighting_power=0.5,
-        allowed_missing_percentage=25,
         deploy_model=False,
     )
 

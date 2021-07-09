@@ -55,3 +55,6 @@ spec2vec:
       document_hashes: "document_data"
       embedding_hashes: "embedding_data"
 
+gnps_uri:
+  complete: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
+  partial: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json"

@@ -8,9 +8,6 @@ class Configuration(confuse.Configuration):
 
 config = Configuration("omigami/spec2vec", __name__)
 
-SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
-SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
-
 MODEL_DIRECTORIES = config["storage"]["model_folder"].get(dict)
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
     "spectrum_id_sorted_set"

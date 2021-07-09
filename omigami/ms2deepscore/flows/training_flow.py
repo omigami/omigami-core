@@ -51,8 +51,6 @@ class TrainingFlowParameters:
 class ModelGeneralParameters:
     model_output_dir: str
     mlflow_server: str
-    intensity_weighting_power: Union[float, int] = 0.5
-    allowed_missing_percentage: Union[float, int] = 5.0
     deploy_model: bool = False
 
 
