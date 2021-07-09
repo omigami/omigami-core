@@ -7,23 +7,28 @@ from ms2deepscore.spectrum_binning_fixed import (
     create_peak_list_fixed,
 )
 from ms2deepscore.utils import create_peak_dict
+from prefect.utilities import logging
 
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 
 
 class MS2DeepScoreSpectrumBinner:
-    def __init__(self):
-        self.spectrum_binner = SpectrumBinner(number_of_bins=10000)
+    def __init__(self, n_bins: int = 10000):
+        self.spectrum_binner = SpectrumBinner(number_of_bins=n_bins)
+        self.logger = logging.get_logger("MS2DeepScoreSpectrumBinner")
 
     def bin_spectra(
         self, spectra: List[Spectrum], progress_logger: TaskProgressLogger = None
     ) -> List[BinnedSpectrum]:
-        spectra_ids = [spectrum.metadata["spectrum_id"] for spectrum in spectra]
-        binned_spectra = self.fit_transform(spectra, progress_logger=progress_logger)
+        self.logger.info(f"binning {len(spectra)} spectra")
+        binned_spectra = self.spectrum_binner.fit_transform(spectra)
+
+        # add metadata to binned spectra
         binned_spectra = [
-            spectrum.set("spectrum_id", spectra_ids[i])
-            for i, spectrum in enumerate(binned_spectra)
+            binned_spectrum.set("spectrum_id", raw_spectrum.metadata["spectrum_id"])
+            for binned_spectrum, raw_spectrum in zip(binned_spectra, spectra)
         ]
+
         return binned_spectra
 
     def fit_transform(
@@ -48,6 +53,7 @@ class MS2DeepScoreSpectrumBinner:
         input_spectrums: List[Spectrum],
         progress_logger: TaskProgressLogger = None,
     ) -> List[BinnedSpectrum]:
+
         peak_lists, missing_fractions = create_peak_list_fixed(
             input_spectrums,
             self.spectrum_binner.peak_to_position,

@@ -26,9 +26,7 @@ class MinimalFlowParameters:
         self.input_dgw = input_dgw
         self.model_uri = model_uri
         self.deploying = DeployModelParameters(overwrite, environment)
-        self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, self.model_uri, skip_if_exists
-        )
+        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, skip_if_exists)
 
 
 def build_minimal_flow(

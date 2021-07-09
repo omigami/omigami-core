@@ -1,3 +1,5 @@
+import multiprocessing
+from joblib import Parallel, delayed
 from typing import List, Dict, Optional, Union
 
 from matchms import Spectrum
@@ -6,9 +8,12 @@ from matchms.filtering import (
     require_minimum_number_of_peaks,
 )
 from matchms.importing.load_from_json import as_spectrum
+from tqdm import tqdm
 
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spectrum_cleaner import SpectrumCleaner
+
+NUM_CORES = multiprocessing.cpu_count()
 
 
 class SpectrumProcessor(SpectrumCleaner):
@@ -18,26 +23,33 @@ class SpectrumProcessor(SpectrumCleaner):
         reference_spectra: bool = True,
         progress_logger: TaskProgressLogger = None,
     ) -> List[Spectrum]:
-        processed_spectrum_dicts = []
-        for i, spectrum in enumerate(spectra):
-            if type(spectrum) == dict:
-                spectrum = as_spectrum(spectrum)
-            if spectrum is not None:
-                spectrum = self._apply_filters(spectrum)
-                spectrum = self._apply_ms2deepscore_filters(spectrum)
-                if reference_spectra:
-                    spectrum = self._select_ion_mode(spectrum)
-                    spectrum = self._harmonize_spectrum(spectrum)
-                    spectrum = self._convert_metadata(spectrum)
-                    spectrum = self._check_inchikey(spectrum)
 
-                if spectrum is not None:
-                    processed_spectrum_dicts.append(spectrum)
-
-                if progress_logger:
-                    progress_logger.log(i)
-
+        processed_spectrum_dicts = Parallel(n_jobs=NUM_CORES)(
+            delayed(self._process_spectra)(spectrum, reference_spectra)
+            for spectrum in tqdm(spectra)
+        )
+        processed_spectrum_dicts = [
+            spectra for spectra in processed_spectrum_dicts if spectra is not None
+        ]
         return processed_spectrum_dicts
+
+    def _process_spectra(
+        self,
+        spectrum: Union[Dict, Spectrum],
+        reference_spectra: bool = True,
+    ):
+        if type(spectrum) == dict:
+            spectrum = as_spectrum(spectrum)
+        if spectrum is not None:
+            spectrum = self._apply_filters(spectrum)
+            spectrum = self._apply_ms2deepscore_filters(spectrum)
+            if reference_spectra:
+                spectrum = self._select_ion_mode(spectrum)
+                spectrum = self._harmonize_spectrum(spectrum)
+                spectrum = self._convert_metadata(spectrum)
+                spectrum = self._check_inchikey(spectrum)
+
+                return spectrum
 
     @staticmethod
     def _apply_ms2deepscore_filters(spectrum: Spectrum) -> Spectrum:
