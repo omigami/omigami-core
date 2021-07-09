@@ -18,8 +18,8 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
+from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.spec2vec.config import (
-    SOURCE_URI_PARTIAL_GNPS,
     MODEL_DIRECTORIES,
     DATASET_IDS,
 )
