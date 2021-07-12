@@ -106,15 +106,16 @@ class DownloadData(Task):
         Returns: True or False depending of the files present and the time threshold.
         """
         downloaded_files = pathlib.Path(download_path)
+
+        if not downloaded_files.exists():
+            return True
+
         file_time = datetime.fromtimestamp(downloaded_files.stat().st_mtime)
 
-        if (
-            downloaded_files.exists()
-            and (datetime.now() - file_time).days <= time_threshold_days
-        ):
-            return False
+        if (datetime.now() - file_time).days >= time_threshold_days:
+            return True
 
-        return True
+        return False
 
     def run(self) -> List[str]:
 
