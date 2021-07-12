@@ -1,4 +1,6 @@
+from itertools import repeat
 from logging import Logger
+from multiprocessing import Pool, cpu_count
 from typing import List
 
 from matchms import Spectrum
@@ -23,66 +25,75 @@ class MS2DeepScoreSpectrumBinner:
         logger: Logger = None,
     ) -> List[BinnedSpectrum]:
         spectra_ids = [spectrum.metadata["spectrum_id"] for spectrum in spectra]
-        binned_spectra = self.fit_transform(
-            spectra, progress_logger=progress_logger, logger=logger
-        )
+
+        with Pool(cpu_count()) as pool:
+            binned_spectra = pool.starmap(
+                fit_transform,
+                zip(
+                    spectra,
+                    repeat(self.spectrum_binner),
+                    repeat(progress_logger).repeat(logger),
+                ),
+            )
+
         binned_spectra = [
             spectrum.set("spectrum_id", spectra_ids[i])
             for i, spectrum in enumerate(binned_spectra)
         ]
         return binned_spectra
 
-    # TODO: These two transform functions don't need to be reimplemented. Remove after debugging.
-    def fit_transform(
-        self,
-        spectrums: List[Spectrum],
-        progress_logger: TaskProgressLogger = None,
-        logger: Logger = None,
-    ):
-        if logger:
-            logger.info("Collect spectrum peaks...")
-        peak_to_position, known_bins = unique_peaks_fixed(
-            spectrums,
-            self.spectrum_binner.d_bins,
-            self.spectrum_binner.mz_max,
-            self.spectrum_binner.mz_min,
+
+# TODO: These two transform functions don't need to be reimplemented. Remove after debugging.
+def fit_transform(
+    spectrums: List[Spectrum],
+    spectrum_binner: SpectrumBinner,
+    progress_logger: TaskProgressLogger = None,
+    logger: Logger = None,
+):
+    if logger:
+        logger.info("Collect spectrum peaks...")
+    peak_to_position, known_bins = unique_peaks_fixed(
+        spectrums,
+        spectrum_binner.d_bins,
+        spectrum_binner.mz_max,
+        spectrum_binner.mz_min,
+    )
+    if logger:
+        logger.info(f"Calculated embedding dimension: {len(known_bins)}.")
+    spectrum_binner.peak_to_position = peak_to_position
+    spectrum_binner.known_bins = known_bins
+
+    if logger:
+        logger.info("Convert spectrums to binned spectrums...")
+    return transform(spectrums, spectrum_binner, progress_logger=progress_logger)
+
+
+def transform(
+    input_spectrums: List[Spectrum],
+    spectrum_binner: SpectrumBinner,
+    progress_logger: TaskProgressLogger = None,
+) -> List[BinnedSpectrum]:
+    peak_lists, missing_fractions = create_peak_list_fixed(
+        input_spectrums,
+        spectrum_binner.peak_to_position,
+        spectrum_binner.d_bins,
+        mz_max=spectrum_binner.mz_max,
+        mz_min=spectrum_binner.mz_min,
+        peak_scaling=spectrum_binner.peak_scaling,
+        progress_bar=False,
+    )
+    spectrums_binned = []
+    for i, peak_list in enumerate(peak_lists):
+        assert (
+            100 * missing_fractions[i] <= spectrum_binner.allowed_missing_percentage
+        ), f"{100*missing_fractions[i]:.2f} of weighted spectrum is unknown to the model."
+        spectrum = BinnedSpectrum(
+            binned_peaks=create_peak_dict(peak_list),
+            metadata={"inchikey": input_spectrums[i].get("inchikey")},
         )
-        if logger:
-            logger.info(f"Calculated embedding dimension: {len(known_bins)}.")
-        self.spectrum_binner.peak_to_position = peak_to_position
-        self.spectrum_binner.known_bins = known_bins
+        spectrums_binned.append(spectrum)
 
-        if logger:
-            logger.info("Convert spectrums to binned spectrums...")
-        return self.transform(spectrums, progress_logger=progress_logger)
+        if progress_logger:
+            progress_logger.log(i)
 
-    def transform(
-        self,
-        input_spectrums: List[Spectrum],
-        progress_logger: TaskProgressLogger = None,
-    ) -> List[BinnedSpectrum]:
-        peak_lists, missing_fractions = create_peak_list_fixed(
-            input_spectrums,
-            self.spectrum_binner.peak_to_position,
-            self.spectrum_binner.d_bins,
-            mz_max=self.spectrum_binner.mz_max,
-            mz_min=self.spectrum_binner.mz_min,
-            peak_scaling=self.spectrum_binner.peak_scaling,
-            progress_bar=False,
-        )
-        spectrums_binned = []
-        for i, peak_list in enumerate(peak_lists):
-            assert (
-                100 * missing_fractions[i]
-                <= self.spectrum_binner.allowed_missing_percentage
-            ), f"{100*missing_fractions[i]:.2f} of weighted spectrum is unknown to the model."
-            spectrum = BinnedSpectrum(
-                binned_peaks=create_peak_dict(peak_list),
-                metadata={"inchikey": input_spectrums[i].get("inchikey")},
-            )
-            spectrums_binned.append(spectrum)
-
-            if progress_logger:
-                progress_logger.log(i)
-
-        return spectrums_binned
+    return spectrums_binned
