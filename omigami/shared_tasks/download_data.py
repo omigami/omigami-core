@@ -6,13 +6,34 @@ from prefect import Task
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
+import os
+from datetime import datetime
+import pathlib
+
 
 @dataclass
 class DownloadParameters:
+    """
+    Dataclass to specify parameters to download a dataset with the Download Task
+
+    Parameters
+    ----------
+    input_uri: str
+        URI to the dataset
+    output_dir: str
+        Output directory for the downloaded data
+    dataset_id: str
+        ID of the dataset
+    dataset_file: str = "gnps.json"
+        Filename of the dataset
+    checkpoint_file: str = "spectrum_ids.pkl"
+        Filename of the checkpointfile
+    -------
+    """
+
     input_uri: str
     output_dir: str
     dataset_id: str
-    # these are changed from defaults during tests only
     dataset_file: str = "gnps.json"
     checkpoint_file: str = "spectrum_ids.pkl"
 
@@ -37,6 +58,19 @@ class DownloadParameters:
 
 
 class DownloadData(Task):
+    """
+    Prefect Task for downloading and saving a Dataset.
+
+    Parameters:
+    ----------
+    input_dgw: InputDataGateway
+        Class that holds the functions and requirments to download the dataset in need
+    download_parameters: DownloadParameters
+        Dataclass holding variables for the downloading process
+    ----------
+
+    """
+
     def __init__(
         self,
         input_dgw: InputDataGateway,
@@ -56,8 +90,37 @@ class DownloadData(Task):
             checkpoint=True,
         )
 
+    def refresh_download(
+        self, download_path: str, time_threshold_days: int = 30
+    ) -> bool:
+        """
+        Checks if the data has already been downloaded and is older then time_threshold_days.
+
+        Parameters:
+        ----------
+        download_path: str
+            Path to the downloaded file
+        time_threshold_days: int
+            Threshold that determines when the data should be downloaded again.
+
+        Returns: True or False depending of the files present and the time threshold.
+        """
+        downloaded_files = pathlib.Path(download_path)
+        file_time = datetime.fromtimestamp(downloaded_files.stat().st_mtime)
+
+        if (
+            downloaded_files.exists()
+            and (datetime.now() - file_time).days <= time_threshold_days
+        ):
+            return False
+
+        return True
+
     def run(self) -> List[str]:
-        self._input_dgw.download_gnps(self.input_uri, self.download_path)
+
+        if self.refresh_download(self.download_path):
+            self._input_dgw.download_gnps(self.input_uri, self.download_path)
+
         spectrum_ids = self._input_dgw.get_spectrum_ids(self.download_path)
         self._input_dgw.serialize_to_file(self.checkpoint_path, spectrum_ids)
         self.logger.info(

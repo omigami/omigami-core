@@ -30,14 +30,17 @@ class TrainingFlowParameters:
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
 
-        self.schedule = Schedule(
-            clocks=[
-                IntervalClock(
-                    start_date=datetime.combine(date.today(), datetime.min.time()),
-                    interval=timedelta(days=schedule_task_days),
-                )
-            ]
-        )
+        if schedule_task_days != None:
+            self.schedule = Schedule(
+                clocks=[
+                    IntervalClock(
+                        start_date=datetime.combine(date.today(), datetime.min.time()),
+                        interval=timedelta(days=schedule_task_days),
+                    )
+                ]
+            )
+        else:
+            self.schedule = None
 
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
