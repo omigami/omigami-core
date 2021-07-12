@@ -18,7 +18,6 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: SpectrumDataGateway
-    input_dgw: InputDataGateway
     model_path: str
     skip_if_exists: bool = True
 
@@ -26,10 +25,11 @@ class ProcessSpectrumParameters:
 class ProcessSpectrum(Task):
     def __init__(
         self,
+        input_dgw: InputDataGateway,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
-        self._input_dgw = process_parameters.input_dgw
+        self._input_dgw = input_dgw
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._skip_if_exists = process_parameters.skip_if_exists
         self._model_path = process_parameters.model_path

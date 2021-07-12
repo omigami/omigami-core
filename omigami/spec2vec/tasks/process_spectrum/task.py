@@ -15,6 +15,7 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: SpectrumDataGateway
+    input_dgw: InputDataGateway
     n_decimals: int = 2
     skip_if_exists: bool = True
 
