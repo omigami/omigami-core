@@ -3,6 +3,7 @@ from logging import Logger
 from multiprocessing import Pool, cpu_count
 from typing import List
 
+import numpy as np
 from matchms import Spectrum
 from ms2deepscore import BinnedSpectrum, SpectrumBinner
 from ms2deepscore.spectrum_binning_fixed import (
@@ -26,16 +27,28 @@ class MS2DeepScoreSpectrumBinner:
     ) -> List[BinnedSpectrum]:
         spectra_ids = [spectrum.metadata["spectrum_id"] for spectrum in spectra]
 
-        with Pool(cpu_count()) as pool:
+        divisions = cpu_count()
+        if logger:
+            logger.info(f"Performing parallelized binning on {divisions} CPUs.")
+
+        spectra_divided = []
+
+        division_len = np.ceil(len(spectra) / divisions)
+        for i in range(0, len(spectra), division_len):
+            spectra_divided.append(spectra[i : min(i + division_len, len(spectra))])
+
+        with Pool(divisions) as pool:
             binned_spectra = pool.starmap(
                 fit_transform,
                 zip(
-                    spectra,
+                    spectra_divided,
                     repeat(self.spectrum_binner),
                     repeat(progress_logger),
                     repeat(logger),
                 ),
             )
+
+        binned_spectra = [item for sublist in binned_spectra for item in sublist]
 
         binned_spectra = [
             spectrum.set("spectrum_id", spectra_ids[i])
