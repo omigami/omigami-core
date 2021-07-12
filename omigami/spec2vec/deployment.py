@@ -12,6 +12,7 @@ from omigami.config import (
     REDIS_DATABASES,
     S3_BUCKETS,
     IonModes,
+    DATASET_IDS,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -21,7 +22,6 @@ from omigami.flow_config import (
 from omigami.spec2vec.config import (
     SOURCE_URI_PARTIAL_GNPS,
     MODEL_DIRECTORIES,
-    DATASET_IDS,
 )
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
