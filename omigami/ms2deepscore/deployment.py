@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 from typing import Optional
 
 from prefect import Client
@@ -17,7 +17,6 @@ from omigami.flow_config import (
 )
 from omigami.ms2deepscore.config import (
     MODEL_DIRECTORIES,
-    DATASET_IDS,
 )
 from omigami.ms2deepscore.flows.minimal_flow import (
     build_minimal_flow,
@@ -31,7 +30,6 @@ from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 
 def deploy_minimal_flow(
     image: str,
-    dataset_name: str,
     project_name: str = PROJECT_NAME,
     mlflow_server: str = MLFLOW_SERVER,
     flow_name: str = "ms2deepscore-minimal-flow",
@@ -77,13 +75,11 @@ def deploy_minimal_flow(
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
-    dataset_id = DATASET_IDS[environment][dataset_name].format(date=datetime.today())
 
     flow_parameters = MinimalFlowParameters(
         model_uri=MODEL_DIRECTORIES[environment]["pre-trained-model"],
         input_dgw=input_dgw,
         overwrite=overwrite,
-        dataset_id=dataset_id,
         environment=environment,
         spectrum_dgw=spectrum_dgw,
         skip_if_exists=skip_if_exists,
