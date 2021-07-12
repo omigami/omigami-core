@@ -29,7 +29,7 @@ class MinimalFlowParameters:
         self.dataset_id = dataset_id
         self.deploying = DeployModelParameters(overwrite, environment)
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, input_dgw, self.model_uri, skip_if_exists
+            spectrum_dgw, self.model_uri, skip_if_exists
         )
 
 
