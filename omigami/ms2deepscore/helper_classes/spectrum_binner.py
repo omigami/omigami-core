@@ -33,7 +33,7 @@ class MS2DeepScoreSpectrumBinner:
 
         spectra_divided = []
 
-        division_len = np.ceil(len(spectra) / divisions)
+        division_len = int(np.ceil(len(spectra) / divisions))
         for i in range(0, len(spectra), division_len):
             spectra_divided.append(spectra[i : min(i + division_len, len(spectra))])
 
