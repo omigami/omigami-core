@@ -5,12 +5,45 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 
+import datetime
+import os
+import time
+
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.utils import create_prefect_result_from_path
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.shared_tasks.download_data import DownloadParameters, DownloadData
 from omigami.test.conftest import ASSETS_DIR
+
+
+def test_refresh_data(mock_default_config, tmpdir):
+    file_name = "file_name"
+    file_dir = f"{tmpdir}/{file_name}"
+
+    input_dgw = MagicMock(spec=InputDataGateway)
+    download_params = DownloadParameters("input-uri", tmpdir, file_name, "checkpoint")
+
+    download = DownloadData(
+        input_dgw,
+        download_params,
+    )
+
+    is_no_file = download.refresh_download(file_dir)
+
+    open(file_dir, "a").close()
+
+    is_young_file = download.refresh_download(file_dir)
+    date = datetime.datetime(year=2017, month=11, day=5, hour=19, minute=50, second=20)
+
+    modTime = time.mktime(date.timetuple())
+    os.utime(file_dir, (modTime, modTime))
+
+    is_old_file = download.refresh_download(file_dir)
+
+    assert is_no_file
+    assert not is_young_file
+    assert is_old_file
 
 
 def test_download_data(mock_default_config, tmpdir):
