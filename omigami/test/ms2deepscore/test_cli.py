@@ -12,6 +12,7 @@ def cli_parameters():
         project_name=PROJECT_NAME,
         mlflow_server=MLFLOW_SERVER,
         flow_name="ms2deepscore-minimal-flow",
+        dataset_name="small",
         environment="dev",
         deploy_model=False,
         overwrite=False,
@@ -32,7 +33,13 @@ def test_deploy_default_training_flow(monkeypatch, cli_parameters):
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ["register-training-flow", "--image", "my-image"],
+            [
+                "register-training-flow",
+                "--image",
+                "my-image",
+                "--dataset-name",
+                "small",
+            ],
         )
 
     assert result.exit_code == 0
@@ -54,6 +61,8 @@ def test_deploy_custom_training_flow(monkeypatch, cli_parameters):
                 "register-training-flow",
                 "--image",
                 "my-image",
+                "--dataset-name",
+                "small",
                 "--mlflow-server",
                 "custom-url",
                 "--env",
