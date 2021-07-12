@@ -16,9 +16,10 @@ class MS2DeepScoreSpectrumBinner:
         spectra: List[Spectrum],
         logger: Logger = None,
     ) -> List[BinnedSpectrum]:
-        spectra_ids = [spectrum.metadata["spectrum_id"] for spectrum in spectra]
         if not spectra:
             return []
+
+        spectra_ids = [spectrum.metadata["spectrum_id"] for spectrum in spectra]
 
         divisions = cpu_count()
         if logger:
