@@ -16,7 +16,7 @@ class SpectrumProcessor(SpectrumCleaner):
     def process_spectra(
         self,
         spectra: Union[List[Dict], List[Spectrum]],
-        reference_spectra: bool = True,
+        process_reference_spectra: bool = True,
         progress_logger: TaskProgressLogger = None,
     ) -> List[Spectrum]:
         processed_spectrum_dicts = []
@@ -26,10 +26,11 @@ class SpectrumProcessor(SpectrumCleaner):
             if spectrum is not None:
                 spectrum = self._apply_filters(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
-                if reference_spectra:
+                if process_reference_spectra:
                     spectrum = self._select_ion_mode(spectrum)
                     spectrum = self._harmonize_spectrum(spectrum)
                     spectrum = self._convert_metadata(spectrum)
+                    spectrum = self._run_missing_smiles_inchi_against_pubchem(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
                 if spectrum is not None:
@@ -49,7 +50,12 @@ class SpectrumProcessor(SpectrumCleaner):
         spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)
         return spectrum
 
-    def _run_missing_smiles_inchi_against_pubchem(self, spectrum: Spectrum) -> Spectrum:
+    @staticmethod
+    def _run_missing_smiles_inchi_against_pubchem(
+        spectrum: Spectrum,
+    ) -> Optional[Spectrum]:
+        if not spectrum:
+            return None
         name_original = spectrum.get("compound_name")
         name = name_original.replace("F dial M", "")
         # Remove last word if likely not correct:
@@ -66,7 +72,6 @@ class SpectrumProcessor(SpectrumCleaner):
         ]:
             name = " ".join(name.split(" ")[:-1]).strip()
         if name != name_original:
-            print(f"Changed compound name from {name_original} to {name}.")
             spectrum.set("compound_name", name)
 
         return pubchem_metadata_lookup(spectrum)
