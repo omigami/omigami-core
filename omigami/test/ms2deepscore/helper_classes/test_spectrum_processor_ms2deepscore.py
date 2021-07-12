@@ -61,3 +61,11 @@ def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processo
         spectrum_with_not_enough_peaks
     )
     assert filtered_spectrum is None
+
+
+def test_run_missing_smiles_inchi_against_pubchem(loaded_data, spectrum_processor):
+    cleaned_data = spectrum_processor.process_spectra(loaded_data, False)
+    for spectrum in cleaned_data:
+        filtered_spectrum = (
+            spectrum_processor._run_missing_smiles_inchi_against_pubchem(spectrum)
+        )

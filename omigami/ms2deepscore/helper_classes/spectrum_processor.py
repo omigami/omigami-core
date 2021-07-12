@@ -6,9 +6,10 @@ from matchms.filtering import (
     require_minimum_number_of_peaks,
 )
 from matchms.importing.load_from_json import as_spectrum
-
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spectrum_cleaner import SpectrumCleaner
+
+from matchmsextras.pubchem_lookup import pubchem_metadata_lookup
 
 
 class SpectrumProcessor(SpectrumCleaner):
@@ -47,6 +48,28 @@ class SpectrumProcessor(SpectrumCleaner):
         spectrum = select_by_mz(spectrum, mz_from=10.0, mz_to=1000.0)
         spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)
         return spectrum
+
+    def _run_missing_smiles_inchi_against_pubchem(self, spectrum: Spectrum) -> Spectrum:
+        name_original = spectrum.get("compound_name")
+        name = name_original.replace("F dial M", "")
+        # Remove last word if likely not correct:
+        if name.split(" ")[-1] in [
+            "M",
+            "M?",
+            "?",
+            "M+2H/2",
+            "MS34+Na",
+            "M]",
+            "Cat+M]",
+            "Unk",
+            "--",
+        ]:
+            name = " ".join(name.split(" ")[:-1]).strip()
+        if name != name_original:
+            print(f"Changed compound name from {name_original} to {name}.")
+            spectrum.set("compound_name", name)
+
+        return pubchem_metadata_lookup(spectrum)
 
     @staticmethod
     def _check_inchikey(spectrum: Spectrum) -> Optional[Spectrum]:
