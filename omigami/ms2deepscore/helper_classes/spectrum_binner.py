@@ -32,7 +32,8 @@ class MS2DeepScoreSpectrumBinner:
                 zip(
                     spectra,
                     repeat(self.spectrum_binner),
-                    repeat(progress_logger).repeat(logger),
+                    repeat(progress_logger),
+                    repeat(logger),
                 ),
             )
 
