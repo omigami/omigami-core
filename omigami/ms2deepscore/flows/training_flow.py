@@ -86,7 +86,6 @@ def build_training_flow(
     """
 
     with Flow(name=flow_name, **flow_config.kwargs) as training_flow:
-        # TODO: Do we need a check here to see if the dataset is actually older then 30 days?
 
         spectrum_ids = DownloadData(
             flow_parameters.input_dgw,

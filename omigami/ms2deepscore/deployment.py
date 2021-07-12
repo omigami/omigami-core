@@ -20,7 +20,7 @@ from omigami.ms2deepscore.flows.minimal_flow import (
     build_minimal_flow,
     MinimalFlowParameters,
 )
-from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.input_data_gateway import FSInputDataGateway
 
 
 def deploy_minimal_flow(
