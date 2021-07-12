@@ -20,7 +20,7 @@ from omigami.ms2deepscore.flows.training_flow import (
 )
 
 from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
 from omigami.test.conftest import ASSETS_DIR
