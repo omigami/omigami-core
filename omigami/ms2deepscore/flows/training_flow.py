@@ -9,7 +9,7 @@ from prefect.schedules.clocks import IntervalClock
 from omigami.config import IonModes, ION_MODES
 from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
-from omigami.shared_tasks import DownloadData, DownloadParameters
+from omigami.tasks import DownloadData, DownloadParameters
 
 from datetime import timedelta, date, datetime
 
@@ -50,6 +50,7 @@ class TrainingFlowParameters:
         )
 
 
+# Add to model task when it is created
 @dataclass
 class ModelGeneralParameters:
     model_output_dir: str

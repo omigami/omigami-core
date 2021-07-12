@@ -1,1 +1,0 @@
-from omigami.shared_tasks.download_data import DownloadData, DownloadParameters
