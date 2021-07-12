@@ -7,6 +7,7 @@ from typing import List, Iterable, Dict, Set
 
 import redis
 from matchms import Spectrum
+from ms2deepscore import BinnedSpectrum
 from spec2vec import SpectrumDocument
 
 from omigami.spec2vec.config import (
@@ -102,6 +103,12 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
 
+    def _list_spectrum_ids_not_exist(
+        self, hash_name: str, spectrum_ids: List[str]
+    ) -> List[str]:
+        self._init_client()
+        return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]
+
     def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
         pass
 
@@ -110,10 +117,24 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     ):
         pass
 
+    def read_embeddings(
+        self, run_id: str, spectrum_ids: List[str] = None
+    ) -> List[Embedding]:
+        pass
+
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
         pass
 
     def read_documents_iter(self, spectrum_ids: List[str] = None) -> Iterable:
+        pass
+
+    def list_binned_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
+        pass
+
+    def write_binned_spectra(self, binned_spectra: List[BinnedSpectrum]):
+        pass
+
+    def read_binned_spectra(self, spectrum_ids: List[str] = None):
         pass
 
 

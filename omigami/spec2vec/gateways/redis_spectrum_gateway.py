@@ -87,9 +87,3 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         """Returns an iterator that yields Redis object one by one"""
         self._init_client()
         return RedisHashesIterator(self, DOCUMENT_HASHES, spectrum_ids)
-
-    def _list_spectrum_ids_not_exist(
-        self, hash_name: str, spectrum_ids: List[str]
-    ) -> List[str]:
-        self._init_client()
-        return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]

@@ -7,24 +7,35 @@ from matchms.filtering import (
 )
 from matchms.importing.load_from_json import as_spectrum
 
+from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 class SpectrumProcessor(SpectrumCleaner):
-    def process_spectra(self, spectra: Union[List[Dict], List[Spectrum]]):
+    def process_spectra(
+        self,
+        spectra: Union[List[Dict], List[Spectrum]],
+        reference_spectra: bool = True,
+        progress_logger: TaskProgressLogger = None,
+    ) -> List[Spectrum]:
         processed_spectrum_dicts = []
-        for spectrum in spectra:
+        for i, spectrum in enumerate(spectra):
             if type(spectrum) == dict:
                 spectrum = as_spectrum(spectrum)
             if spectrum is not None:
                 spectrum = self._apply_filters(spectrum)
-                spectrum = self._harmonize_spectrum(spectrum)
-                # spectrum = self._convert_metadata(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
-                # spectrum = self._check_inchikey(spectrum)
+                if reference_spectra:
+                    spectrum = self._select_ion_mode(spectrum)
+                    spectrum = self._harmonize_spectrum(spectrum)
+                    spectrum = self._convert_metadata(spectrum)
+                    spectrum = self._check_inchikey(spectrum)
 
                 if spectrum is not None:
                     processed_spectrum_dicts.append(spectrum)
+
+                if progress_logger:
+                    progress_logger.log(i)
 
         return processed_spectrum_dicts
 
@@ -33,13 +44,23 @@ class SpectrumProcessor(SpectrumCleaner):
         """Remove spectra with less than 5 peaks with m/z values
         in the range between 10.0 and 1000.0 Da
         """
-        spectrum = select_by_mz(spectrum, mz_from=10.0, mz_to=400.0)
+        spectrum = select_by_mz(spectrum, mz_from=10.0, mz_to=1000.0)
         spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)
         return spectrum
 
     @staticmethod
     def _check_inchikey(spectrum: Spectrum) -> Optional[Spectrum]:
-        inchikey = spectrum.get("inchikey")
-        if inchikey is not None and len(inchikey) > 13:
-            if spectrum.get("smiles") or spectrum.get("inchi"):
-                return spectrum
+        if spectrum:
+            inchikey = spectrum.metadata.get("inchikey")
+            if inchikey is not None and len(inchikey) > 13:
+                if spectrum.get("smiles") or spectrum.get("inchi"):
+                    return spectrum
+
+    def _select_ion_mode(self, spectrum: Spectrum) -> Optional[Spectrum]:
+        # while we only support the already trained model, we just use the positive
+        # spectra
+        if spectrum:
+            ion_mode = spectrum.metadata.get("ionmode")
+            if ion_mode:
+                if ion_mode.lower() == "positive":
+                    return spectrum

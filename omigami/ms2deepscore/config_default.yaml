@@ -6,3 +6,5 @@ storage:
     prod:
       pre-trained-model: "s3://omigami/ms2deepscore/model/pre-trained/ms2deep_score.hdf5"
       mlflow: "s3://omigami/ms2deepscore/mlflow/"
+  redis:
+    binned_spectrum_hashes: "binned_spectrum_data"
