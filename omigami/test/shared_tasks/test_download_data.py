@@ -19,7 +19,6 @@ from omigami.test.conftest import ASSETS_DIR
 
 def test_refresh_data(mock_default_config, tmpdir):
     file_name = "file_name"
-    file_dir = f"{tmpdir}/{file_name}"
 
     input_dgw = MagicMock(spec=InputDataGateway)
     download_params = DownloadParameters("input-uri", tmpdir, file_name, "checkpoint")
@@ -29,6 +28,7 @@ def test_refresh_data(mock_default_config, tmpdir):
         download_params,
     )
 
+    file_dir = f"{tmpdir}/test"
     is_no_file = download.refresh_download(file_dir)
 
     open(file_dir, "a").close()
