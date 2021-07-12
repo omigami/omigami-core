@@ -5,7 +5,9 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore.models import load_model as ms2deepscore_load_model
 from ms2deepscore import BinnedSpectrum
-from omigami.gateways.redis_spectrum_data_gateway import RedisSpectrumDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
+)
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
 )
