@@ -18,6 +18,10 @@ from omigami.test.conftest import ASSETS_DIR
 
 
 def test_refresh_data(mock_default_config, tmpdir):
+    """
+    Test if the file is present, younger then 30 days and older then 30 days.
+    """
+    # Setting up test
     file_name = "file_name"
 
     input_dgw = MagicMock(spec=InputDataGateway)
@@ -29,18 +33,25 @@ def test_refresh_data(mock_default_config, tmpdir):
     )
 
     file_dir = f"{tmpdir}/test"
+
+    # Running function and collecting results
+    # Check if file is present
     is_no_file = download.refresh_download(file_dir)
 
     open(file_dir, "a").close()
 
+    # Check if file is younger then 30 days
     is_young_file = download.refresh_download(file_dir)
-    date = datetime.datetime(year=2017, month=11, day=5, hour=19, minute=50, second=20)
 
+    # Changing file creation date to 2017
+    date = datetime.datetime(year=2017, month=11, day=5, hour=19, minute=50, second=20)
     modTime = time.mktime(date.timetuple())
     os.utime(file_dir, (modTime, modTime))
 
+    # check if file is older then 30 days
     is_old_file = download.refresh_download(file_dir)
 
+    # Evaluating results
     assert is_no_file
     assert not is_young_file
     assert is_old_file
