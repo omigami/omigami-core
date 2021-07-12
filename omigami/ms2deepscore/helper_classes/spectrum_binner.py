@@ -79,14 +79,20 @@ def fit_transform(
 
     if logger:
         logger.info("Convert spectrums to binned spectrums...")
-    return transform(spectrums, spectrum_binner, progress_logger=progress_logger)
+    return transform(
+        spectrums, spectrum_binner, progress_logger=progress_logger, logger=logger
+    )
 
 
 def transform(
     input_spectrums: List[Spectrum],
     spectrum_binner: SpectrumBinner,
     progress_logger: TaskProgressLogger = None,
+    logger: Logger = None,
 ) -> List[BinnedSpectrum]:
+    if logger:
+        logger.info("Creating fixed peak list.")
+
     peak_lists, missing_fractions = create_peak_list_fixed(
         input_spectrums,
         spectrum_binner.peak_to_position,
@@ -96,6 +102,10 @@ def transform(
         peak_scaling=spectrum_binner.peak_scaling,
         progress_bar=False,
     )
+
+    if logger:
+        logger.info("Finished creating fixed peak list. Binning.")
+
     spectrums_binned = []
     for i, peak_list in enumerate(peak_lists):
         assert (
