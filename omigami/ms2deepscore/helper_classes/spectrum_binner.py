@@ -26,6 +26,8 @@ class MS2DeepScoreSpectrumBinner:
         logger: Logger = None,
     ) -> List[BinnedSpectrum]:
         spectra_ids = [spectrum.metadata["spectrum_id"] for spectrum in spectra]
+        if not spectra:
+            return []
 
         divisions = cpu_count()
         if logger:
@@ -34,6 +36,7 @@ class MS2DeepScoreSpectrumBinner:
         spectra_divided = []
 
         division_len = int(np.ceil(len(spectra) / divisions))
+
         for i in range(0, len(spectra), division_len):
             spectra_divided.append(spectra[i : min(i + division_len, len(spectra))])
 
