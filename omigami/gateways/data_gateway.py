@@ -85,6 +85,12 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
+    def read_embeddings(
+        self, run_id: str, spectrum_ids: List[str] = None
+    ) -> List[Embedding]:
+        pass
+
+    @abstractmethod
     def delete_spectra(self, spectrum_ids: List[str]):
         """Deletes spectra using their IDs."""
         pass
@@ -100,4 +106,21 @@ class SpectrumDataGateway(ABC):
     ) -> List[str]:
         """Get the spectrum IDs of spectra stored on redis that have a Precursor_MZ
         within the given range. Return a list spectrum IDs."""
+        pass
+
+    @abstractmethod
+    def list_missing_binned_spectra(self, spectrum_ids: List[str]) -> List[str]:
+        """Check whether document exist on Redis.
+        Return a list of IDs that do not exist.
+        """
+        pass
+
+    @abstractmethod
+    def write_binned_spectra(self, binned_spectra: List):
+        """Write binned spectra to Redis."""
+        pass
+
+    @abstractmethod
+    def read_binned_spectra(self, spectrum_ids: List[str] = None):
+        """Read binned spectra from Redis."""
         pass

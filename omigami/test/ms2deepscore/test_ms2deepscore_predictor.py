@@ -58,9 +58,12 @@ def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
     reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
     "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
 )
-def test_get_best_matches(binned_spectra, ms2deepscore_real_predictor):
+def test_get_best_matches(
+    binned_spectra_from_real_predictor, ms2deepscore_real_predictor
+):
     positive_spectra_ids = [
-        spectrum.metadata["spectrum_id"] for spectrum in binned_spectra
+        spectrum.metadata["spectrum_id"]
+        for spectrum in binned_spectra_from_real_predictor
     ]
     spectrum_ids_near_queries_mz = [
         positive_spectra_ids,
@@ -68,16 +71,18 @@ def test_get_best_matches(binned_spectra, ms2deepscore_real_predictor):
     ]
     n_best_spectra = 2
     best_matches = {}
-    for i, query in enumerate(binned_spectra[:2]):
+    for i, query in enumerate(binned_spectra_from_real_predictor[:2]):
         input_best_matches = ms2deepscore_real_predictor._calculate_best_matches(
-            binned_spectra,
+            binned_spectra_from_real_predictor,
             spectrum_ids_near_queries_mz[i],
             query,
             n_best_spectra=n_best_spectra,
         )
         best_matches[query.metadata["spectrum_id"]] = input_best_matches
 
-    for query, (best_match_id, best_match) in zip(binned_spectra, best_matches.items()):
+    for query, (best_match_id, best_match) in zip(
+        binned_spectra_from_real_predictor, best_matches.items()
+    ):
         assert len(best_match) == n_best_spectra
         assert query.metadata["spectrum_id"] == best_match_id
         assert "score" in pd.DataFrame(best_match).T.columns

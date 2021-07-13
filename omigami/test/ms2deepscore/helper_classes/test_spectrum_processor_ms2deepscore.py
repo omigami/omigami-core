@@ -2,7 +2,9 @@ import pytest
 from matchms import Spectrum
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.ms2deepscore.helper_classes.spectrum_processor import SpectrumProcessor
+from omigami.ms2deepscore.helper_classes.spectrum_processor import (
+    SpectrumProcessor,
+)
 
 
 @pytest.fixture
@@ -16,8 +18,7 @@ def spectrum(loaded_data):
 
 
 def test_process_spectra(loaded_data, spectrum_processor):
-    cleaned_data = spectrum_processor.process_spectra(loaded_data)
-
+    cleaned_data = spectrum_processor.process_spectra(loaded_data, True)
     assert isinstance(cleaned_data[0], Spectrum)
 
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None

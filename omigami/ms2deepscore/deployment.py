@@ -24,6 +24,9 @@ from omigami.ms2deepscore.flows.minimal_flow import (
     build_minimal_flow,
     MinimalFlowParameters,
 )
+from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 
 
@@ -42,6 +45,7 @@ def deploy_minimal_flow(
     username: Optional[str] = None,
     password: Optional[str] = None,
     api_server: Optional[str] = None,
+    skip_if_exists: bool = True,
 ):
     """
     Deploys a model minimal flow to Prefect cloud and optionally deploys it as a
@@ -81,11 +85,15 @@ def deploy_minimal_flow(
     mlflow_output_dir = MODEL_DIRECTORIES[environment]["mlflow"]
 
     input_dgw = FSInputDataGateway()
+    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
     flow_parameters = MinimalFlowParameters(
+        model_uri=MODEL_DIRECTORIES[environment]["pre-trained-model"],
         input_dgw=input_dgw,
         overwrite=overwrite,
         environment=environment,
+        spectrum_dgw=spectrum_dgw,
+        skip_if_exists=skip_if_exists,
     )
 
     flow_config = make_flow_config(
