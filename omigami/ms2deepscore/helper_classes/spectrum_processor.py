@@ -56,6 +56,9 @@ class SpectrumProcessor(SpectrumCleaner):
     ) -> Optional[Spectrum]:
         if not spectrum:
             return None
+        if spectrum.metadata.get("inchikey"):
+            return spectrum
+
         name_original = spectrum.get("compound_name")
         name = name_original.replace("F dial M", "")
         # Remove last word if likely not correct:
