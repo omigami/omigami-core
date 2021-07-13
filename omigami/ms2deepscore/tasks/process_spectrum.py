@@ -5,11 +5,13 @@ from prefect import Task
 
 from omigami.gateways.data_gateway import SpectrumDataGateway
 from omigami.gateways.redis_spectrum_data_gateway import REDIS_DB
-from omigami.ms2deepscore.helper_classes.spectrum_binner import SpectrumBinner
-from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
+from omigami.ms2deepscore.helper_classes.spectrum_binner import (
+    MS2DeepScoreSpectrumBinner,
+)
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
+from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
 
 
@@ -30,7 +32,7 @@ class ProcessSpectrum(Task):
         self._skip_if_exists = process_parameters.skip_if_exists
         self._model_path = process_parameters.model_path
         self._processor = SpectrumProcessor()
-        self._spectrum_binner = SpectrumBinner()
+        self._spectrum_binner = MS2DeepScoreSpectrumBinner()
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
@@ -40,7 +42,7 @@ class ProcessSpectrum(Task):
 
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
-            new_spectrum_ids = self._spectrum_dgw.list_binned_spectra_not_exist(
+            new_spectrum_ids = self._spectrum_dgw.list_missing_binned_spectra(
                 spectra_ids
             )
             if not new_spectrum_ids:
@@ -63,9 +65,7 @@ class ProcessSpectrum(Task):
         cleaned_spectra = self._processor.process_spectra(
             list(spectra.values()), progress_logger=progress_logger
         )
-        binned_spectra = self._spectrum_binner.bin_spectra(
-            cleaned_spectra, self._model_path
-        )
+        binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
 
         if self._skip_if_exists and not binned_spectra:
             self.logger.info("No new spectra have been processed.")
