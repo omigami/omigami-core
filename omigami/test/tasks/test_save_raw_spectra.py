@@ -1,7 +1,7 @@
 import pytest
 from omigami.tasks.save_raw_spectra import SaveRawSpectra
 
-from prefact import Flow
+from prefect import Flow
 
 
 def test_download_data(mock_default_config, tmpdir):
