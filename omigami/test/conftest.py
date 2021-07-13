@@ -8,6 +8,7 @@ import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
 from pytest_redis import factories
+from typing import List, Dict
 
 import omigami
 import omigami.config
@@ -45,13 +46,13 @@ def pytest_configure(config):
 
 
 @pytest.fixture(scope="module")
-def local_gnps_small_json():
+def local_gnps_small_json() -> str:
     path = str(ASSETS_DIR / "SMALL_GNPS.json")
     return path
 
 
 @pytest.fixture(scope="module")
-def loaded_data(local_gnps_small_json):
+def loaded_data(local_gnps_small_json) -> List[Dict[int:str]]:
     with open(local_gnps_small_json, "rb") as f:
         items = ijson.items(f, "item", multiple_values=True)
         results = [{k: item[k] for k in KEYS} for item in items]
@@ -59,7 +60,7 @@ def loaded_data(local_gnps_small_json):
 
 
 @pytest.fixture(scope="module")
-def spectrum_ids_by_mode(loaded_data):
+def spectrum_ids_by_mode(loaded_data) -> Dict[int:list]:
     spectrum_ids = {"positive": [], "negative": []}
 
     for spectrum in loaded_data:
