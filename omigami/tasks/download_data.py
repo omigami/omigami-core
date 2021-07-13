@@ -6,7 +6,6 @@ from prefect import Task
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
-import os
 from datetime import datetime
 import pathlib
 
