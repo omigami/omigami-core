@@ -4,7 +4,7 @@ from omigami.tasks.save_raw_spectra import SaveRawSpectra
 from prefect import Flow
 
 
-def test_download_data(mock_default_config, tmpdir):
+def test_save_raw_spectra(mock_default_config, tmpdir):
 
     with Flow("test-flow") as test_flow:
         raw_spectra = SaveRawSpectra()()
