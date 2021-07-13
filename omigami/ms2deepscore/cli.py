@@ -35,6 +35,7 @@ def cli():
 
 @cli.command(name="register-training-flow")
 @click.option("--image", "-i", type=str, required=True)
+@click.option("--dataset-name", "-d", type=str, required=True)
 @add_click_options(auth_options)
 @add_click_options(configuration_options)
 def deploy_training_flow_cli(*args, **kwargs):
