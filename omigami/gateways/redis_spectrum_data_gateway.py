@@ -103,7 +103,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
 
-    def _list_spectrum_ids_not_exist(
+    def _list_missing_spectrum_ids(
         self, hash_name: str, spectrum_ids: List[str]
     ) -> List[str]:
         self._init_client()
@@ -128,7 +128,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     def read_documents_iter(self, spectrum_ids: List[str] = None) -> Iterable:
         pass
 
-    def list_binned_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
+    def list_missing_binned_spectra(self, spectrum_ids: List[str]) -> List[str]:
         pass
 
     def write_binned_spectra(self, binned_spectra: List[BinnedSpectrum]):
