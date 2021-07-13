@@ -5,7 +5,7 @@ from logging import Logger
 from typing import List
 from spec2vec import SpectrumDocument
 
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
+from omigami.ms2deepscore.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
     RedisHashesIterator,
 )

@@ -18,8 +18,8 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
+from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.spec2vec.config import (
-    SOURCE_URI_PARTIAL_GNPS,
     MODEL_DIRECTORIES,
     DATASET_IDS,
 )
@@ -27,7 +27,7 @@ from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
