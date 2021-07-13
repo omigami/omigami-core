@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-import omigami
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -19,8 +18,6 @@ from omigami.ms2deepscore.flows.minimal_flow import (
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.ms2deepscore.helper_classes.spectrum_binner import SpectrumBinner
-from omigami.ms2deepscore.tasks.process_spectrum import ProcessSpectrum
 from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 from omigami.test.conftest import ASSETS_DIR
 
@@ -38,13 +35,7 @@ def flow_config():
     return flow_config
 
 
-def test_minimal_flow(flow_config, monkeypatch):
-    monkeypatch.setattr(
-        omigami.ms2deepscore.tasks.process_spectrum,
-        "SpectrumBinner",
-        MagicMock(SpectrumBinner),
-    )
-
+def test_minimal_flow(flow_config):
     mock_input_dgw = MagicMock(spec=InputDataGateway)
     spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
 
