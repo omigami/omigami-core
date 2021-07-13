@@ -109,7 +109,7 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
-    def list_binned_spectra_not_exist(self, spectrum_ids: List[str]) -> List[str]:
+    def list_missing_binned_spectra(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether document exist on Redis.
         Return a list of IDs that do not exist.
         """

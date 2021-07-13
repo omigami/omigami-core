@@ -24,7 +24,7 @@ def test_process_spectrum_calls(ms2deepscore_model_path):
     res = test_flow.run()
 
     assert res.is_successful()
-    spectrum_gtw.list_binned_spectra_not_exist.assert_not_called()
+    spectrum_gtw.list_missing_binned_spectra.assert_not_called()
     spectrum_gtw.write_binned_spectra.assert_called_once()
 
 
@@ -60,4 +60,4 @@ def test_process_spectrum(
     spectrum_ids = res.result[process_task].result
 
     assert spectrum_ids
-    assert not spectrum_gtw.list_binned_spectra_not_exist(spectrum_ids)
+    assert not spectrum_gtw.list_missing_binned_spectra(spectrum_ids)

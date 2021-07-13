@@ -42,7 +42,7 @@ class ProcessSpectrum(Task):
 
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
-            new_spectrum_ids = self._spectrum_dgw.list_binned_spectra_not_exist(
+            new_spectrum_ids = self._spectrum_dgw.list_missing_binned_spectra(
                 spectra_ids
             )
             if not new_spectrum_ids:
