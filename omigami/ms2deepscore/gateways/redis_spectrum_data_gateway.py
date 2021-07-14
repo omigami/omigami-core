@@ -109,7 +109,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
             self._init_client()
             pipe = self.client.pipeline()
 
-            for spectrum in spectrums:
+            for spectrum in spectra:
                 spectrum_info = spectrum.spectrum
                 pipe.hset(
                     SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum_info)
