@@ -54,7 +54,7 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
-    def write_raw_spectra(self, spectrums: List[dict[str:str]]) -> bool:
+    def write_raw_spectra(self, spectra: List[Dict[str:str]]) -> bool:
         """Write raw spectra to the Database"""
         pass
 
