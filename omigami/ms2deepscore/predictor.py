@@ -3,8 +3,9 @@ from typing import Union, List, Dict, Tuple
 
 import numpy as np
 from matchms import calculate_scores
-from ms2deepscore.models import load_model as ms2deepscore_load_model
 from ms2deepscore import BinnedSpectrum
+from ms2deepscore.models import load_model as ms2deepscore_load_model
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -39,7 +40,7 @@ class MS2DeepScorePredictor(Predictor):
         self,
         context,
         data_input: Dict[str, List],
-        mz_range: int = 1,
+        mz_range: int = 1000,
     ) -> Dict:
         """Match spectra from a json payload input with spectra having the highest
         structural similarity scores in the GNPS spectra library. Return a list
