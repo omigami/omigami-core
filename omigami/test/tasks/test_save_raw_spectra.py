@@ -8,7 +8,7 @@ from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParamet
 from prefect import Flow
 
 
-def test_save_raw_spectra():
+def test_save_raw_spectra(local_gnps_small_json):
     # Setup Test
     spectrum_dgw = RedisSpectrumDataGateway()
 
@@ -17,10 +17,14 @@ def test_save_raw_spectra():
 
     # Run Functions
     with Flow("test-flow") as test_flow:
-        raw_spectra = SaveRawSpectra(save_parameters=parameters)()
+        raw_spectra = SaveRawSpectra(save_parameters=parameters)(local_gnps_small_json)
 
     res = test_flow.run()
     data = res.result[raw_spectra].result
 
     # Test Results
+
+    assert spectrum_dgw.list_spectrum_ids() == 100
+
     assert res.is_successful()
+    assert len(data) == 100

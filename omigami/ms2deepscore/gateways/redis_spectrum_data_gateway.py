@@ -17,10 +17,11 @@ from omigami.gateways.data_gateway import SpectrumDataGateway
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 
-
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
 # which was defined during deployment by the 'dataset_name' param
+
+# TODO: Shouldn't this be part of a config file?
 REDIS_HOST = str(os.getenv("REDIS_HOST"))
 REDIS_DB = str(os.getenv("REDIS_DB"))
 
@@ -74,6 +75,18 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
         return {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}
+
+    def write_spectra(self, spectrums: List[Dict[str, Spectrum]]) -> bool:
+
+        try:
+            self._init_client()
+            pipe = self.client.pipeline()
+
+            for spectrum in spectrums:
+                pass
+            return True
+        except:
+            return False
 
     def get_spectrum_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1
