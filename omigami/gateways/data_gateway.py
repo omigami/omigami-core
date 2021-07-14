@@ -54,6 +54,11 @@ class SpectrumDataGateway(ABC):
         pass
 
     @abstractmethod
+    def write_raw_spectra(self, spectrums: List[dict[str:str]]) -> bool:
+        """Write raw spectra to the Database"""
+        pass
+
+    @abstractmethod
     def list_existing_spectra(self, spectrum_ids: List[str]) -> Set[str]:
         """Check whether the spectrum ids exist on the database.
         Return a set of existing spectrum IDs.

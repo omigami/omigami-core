@@ -45,9 +45,14 @@ class SaveRawSpectra(Task):
             self.logger.info(
                 f"Discrepancy between stored and downloaded data is {len(new_spectrum_ids)} "
             )
-            # Add only new IDs to the redis DB
 
-            new_db_entries = [sp for sp in spectra if sp["SpectrumID"] in new_spectrum_ids]
-            self._spectrum_dgw.
+            # Add only new IDs to the redis DB
+            new_db_entries = [
+                sp for sp in spectra if sp["SpectrumID"] in new_spectrum_ids
+            ]
+            result = self._spectrum_dgw.write_raw_spectra(new_db_entries)
+
+            self.logger.info(f"Adding new ids: {result}")
+
         # Return spectrum IDs
-        return new_db_entries
+        return self._spectrum_dgw.list_spectrum_ids()

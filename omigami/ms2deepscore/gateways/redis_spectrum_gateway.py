@@ -38,22 +38,6 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
                 pipe.hset(DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(document))
         pipe.execute()
 
-    def write_spectra(self, spectrums: List[dict[str:str]]) -> bool:
-
-        try:
-            self._init_client()
-            pipe = self.client.pipeline()
-
-            for spectrum in spectrums:
-                spectrum_info = spectrum.spectrum
-                pipe.hset(
-                    SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum_info)
-                )
-            pipe.execute()
-            return True
-        except:
-            return False
-
     def write_embeddings(
         self, embeddings: List[Embedding], run_id: str, logger: Logger = None
     ):
