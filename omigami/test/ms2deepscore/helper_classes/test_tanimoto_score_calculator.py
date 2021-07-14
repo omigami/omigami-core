@@ -1,3 +1,4 @@
+import os
 import string
 import random
 from copy import deepcopy
@@ -63,10 +64,12 @@ def test_get_tanimoto_scores(inchis, tanimoto_calculator):
 
     assert isinstance(scores, pd.DataFrame)
     assert (np.diag(scores) == 1).all()
-
-
-def test_calculate(binned_spectra_stored, tanimoto_calculator):
-    scores = tanimoto_calculator.calculate()
-
-    assert scores.notnull().all().all()
     assert scores.shape[0] == scores.shape[1]
+    assert scores.notnull().all().all()
+
+
+def test_calculate(binned_spectra_stored, tanimoto_calculator, tmpdir):
+    path = f"{tmpdir}/tanimoto_scores.pkl"
+    tanimoto_calculator.calculate(path)
+
+    assert os.path.exists(path)

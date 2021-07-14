@@ -1,5 +1,7 @@
+import pickle
+
 import pandas as pd
-from typing import List
+from typing import List, Dict
 
 from ms2deepscore import BinnedSpectrum
 from omigami.gateways.data_gateway import SpectrumDataGateway
@@ -11,11 +13,12 @@ class TanimotoScoreCalculator:
     def __init__(self, spectrum_dgw: SpectrumDataGateway):
         self._spectrum_dgw = spectrum_dgw
 
-    def calculate(self, n_bits: int = 2048) -> pd.DataFrame:
+    def calculate(self, scores_path: str, n_bits: int = 2048) -> str:
         binned_spectra = self._spectrum_dgw.read_binned_spectra()
         unique_inchi_keys = self._get_unique_inchis(binned_spectra)
         tanimoto_scores = self._get_tanimoto_scores(unique_inchi_keys, n_bits)
-        return tanimoto_scores
+        tanimoto_scores.to_pickle(scores_path)
+        return scores_path
 
     def _get_unique_inchis(self, binned_spectra: List[BinnedSpectrum]) -> pd.Series:
         inchi_keys, inchi = zip(

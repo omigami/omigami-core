@@ -17,17 +17,19 @@ class CalculateTanimotoScore(Task):
 
     def __init__(
         self,
+        scores_output_path: str,
         n_bits: int = 2048,
         **kwargs,
     ):
+        self._scores_output_path = scores_output_path
         self._n_bits = n_bits
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self) -> Dict[str, Dict[str, float]]:
+    def run(self) -> str:
         self.logger.info(f"Calculating the Tanimoto Scores")
         calculator = TanimotoScoreCalculator(
             spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway()
         )
-        scores = calculator.calculate(n_bits=self._n_bits)
-        return scores.to_dict()
+        path = calculator.calculate(self._scores_output_path, n_bits=self._n_bits)
+        return path
