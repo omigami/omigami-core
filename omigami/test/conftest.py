@@ -52,7 +52,7 @@ def local_gnps_small_json() -> str:
 
 
 @pytest.fixture(scope="module")
-def loaded_data(local_gnps_small_json) -> List[Dict[int:str]]:
+def loaded_data(local_gnps_small_json):
     with open(local_gnps_small_json, "rb") as f:
         items = ijson.items(f, "item", multiple_values=True)
         results = [{k: item[k] for k in KEYS} for item in items]
@@ -60,7 +60,7 @@ def loaded_data(local_gnps_small_json) -> List[Dict[int:str]]:
 
 
 @pytest.fixture(scope="module")
-def spectrum_ids_by_mode(loaded_data) -> Dict[int:list]:
+def spectrum_ids_by_mode(loaded_data):
     spectrum_ids = {"positive": [], "negative": []}
 
     for spectrum in loaded_data:

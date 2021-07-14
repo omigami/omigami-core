@@ -76,18 +76,6 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
         return {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}
 
-    def write_spectra(self, spectrums: List[Dict[str, Spectrum]]) -> bool:
-
-        try:
-            self._init_client()
-            pipe = self.client.pipeline()
-
-            for spectrum in spectrums:
-                pass
-            return True
-        except:
-            return False
-
     def get_spectrum_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1
     ) -> List[str]:
