@@ -103,7 +103,7 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
 
-    def write_raw_spectra(self, spectra: List[dict[str:str]]) -> bool:
+    def write_raw_spectra(self, spectra) -> bool:
 
         try:
             self._init_client()

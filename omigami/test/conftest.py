@@ -8,7 +8,6 @@ import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
 from pytest_redis import factories
-from typing import List, Dict
 
 import omigami
 import omigami.config

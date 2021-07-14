@@ -9,19 +9,20 @@ from omigami.gateways.input_data_gateway import FSInputDataGateway
 from prefect import Flow
 
 
-@pytest.skip
+@pytest.mark.skip
 def create_parameters():
     spectrum_dgw = RedisSpectrumDataGateway()
     specturm_idgw = FSInputDataGateway()
 
-    parameters = SaveRawSpectraParameters()
-    parameters.spectrum_dgw = spectrum_dgw
-    parameters.input_dgw = specturm_idgw
+    parameters = SaveRawSpectraParameters(
+        spectrum_dgw=spectrum_dgw, input_dgw=specturm_idgw
+    )
 
     return parameters
 
 
 def test_save_raw_spectra_empty_db(local_gnps_small_json):
+    """Test if new spectra get added to an empty database"""
     # Setup Test
     parameters = create_parameters()
 
@@ -39,6 +40,7 @@ def test_save_raw_spectra_empty_db(local_gnps_small_json):
 
 
 def test_save_raw_spectra_adding_new_spectra(local_gnps_small_json):
+    """Test if new spectra get added to an database which already hosts some"""
     # Setup Test
     parameters = create_parameters()
     spectra = parameters.input_dgw.load_spectrum(local_gnps_small_json)
@@ -58,6 +60,7 @@ def test_save_raw_spectra_adding_new_spectra(local_gnps_small_json):
 
 
 def test_save_raw_spectra_skip(local_gnps_small_json):
+    """Test if skipping the task wörks"""
     # Setup Test
     parameters = create_parameters()
     parameters.skip_task = True
