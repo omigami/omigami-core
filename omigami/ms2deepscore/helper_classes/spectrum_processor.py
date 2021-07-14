@@ -84,7 +84,9 @@ class SpectrumProcessor(SpectrumCleaner):
         if spectrum:
             inchikey = spectrum.metadata.get("inchikey")
             if inchikey is not None and len(inchikey) > 13:
-                if spectrum.get("smiles") or spectrum.get("inchi"):
+                if spectrum.get("inchi"):
+                    cleaned_inchi = spectrum.get("inchi").replace('"', "")
+                    spectrum.set("inchi", cleaned_inchi)
                     return spectrum
 
     def _select_ion_mode(self, spectrum: Spectrum) -> Optional[Spectrum]:

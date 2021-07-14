@@ -1,9 +1,9 @@
 import pandas as pd
 from typing import List
 
-from matchms.utils import derive_fingerprint_from_inchi
 from ms2deepscore import BinnedSpectrum
 from omigami.gateways.data_gateway import SpectrumDataGateway
+from rdkit import Chem
 from rdkit.DataStructs import TanimotoSimilarity
 
 
@@ -11,13 +11,13 @@ class TanimotoScoreCalculator:
     def __init__(self, spectrum_dgw: SpectrumDataGateway):
         self._spectrum_dgw = spectrum_dgw
 
-    def calculate(self) -> pd.DataFrame:
+    def calculate(self, n_bits: int = 2048) -> pd.DataFrame:
         binned_spectra = self._spectrum_dgw.read_binned_spectra()
         unique_inchi_keys = self._get_unique_inchis(binned_spectra)
-        tanimoto_scores = self._get_tanimoto_scores(unique_inchi_keys)
+        tanimoto_scores = self._get_tanimoto_scores(unique_inchi_keys, n_bits)
         return tanimoto_scores
 
-    def _get_unique_inchis(self, binned_spectra: List[BinnedSpectrum]) -> List[str]:
+    def _get_unique_inchis(self, binned_spectra: List[BinnedSpectrum]) -> pd.Series:
         inchi_keys, inchi = zip(
             *[
                 (spectrum.get("inchikey")[:14], spectrum.get("inchi"))
@@ -30,15 +30,20 @@ class TanimotoScoreCalculator:
             pd.Series.mode
         )
 
-        return most_common_inchi["inchi"].values.tolist()
+        return most_common_inchi["inchi"]
 
-    def _get_tanimoto_scores(self, inchis: List[str]) -> pd.DataFrame:
-        fingerprints = [
-            derive_fingerprint_from_inchi(
-                inchi, fingerprint_type="daylight", nbits=2048
-            )
-            for inchi in inchis
-        ]
+    def _get_tanimoto_scores(self, inchis: pd.Series, n_bits: int) -> pd.DataFrame:
+        def _derive_daylight_fingerprint(df, nbits: int):
+            mol = Chem.MolFromInchi(df)
+            return Chem.RDKFingerprint(mol, fpSize=nbits)
 
-        # calculate score for all pairs
-        return pd.DataFrame()
+        fingerprints = inchis.apply(
+            _derive_daylight_fingerprint,
+            args=(n_bits,),
+        )
+        scores = {}
+        for i, outer_fingerprint in fingerprints.iteritems():
+            scores[i] = {}
+            for j, inner_fingerprint in fingerprints.iteritems():
+                scores[i][j] = TanimotoSimilarity(outer_fingerprint, inner_fingerprint)
+        return pd.DataFrame(scores)
