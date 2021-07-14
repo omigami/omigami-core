@@ -2,13 +2,14 @@ from dataclasses import dataclass
 
 from prefect import Task
 
-from omigami.gateways.data_gateway import SpectrumDataGateway
-from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
+from omigami.gateways.data_gateway import SpectrumDataGateway, InputDataGateway
+from omigami.utils import merge_prefect_task_configs
 
 
 @dataclass
 class SaveRawSpectraParameters:
     spectrum_dgw: SpectrumDataGateway
+    input_dgw: InputDataGateway
     skip_task: bool = False
 
 
@@ -19,6 +20,7 @@ class SaveRawSpectra(Task):
         **kwargs,
     ):
         self._spectrum_dgw = save_parameters.spectrum_dgw
+        self._input_dgw = save_parameters.input_dgw
         self._skip = save_parameters.skip_task
         config = merge_prefect_task_configs(kwargs)
 
