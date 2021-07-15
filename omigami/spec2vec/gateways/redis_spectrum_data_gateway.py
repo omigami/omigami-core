@@ -107,12 +107,12 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
 
     def write_raw_spectra(self, spectra):
         self._init_client()
-        pipe = self.client.pipeline()
 
         for spectrum in spectra:
             # spectrum_info = spectrum.spectrum
-            pipe.hset(SPECTRUM_HASHES, spectrum["spectrum_id"], pickle.dumps(spectrum))
-        pipe.execute()
+            self.client.hset(
+                SPECTRUM_HASHES, spectrum["spectrum_id"], pickle.dumps(spectrum)
+            )
 
     def write_embeddings(
         self, embeddings: List[Embedding], run_id: str, logger: Logger = None
