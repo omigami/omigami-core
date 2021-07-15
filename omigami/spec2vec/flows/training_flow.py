@@ -6,14 +6,17 @@ from omigami.config import IonModes, ION_MODES
 from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
 
-from omigami.tasks import DownloadData, DownloadParameters
+from omigami.tasks import (
+    DownloadData,
+    DownloadParameters,
+    ChunkingParameters,
+    CreateChunks,
+)
 
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
     DeployModelParameters,
-    CreateChunks,
-    ChunkingParameters,
     ProcessSpectrum,
     TrainModel,
     TrainModelParameters,

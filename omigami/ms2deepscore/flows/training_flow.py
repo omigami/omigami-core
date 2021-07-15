@@ -1,15 +1,17 @@
 from dataclasses import dataclass
-
-from typing import Union
-
-from prefect import Flow, unmapped
+from prefect import Flow
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
 from omigami.config import IonModes, ION_MODES
 from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
-from omigami.tasks import DownloadData, DownloadParameters
+from omigami.tasks import (
+    DownloadData,
+    DownloadParameters,
+    ChunkingParameters,
+    CreateChunks,
+)
 
 from datetime import timedelta, date, datetime
 
@@ -22,6 +24,7 @@ class TrainingFlowParameters:
         source_uri: str,
         output_dir: str,
         dataset_id: str,
+        chunk_size: int,
         ion_mode: IonModes,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
@@ -47,6 +50,10 @@ class TrainingFlowParameters:
 
         self.downloading = DownloadParameters(
             source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
+        )
+
+        self.chunking = ChunkingParameters(
+            self.downloading.download_path, chunk_size, ion_mode
         )
 
 
@@ -92,5 +99,10 @@ def build_training_flow(
             flow_parameters.input_dgw,
             flow_parameters.downloading,
         )()
+
+        gnps_chunks = CreateChunks(
+            flow_parameters.input_dgw,
+            flow_parameters.chunking,
+        )(spectrum_ids)
 
     return training_flow
