@@ -22,10 +22,11 @@ class MinimalFlowParameters:
         overwrite: bool = False,
         environment: str = "dev",
         skip_if_exists: bool = True,
+        redis_db: str = "0",
     ):
         self.input_dgw = input_dgw
         self.model_uri = model_uri
-        self.deploying = DeployModelParameters(overwrite, environment)
+        self.deploying = DeployModelParameters(redis_db, overwrite, environment)
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_dgw, self.model_uri, skip_if_exists
         )
