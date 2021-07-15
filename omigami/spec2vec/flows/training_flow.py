@@ -6,7 +6,12 @@ from omigami.config import IonModes, ION_MODES
 from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
 
-from omigami.tasks import DownloadData, DownloadParameters
+from omigami.tasks import (
+    DownloadData,
+    DownloadParameters,
+    SaveRawSpectra,
+    SaveRawSpectraParameters,
+)
 
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
@@ -52,6 +57,9 @@ class TrainingFlowParameters:
 
         self.downloading = DownloadParameters(
             source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
+        )
+        self.save_raw_spectra_parameters = SaveRawSpectraParameters(
+            spectrum_dgw, input_dgw
         )
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
@@ -109,10 +117,14 @@ def build_training_flow(
 
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
-        spectrum_ids = DownloadData(
+        gnps_save_path = DownloadData(
             flow_parameters.input_dgw,
             flow_parameters.downloading,
         )()
+
+        spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra_parameters)(
+            gnps_save_path
+        )
 
         gnps_chunks = CreateChunks(
             flow_parameters.input_dgw,

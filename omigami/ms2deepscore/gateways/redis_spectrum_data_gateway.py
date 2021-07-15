@@ -21,7 +21,6 @@ from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 # when running on the cluster, they will be gotten from the seldon env,
 # which was defined during deployment by the 'dataset_name' param
 
-# TODO: Shouldn't this be part of a config file?
 REDIS_HOST = str(os.getenv("REDIS_HOST"))
 REDIS_DB = str(os.getenv("REDIS_DB"))
 

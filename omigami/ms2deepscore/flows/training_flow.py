@@ -9,7 +9,12 @@ from prefect.schedules.clocks import IntervalClock
 from omigami.config import IonModes, ION_MODES
 from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
-from omigami.tasks import DownloadData, DownloadParameters
+from omigami.tasks import (
+    DownloadData,
+    DownloadParameters,
+    SaveRawSpectra,
+    SaveRawSpectraParameters,
+)
 
 from datetime import timedelta, date, datetime
 
@@ -88,9 +93,13 @@ def build_training_flow(
 
     with Flow(name=flow_name, **flow_config.kwargs) as training_flow:
 
-        spectrum_ids = DownloadData(
+        gnps_save_path = DownloadData(
             flow_parameters.input_dgw,
             flow_parameters.downloading,
         )()
+
+        spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra_parameters)(
+            gnps_save_path
+        )
 
     return training_flow
