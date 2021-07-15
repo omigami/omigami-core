@@ -9,6 +9,8 @@ from omigami.config import (
     API_SERVER_URLS,
     PROJECT_NAME,
     MLFLOW_SERVER,
+    DATASET_IDS,
+    REDIS_DATABASES,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -25,6 +27,7 @@ from omigami.gateways.input_data_gateway import FSInputDataGateway
 
 def deploy_minimal_flow(
     image: str,
+    dataset_name: str,
     project_name: str = PROJECT_NAME,
     mlflow_server: str = MLFLOW_SERVER,
     flow_name: str = "ms2deepscore-minimal-flow",
@@ -65,6 +68,14 @@ def deploy_minimal_flow(
     if environment not in ["dev", "prod"]:
         raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
+    if dataset_name not in DATASET_IDS[environment].keys():
+        raise ValueError(
+            f"No such option available for reference dataset: {dataset_name}. Available options are:"
+            f"{list(DATASET_IDS[environment].keys())}."
+        )
+
+    redis_db = REDIS_DATABASES[environment][dataset_name]
+
     mlflow_output_dir = MODEL_DIRECTORIES[environment]["mlflow"]
 
     input_dgw = FSInputDataGateway()
@@ -79,6 +90,7 @@ def deploy_minimal_flow(
         image=image,
         storage_type=PrefectStorageMethods.S3,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
+        redis_db=redis_db,
         environment=environment,
         schedule=schedule,
     )

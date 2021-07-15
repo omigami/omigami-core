@@ -34,3 +34,5 @@ IonModes = Literal["positive", "negative"]
 DEFAULT_PREFECT_TASK_CONFIG = dict(
     max_retries=3, retry_delay=datetime.timedelta(seconds=10)
 )
+
+DATASET_IDS = config["storage"]["dataset_dir"].get(dict)
