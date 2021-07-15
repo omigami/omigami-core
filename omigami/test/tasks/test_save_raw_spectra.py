@@ -62,8 +62,8 @@ def test_save_raw_spectra_empty_db(local_gnps_small_json):
 
     # Test Results
     assert res.is_successful()
-    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
     assert len(data) == 100
+    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
 
 
 def test_save_raw_spectra_adding_new_spectra(local_gnps_small_json):
@@ -86,5 +86,5 @@ def test_save_raw_spectra_adding_new_spectra(local_gnps_small_json):
 
     # Test Results
     assert res.is_successful()
-    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
     assert len(data) == 100
+    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
