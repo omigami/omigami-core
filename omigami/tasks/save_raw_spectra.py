@@ -29,7 +29,6 @@ class SaveRawSpectra(Task):
         )
 
     def run(self, gnps_path: str = None):
-        self.logger.info(f"Loading spectra from redis")
         redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
 
         if self._skip:
@@ -40,7 +39,7 @@ class SaveRawSpectra(Task):
         spectrum_ids = [sp["SpectrumID"] for sp in spectra]
 
         # Compare IDs from redis and the file
-        new_spectrum_ids = set(redis_spectrum_ids) - set(spectrum_ids)
+        new_spectrum_ids = set(spectrum_ids) - set(redis_spectrum_ids)
         if len(new_spectrum_ids) > 0:
             self.logger.info(
                 f"Discrepancy between stored and downloaded data is {len(new_spectrum_ids)} "

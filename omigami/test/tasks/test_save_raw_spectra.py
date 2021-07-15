@@ -1,6 +1,6 @@
 import pytest
 
-from omigami.ms2deepscore.gateways.redis_spectrum_data_gateway import (
+from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
 )
 from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
@@ -75,7 +75,6 @@ def test_save_raw_spectra_adding_new_spectra(local_gnps_small_json):
     spectra = parameters.input_dgw.load_spectrum(local_gnps_small_json)
     parameters.spectrum_dgw.write_raw_spectra(spectra[:30])
 
-    assert len(spectra) == 100
     assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 30
 
     # Run Functions
