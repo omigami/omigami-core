@@ -1,12 +1,10 @@
-import pickle
-
 import pandas as pd
-from typing import List, Dict
+from typing import List
 
 from ms2deepscore import BinnedSpectrum
 from omigami.gateways.data_gateway import SpectrumDataGateway
 from rdkit import Chem
-from rdkit.DataStructs import TanimotoSimilarity
+from rdkit.DataStructs import BulkTanimotoSimilarity
 
 
 class TanimotoScoreCalculator:
@@ -44,9 +42,10 @@ class TanimotoScoreCalculator:
             _derive_daylight_fingerprint,
             args=(n_bits,),
         )
-        scores = {}
-        for i, outer_fingerprint in fingerprints.iteritems():
-            scores[i] = {}
-            for j, inner_fingerprint in fingerprints.iteritems():
-                scores[i][j] = TanimotoSimilarity(outer_fingerprint, inner_fingerprint)
-        return pd.DataFrame(scores)
+
+        scores = fingerprints.apply(lambda x: BulkTanimotoSimilarity(x, fingerprints))
+        scores = pd.DataFrame.from_dict(
+            dict(zip(scores.index, scores.values)),
+        )
+        scores.index = fingerprints.index
+        return scores
