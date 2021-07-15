@@ -35,7 +35,6 @@ def test_write_spectrum_documents(redis_db, cleaned_data):
     dgw.write_spectrum_documents(spectrum_document_data)
 
     assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(cleaned_data)
-    assert redis_db.hlen(SPECTRUM_HASHES) == len(cleaned_data)
     assert redis_db.hlen(DOCUMENT_HASHES) == len(cleaned_data)
 
 

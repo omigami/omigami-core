@@ -54,8 +54,12 @@ class TrainingFlowParameters:
             source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
         )
 
+        self.save_raw_spectra_parameters = SaveRawSpectraParameters(
+            spectrum_dgw, input_dgw
+        )
 
-# Add to model task when it is created
+
+# TODO: Add to model task when it is created
 @dataclass
 class ModelGeneralParameters:
     model_output_dir: str
