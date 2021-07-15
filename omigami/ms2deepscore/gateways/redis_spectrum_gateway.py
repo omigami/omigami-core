@@ -18,7 +18,7 @@ from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 
 
-class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
+class MS2DeepScoreRedisSpectrumDataGateway(RedisSpectrumDataGateway):
     """Data gateway for Redis storage."""
 
     def write_spectrum_documents(self, spectrum_data: List[SpectrumDocumentData]):

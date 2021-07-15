@@ -19,4 +19,4 @@ EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
 REDIS_HOST = config["storage"]["redis"]["env_vars"]["redis_host"].get(str)
 REDIS_DB = config["storage"]["redis"]["env_vars"]["redis_db"].get(str)
 
-DATASET_IDS = config["storage"]["dataset_dir"].get(dict)
+# DATASET_IDS = config["storage"]["dataset_dir"].get(dict)
