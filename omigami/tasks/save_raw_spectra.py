@@ -29,14 +29,12 @@ class SaveRawSpectra(Task):
         )
 
     def run(self, gnps_path: str = None):
-        # Gets spectrum ids from the redis database
         self.logger.info(f"Loading spectra from redis")
         redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
 
         if self._skip:
             return redis_spectrum_ids
 
-        # Loads spectra from the gnps file
         self.logger.info(f"Loading spectra from {gnps_path}")
         spectra = self._input_dgw.load_spectrum(gnps_path)
         spectrum_ids = [sp["SpectrumID"] for sp in spectra]
@@ -48,7 +46,6 @@ class SaveRawSpectra(Task):
                 f"Discrepancy between stored and downloaded data is {len(new_spectrum_ids)} "
             )
 
-            # Add only new IDs to the redis DB
             new_db_entries = [
                 sp for sp in spectra if sp["SpectrumID"] in new_spectrum_ids
             ]
@@ -56,5 +53,4 @@ class SaveRawSpectra(Task):
 
             self.logger.info(f"Adding new ids: {result}")
 
-        # Return spectrum IDs
         return self._spectrum_dgw.list_spectrum_ids()

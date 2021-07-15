@@ -14,3 +14,5 @@ storage:
     spectrum_hashes: "spectrum_data"
     document_hashes: "document_data"
     embedding_hashes: "embedding_data"
+    redis_host: "REDIS_HOST"
+    redis_db: "REDIS_DB"
