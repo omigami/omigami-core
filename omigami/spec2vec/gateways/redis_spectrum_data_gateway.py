@@ -96,6 +96,12 @@ class RedisSpectrumDataGateway:
         self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
 
+    def _list_missing_spectrum_ids(
+        self, hash_name: str, spectrum_ids: List[str]
+    ) -> List[str]:
+        self._init_client()
+        return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]
+
 
 class RedisHashesIterator:
     """An iterator that yields Redis object one by one to the word2vec model for training.
