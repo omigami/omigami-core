@@ -3,7 +3,7 @@ from typing import Union, Dict, Set
 from gensim.models import Word2Vec
 from prefect import Task
 
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
+from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
     RedisSpectrumDataGateway,
 )

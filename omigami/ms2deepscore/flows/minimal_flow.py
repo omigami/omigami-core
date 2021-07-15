@@ -2,7 +2,7 @@ from prefect import Flow
 
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.ms2deepscore.gateways.redis_spectrum_data_gateway import (
+from omigami.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
 )
 from omigami.ms2deepscore.tasks import (

@@ -6,6 +6,10 @@ from typing import List
 
 from spec2vec import SpectrumDocument
 
+from omigami.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
+    RedisHashesIterator,
+)
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
@@ -14,10 +18,6 @@ from omigami.spec2vec.config import (
 )
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-    RedisHashesIterator,
-)
 
 
 class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):

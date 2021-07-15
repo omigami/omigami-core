@@ -12,12 +12,12 @@ from omigami.flow_config import (
     PrefectExecutorMethods,
 )
 from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
+)
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
-)
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
 )
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,

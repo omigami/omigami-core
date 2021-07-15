@@ -9,7 +9,7 @@ from spec2vec.model_building import (
     learning_rates_to_gensim_style,
 )
 
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
+from omigami.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
 )
 from omigami.spec2vec.helper_classes.train_logger import (

@@ -4,7 +4,7 @@ from typing import Set
 from prefect import Task
 
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
+from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
     RedisSpectrumDataGateway,
 )

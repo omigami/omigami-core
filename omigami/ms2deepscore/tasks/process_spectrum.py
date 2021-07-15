@@ -3,7 +3,7 @@ from typing import Set
 
 from prefect import Task
 
-from omigami.ms2deepscore.gateways.redis_spectrum_data_gateway import (
+from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
     RedisSpectrumDataGateway,
 )

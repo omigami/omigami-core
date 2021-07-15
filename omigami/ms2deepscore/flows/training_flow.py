@@ -8,7 +8,7 @@ from prefect.schedules.clocks import IntervalClock
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.ms2deepscore.gateways.redis_spectrum_data_gateway import (
+from omigami.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
 )
 from omigami.tasks import DownloadData, DownloadParameters
