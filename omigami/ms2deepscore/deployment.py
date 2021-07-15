@@ -94,6 +94,7 @@ def deploy_minimal_flow(
         environment=environment,
         spectrum_dgw=spectrum_dgw,
         skip_if_exists=skip_if_exists,
+        redis_db=redis_db,
     )
 
     flow_config = make_flow_config(
