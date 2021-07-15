@@ -3,12 +3,9 @@ from __future__ import annotations
 import pickle
 from logging import Logger
 from typing import List
+
 from spec2vec import SpectrumDocument
 
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-    RedisHashesIterator,
-)
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
@@ -17,6 +14,10 @@ from omigami.spec2vec.config import (
 )
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
+from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
+    RedisHashesIterator,
+)
 
 
 class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
@@ -60,12 +61,12 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         pipe.execute()
 
     # Not used atm
-    def list_documents_not_exist(self, spectrum_ids: List[str]) -> List[str]:
+    def list_missing_documents(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether document exist on Redis.
         Return a list of IDs that do not exist.
         """
         self._init_client()
-        return self._list_spectrum_ids_not_exist(DOCUMENT_HASHES, spectrum_ids)
+        return self._list_missing_spectrum_ids(DOCUMENT_HASHES, spectrum_ids)
 
     def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
         """Read the document information from spectra IDs.
@@ -87,9 +88,3 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         """Returns an iterator that yields Redis object one by one"""
         self._init_client()
         return RedisHashesIterator(self, DOCUMENT_HASHES, spectrum_ids)
-
-    def _list_spectrum_ids_not_exist(
-        self, hash_name: str, spectrum_ids: List[str]
-    ) -> List[str]:
-        self._init_client()
-        return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]

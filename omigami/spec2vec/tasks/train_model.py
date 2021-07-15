@@ -9,7 +9,9 @@ from spec2vec.model_building import (
     learning_rates_to_gensim_style,
 )
 
-from omigami.gateways.data_gateway import SpectrumDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
+)
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
@@ -32,7 +34,7 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
-        spectrum_dgw: SpectrumDataGateway,
+        spectrum_dgw: RedisSpectrumDataGateway,
         training_parameters: TrainModelParameters,
         **kwargs,
     ):
