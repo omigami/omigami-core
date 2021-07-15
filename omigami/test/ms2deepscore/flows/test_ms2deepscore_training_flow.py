@@ -43,9 +43,7 @@ def test_training_flow(flow_config):
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     mock_spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
     flow_name = "test-flow"
-    expected_tasks = {
-        "DownloadData",
-    }
+    expected_tasks = {"DownloadData", "SaveRawSpectra"}
 
     flow_parameters = TrainingFlowParameters(
         input_dgw=mock_input_dgw,
