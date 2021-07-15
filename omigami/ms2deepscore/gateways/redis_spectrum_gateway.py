@@ -15,12 +15,6 @@ from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 class MS2DeepScoreRedisSpectrumDataGateway(RedisSpectrumDataGateway):
     """Data gateway for Redis storage."""
 
-    def _list_spectrum_ids_not_exist(
-        self, hash_name: str, spectrum_ids: List[str]
-    ) -> List[str]:
-        self._init_client()
-        return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]
-
     def list_missing_binned_spectra(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether document exist on Redis.
         Return a list of IDs that do not exist.
