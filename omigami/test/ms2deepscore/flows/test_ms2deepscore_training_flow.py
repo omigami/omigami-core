@@ -21,7 +21,7 @@ from omigami.ms2deepscore.flows.training_flow import (
 
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
+    MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.test.conftest import ASSETS_DIR
 
@@ -89,8 +89,7 @@ def test_run_training_flow(
 
     input_dgw = FSInputDataGateway()
 
-    # TODO: This is a Spec2Vec specific function, but is also needed for ms2deepscore
-    spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
+    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
     flow_params = TrainingFlowParameters(
         input_dgw=input_dgw,
