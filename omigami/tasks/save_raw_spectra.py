@@ -34,6 +34,8 @@ class SaveRawSpectra(Task):
         redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
 
         if self._skip:
+            print("Skipping")
+            print(f"{len(redis_spectrum_ids)}")
             return redis_spectrum_ids
 
         # Loads spectra from the gnps file
