@@ -1,16 +1,14 @@
 from logging import getLogger
 from typing import List, Dict, Any
+
 from mlflow.pyfunc import PythonModel
-
-from omigami.gateways.data_gateway import SpectrumDataGateway
-
 
 log = getLogger(__name__)
 SpectrumMatches = Dict[str, Dict[str, Any]]
 
 
 class Predictor(PythonModel):
-    def __init__(self, dgw: SpectrumDataGateway = None):
+    def __init__(self, dgw=None):
         self.dgw = dgw
 
     def predict(self, context, model_input):

@@ -1,8 +1,11 @@
 import os
+
 import pytest
 from ms2deepscore import BinnedSpectrum
 
-from omigami.ms2deepscore.helper_classes.spectrum_binner import SpectrumBinner
+from omigami.ms2deepscore.helper_classes.spectrum_binner import (
+    MS2DeepScoreSpectrumBinner,
+)
 from omigami.test.conftest import ASSETS_DIR
 
 pytestmark = pytest.mark.skipif(
@@ -20,9 +23,9 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_bin_spectra(cleaned_data_ms2deep_score, ms2deepscore_real_model_path):
-    spectrum_binner = SpectrumBinner()
+    spectrum_binner = MS2DeepScoreSpectrumBinner()
     binned_spectra = spectrum_binner.bin_spectra(
-        cleaned_data_ms2deep_score, model_path=ms2deepscore_real_model_path
+        cleaned_data_ms2deep_score,
     )
 
     assert isinstance(binned_spectra[0], BinnedSpectrum)

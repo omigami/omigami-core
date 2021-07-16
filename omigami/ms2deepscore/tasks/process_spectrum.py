@@ -3,8 +3,10 @@ from typing import Set
 
 from prefect import Task
 
-from omigami.gateways.data_gateway import SpectrumDataGateway
-from omigami.gateways.redis_spectrum_data_gateway import REDIS_DB
+from omigami.gateways.redis_spectrum_data_gateway import (
+    REDIS_DB,
+    RedisSpectrumDataGateway,
+)
 from omigami.ms2deepscore.helper_classes.spectrum_binner import (
     MS2DeepScoreSpectrumBinner,
 )
@@ -17,7 +19,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ProcessSpectrumParameters:
-    spectrum_dgw: SpectrumDataGateway
+    spectrum_dgw: RedisSpectrumDataGateway
     model_path: str
     skip_if_exists: bool = True
 
