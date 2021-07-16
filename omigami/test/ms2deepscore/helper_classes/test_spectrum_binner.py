@@ -16,3 +16,6 @@ def test_bin_spectra(cleaned_data_ms2deep_score):
         "spectrum_id"
     )
     assert binned_spectra[3].get("inchi") == cleaned_data_ms2deep_score[3].get("inchi")
+    assert [spectra.get("inchikey") for spectra in binned_spectra] == [
+        spectra.get("inchikey") for spectra in cleaned_data_ms2deep_score
+    ]
