@@ -7,7 +7,10 @@ from omigami.gateways.input_data_gateway import FSInputDataGateway
 from prefect import Flow
 
 
-@pytest.mark.skip
+# NOTE: Not necessary to run the flow every time the more low level a test is the better.
+
+
+@pytest.fixture
 def create_parameters(skip_task: bool):
     spectrum_dgw = RedisSpectrumDataGateway()
     specturm_idgw = FSInputDataGateway()
@@ -19,7 +22,7 @@ def create_parameters(skip_task: bool):
     return parameters
 
 
-@pytest.mark.skip
+@pytest.fixture
 def empty_database(parameters: SaveRawSpectraParameters, path: str):
     spectra = parameters.input_dgw.load_spectrum(path)
     parameters.spectrum_dgw.delete_spectra(

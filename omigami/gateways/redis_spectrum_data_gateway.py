@@ -39,9 +39,12 @@ class RedisSpectrumDataGateway:
         self._init_client()
 
         for spectrum in spectra:
-            # spectrum_info = spectrum.spectrum
+            self.client.zadd(
+                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+                {spectrum.spectrum_id: spectrum.precursor_mz},
+            )
             self.client.hset(
-                SPECTRUM_HASHES, spectrum["spectrum_id"], pickle.dumps(spectrum)
+                SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum)
             )
 
     def _init_client(self):
