@@ -66,9 +66,9 @@ def test_read_spectra(cleaned_data, spectra_stored):
     dgw = Spec2VecRedisSpectrumDataGateway()
     spectra = dgw.read_spectra()
     assert len(spectra) == len(cleaned_data)
-    for spectrum_id in spectra.keys():
-        assert isinstance(spectra[spectrum_id], Spectrum)
-        assert len(spectra[spectrum_id].peaks) > 0
+    for spectrum in spectra:
+        assert isinstance(spectrum, Spectrum)
+        assert len(spectrum.peaks) > 0
 
 
 def test_read_documents(documents_data, documents_stored):

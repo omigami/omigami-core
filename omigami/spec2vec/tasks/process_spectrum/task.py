@@ -1,12 +1,10 @@
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Set
-
 from prefect import Task
-
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.gateways.redis_spectrum_data_gateway import (
-    REDIS_DB,
-    RedisSpectrumDataGateway,
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
 )
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
@@ -17,7 +15,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ProcessSpectrumParameters:
-    spectrum_dgw: RedisSpectrumDataGateway
+    spectrum_dgw: Spec2VecRedisSpectrumDataGateway
     n_decimals: int = 2
     skip_if_exists: bool = True
 
@@ -37,30 +35,23 @@ class ProcessSpectrum(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, gnps_path: str = None) -> Set[str]:
-        self.logger.info(f"Using Redis DB {REDIS_DB}")
-        spectra = self._input_dgw.load_spectrum(gnps_path)
-        self.logger.info(
-            f"Processing {len(spectra)} spectra from the input data {gnps_path}"
-        )
-        spectrum_ids = [sp["SpectrumID"] for sp in spectra]
-
-        # TODO: refactor to use prefect's checkpoint functionality - maybe add a
-        # TODO: checkpoint file to S3 for every processed chunk
+    def run(self, spectrum_ids: Set[str] = None) -> Set[str]:
+        self.logger.info(f"Processing {len(spectrum_ids)} spectra")
+        existing_ids = deepcopy(spectrum_ids)
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
-            existing_ids = self._spectrum_dgw.list_existing_spectra(spectrum_ids)
-            new_spectrum_ids = set(spectrum_ids) - set(existing_ids)
-            if not new_spectrum_ids:
+            missing_ids = self._spectrum_dgw.list_missing_documents(list(spectrum_ids))
+            if not missing_ids:
                 self.logger.info("All spectra have already been processed.")
-                return existing_ids
+                return set(missing_ids)
 
             self.logger.info(
-                f"{len(new_spectrum_ids)} out of {len(spectrum_ids)} spectra are new and will "
+                f"{len(missing_ids)} out of {len(spectrum_ids)} spectra are new and will "
                 f"be processed."
             )
-            spectra = [sp for sp in spectra if sp["SpectrumID"] in new_spectrum_ids]
+            spectrum_ids = missing_ids
 
+        spectra = self._spectrum_dgw.read_spectra(spectrum_ids)
         self.logger.info(f"Processing spectra and converting into documents.")
         progress_logger = TaskProgressLogger(
             self.logger, len(spectra), 20, "Process Spectra task progress"
