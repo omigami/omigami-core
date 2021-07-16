@@ -1,7 +1,10 @@
 from prefect import Flow
 
-from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
+from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
+)
 from omigami.ms2deepscore.tasks import (
     DeployModel,
     DeployModelParameters,
@@ -17,15 +20,16 @@ class MinimalFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        spectrum_dgw: SpectrumDataGateway,
+        spectrum_dgw: RedisSpectrumDataGateway,
         model_uri: str,
         overwrite: bool = False,
         environment: str = "dev",
         skip_if_exists: bool = True,
+        redis_db: str = "0",
     ):
         self.input_dgw = input_dgw
         self.model_uri = model_uri
-        self.deploying = DeployModelParameters(overwrite, environment)
+        self.deploying = DeployModelParameters(redis_db, overwrite, environment)
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_dgw, self.model_uri, skip_if_exists
         )

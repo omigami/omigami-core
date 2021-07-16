@@ -1,8 +1,10 @@
 import os
+
+import numpy as np
 import pytest
 from matchms import calculate_scores
 from ms2deepscore import MS2DeepScore
-import numpy as np
+
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
 )
