@@ -9,6 +9,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class DeployModelParameters:
+    redis_db: str
     overwrite: bool
     environment: str = "dev"
 
@@ -23,6 +24,7 @@ class DeployModel(Task):
         deploy_parameters: DeployModelParameters,
         **kwargs,
     ):
+        self._redis_db = deploy_parameters.redis_db
         self._environment = deploy_parameters.environment
         self._overwrite = deploy_parameters.overwrite
         self._model_name = f"ms2deepscore"
@@ -44,6 +46,7 @@ class DeployModel(Task):
         res, status = sd.deploy_model(
             model_name=self._model_name,
             model_uri=model_uri,
+            redis_db=self._redis_db,
             overwrite_existing=self._overwrite,
         )
 
