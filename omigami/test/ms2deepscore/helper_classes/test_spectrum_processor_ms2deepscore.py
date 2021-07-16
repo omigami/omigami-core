@@ -30,10 +30,9 @@ def test_process_spectra(positive_spectra_data, spectrum_processor):
 
 
 def test_process_spectra_already_converted_type_spectrum(
-    loaded_data, spectrum_processor
+    basic_cleaned_data, spectrum_processor
 ):
-    converted_spectra_data = [as_spectrum(s) for s in loaded_data]
-    cleaned_data = spectrum_processor.process_spectra(converted_spectra_data)
+    cleaned_data = spectrum_processor.process_spectra(basic_cleaned_data)
 
     assert isinstance(cleaned_data[0], Spectrum)
 
@@ -64,8 +63,12 @@ def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processo
     assert filtered_spectrum is None
 
 
-def test_run_missing_smiles_inchi_against_pubchem(loaded_data, spectrum_processor):
-    cleaned_spectrum = spectrum_processor.process_spectra([loaded_data[2]], False)
+def test_run_missing_smiles_inchi_against_pubchem(
+    basic_cleaned_data, spectrum_processor
+):
+    cleaned_spectrum = spectrum_processor.process_spectra(
+        [basic_cleaned_data[2]], False
+    )
     spectrum_with_inchikey = spectrum_processor._get_missing_inchis(cleaned_spectrum[0])
 
     assert not cleaned_spectrum[0].metadata.get("inchikey")
