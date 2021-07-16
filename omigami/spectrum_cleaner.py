@@ -1,8 +1,8 @@
+from typing import Optional
 from matchms import Spectrum
 from matchms.filtering import (
     default_filters,
     add_parent_mass,
-    normalize_intensities,
     harmonize_undefined_inchikey,
     harmonize_undefined_inchi,
     harmonize_undefined_smiles,
@@ -10,18 +10,21 @@ from matchms.filtering import (
     derive_inchi_from_smiles,
     derive_smiles_from_inchi,
     derive_inchikey_from_inchi,
-    derive_adduct_from_name,
 )
 
 
 class SpectrumCleaner:
+    def basic_cleaning(self, spectrum: Spectrum) -> Optional[Spectrum]:
+        spectrum = self._apply_filters(spectrum)
+        spectrum = self._harmonize_spectrum(spectrum)
+        spectrum = self._convert_metadata(spectrum)
+        return spectrum
+
     @staticmethod
     def _apply_filters(spectrum: Spectrum) -> Spectrum:
         """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
-        spectrum = derive_adduct_from_name(spectrum)
         spectrum = add_parent_mass(spectrum)
-        spectrum = normalize_intensities(spectrum)
         return spectrum
 
     @staticmethod

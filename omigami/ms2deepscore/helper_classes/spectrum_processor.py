@@ -4,6 +4,7 @@ from matchms import Spectrum
 from matchms.filtering import (
     select_by_mz,
     require_minimum_number_of_peaks,
+    normalize_intensities,
 )
 from matchms.importing.load_from_json import as_spectrum
 
@@ -37,12 +38,9 @@ class SpectrumProcessor(SpectrumCleaner):
             if type(spectrum) == dict:
                 spectrum = as_spectrum(spectrum)
             if spectrum is not None:
-                spectrum = self._apply_filters(spectrum)
+                spectrum = normalize_intensities(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
                 if process_reference_spectra:
-                    spectrum = self._select_ion_mode(spectrum)
-                    spectrum = self._harmonize_spectrum(spectrum)
-                    spectrum = self._convert_metadata(spectrum)
                     spectrum = self._get_missing_inchis(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
