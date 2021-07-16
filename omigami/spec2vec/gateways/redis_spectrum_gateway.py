@@ -3,6 +3,7 @@ from __future__ import annotations
 import pickle
 from logging import Logger
 from typing import List
+
 from spec2vec import SpectrumDocument
 
 from omigami.gateways.redis_spectrum_data_gateway import (

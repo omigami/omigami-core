@@ -17,9 +17,8 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.ms2deepscore.config import (
-    MODEL_DIRECTORIES,
-)
+from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.ms2deepscore.config import MODEL_DIRECTORIES
 from omigami.ms2deepscore.flows.minimal_flow import (
     build_minimal_flow,
     MinimalFlowParameters,
@@ -27,7 +26,6 @@ from omigami.ms2deepscore.flows.minimal_flow import (
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 
 
 def deploy_minimal_flow(

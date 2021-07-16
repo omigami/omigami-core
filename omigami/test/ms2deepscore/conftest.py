@@ -2,13 +2,14 @@ import pickle
 
 import pytest
 from ms2deepscore.models import load_model
+
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
 )
-from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
+from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.test.conftest import ASSETS_DIR
 
 
