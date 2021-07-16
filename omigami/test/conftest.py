@@ -69,6 +69,14 @@ def spectrum_ids_by_mode(loaded_data):
 
 
 @pytest.fixture(scope="module")
+def basic_cleaned_data():
+    path = str(ASSETS_DIR / "SMALL_GNPS_basic_cleaned.pickle")
+    with open(path, "rb") as handle:
+        cleaned_data = pickle.load(handle)
+    return cleaned_data
+
+
+@pytest.fixture(scope="module")
 def cleaned_data():
     path = str(ASSETS_DIR / "SMALL_GNPS_cleaned.pickle")
     with open(path, "rb") as handle:
@@ -128,9 +136,9 @@ def spectrum_ids(local_gnps_small_json):
 
 
 @pytest.fixture
-def spectra_stored(redis_db, cleaned_data):
+def spectra_stored(redis_db, basic_cleaned_data):
     pipe = redis_db.pipeline()
-    for spectrum in cleaned_data:
+    for spectrum in basic_cleaned_data:
         pipe.zadd(
             SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
             {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},

@@ -18,8 +18,8 @@ def spectrum(loaded_data):
 
 
 @pytest.mark.slow
-def test_process_spectra(loaded_data, spectrum_processor):
-    cleaned_data = spectrum_processor.process_spectra(loaded_data, True)
+def test_process_spectra(positive_spectra_data, spectrum_processor):
+    cleaned_data = spectrum_processor.process_spectra(positive_spectra_data, True)
     assert isinstance(cleaned_data[0], Spectrum)
 
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None

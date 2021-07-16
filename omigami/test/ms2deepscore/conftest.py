@@ -14,8 +14,8 @@ from omigami.test.conftest import ASSETS_DIR
 
 
 @pytest.fixture
-def positive_spectra_data(loaded_data):
-    spectra = [data for data in loaded_data if data["Ion_Mode"] == "Positive"]
+def positive_spectra_data(basic_cleaned_data):
+    spectra = [data for data in basic_cleaned_data if data.get("ionmode") == "positive"]
     return spectra
 
 
@@ -26,16 +26,17 @@ def positive_spectra(positive_spectra_data):
 
 
 @pytest.fixture
-def ms2deepscore_payload(positive_spectra_data):
+def ms2deepscore_payload(loaded_data):
+    spectra = [data for data in loaded_data if data["Ion_Mode"] == "Positive"]
     payload = {
         "data": [
             {
-                "peaks_json": positive_spectra_data[0]["peaks_json"],
-                "Precursor_MZ": positive_spectra_data[0]["Precursor_MZ"],
+                "peaks_json": spectra[0]["peaks_json"],
+                "Precursor_MZ": spectra[0]["Precursor_MZ"],
             },
             {
-                "peaks_json": positive_spectra_data[1]["peaks_json"],
-                "Precursor_MZ": positive_spectra_data[1]["Precursor_MZ"],
+                "peaks_json": spectra[1]["peaks_json"],
+                "Precursor_MZ": spectra[1]["Precursor_MZ"],
             },
         ],
         "parameters": {"n_best": 2, "include_metadata": ["Compound_name"]},
