@@ -12,7 +12,7 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 
 from matchmsextras.pubchem_lookup import pubchem_metadata_lookup
 
-incorrect_last_words = [
+INCORRECT_LAST_WORDS = [
     "M",
     "M?",
     "?",
@@ -43,7 +43,7 @@ class SpectrumProcessor(SpectrumCleaner):
                     spectrum = self._select_ion_mode(spectrum)
                     spectrum = self._harmonize_spectrum(spectrum)
                     spectrum = self._convert_metadata(spectrum)
-                    spectrum = self._get_missing_smiles_and_inchi(spectrum)
+                    spectrum = self._get_missing_inchis(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
                 if spectrum is not None:
@@ -63,22 +63,22 @@ class SpectrumProcessor(SpectrumCleaner):
         spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)
         return spectrum
 
-    def _get_missing_smiles_and_inchi(
+    def _get_missing_inchis(
         self,
         spectrum: Spectrum,
     ) -> Optional[Spectrum]:
         if not spectrum:
             return None
 
-        spectrum = self._maybe_process_compound_name(spectrum)
+        spectrum = self._process_compound_name(spectrum)
         return pubchem_metadata_lookup(spectrum)
 
-    def _maybe_process_compound_name(self, spectrum: Spectrum) -> Spectrum:
+    def _process_compound_name(self, spectrum: Spectrum) -> Spectrum:
         original_name = spectrum.get("compound_name")
         name = original_name.replace("F dial M", "")
 
         # Remove last word if likely not correct:
-        if name.split(" ")[-1] in incorrect_last_words:
+        if name.split(" ")[-1] in INCORRECT_LAST_WORDS:
             name = " ".join(name.split(" ")[:-1]).strip()
 
         if name != original_name:
