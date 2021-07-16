@@ -11,7 +11,12 @@ from omigami.gateways.data_gateway import InputDataGateway
 from omigami.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
 )
-from omigami.tasks import DownloadData, DownloadParameters
+from omigami.tasks import (
+    DownloadData,
+    DownloadParameters,
+    ChunkingParameters,
+    CreateChunks,
+)
 
 
 class TrainingFlowParameters:
@@ -22,6 +27,7 @@ class TrainingFlowParameters:
         source_uri: str,
         output_dir: str,
         dataset_id: str,
+        chunk_size: int,
         ion_mode: IonModes,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
@@ -47,6 +53,10 @@ class TrainingFlowParameters:
 
         self.downloading = DownloadParameters(
             source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
+        )
+
+        self.chunking = ChunkingParameters(
+            self.downloading.download_path, chunk_size, ion_mode
         )
 
 
@@ -92,5 +102,10 @@ def build_training_flow(
             flow_parameters.input_dgw,
             flow_parameters.downloading,
         )()
+
+        gnps_chunks = CreateChunks(
+            flow_parameters.input_dgw,
+            flow_parameters.chunking,
+        )(spectrum_ids)
 
     return training_flow

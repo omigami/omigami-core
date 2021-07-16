@@ -12,8 +12,6 @@ from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
     DeployModelParameters,
-    CreateChunks,
-    ChunkingParameters,
     ProcessSpectrum,
     TrainModel,
     TrainModelParameters,
@@ -22,7 +20,12 @@ from omigami.spec2vec.tasks import (
 from omigami.spec2vec.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
-from omigami.tasks import DownloadData, DownloadParameters
+from omigami.tasks import (
+    DownloadData,
+    DownloadParameters,
+    ChunkingParameters,
+    CreateChunks,
+)
 
 
 class TrainingFlowParameters:

@@ -40,9 +40,7 @@ def test_training_flow(flow_config):
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     flow_name = "test-flow"
-    expected_tasks = {
-        "DownloadData",
-    }
+    expected_tasks = {"DownloadData", "CreateChunks"}
 
     flow_parameters = TrainingFlowParameters(
         input_dgw=mock_input_dgw,
@@ -51,6 +49,7 @@ def test_training_flow(flow_config):
         output_dir="datasets",
         dataset_id="dataset-id",
         ion_mode="positive",
+        chunk_size=150000,
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -97,6 +96,7 @@ def test_run_training_flow(
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
         ion_mode="positive",
+        chunk_size=150000,
     )
 
     model_parameters = ModelGeneralParameters(
@@ -118,7 +118,7 @@ def test_run_training_flow(
 
     assert results.is_successful()
     results.result[d].is_cached()
+    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
+    assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     # Model does not yet get created by flow
     # assert "model" in os.listdir(tmpdir / "model-output")
-    # assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
-    # assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
