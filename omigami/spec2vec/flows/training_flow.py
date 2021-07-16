@@ -3,20 +3,11 @@ from typing import Union
 from prefect import Flow, unmapped
 
 from omigami.config import IonModes, ION_MODES
-from omigami.gateways.data_gateway import (
-    InputDataGateway,
-)
-
-from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
 from omigami.flow_config import FlowConfig
-
-from omigami.tasks import (
-    DownloadData,
-    DownloadParameters,
-    SaveRawSpectra,
-    SaveRawSpectraParameters,
+from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
 )
-
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
@@ -30,6 +21,12 @@ from omigami.spec2vec.tasks import (
 )
 from omigami.spec2vec.tasks.process_spectrum import (
     ProcessSpectrumParameters,
+)
+from omigami.tasks import (
+    DownloadData,
+    DownloadParameters,
+    ChunkingParameters,
+    CreateChunks,
 )
 
 
@@ -62,11 +59,11 @@ class TrainingFlowParameters:
         self.downloading = DownloadParameters(
             source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
         )
-        self.save_raw_spectra_parameters = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw
-        )
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
+        )
+      	self.save_raw_spectra_parameters = SaveRawSpectraParameters(
+            spectrum_dgw, input_dgw
         )
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,

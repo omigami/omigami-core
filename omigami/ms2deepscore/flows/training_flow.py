@@ -1,33 +1,33 @@
 from dataclasses import dataclass
+from datetime import timedelta, date, datetime
 
-from typing import Union
-
-from prefect import Flow, unmapped
+from prefect import Flow
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
 from omigami.config import IonModes, ION_MODES
-from omigami.gateways.data_gateway import InputDataGateway
-from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.flow_config import FlowConfig
+from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
+)
 from omigami.tasks import (
     DownloadData,
     DownloadParameters,
-    SaveRawSpectra,
-    SaveRawSpectraParameters,
+    ChunkingParameters,
+    CreateChunks,
 )
-
-from datetime import timedelta, date, datetime
 
 
 class TrainingFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
+        spectrum_dgw: RedisSpectrumDataGateway,
         source_uri: str,
         output_dir: str,
         dataset_id: str,
+        chunk_size: int,
         ion_mode: IonModes,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
@@ -55,12 +55,14 @@ class TrainingFlowParameters:
             source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
         )
 
+        self.chunking = ChunkingParameters(
+            self.downloading.download_path, chunk_size, ion_mode
+        )
         self.save_raw_spectra_parameters = SaveRawSpectraParameters(
             spectrum_dgw, input_dgw
         )
 
-
-# TODO: Add to model task when it is created
+# Add to model task when it is created
 @dataclass
 class ModelGeneralParameters:
     model_output_dir: str
@@ -98,10 +100,15 @@ def build_training_flow(
 
     with Flow(name=flow_name, **flow_config.kwargs) as training_flow:
 
-        gnps_save_path = DownloadData(
+        spectrum_ids = DownloadData(
             flow_parameters.input_dgw,
             flow_parameters.downloading,
         )()
+
+        gnps_chunks = CreateChunks(
+            flow_parameters.input_dgw,
+            flow_parameters.chunking,
+        )(spectrum_ids)
 
         spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra_parameters)(
             gnps_save_path

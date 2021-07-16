@@ -10,6 +10,7 @@ from matchms.filtering import (
     derive_inchi_from_smiles,
     derive_smiles_from_inchi,
     derive_inchikey_from_inchi,
+    derive_adduct_from_name,
 )
 
 
@@ -18,6 +19,7 @@ class SpectrumCleaner:
     def _apply_filters(spectrum: Spectrum) -> Spectrum:
         """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
+        spectrum = derive_adduct_from_name(spectrum)
         spectrum = add_parent_mass(spectrum)
         spectrum = normalize_intensities(spectrum)
         return spectrum

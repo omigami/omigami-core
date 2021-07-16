@@ -13,13 +13,15 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
+from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
     ModelGeneralParameters,
 )
-
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
@@ -40,7 +42,7 @@ def test_training_flow(flow_config):
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     flow_name = "test-flow"
-    expected_tasks = {"DownloadData", "SaveRawSpectra"}
+    expected_tasks = {"DownloadData", "CreateChunks", "SaveRawSpectra"}
 
     flow_parameters = TrainingFlowParameters(
         input_dgw=mock_input_dgw,
@@ -49,6 +51,7 @@ def test_training_flow(flow_config):
         output_dir="datasets",
         dataset_id="dataset-id",
         ion_mode="positive",
+        chunk_size=150000,
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -84,6 +87,7 @@ def test_run_training_flow(
 
     input_dgw = FSInputDataGateway()
 
+   
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
     flow_params = TrainingFlowParameters(
