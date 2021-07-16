@@ -1,11 +1,16 @@
 from dataclasses import dataclass
+from datetime import timedelta, date, datetime
+
 from prefect import Flow
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
 from omigami.config import IonModes, ION_MODES
-from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
 from omigami.flow_config import FlowConfig
+from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
+)
 from omigami.tasks import (
     DownloadData,
     DownloadParameters,
@@ -13,14 +18,12 @@ from omigami.tasks import (
     CreateChunks,
 )
 
-from datetime import timedelta, date, datetime
-
 
 class TrainingFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        spectrum_dgw: SpectrumDataGateway,
+        spectrum_dgw: RedisSpectrumDataGateway,
         source_uri: str,
         output_dir: str,
         dataset_id: str,

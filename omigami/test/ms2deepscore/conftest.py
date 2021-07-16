@@ -1,11 +1,15 @@
+import pickle
+
 import pytest
 from ms2deepscore.models import load_model
 
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
 )
+from omigami.ms2deepscore.helper_classes.spectrum_processor import (
+    SpectrumProcessor,
+)
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
-from omigami.ms2deepscore.helper_classes.spectrum_processor import SpectrumProcessor
 from omigami.test.conftest import ASSETS_DIR
 
 
@@ -65,14 +69,18 @@ def ms2deepscore_predictor(ms2deepscore_model):
 
 
 @pytest.fixture()
-def ms2deepscore_real_model():
-    ms2deepscore_model_path = str(
+def ms2deepscore_real_model_path():
+    return str(
         ASSETS_DIR
         / "ms2deepscore"
         / "pretrained"
         / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
     )
-    ms2deepscore_model = load_model(ms2deepscore_model_path)
+
+
+@pytest.fixture()
+def ms2deepscore_real_model(ms2deepscore_real_model_path):
+    ms2deepscore_model = load_model(ms2deepscore_real_model_path)
     return ms2deepscore_model
 
 
@@ -84,7 +92,7 @@ def ms2deepscore_real_predictor(ms2deepscore_real_model):
 
 
 @pytest.fixture()
-def binned_spectra(ms2deepscore_real_predictor, positive_spectra):
+def binned_spectra_from_real_predictor(ms2deepscore_real_predictor, positive_spectra):
     binned_spectra = ms2deepscore_real_predictor.model.model.spectrum_binner.transform(
         positive_spectra
     )
@@ -92,3 +100,11 @@ def binned_spectra(ms2deepscore_real_predictor, positive_spectra):
         binned_spectrum.set("spectrum_id", positive_spectra[i].metadata["spectrum_id"])
         for i, binned_spectrum in enumerate(binned_spectra)
     ]
+
+
+@pytest.fixture(scope="module")
+def cleaned_data_ms2deep_score():
+    path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_cleaned.pickle")
+    with open(path, "rb") as handle:
+        cleaned_data = pickle.load(handle)
+    return cleaned_data
