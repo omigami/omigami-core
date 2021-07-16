@@ -121,26 +121,26 @@ def build_training_flow(
 
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
-        gnps_save_path = DownloadData(
+        spectrum_ids = DownloadData(
             flow_parameters.input_dgw,
             flow_parameters.downloading,
         )()
-
-        spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra_parameters)(
-            gnps_save_path
-        )
 
         gnps_chunks = CreateChunks(
             flow_parameters.input_dgw,
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        spectrum_ids_chunks = ProcessSpectrum(
-            flow_parameters.input_dgw, flow_parameters.processing
+        spectrum_ids_chunks = SaveRawSpectra(
+            flow_parameters.save_raw_spectra_parameters
         ).map(gnps_chunks)
 
+        processed_chunks = ProcessSpectrum(
+            flow_parameters.input_dgw, flow_parameters.processing
+        ).map(spectrum_ids_chunks)
+
         model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(
-            spectrum_ids_chunks
+            processed_chunks
         )
 
         # TODO: add register model parameters

@@ -49,6 +49,7 @@ class SaveRawSpectra(Task):
             **config,
         )
 
+    # Note: need to take the pectra ids provided by the prior task
     def run(self, gnps_path: str = None):
         self.logger.info(f"Loading spectra from {gnps_path}")
         redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()

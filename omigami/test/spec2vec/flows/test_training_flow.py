@@ -43,8 +43,8 @@ def test_training_flow(flow_config):
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     expected_tasks = {
         "DownloadData",
-        "SaveRawSpectra",
         "CreateChunks",
+        "SaveRawSpectra",
         "ProcessSpectrum",
         "MakeEmbeddings",
         "RegisterModel",
