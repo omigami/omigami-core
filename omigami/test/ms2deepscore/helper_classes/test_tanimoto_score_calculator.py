@@ -60,7 +60,7 @@ def test_get_unique_inchi(
 
 
 def test_get_tanimoto_scores(inchis, tanimoto_calculator):
-    scores = tanimoto_calculator._get_tanimoto_scores(inchis, 2048)
+    scores = tanimoto_calculator._calculate_tanimoto_scores(inchis, 2048)
 
     assert isinstance(scores, pd.DataFrame)
     assert (np.diag(scores) == 1).all()
