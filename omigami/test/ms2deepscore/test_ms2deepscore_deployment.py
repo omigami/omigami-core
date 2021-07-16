@@ -18,7 +18,7 @@ def test_deploy_minimal_flow():
     login_config.pop("token")
 
     flow_id = deploy_minimal_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.97f6589",
+        image="drtools/prefect:omigami-SNAPSHOT.f70e5c2",
         dataset_name="small",
         environment=env,
         project_name="ms2deepscore-dev",

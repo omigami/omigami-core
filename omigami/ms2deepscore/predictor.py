@@ -75,7 +75,7 @@ class MS2DeepScorePredictor(Predictor):
 
         log.info("Pre-processing data.")
         query_spectra = self.spectrum_processor.process_spectra(
-            data_input, reference_spectra=False
+            data_input, process_reference_spectra=False
         )
         query_binned_spectra = self.model.model.spectrum_binner.transform(query_spectra)
 
