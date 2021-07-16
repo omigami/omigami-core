@@ -37,7 +37,8 @@ class ProcessSpectrum(Task):
 
     def run(self, spectrum_ids: Set[str] = None) -> Set[str]:
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
-        existing_ids = deepcopy(spectrum_ids)
+        all_spectrum_ids = deepcopy(spectrum_ids)
+
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
             missing_ids = self._spectrum_dgw.list_missing_documents(list(spectrum_ids))
@@ -62,7 +63,7 @@ class ProcessSpectrum(Task):
 
         if self._skip_if_exists and not spectrum_documents:
             self.logger.info("No new documents have been processed.")
-            return existing_ids
+            return all_spectrum_ids
 
         self.logger.info(
             f"Finished processing {len(spectrum_documents)}. "

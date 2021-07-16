@@ -1,11 +1,9 @@
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Set
-
 from prefect import Task
-
-from omigami.gateways.redis_spectrum_data_gateway import (
-    REDIS_DB,
-    RedisSpectrumDataGateway,
+from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
+    MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.ms2deepscore.helper_classes.spectrum_binner import (
     MS2DeepScoreSpectrumBinner,
@@ -19,7 +17,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ProcessSpectrumParameters:
-    spectrum_dgw: RedisSpectrumDataGateway
+    spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
     model_path: str
     skip_if_exists: bool = True
 
@@ -38,26 +36,27 @@ class ProcessSpectrum(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self) -> Set[str]:
-        self.logger.info(f"Using Redis DB {REDIS_DB}")
-        spectra_ids = self._spectrum_dgw.list_spectrum_ids()
+    def run(self, spectrum_ids: Set[str] = None) -> Set[str]:
+        self.logger.info(f"Processing {len(spectrum_ids)} spectra")
+        all_spectrum_ids = deepcopy(spectrum_ids)
 
         self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
         if self._skip_if_exists:
-            new_spectrum_ids = self._spectrum_dgw.list_missing_binned_spectra(
-                spectra_ids
+            missing_ids = self._spectrum_dgw.list_missing_binned_spectra(
+                list(spectrum_ids)
             )
-            if not new_spectrum_ids:
+            if not missing_ids:
                 self.logger.info("All spectra have already been processed.")
-                return set(spectra_ids)
+                return set(missing_ids)
 
             self.logger.info(
-                f"{len(new_spectrum_ids)} out of {len(spectra_ids)} spectra are new and will "
-                f"be processed."
+                f"{len(missing_ids)} out of {len(spectrum_ids)} spectra are new and "
+                f"will be processed."
             )
-            spectra_ids = new_spectrum_ids
+            spectrum_ids = missing_ids
 
-        spectra = self._spectrum_dgw.read_spectra(spectra_ids)
+        spectra = self._spectrum_dgw.read_spectra(spectrum_ids)
+
         self.logger.info(f"Processing {len(spectra)} spectra")
 
         self.logger.info(f"Cleaning spectra and binning them")
@@ -65,13 +64,13 @@ class ProcessSpectrum(Task):
             self.logger, len(spectra), 20, "Process Spectra task progress"
         )
         cleaned_spectra = self._processor.process_spectra(
-            list(spectra.values()), progress_logger=progress_logger
+            spectra, process_reference_spectra=True, progress_logger=progress_logger
         )
         binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
 
         if self._skip_if_exists and not binned_spectra:
             self.logger.info("No new spectra have been processed.")
-            return set(spectra_ids)
+            return set(all_spectrum_ids)
 
         self.logger.info(
             f"Finished processing {len(binned_spectra)} binned spectra. "
