@@ -61,6 +61,7 @@ def test_save_raw_spectra_empty_db(local_gnps_small_json):
     data = res.result[raw_spectra].result
 
     # Test Results
+    print(data)
     assert res.is_successful()
     assert len(data) == 100
     assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
