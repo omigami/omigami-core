@@ -10,7 +10,8 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
+from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.ms2deepscore.flows.minimal_flow import (
     build_minimal_flow,
     MinimalFlowParameters,
@@ -18,7 +19,6 @@ from omigami.ms2deepscore.flows.minimal_flow import (
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
@@ -37,7 +37,7 @@ def flow_config():
 
 def test_minimal_flow(flow_config):
     mock_input_dgw = MagicMock(spec=InputDataGateway)
-    spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
+    spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
 
     expected_tasks = {
         "ProcessSpectrum",

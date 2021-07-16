@@ -3,8 +3,10 @@ from typing import Union, Dict, Set
 from gensim.models import Word2Vec
 from prefect import Task
 
-from omigami.gateways.data_gateway import SpectrumDataGateway
-from omigami.gateways.redis_spectrum_data_gateway import REDIS_DB
+from omigami.gateways.redis_spectrum_data_gateway import (
+    REDIS_DB,
+    RedisSpectrumDataGateway,
+)
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
@@ -13,7 +15,7 @@ from omigami.utils import merge_prefect_task_configs
 class MakeEmbeddings(Task):
     def __init__(
         self,
-        spectrum_dgw: SpectrumDataGateway,
+        spectrum_dgw: RedisSpectrumDataGateway,
         n_decimals: int,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,

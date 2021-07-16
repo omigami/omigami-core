@@ -25,5 +25,5 @@ dependencies:
       - mlflow==1.14.1
       - seldon-core==1.6.0
       - git+https://github.com/datarevenue-berlin/drfs
-      - matchmsextras==0.2.2
+      - matchmsextras==0.2.3
       - pubchempy==1.0.2

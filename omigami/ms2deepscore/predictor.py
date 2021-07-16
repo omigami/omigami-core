@@ -3,8 +3,9 @@ from typing import Union, List, Dict, Tuple
 
 import numpy as np
 from matchms import calculate_scores
-from ms2deepscore.models import load_model as ms2deepscore_load_model
 from ms2deepscore import BinnedSpectrum
+from ms2deepscore.models import load_model as ms2deepscore_load_model
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
