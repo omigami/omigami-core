@@ -45,19 +45,19 @@ def test_list_spectrum_ids(cleaned_data, spectra_stored):
     assert len(ids) == len(spectrum_ids_stored)
 
 
-def test_list_spectra_not_exist(cleaned_data, spectra_stored):
+def test_list_missing_spectra(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     spectrum_ids_stored += ["batman", "ROBEN"]
 
     dgw = Spec2VecRedisSpectrumDataGateway()
-    spectra = dgw._list_spectrum_ids_not_exist("spectrum_data", spectrum_ids_stored)
+    spectra = dgw._list_missing_spectrum_ids("spectrum_data", spectrum_ids_stored)
     assert set(spectra) == {"batman", "ROBEN"}
 
 
-def test_list_documents_not_exist(cleaned_data, documents_stored):
+def test_list_missing_documents(cleaned_data, documents_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     dgw = Spec2VecRedisSpectrumDataGateway()
-    documents = dgw.list_documents_not_exist(spectrum_ids_stored)
+    documents = dgw.list_missing_documents(spectrum_ids_stored)
     assert len(documents) == 0
 
 

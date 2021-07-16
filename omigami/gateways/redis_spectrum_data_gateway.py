@@ -2,29 +2,21 @@ from __future__ import annotations
 
 import os
 import pickle
-from logging import Logger
 from typing import List, Iterable, Dict, Set
 
 import redis
 from matchms import Spectrum
-from spec2vec import SpectrumDocument
 
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
-    REDIS_HOST,
-    REDIS_DB,
 )
-from omigami.gateways.data_gateway import SpectrumDataGateway
-from omigami.spec2vec.entities.embedding import Embedding
-from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-
 
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
 # which was defined during deployment by the 'dataset_name' param
-REDIS_HOST = str(os.getenv(REDIS_HOST))
-REDIS_DB = str(os.getenv(REDIS_DB))
+REDIS_HOST = str(os.getenv("REDIS_HOST"))
+REDIS_DB = str(os.getenv("REDIS_DB"))
 
 client = None
 
@@ -36,7 +28,7 @@ def get_redis_client():
     return client
 
 
-class RedisSpectrumDataGateway(SpectrumDataGateway):
+class RedisSpectrumDataGateway:
     """Data gateway for Redis storage."""
 
     def __init__(self):
@@ -104,28 +96,11 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
         self._init_client()
         _ = [self.client.hdel(SPECTRUM_HASHES, id_.encode()) for id_ in spectrum_ids]
 
-    def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
-        pass
-
-    def write_raw_spectra(self, spectra):
+    def _list_missing_spectrum_ids(
+        self, hash_name: str, spectrum_ids: List[str]
+    ) -> List[str]:
         self._init_client()
-
-        for spectrum in spectra:
-            # spectrum_info = spectrum.spectrum
-            self.client.hset(
-                SPECTRUM_HASHES, spectrum["spectrum_id"], pickle.dumps(spectrum)
-            )
-
-    def write_embeddings(
-        self, embeddings: List[Embedding], run_id: str, logger: Logger = None
-    ):
-        pass
-
-    def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
-        pass
-
-    def read_documents_iter(self, spectrum_ids: List[str] = None) -> Iterable:
-        pass
+        return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]
 
 
 class RedisHashesIterator:

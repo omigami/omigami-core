@@ -1,9 +1,10 @@
 import os
 
+import numpy as np
 import pytest
 from matchms import calculate_scores
 from ms2deepscore import MS2DeepScore
-import numpy as np
+
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
 )
@@ -35,11 +36,11 @@ def ms2deepscore_spectrum_similarity(ms2deepscore_real_model):
 
 def test_pair(
     positive_spectra,
-    binned_spectra,
+    binned_spectra_from_real_predictor,
     ms2deepscore_spectrum_similarity,
     ms2deepscore_binned_spectrum_similarity,
 ):
-    spectrum_ids = ["CCMSLIB00000001577", "CCMSLIB00000001567"]
+    spectrum_ids = ["CCMSLIB00000001577", "CCMSLIB00000001647"]
     spectra = [
         spectrum
         for spectrum in positive_spectra
@@ -47,7 +48,7 @@ def test_pair(
     ]
     binned_spectra = [
         binned_spectrum
-        for binned_spectrum in binned_spectra
+        for binned_spectrum in binned_spectra_from_real_predictor
         if binned_spectrum.metadata["spectrum_id"] in spectrum_ids
     ]
 
@@ -63,7 +64,7 @@ def test_pair(
 
 def test_matrix(
     positive_spectra,
-    binned_spectra,
+    binned_spectra_from_real_predictor,
     ms2deepscore_spectrum_similarity,
     ms2deepscore_binned_spectrum_similarity,
 ):
@@ -72,14 +73,15 @@ def test_matrix(
         positive_spectra[:10], positive_spectra[10:12]
     )
     score_from_binned_spectrum = ms2deepscore_binned_spectrum_similarity.matrix(
-        binned_spectra[:10], binned_spectra[10:12]
+        binned_spectra_from_real_predictor[:10],
+        binned_spectra_from_real_predictor[10:12],
     )
     assert np.all(score_from_spectrum == score_from_binned_spectrum)
 
 
 def test_calculate_scores_with_ms2deepscore_binned_spectrum(
     positive_spectra,
-    binned_spectra,
+    binned_spectra_from_real_predictor,
     ms2deepscore_spectrum_similarity,
     ms2deepscore_binned_spectrum_similarity,
 ):
@@ -91,8 +93,8 @@ def test_calculate_scores_with_ms2deepscore_binned_spectrum(
     )
 
     scores_from_documents = calculate_scores(
-        binned_spectra[:50],
-        binned_spectra[50:],
+        binned_spectra_from_real_predictor[:50],
+        binned_spectra_from_real_predictor[50:],
         ms2deepscore_binned_spectrum_similarity,
         is_symmetric=False,
     )

@@ -6,17 +6,19 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.gateways.data_gateway import SpectrumDataGateway
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
+from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.redis_spectrum_data_gateway import (
+    RedisSpectrumDataGateway,
+)
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -37,7 +39,7 @@ def flow_config():
 
 
 def test_training_flow(flow_config):
-    mock_spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
+    mock_spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     expected_tasks = {
         "DownloadData",

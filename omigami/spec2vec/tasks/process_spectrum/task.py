@@ -3,8 +3,11 @@ from typing import Set
 
 from prefect import Task
 
-from omigami.gateways.data_gateway import SpectrumDataGateway, InputDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import REDIS_DB
+from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.redis_spectrum_data_gateway import (
+    REDIS_DB,
+    RedisSpectrumDataGateway,
+)
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
     SpectrumProcessor,
@@ -14,7 +17,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ProcessSpectrumParameters:
-    spectrum_dgw: SpectrumDataGateway
+    spectrum_dgw: RedisSpectrumDataGateway
     n_decimals: int = 2
     skip_if_exists: bool = True
 

@@ -11,13 +11,14 @@ from pytest_redis import factories
 
 import omigami
 import omigami.config
+from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
+from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
     DOCUMENT_HASHES,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
 )
-from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -165,8 +166,30 @@ def embeddings_stored(redis_db, cleaned_data, embeddings):
     pipe.execute()
 
 
+@pytest.fixture(scope="module")
+def binned_spectra():
+    path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_binned_spectra.pickle")
+    with open(path, "rb") as handle:
+        binned_spectra = pickle.load(handle)
+    return binned_spectra
+
+
+@pytest.fixture
+def binned_spectra_stored(redis_db, binned_spectra):
+    pipe = redis_db.pipeline()
+    for spectrum in binned_spectra:
+        pipe.hset(
+            f"{BINNED_SPECTRUM_HASHES}",
+            spectrum.metadata["spectrum_id"],
+            pickle.dumps(spectrum),
+        )
+    pipe.execute()
+
+
 @pytest.fixture()
-def redis_full_setup(spectra_stored, documents_stored, embeddings_stored):
+def redis_full_setup(
+    spectra_stored, documents_stored, embeddings_stored, binned_spectra_stored
+):
     pass
 
 
