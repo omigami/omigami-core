@@ -2,13 +2,13 @@ from dataclasses import dataclass
 
 from prefect import Task
 
-from omigami.gateways.data_gateway import SpectrumDataGateway, InputDataGateway
+from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
 from omigami.utils import merge_prefect_task_configs
 
 
 @dataclass
 class SaveRawSpectraParameters:
-    spectrum_dgw: SpectrumDataGateway
+    spectrum_dgw: RedisSpectrumDataGateway
     input_dgw: InputDataGateway
     skip_task: bool = False
 

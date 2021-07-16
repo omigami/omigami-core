@@ -35,6 +35,15 @@ class RedisSpectrumDataGateway:
         # We initialize it with None so we can pickle this gateway when deploying the flow
         self.client = None
 
+    def write_raw_spectra(self, spectra):
+        self._init_client()
+
+        for spectrum in spectra:
+            # spectrum_info = spectrum.spectrum
+            self.client.hset(
+                SPECTRUM_HASHES, spectrum["spectrum_id"], pickle.dumps(spectrum)
+            )
+
     def _init_client(self):
         if self.client is None:
             self.client = get_redis_client()

@@ -6,7 +6,7 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.gateways.data_gateway import SpectrumDataGateway
+from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 
 from omigami.flow_config import (
     make_flow_config,
@@ -20,9 +20,6 @@ from omigami.ms2deepscore.flows.training_flow import (
 )
 
 from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
@@ -41,7 +38,7 @@ def flow_config():
 
 def test_training_flow(flow_config):
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
-    mock_spectrum_dgw = MagicMock(spec=SpectrumDataGateway)
+    mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     flow_name = "test-flow"
     expected_tasks = {"DownloadData", "SaveRawSpectra"}
 

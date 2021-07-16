@@ -7,7 +7,8 @@ from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
 from omigami.config import IonModes, ION_MODES
-from omigami.gateways.data_gateway import InputDataGateway, SpectrumDataGateway
+from omigami.gateways.data_gateway import InputDataGateway
+from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.flow_config import FlowConfig
 from omigami.tasks import (
     DownloadData,
@@ -23,7 +24,7 @@ class TrainingFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        spectrum_dgw: SpectrumDataGateway,
+        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         source_uri: str,
         output_dir: str,
         dataset_id: str,

@@ -1,8 +1,6 @@
 import pytest
 
-from omigami.spec2vec.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-)
+from omigami.gateways import RedisSpectrumDataGateway
 from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 
