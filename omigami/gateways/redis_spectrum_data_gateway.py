@@ -35,16 +35,25 @@ class RedisSpectrumDataGateway:
         # We initialize it with None so we can pickle this gateway when deploying the flow
         self.client = None
 
-    def write_raw_spectra(self, spectra):
+    def write_raw_spectra(self, spectra: List[Spectrum]):
+        """Writes a list of raw spectra to the redis database unsing the spectrum_id as the key.
+
+        Parameters
+        ----------
+        spectra: List[Spectrum]
+            List containing objects the class matchms.Spectrum.
+        """
         self._init_client()
 
         for spectrum in spectra:
             self.client.zadd(
                 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-                {spectrum.spectrum_id: spectrum.precursor_mz},
+                {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
             )
             self.client.hset(
-                SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum)
+                SPECTRUM_HASHES,
+                spectrum.metadata["spectrum_id"],
+                pickle.dumps(spectrum),
             )
 
     def _init_client(self):

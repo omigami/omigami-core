@@ -99,9 +99,9 @@ def test_run_training_flow(
         output_dir=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
+        chunk_size=150000,
         ion_mode="positive",
         skip_if_exists=True,
-        chunk_size=150000,
     )
 
     model_parameters = ModelGeneralParameters(

@@ -1,6 +1,9 @@
 from dataclasses import dataclass
+from typing import List
 
+from matchms.importing.load_from_json import as_spectrum
 from prefect import Task
+
 
 from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
 from omigami.utils import merge_prefect_task_configs
@@ -20,6 +23,7 @@ class SaveRawSpectraParameters:
     """
 
     spectrum_dgw: RedisSpectrumDataGateway
+    input_dgw: InputDataGateway
     overwrite_all: bool = False
 
 
@@ -27,11 +31,10 @@ class SaveRawSpectra(Task):
     """
     Prefect task to save the raw spectra passed to it.
 
+    Parameters:
+    -----------
     save_parameters: SaveRawSpectraParameters
         Parameters determining how certain aspects of the task act.
-
-    Retruns
-        Returns all ids
     """
 
     def __init__(
@@ -40,6 +43,7 @@ class SaveRawSpectra(Task):
         **kwargs,
     ):
         self._spectrum_dgw = save_parameters.spectrum_dgw
+        self.input_dgw = save_parameters.input_dgw
         self._overwrite_all = save_parameters.overwrite_all
         config = merge_prefect_task_configs(kwargs)
 
@@ -47,12 +51,34 @@ class SaveRawSpectra(Task):
             **config,
         )
 
-    # Note: need to take the spectra ids provided by the prior task
-    def run(self, spectra_id_chunk: str = None):
-        self.logger.info(f"Chunck of spectra is {len(spectra_id_chunk)}")
-        redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
+    def _get_spectrum_from_list(self, spec_list, id):
 
-        spectrum_ids = [sp["SpectrumID"] for sp in spectra_id_chunk]
+        try:
+            for spec in spec_list:
+                if spec["spectrum_id"] == id:
+                    return spec
+        except:
+            print("except")
+            for spec in spec_list:
+                if spec.metadata["spectrum_id"] == id:
+                    return spec
+
+    def run(self, gnps_path: str) -> List[str]:
+        """The run method of a Prefect task takes a path to arw gnps json data and saves it as object of the class matchms.Spectrum to a database.
+
+        Parameters:
+        ----------
+        gnps_path: str
+            A string leading to a json datafile containing spectrum data
+
+        Returns:
+            A list of all the spectrum_ids contained in the files data
+        """
+        self.logger.info(f"Loading spectra from {gnps_path}")
+        spectra_from_file = self.input_dgw.load_spectrum(gnps_path)
+
+        redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
+        spectrum_ids = [sp["spectrum_id"] for sp in spectra_from_file]
 
         if self._overwrite_all:
             spectrum_ids_to_add = spectrum_ids
@@ -62,13 +88,19 @@ class SaveRawSpectra(Task):
         self.logger.info(f"Need to add new Ids: {len(spectrum_ids_to_add) > 0}")
         if len(spectrum_ids_to_add) > 0:
             self.logger.info(
-                f"Adding {len(spectrum_ids_to_add)} spectra to the db; \n"
+                f"Adding {len(spectrum_ids_to_add)} spectra to the db \n"
                 f"Overwrite: {self._overwrite_all}"
             )
 
             db_entries = [
-                sp for sp in spectra if sp["SpectrumID"] in spectrum_ids_to_add
+                sp
+                for sp in spectra_from_file
+                if sp["spectrum_id"] in spectrum_ids_to_add
             ]
+
+            # Diana TODO: Call correct function
+            db_entries = [as_spectrum(spectrum_data) for spectrum_data in db_entries]
+
             self._spectrum_dgw.write_raw_spectra(db_entries)
 
-        return spectrum_ids_to_add
+        return spectrum_ids
