@@ -34,7 +34,7 @@ class CreateSpectrumIDsChunks(Task):
         ]
 
         self.logger.info(
-            f"Split spectra into {len(chunks)} chunks of size" f"{self._chunk_size}"
+            f"Split spectra into {len(chunks)} chunks of size {self._chunk_size}"
         )
 
         return chunks

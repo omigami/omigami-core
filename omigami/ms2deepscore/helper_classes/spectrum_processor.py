@@ -36,27 +36,29 @@ class SpectrumProcessor(SpectrumCleaner):
         process_reference_spectra: bool = True,
         progress_logger: TaskProgressLogger = None,
     ) -> List[Spectrum]:
-        processed_spectrum_dicts = []
+        processed_spectra = []
         for i, spectrum in enumerate(spectra):
             if type(spectrum) == dict:
                 spectrum = as_spectrum(spectrum)
             if spectrum is not None:
                 if self._minimal_flow:
                     spectrum = self._select_ion_mode(spectrum)
-                    spectrum = self.basic_cleaning(spectrum)
+                    spectrum = self._basic_cleaning(spectrum)  # this is only until
+                    # all the saved spectra are not cleaned
                 spectrum = normalize_intensities(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
                 if process_reference_spectra:
+                    # TODO: investigate how to run this in parallel
                     # spectrum = self._get_missing_inchis(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
                 if spectrum is not None:
-                    processed_spectrum_dicts.append(spectrum)
+                    processed_spectra.append(spectrum)
 
                 if progress_logger:
                     progress_logger.log(i)
 
-        return processed_spectrum_dicts
+        return processed_spectra
 
     @staticmethod
     def _apply_ms2deepscore_filters(spectrum: Spectrum) -> Spectrum:

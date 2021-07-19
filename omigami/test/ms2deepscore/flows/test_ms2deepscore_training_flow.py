@@ -20,6 +20,7 @@ from omigami.ms2deepscore.flows.training_flow import (
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
+from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
@@ -39,6 +40,7 @@ def flow_config():
 def test_training_flow(flow_config):
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
+    mock_cleaner = MagicMock(spec=SpectrumCleaner)
     flow_name = "test-flow"
     expected_tasks = {
         "DownloadData",
@@ -50,6 +52,7 @@ def test_training_flow(flow_config):
     flow_parameters = TrainingFlowParameters(
         input_dgw=mock_input_dgw,
         spectrum_dgw=mock_spectrum_dgw,
+        cleaner=mock_cleaner,
         source_uri="source_uri",
         output_dir="datasets",
         dataset_id="dataset-id",
@@ -91,10 +94,12 @@ def test_run_training_flow(
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+    cleaner = SpectrumCleaner()
 
     flow_params = TrainingFlowParameters(
         input_dgw=input_dgw,
         spectrum_dgw=spectrum_dgw,
+        cleaner=cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,

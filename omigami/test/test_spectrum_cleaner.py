@@ -7,7 +7,7 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 def test_clean_data(loaded_data):
     dc = SpectrumCleaner()
 
-    cleaned_data = dc.basic_cleaning(as_spectrum(loaded_data[0]))
+    cleaned_data = dc._basic_cleaning(as_spectrum(loaded_data[0]))
 
     assert isinstance(cleaned_data, Spectrum)
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None

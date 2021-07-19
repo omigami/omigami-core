@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict, List
 from matchms import Spectrum
 from matchms.filtering import (
     default_filters,
@@ -11,10 +11,20 @@ from matchms.filtering import (
     derive_smiles_from_inchi,
     derive_inchikey_from_inchi,
 )
+from matchms.importing.load_from_json import as_spectrum
 
 
 class SpectrumCleaner:
-    def basic_cleaning(self, spectrum: Spectrum) -> Optional[Spectrum]:
+    def clean(self, spectra: List[Dict]):
+        processed_spectra = []
+        for spectrum in spectra:
+            spectrum = as_spectrum(spectrum)
+            spectrum = self._basic_cleaning(spectrum)
+            if spectrum is not None:
+                processed_spectra.append(spectrum)
+        return processed_spectra
+
+    def _basic_cleaning(self, spectrum: Spectrum) -> Optional[Spectrum]:
         spectrum = self._apply_filters(spectrum)
         spectrum = self._harmonize_spectrum(spectrum)
         spectrum = self._convert_metadata(spectrum)

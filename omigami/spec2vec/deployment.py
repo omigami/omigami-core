@@ -31,6 +31,7 @@ from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
+from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 def deploy_training_flow(
@@ -97,10 +98,12 @@ def deploy_training_flow(
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
+    cleaner = SpectrumCleaner()
 
     flow_parameters = TrainingFlowParameters(
         input_dgw=input_dgw,
         spectrum_dgw=spectrum_dgw,
+        cleaner=cleaner,
         source_uri=source_uri,
         output_dir=output_dir,
         dataset_id=dataset_id,

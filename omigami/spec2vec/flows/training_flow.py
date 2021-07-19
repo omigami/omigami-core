@@ -19,6 +19,7 @@ from omigami.spec2vec.tasks import (
 from omigami.spec2vec.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
+from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
     DownloadParameters,
@@ -34,6 +35,7 @@ class TrainingFlowParameters:
         self,
         input_dgw: InputDataGateway,
         spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
+        cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
         dataset_id: str,
@@ -61,7 +63,9 @@ class TrainingFlowParameters:
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
         )
-        self.save_raw_spectra = SaveRawSpectraParameters(spectrum_dgw, input_dgw)
+        self.save_raw_spectra = SaveRawSpectraParameters(
+            spectrum_dgw, input_dgw, cleaner
+        )
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
             n_decimals,

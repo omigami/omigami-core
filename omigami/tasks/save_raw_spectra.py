@@ -1,11 +1,8 @@
 from dataclasses import dataclass
 from typing import List
-
-from matchms.importing.load_from_json import as_spectrum
 from prefect import Task
-
-
 from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
+from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.utils import merge_prefect_task_configs
 
 
@@ -18,12 +15,15 @@ class SaveRawSpectraParameters:
         A gateway that grands access to the redis database
     input_dgw: InputDataGateway
         A InputDataaGateway that is able to load the gnps dataset
+    cleaner: SpectrumCleaner
+        A SpectrumCleaner that performs some basic cleaning
     overwrite_all: bool = False
         If true overwrites all ids in the database that passed to the function. Otherwise only adds new ones.
     """
 
     spectrum_dgw: RedisSpectrumDataGateway
     input_dgw: InputDataGateway
+    cleaner: SpectrumCleaner
     overwrite_all: bool = False
 
 
@@ -44,6 +44,7 @@ class SaveRawSpectra(Task):
     ):
         self._spectrum_dgw = save_parameters.spectrum_dgw
         self.input_dgw = save_parameters.input_dgw
+        self._cleaner = save_parameters.cleaner
         self._overwrite_all = save_parameters.overwrite_all
         config = merge_prefect_task_configs(kwargs)
 
@@ -63,8 +64,9 @@ class SaveRawSpectra(Task):
                 if spec.metadata["spectrum_id"] == id:
                     return spec
 
-    def run(self, gnps_path: str) -> List[str]:
-        """The run method of a Prefect task takes a path to arw gnps json data and saves it as object of the class matchms.Spectrum to a database.
+    def run(self, gnps_path: str = None) -> List[str]:
+        """The run method of a Prefect task takes a path to arw gnps json data and
+        saves it as object of the class matchms.Spectrum to a database.
 
         Parameters:
         ----------
@@ -98,9 +100,8 @@ class SaveRawSpectra(Task):
                 if sp["spectrum_id"] in spectrum_ids_to_add
             ]
 
-            # Diana TODO: Call correct function
-            db_entries = [as_spectrum(spectrum_data) for spectrum_data in db_entries]
+            spectra_to_save = self._cleaner.clean(db_entries)
 
-            self._spectrum_dgw.write_raw_spectra(db_entries)
+            self._spectrum_dgw.write_raw_spectra(spectra_to_save)
 
         return spectrum_ids

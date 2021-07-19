@@ -10,6 +10,7 @@ from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.tasks import ProcessSpectrumParameters, ProcessSpectrum
+from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
     DownloadParameters,
@@ -25,6 +26,7 @@ class TrainingFlowParameters:
         self,
         input_dgw: InputDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
+        cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
         dataset_id: str,
@@ -60,7 +62,9 @@ class TrainingFlowParameters:
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
         )
-        self.save_raw_spectra = SaveRawSpectraParameters(spectrum_dgw, input_dgw)
+        self.save_raw_spectra = SaveRawSpectraParameters(
+            spectrum_dgw, input_dgw, cleaner
+        )
 
         self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, skip_if_exists)
 
