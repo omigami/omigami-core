@@ -17,7 +17,7 @@ class TaskProgressLogger:
         logger: Logger,
         num_of_items: int,
         log_frequency_in_perc: int,
-        msg: str,
+        msg: str = None,
     ):
         self.logger = logger
         self.log_freq = log_frequency_in_perc
@@ -25,7 +25,9 @@ class TaskProgressLogger:
         self.msg = msg
         self.progress_count = 0
 
-    def log(self, count: int):
+    def log(self, count: int, msg: str = None):
         if count % self.log_freq_in_items == 0:
             self.progress_count += 1
-            self.logger.info(f"{self.msg}: {self.progress_count * self.log_freq}%.")
+            self.logger.info(
+                f"{self.msg or msg}: {self.progress_count * self.log_freq}%."
+            )

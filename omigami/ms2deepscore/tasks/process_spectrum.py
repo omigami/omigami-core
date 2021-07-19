@@ -67,7 +67,9 @@ class ProcessSpectrum(Task):
         cleaned_spectra = self._processor.process_spectra(
             list(spectra.values()), progress_logger=progress_logger
         )
-        binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
+        binned_spectra = self._spectrum_binner.bin_spectra(
+            cleaned_spectra, progress_logger=progress_logger
+        )
 
         if self._skip_if_exists and not binned_spectra:
             self.logger.info("No new spectra have been processed.")

@@ -18,12 +18,12 @@ def test_deploy_minimal_flow():
     login_config.pop("token")
 
     flow_id = deploy_minimal_flow(
-        image="drtools/prefect:omigami-SNAPSHOT.f70e5c2",
-        dataset_name="small",
+        image="drtools/prefect:omigami-SNAPSHOT.d75e0f92345",
+        dataset_name="complete",
         environment=env,
         project_name="ms2deepscore-dev",
         mlflow_server=MLFLOW_SERVER,
-        flow_name="running-dev",
+        flow_name="test-binning-optimization",
         deploy_model=True,
         overwrite=True,
         auth=True,
