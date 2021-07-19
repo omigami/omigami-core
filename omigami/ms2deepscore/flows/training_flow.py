@@ -58,7 +58,9 @@ class TrainingFlowParameters:
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
         )
-
+        self.save_raw_spectra_parameters = SaveRawSpectraParameters(
+            spectrum_dgw, input_dgw
+        )
 
 # Add to model task when it is created
 @dataclass
@@ -107,5 +109,9 @@ def build_training_flow(
             flow_parameters.input_dgw,
             flow_parameters.chunking,
         )(spectrum_ids)
+
+        spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra_parameters)(
+            gnps_save_path
+        )
 
     return training_flow

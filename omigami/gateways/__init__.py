@@ -1,0 +1,2 @@
+from omigami.gateways.redis_spectrum_data_gateway import RedisSpectrumDataGateway
+from omigami.gateways.data_gateway import InputDataGateway

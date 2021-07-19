@@ -49,7 +49,6 @@ def test_process_spectrum(spectrum_ids, spectra_stored, mock_default_config):
     data = res.result[process_task].result
 
     assert set(data) == set(spectrum_ids)
-    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids)
 
 
 @pytest.mark.skipif(

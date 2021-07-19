@@ -12,6 +12,8 @@ from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
     DeployModelParameters,
+    CreateChunks,
+    ChunkingParameters,
     ProcessSpectrum,
     TrainModel,
     TrainModelParameters,
@@ -32,7 +34,7 @@ class TrainingFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        spectrum_dgw: RedisSpectrumDataGateway,
+        spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
         source_uri: str,
         output_dir: str,
         dataset_id: str,
@@ -59,6 +61,9 @@ class TrainingFlowParameters:
         )
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
+        )
+      	self.save_raw_spectra_parameters = SaveRawSpectraParameters(
+            spectrum_dgw, input_dgw
         )
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
@@ -123,12 +128,16 @@ def build_training_flow(
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        spectrum_ids_chunks = ProcessSpectrum(
-            flow_parameters.input_dgw, flow_parameters.processing
+        spectrum_ids_chunks = SaveRawSpectra(
+            flow_parameters.save_raw_spectra_parameters
         ).map(gnps_chunks)
 
+        processed_chunks = ProcessSpectrum(
+            flow_parameters.input_dgw, flow_parameters.processing
+        ).map(spectrum_ids_chunks)
+
         model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(
-            spectrum_ids_chunks
+            processed_chunks
         )
 
         # TODO: add register model parameters
