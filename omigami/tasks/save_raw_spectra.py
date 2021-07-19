@@ -20,7 +20,6 @@ class SaveRawSpectraParameters:
     """
 
     spectrum_dgw: RedisSpectrumDataGateway
-    input_dgw: InputDataGateway
     overwrite_all: bool = False
 
 
@@ -41,7 +40,6 @@ class SaveRawSpectra(Task):
         **kwargs,
     ):
         self._spectrum_dgw = save_parameters.spectrum_dgw
-        self._input_dgw = save_parameters.input_dgw
         self._overwrite_all = save_parameters.overwrite_all
         config = merge_prefect_task_configs(kwargs)
 
@@ -49,20 +47,18 @@ class SaveRawSpectra(Task):
             **config,
         )
 
-    # Note: need to take the pectra ids provided by the prior task
-    def run(self, gnps_path: str = None):
-        self.logger.info(f"Loading spectra from {gnps_path}")
+    # Note: need to take the spectra ids provided by the prior task
+    def run(self, spectra_id_chunk: str = None):
+        self.logger.info(f"Chunck of spectra is {len(spectra_id_chunk)}")
         redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
 
-        spectra = self._input_dgw.load_spectrum(gnps_path)
-        spectrum_ids = [sp["SpectrumID"] for sp in spectra]
+        spectrum_ids = [sp["SpectrumID"] for sp in spectra_id_chunk]
 
         if self._overwrite_all:
             spectrum_ids_to_add = spectrum_ids
         else:
             spectrum_ids_to_add = set(spectrum_ids) - set(redis_spectrum_ids)
 
-        # Compare IDs from redis and the file
         self.logger.info(f"Need to add new Ids: {len(spectrum_ids_to_add) > 0}")
         if len(spectrum_ids_to_add) > 0:
             self.logger.info(

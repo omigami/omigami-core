@@ -5,6 +5,7 @@ from prefect import Flow, unmapped
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
+
 from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
@@ -124,13 +125,13 @@ def build_training_flow(
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        spectrum_ids_chunks = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
+        spectrum_ids_chunked = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
             gnps_chunks
         )
 
         processed_ids_chunks = ProcessSpectrum(
             flow_parameters.input_dgw, flow_parameters.processing
-        ).map(spectrum_ids_chunks)
+        ).map(spectrum_ids_chunked)
 
         model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(
             processed_ids_chunks
@@ -152,7 +153,7 @@ def build_training_flow(
             flow_parameters.processing.n_decimals,
             intensity_weighting_power,
             allowed_missing_percentage,
-        ).map(unmapped(model), unmapped(model_registry), spectrum_ids_chunks)
+        ).map(unmapped(model), unmapped(model_registry), spectrum_ids_chunked)
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)
