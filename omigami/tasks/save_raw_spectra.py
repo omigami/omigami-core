@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from matchms.importing.load_from_json import as_spectrum
 from prefect import Task
 
 from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
@@ -20,6 +21,7 @@ class SaveRawSpectraParameters:
     """
 
     spectrum_dgw: RedisSpectrumDataGateway
+    input_dgw: InputDataGateway
     overwrite_all: bool = False
 
 
@@ -40,6 +42,7 @@ class SaveRawSpectra(Task):
         **kwargs,
     ):
         self._spectrum_dgw = save_parameters.spectrum_dgw
+        self.input_dgw = save_parameters.input_dgw
         self._overwrite_all = save_parameters.overwrite_all
         config = merge_prefect_task_configs(kwargs)
 
@@ -47,12 +50,12 @@ class SaveRawSpectra(Task):
             **config,
         )
 
-    # Note: need to take the spectra ids provided by the prior task
-    def run(self, spectra_id_chunk: str = None):
-        self.logger.info(f"Chunck of spectra is {len(spectra_id_chunk)}")
-        redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
+    def run(self, gnps_path: str):
+        self.logger.info(f"Loading spectra from {len(gnps_path)}")
+        spectra_from_file = self.input_dgw.load_spectrum(gnps_path)
 
-        spectrum_ids = [sp["SpectrumID"] for sp in spectra_id_chunk]
+        redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
+        spectrum_ids = [sp["spectrum_id"] for sp in spectra_from_file]
 
         if self._overwrite_all:
             spectrum_ids_to_add = spectrum_ids
@@ -62,13 +65,17 @@ class SaveRawSpectra(Task):
         self.logger.info(f"Need to add new Ids: {len(spectrum_ids_to_add) > 0}")
         if len(spectrum_ids_to_add) > 0:
             self.logger.info(
-                f"Adding {len(spectrum_ids_to_add)} spectra to the db; \n"
+                f"Adding {len(spectrum_ids_to_add)} spectra to the db \n"
                 f"Overwrite: {self._overwrite_all}"
             )
 
             db_entries = [
-                sp for sp in spectra if sp["SpectrumID"] in spectrum_ids_to_add
+                sp
+                for sp in spectra_from_file
+                if sp["spectrum_id"] in spectrum_ids_to_add
             ]
+            # Diana TODO: Call correct function
+            db_entries = [as_spectrum(spectrum_data) for spectrum_data in db_entries]
             self._spectrum_dgw.write_raw_spectra(db_entries)
 
-        return spectrum_ids_to_add
+        return spectrum_ids
