@@ -3,7 +3,7 @@ import os
 
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
+from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 
 from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
@@ -12,7 +12,7 @@ from prefect import Flow
 
 
 @pytest.fixture
-def create_parameters(overwrite_all: bool = True):
+def parameters(overwrite_all: bool = True):
     spectrum_dgw = RedisSpectrumDataGateway()
     input_dgw = FSInputDataGateway()
     parameters = SaveRawSpectraParameters(
@@ -34,14 +34,14 @@ def empty_database(parameters: SaveRawSpectraParameters, local_gnps_small_json):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_save_raw_spectum_flow(create_parameters, local_gnps_small_json):
-    """Tests if the task if flow ready"""
+def test_save_raw_spectrum_flow(parameters, local_gnps_small_json):
+    """Tests if the task is flow ready"""
     # Setup Test
-    empty_database(create_parameters, local_gnps_small_json)
+    empty_database(parameters, local_gnps_small_json)
 
     # Run Functions
     with Flow("test-flow") as test_flow:
-        raw_spectra = SaveRawSpectra(save_parameters=create_parameters).map(
+        raw_spectra = SaveRawSpectra(save_parameters=parameters).map(
             [local_gnps_small_json]
         )
 
@@ -50,7 +50,7 @@ def test_save_raw_spectum_flow(create_parameters, local_gnps_small_json):
 
     # Test Results
     assert res.is_successful()
-    assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100
+    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
     assert len(data[0]) == 100
 
 
@@ -58,32 +58,29 @@ def test_save_raw_spectum_flow(create_parameters, local_gnps_small_json):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_save_raw_spectra_overwrite(
-    create_parameters, local_gnps_small_json, spectra_stored
-):
-    """Test if overwrite the task wörks by changing up the data"""
+def test_save_raw_spectra_overwrite(parameters, local_gnps_small_json, spectra_stored):
+    """Test if overwrite the task works by changing up the data"""
     # Setup Test
-    loaded_data = create_parameters.input_dgw.load_spectrum(local_gnps_small_json)
+    loaded_data = parameters.input_dgw.load_spectrum(local_gnps_small_json)
     changed_value = loaded_data[0]["scan"]
     loaded_data[0]["scan"] = 5
     preserved_id = loaded_data[0]["spectrum_id"]
 
-    # Diana TODO: Call correct function
     db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data]
-    create_parameters.spectrum_dgw.write_raw_spectra(db_entries)
+    parameters.spectrum_dgw.write_raw_spectra(db_entries)
 
     # Run Functions
-    raw_spectra = SaveRawSpectra(save_parameters=create_parameters)
+    raw_spectra = SaveRawSpectra(save_parameters=parameters)
     data = raw_spectra.run(local_gnps_small_json)
 
     # Test Results
     assert (
-        create_parameters.spectrum_dgw.read_spectra([preserved_id])[
-            preserved_id
-        ].metadata["scan"]
+        parameters.spectrum_dgw.read_spectra([preserved_id])[preserved_id].metadata[
+            "scan"
+        ]
         != changed_value
     )
-    assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100
+    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
     assert len(data) == 100
 
 
@@ -91,52 +88,48 @@ def test_save_raw_spectra_overwrite(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_save_raw_spectra_empty_db(create_parameters, local_gnps_small_json):
+def test_save_raw_spectra_empty_db(parameters, local_gnps_small_json):
     """Test if new spectra get added to a empty database"""
 
     # Run Functions
-    raw_spectra = SaveRawSpectra(save_parameters=create_parameters)
+    raw_spectra = SaveRawSpectra(save_parameters=parameters)
     data = raw_spectra.run(local_gnps_small_json)
 
     # Test Results
     assert len(data) == 100
-    assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100
+    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
 
 
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_save_raw_spectra_add_new_spectra(create_parameters, local_gnps_small_json):
+def test_save_raw_spectra_add_new_spectra(parameters, local_gnps_small_json):
     """Test if new spectra get added to a database which already hosts some"""
     # Setup Test
-    create_parameters.overwrite_all = False
-    loaded_data = create_parameters.input_dgw.load_spectrum(local_gnps_small_json)
-    empty_database(create_parameters, local_gnps_small_json)
+    parameters.overwrite_all = False
+    empty_database(parameters, local_gnps_small_json)
 
-    loaded_data = create_parameters.input_dgw.load_spectrum(local_gnps_small_json)
-    print(f"SCAN: {loaded_data[0]['scan']}")
+    loaded_data = parameters.input_dgw.load_spectrum(local_gnps_small_json)
+
     loaded_data[0]["scan"] = 5
     preserved_id = loaded_data[0]["spectrum_id"]
 
-    # Diana TODO: Call correct function
     db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data[:30]]
-    create_parameters.spectrum_dgw.write_raw_spectra(db_entries)
+    parameters.spectrum_dgw.write_raw_spectra(db_entries)
 
-    assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 30
+    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 30
 
     # Run Functions
-    raw_spectra = SaveRawSpectra(save_parameters=create_parameters)
+    raw_spectra = SaveRawSpectra(save_parameters=parameters)
     data = raw_spectra.run(local_gnps_small_json)
-
-    spec = create_parameters.spectrum_dgw.read_spectra([preserved_id])
 
     # Test Results
     assert len(data) == 100
-    assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100
+    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
     assert (
-        create_parameters.spectrum_dgw.read_spectra([preserved_id])[
-            preserved_id
-        ].metadata["scan"]
+        parameters.spectrum_dgw.read_spectra([preserved_id])[preserved_id].metadata[
+            "scan"
+        ]
         == 5
     )
