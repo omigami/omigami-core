@@ -1,12 +1,14 @@
+import pytest
 import os
 
-import pytest
 from matchms.importing.load_from_json import as_spectrum
-from prefect import Flow
 
-from omigami.gateways import RedisSpectrumDataGateway
+from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
 from omigami.gateways.input_data_gateway import FSInputDataGateway
+
 from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
+
+from prefect import Flow
 
 
 @pytest.fixture
@@ -125,6 +127,8 @@ def test_save_raw_spectra_add_new_spectra(create_parameters, local_gnps_small_js
     # Run Functions
     raw_spectra = SaveRawSpectra(save_parameters=create_parameters)
     data = raw_spectra.run(local_gnps_small_json)
+
+    spec = create_parameters.spectrum_dgw.read_spectra([preserved_id])
 
     # Test Results
     assert len(data) == 100
