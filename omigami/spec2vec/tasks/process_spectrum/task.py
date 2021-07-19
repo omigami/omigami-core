@@ -44,7 +44,7 @@ class ProcessSpectrum(Task):
             missing_ids = self._spectrum_dgw.list_missing_documents(list(spectrum_ids))
             if not missing_ids:
                 self.logger.info("All spectra have already been processed.")
-                return set(missing_ids)
+                return set(all_spectrum_ids)
 
             self.logger.info(
                 f"{len(missing_ids)} out of {len(spectrum_ids)} spectra are new and will "
