@@ -65,7 +65,6 @@ class TrainingFlowParameters:
         self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, skip_if_exists)
 
 
-
 # TODO: Add to model task when it is created
 @dataclass
 class ModelGeneralParameters:
