@@ -127,4 +127,4 @@ class DownloadData(Task):
             f"Downloaded {len(spectrum_ids)} spectra from {self.input_uri} to {self.download_path}."
         )
         self.logger.info(f"Saving spectrum ids to {self.checkpoint_path}")
-        return self.download_path
+        return spectrum_ids

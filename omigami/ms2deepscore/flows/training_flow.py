@@ -16,6 +16,8 @@ from omigami.tasks import (
     DownloadParameters,
     ChunkingParameters,
     CreateChunks,
+    SaveRawSpectraParameters,
+    SaveRawSpectra,
 )
 
 
@@ -62,7 +64,8 @@ class TrainingFlowParameters:
             spectrum_dgw, input_dgw
         )
 
-# Add to model task when it is created
+
+# TODO: Add to model task when it is created
 @dataclass
 class ModelGeneralParameters:
     model_output_dir: str
@@ -110,8 +113,8 @@ def build_training_flow(
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra_parameters)(
-            gnps_save_path
-        )
+        chunked_spectum_ids = SaveRawSpectra(
+            flow_parameters.save_raw_spectra_parameters
+        ).map(gnps_chunks)
 
     return training_flow

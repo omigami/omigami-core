@@ -1,62 +1,61 @@
 import pytest
+import os
 
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
-from omigami.gateways.input_data_gateway import FSInputDataGateway
 
 from prefect import Flow
 
 
-# NOTE: Not necessary to run the flow every time the more low level a test is the better.
-
-
 @pytest.fixture
-def create_parameters(skip_task: bool):
+def create_parameters(overwrite_all: bool = True):
     spectrum_dgw = RedisSpectrumDataGateway()
-    specturm_idgw = FSInputDataGateway()
 
-    parameters = SaveRawSpectraParameters(
-        spectrum_dgw=spectrum_dgw, input_dgw=specturm_idgw
-    )
-    parameters.skip_task = skip_task
+    parameters = SaveRawSpectraParameters(spectrum_dgw=spectrum_dgw)
+    parameters.overwrite_all = overwrite_all
     return parameters
 
 
 @pytest.fixture
-def empty_database(parameters: SaveRawSpectraParameters, path: str):
-    spectra = parameters.input_dgw.load_spectrum(path)
+def empty_database(parameters: SaveRawSpectraParameters, spectra):
     parameters.spectrum_dgw.delete_spectra(
         [spec_id["spectrum_id"] for spec_id in spectra]
     )
 
 
-def test_save_raw_spectra_skip(local_gnps_small_json):
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_save_raw_spectra_overwrite(create_parameters, loaded_data):
     """Test if skipping the task wörks"""
     # Setup Test
-    parameters = create_parameters(True)
-    empty_database(parameters, local_gnps_small_json)
+    # TODO: Change up a spectra
 
     # Run Functions
     with Flow("test-flow") as test_flow:
-        raw_spectra = SaveRawSpectra(save_parameters=parameters)(local_gnps_small_json)
+        raw_spectra = SaveRawSpectra(save_parameters=create_parameters).map(loaded_data)
 
     res = test_flow.run()
     data = res.result[raw_spectra].result
 
     # Test Results
     assert res.is_successful()
-    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 0
+    assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 0
     assert len(data) == 0
 
 
-def test_save_raw_spectra_empty_db(local_gnps_small_json):
-    """Test if new spectra get added to an empty database"""
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_save_raw_spectra_empty_db(create_parameters, loaded_data):
+    """Test if new spectra get added to a empty database"""
     # Setup Test
-    parameters = create_parameters(False)
 
     # Run Functions
     with Flow("test-flow") as test_flow:
-        raw_spectra = SaveRawSpectra(save_parameters=parameters)(local_gnps_small_json)
+        raw_spectra = SaveRawSpectra(save_parameters=create_parameters)(loaded_data)
 
     res = test_flow.run()
     data = res.result[raw_spectra].result
@@ -64,28 +63,28 @@ def test_save_raw_spectra_empty_db(local_gnps_small_json):
     # Test Results
     assert res.is_successful()
     assert len(data) == 100
-    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
+    assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100
 
 
-def test_save_raw_spectra_adding_new_spectra(local_gnps_small_json):
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_save_raw_spectra_add_new_spectra(create_parameters, loaded_data):
     """Test if new spectra get added to a database which already hosts some"""
     # Setup Test
-    parameters = create_parameters(False)
-    empty_database(parameters, local_gnps_small_json)
+    create_parameters.overwrite_all = False
+    empty_database(create_parameters, loaded_data)
 
-    spectra = parameters.input_dgw.load_spectrum(local_gnps_small_json)
-    parameters.spectrum_dgw.write_raw_spectra(spectra[:30])
+    spectra = create_parameters.input_dgw.load_spectrum(loaded_data)
+    create_parameters.spectrum_dgw.write_raw_spectra(spectra[:30])
 
-    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 30
+    assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 30
 
     # Run Functions
-    with Flow("test-flow") as test_flow:
-        raw_spectra = SaveRawSpectra(save_parameters=parameters)(local_gnps_small_json)
-
-    res = test_flow.run()
-    data = res.result[raw_spectra].result
+    raw_spectra = SaveRawSpectra(save_parameters=create_parameters)
+    data = raw_spectra.run()
 
     # Test Results
-    assert res.is_successful()
     assert len(data) == 100
-    assert len(parameters.spectrum_dgw.list_spectrum_ids()) == 100
+    assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100
