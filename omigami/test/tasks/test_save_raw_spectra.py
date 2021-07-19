@@ -1,14 +1,13 @@
-import pytest
 import os
 
+import pytest
 from matchms.importing.load_from_json import as_spectrum
-
-from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
-from omigami.gateways.input_data_gateway import FSInputDataGateway
-
-from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
-
 from prefect import Flow
+
+from omigami.gateways import RedisSpectrumDataGateway
+from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.spec2vec.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
+from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
 
 
 @pytest.fixture
@@ -28,6 +27,18 @@ def empty_database(parameters: SaveRawSpectraParameters, local_gnps_small_json):
     parameters.spectrum_dgw.delete_spectra(
         [spec_id["spectrum_id"] for spec_id in spectra]
     )
+
+
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_write_raw_spectra(redis_db, loaded_data):
+    db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data]
+
+    dgw = RedisSpectrumDataGateway()
+    dgw.write_raw_spectra(db_entries)
+    assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(db_entries)
 
 
 @pytest.mark.skipif(
