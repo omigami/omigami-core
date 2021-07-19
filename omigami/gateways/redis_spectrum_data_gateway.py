@@ -81,7 +81,7 @@ class RedisSpectrumDataGateway:
         """
         self._init_client()
         spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
-        return spectra
+        return {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}
 
     def get_spectrum_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1

@@ -74,7 +74,9 @@ def test_save_raw_spectra_overwrite(
 
     # Test Results
     assert (
-        create_parameters.spectrum_dgw.read_spectra([preserved_id])[0].metadata["scan"]
+        create_parameters.spectrum_dgw.read_spectra([preserved_id])[
+            preserved_id
+        ].metadata["scan"]
         != original_value
     )
     assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100

@@ -87,7 +87,6 @@ def test_run_training_flow(
 
     input_dgw = FSInputDataGateway()
 
-   
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
     flow_params = TrainingFlowParameters(
@@ -97,6 +96,7 @@ def test_run_training_flow(
         output_dir=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
+        chunk_size=150000,
         ion_mode="positive",
     )
 
