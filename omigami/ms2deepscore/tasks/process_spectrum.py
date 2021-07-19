@@ -19,6 +19,7 @@ from omigami.utils import merge_prefect_task_configs
 class ProcessSpectrumParameters:
     spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
     skip_if_exists: bool = True
+    minimal_flow: bool = False
 
 
 class ProcessSpectrum(Task):
@@ -29,7 +30,7 @@ class ProcessSpectrum(Task):
     ):
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._skip_if_exists = process_parameters.skip_if_exists
-        self._processor = SpectrumProcessor()
+        self._processor = SpectrumProcessor(process_parameters.minimal_flow)
         self._spectrum_binner = MS2DeepScoreSpectrumBinner()
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)

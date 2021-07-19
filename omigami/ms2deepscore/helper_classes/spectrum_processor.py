@@ -27,6 +27,9 @@ INCORRECT_LAST_WORDS = [
 
 
 class SpectrumProcessor(SpectrumCleaner):
+    def __init__(self, minimal_flow: bool = False):
+        self._minimal_flow = minimal_flow
+
     def process_spectra(
         self,
         spectra: Union[List[Dict], List[Spectrum]],
@@ -43,6 +46,8 @@ class SpectrumProcessor(SpectrumCleaner):
                 if process_reference_spectra:
                     spectrum = self._get_missing_inchis(spectrum)
                     spectrum = self._check_inchikey(spectrum)
+                    if self._minimal_flow:
+                        spectrum = self._select_ion_mode(spectrum)
 
                 if spectrum is not None:
                     processed_spectrum_dicts.append(spectrum)
