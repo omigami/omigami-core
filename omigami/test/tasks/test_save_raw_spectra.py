@@ -1,14 +1,12 @@
-import pytest
 import os
 
+import pytest
 from matchms.importing.load_from_json import as_spectrum
-
-from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
-from omigami.gateways.input_data_gateway import FSInputDataGateway
-
-from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
-
 from prefect import Flow
+
+from omigami.gateways import RedisSpectrumDataGateway
+from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
 
 
 @pytest.fixture
@@ -111,12 +109,11 @@ def test_save_raw_spectra_add_new_spectra(create_parameters, local_gnps_small_js
     """Test if new spectra get added to a database which already hosts some"""
     # Setup Test
     create_parameters.overwrite_all = False
-    loaded_data = create_parameters.input_dgw.load_spectrum(local_gnps_small_json)
     empty_database(create_parameters, local_gnps_small_json)
 
     loaded_data = create_parameters.input_dgw.load_spectrum(local_gnps_small_json)
-    print(f"SCAN: {loaded_data[0]['scan']}")
-    loaded_data[0]["scan"] = 5
+
+    loaded_data[0]["ms_level"] = "5000000"
     preserved_id = loaded_data[0]["spectrum_id"]
 
     # Diana TODO: Call correct function
@@ -129,14 +126,12 @@ def test_save_raw_spectra_add_new_spectra(create_parameters, local_gnps_small_js
     raw_spectra = SaveRawSpectra(save_parameters=create_parameters)
     data = raw_spectra.run(local_gnps_small_json)
 
-    spec = create_parameters.spectrum_dgw.read_spectra([preserved_id])
-
     # Test Results
     assert len(data) == 100
     assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100
     assert (
         create_parameters.spectrum_dgw.read_spectra([preserved_id])[
             preserved_id
-        ].metadata["scan"]
-        == 5
+        ].metadata["ms_level"]
+        == "5000000"
     )
