@@ -47,7 +47,7 @@ class SpectrumProcessor(SpectrumCleaner):
                 spectrum = normalize_intensities(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
                 if process_reference_spectra:
-                    spectrum = self._get_missing_inchis(spectrum)
+                    # spectrum = self._get_missing_inchis(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
                 if spectrum is not None:
