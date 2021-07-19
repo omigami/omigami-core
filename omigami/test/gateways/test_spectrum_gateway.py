@@ -8,7 +8,6 @@ from spec2vec.SpectrumDocument import SpectrumDocument
 
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-    SPECTRUM_HASHES,
     DOCUMENT_HASHES,
 )
 from omigami.spec2vec.entities.embedding import Embedding
@@ -34,7 +33,6 @@ def test_write_spectrum_documents(redis_db, cleaned_data):
     dgw = Spec2VecRedisSpectrumDataGateway()
     dgw.write_spectrum_documents(spectrum_document_data)
 
-    assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(cleaned_data)
     assert redis_db.hlen(DOCUMENT_HASHES) == len(cleaned_data)
 
 

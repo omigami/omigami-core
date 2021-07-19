@@ -35,7 +35,14 @@ class RedisSpectrumDataGateway:
         # We initialize it with None so we can pickle this gateway when deploying the flow
         self.client = None
 
-    def write_raw_spectra(self, spectra):
+    def write_raw_spectra(self, spectra: List[Spectrum]):
+        """Writes a list of raw spectra to the redis database unsing the spectrum_id as the key.
+
+        Parameters
+        ----------
+        spectra: List[Spectrum]
+            List containing objects the class matchms.Spectrum.
+        """
         self._init_client()
 
         for spectrum in spectra:
