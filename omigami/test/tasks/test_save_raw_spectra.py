@@ -7,6 +7,7 @@ from prefect import Flow
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spectrum_cleaner import SpectrumCleaner
+from omigami.spec2vec.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
 from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
 
 
@@ -28,6 +29,18 @@ def empty_database(parameters: SaveRawSpectraParameters, local_gnps_small_json):
     parameters.spectrum_dgw.delete_spectra(
         [spec_id["spectrum_id"] for spec_id in spectra]
     )
+
+
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_write_raw_spectra(redis_db, loaded_data):
+    db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data]
+
+    dgw = RedisSpectrumDataGateway()
+    dgw.write_raw_spectra(db_entries)
+    assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(db_entries)
 
 
 @pytest.mark.skipif(
@@ -125,6 +138,8 @@ def test_save_raw_spectra_add_new_spectra(create_parameters, local_gnps_small_js
     # Run Functions
     raw_spectra = SaveRawSpectra(save_parameters=create_parameters)
     data = raw_spectra.run(local_gnps_small_json)
+
+    spec = create_parameters.spectrum_dgw.read_spectra([preserved_id])
 
     # Test Results
     assert len(data) == 100
