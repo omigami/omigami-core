@@ -14,9 +14,9 @@ from omigami.ms2deepscore.tasks.process_spectrum import (
 from omigami.test.conftest import ASSETS_DIR
 
 
-def test_process_spectrum_calls(ms2deepscore_model_path, spectrum_ids):
+def test_process_spectrum_calls(spectrum_ids):
     spectrum_gtw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
-    parameters = ProcessSpectrumParameters(spectrum_gtw, ms2deepscore_model_path, False)
+    parameters = ProcessSpectrumParameters(spectrum_gtw, False)
 
     with Flow("test-flow") as test_flow:
         ProcessSpectrum(parameters)(spectrum_ids)
@@ -51,9 +51,7 @@ def test_process_spectrum(
     mock_default_config,
 ):
     spectrum_gtw = MS2DeepScoreRedisSpectrumDataGateway()
-    parameters = ProcessSpectrumParameters(
-        spectrum_gtw, ms2deepscore_real_model_path, False
-    )
+    parameters = ProcessSpectrumParameters(spectrum_gtw, False)
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(parameters)(spectrum_ids)
 

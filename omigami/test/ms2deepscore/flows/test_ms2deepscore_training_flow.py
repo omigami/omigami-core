@@ -6,8 +6,6 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
-
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -42,7 +40,12 @@ def test_training_flow(flow_config):
     mock_input_dgw = MagicMock(spec=FSInputDataGateway)
     mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     flow_name = "test-flow"
-    expected_tasks = {"DownloadData", "CreateChunks", "SaveRawSpectra"}
+    expected_tasks = {
+        "DownloadData",
+        "CreateChunks",
+        "SaveRawSpectra",
+        "ProcessSpectrum",
+    }
 
     flow_parameters = TrainingFlowParameters(
         input_dgw=mock_input_dgw,
@@ -52,6 +55,7 @@ def test_training_flow(flow_config):
         dataset_id="dataset-id",
         ion_mode="positive",
         chunk_size=150000,
+        skip_if_exists=False,
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -86,8 +90,6 @@ def test_run_training_flow(
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
     input_dgw = FSInputDataGateway()
-
-   
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
     flow_params = TrainingFlowParameters(
@@ -98,6 +100,8 @@ def test_run_training_flow(
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
         ion_mode="positive",
+        skip_if_exists=True,
+        chunk_size=150000,
     )
 
     model_parameters = ModelGeneralParameters(
@@ -121,5 +125,5 @@ def test_run_training_flow(
     results.result[d].is_cached()
     # Model does not yet get created by flow
     # assert "model" in os.listdir(tmpdir / "model-output")
-    # assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
-    # assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
+    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
+    assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")

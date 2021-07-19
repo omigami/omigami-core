@@ -18,7 +18,6 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
-    model_path: str
     skip_if_exists: bool = True
 
 
@@ -30,7 +29,6 @@ class ProcessSpectrum(Task):
     ):
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._skip_if_exists = process_parameters.skip_if_exists
-        self._model_path = process_parameters.model_path
         self._processor = SpectrumProcessor()
         self._spectrum_binner = MS2DeepScoreSpectrumBinner()
         config = merge_prefect_task_configs(kwargs)

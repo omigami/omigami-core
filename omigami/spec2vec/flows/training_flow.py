@@ -5,15 +5,11 @@ from prefect import Flow, unmapped
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-)
+from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
     DeployModelParameters,
-    CreateChunks,
-    ChunkingParameters,
     ProcessSpectrum,
     TrainModel,
     TrainModelParameters,
@@ -27,6 +23,8 @@ from omigami.tasks import (
     DownloadParameters,
     ChunkingParameters,
     CreateChunks,
+    SaveRawSpectra,
+    SaveRawSpectraParameters,
 )
 
 
@@ -62,9 +60,7 @@ class TrainingFlowParameters:
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
         )
-      	self.save_raw_spectra_parameters = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw
-        )
+        self.save_raw_spectra = SaveRawSpectraParameters(spectrum_dgw, input_dgw)
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
             n_decimals,
@@ -128,16 +124,16 @@ def build_training_flow(
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        spectrum_ids_chunks = SaveRawSpectra(
-            flow_parameters.save_raw_spectra_parameters
-        ).map(gnps_chunks)
+        spectrum_ids_chunks = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
+            gnps_chunks
+        )
 
-        processed_chunks = ProcessSpectrum(
+        processed_ids_chunks = ProcessSpectrum(
             flow_parameters.input_dgw, flow_parameters.processing
         ).map(spectrum_ids_chunks)
 
         model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(
-            processed_chunks
+            processed_ids_chunks
         )
 
         # TODO: add register model parameters

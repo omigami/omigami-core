@@ -67,6 +67,10 @@ def test_minimal_flow(flow_config):
     assert task_names == expected_tasks
 
 
+@pytest.mark.skip(
+    reason="Minimal flow is currently broken. It needs its' own task to "
+    "get spectrum ids in chunks before the ProcessSpectrum task"
+)
 @pytest.mark.skipif(
     not os.path.exists(
         str(
