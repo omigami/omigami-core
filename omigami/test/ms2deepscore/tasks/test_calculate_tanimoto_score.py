@@ -1,7 +1,6 @@
 import os
-
-from omigami.ms2deepscore.tasks.calculate_tanimoto_score import CalculateTanimotoScore
 from prefect import Flow
+from omigami.ms2deepscore.tasks import CalculateTanimotoScore
 
 
 def test_calculate_tanimoto_score(binned_spectra_stored, tmpdir):

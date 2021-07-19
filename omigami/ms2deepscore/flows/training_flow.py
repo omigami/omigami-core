@@ -9,10 +9,7 @@ from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
-from omigami.ms2deepscore.tasks.process_spectrum import (
-    ProcessSpectrum,
-    ProcessSpectrumParameters,
-)
+from omigami.ms2deepscore.tasks import ProcessSpectrumParameters, ProcessSpectrum
 from omigami.tasks import (
     DownloadData,
     DownloadParameters,

@@ -41,13 +41,14 @@ class SpectrumProcessor(SpectrumCleaner):
             if type(spectrum) == dict:
                 spectrum = as_spectrum(spectrum)
             if spectrum is not None:
+                if self._minimal_flow:
+                    spectrum = self._select_ion_mode(spectrum)
+                    spectrum = self.basic_cleaning(spectrum)
                 spectrum = normalize_intensities(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
                 if process_reference_spectra:
                     spectrum = self._get_missing_inchis(spectrum)
                     spectrum = self._check_inchikey(spectrum)
-                    if self._minimal_flow:
-                        spectrum = self._select_ion_mode(spectrum)
 
                 if spectrum is not None:
                     processed_spectrum_dicts.append(spectrum)
