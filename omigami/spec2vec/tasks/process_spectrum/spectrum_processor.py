@@ -20,6 +20,7 @@ class SpectrumProcessor(SpectrumCleaner):
         documents = []
         for i, spectrum_dict in enumerate(spectrum_dicts):
             spectrum = as_spectrum(spectrum_dict)
+
             if spectrum is not None and len(spectrum.peaks.mz) > min_peaks:
                 processed_spectrum = self._convert_metadata(
                     self._harmonize_spectrum(self._apply_filters(spectrum))
@@ -27,6 +28,7 @@ class SpectrumProcessor(SpectrumCleaner):
                 doc = SpectrumDocumentData(processed_spectrum, n_decimals)
                 # cz: I'm not sure why this check is needed. looks like some bad implementation
                 # somewhere. We should try to investigate this if we have the time
+
                 if doc.spectrum and doc.document:
                     documents.append(doc)
 

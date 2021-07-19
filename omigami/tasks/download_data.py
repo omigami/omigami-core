@@ -6,7 +6,6 @@ from prefect import Task
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
-import os
 from datetime import datetime
 import pathlib
 
@@ -125,7 +124,7 @@ class DownloadData(Task):
         spectrum_ids = self._input_dgw.get_spectrum_ids(self.download_path)
         self._input_dgw.serialize_to_file(self.checkpoint_path, spectrum_ids)
         self.logger.info(
-            f"Downloaded {len(spectrum_ids)} spectra from {self.download_path}."
+            f"Downloaded {len(spectrum_ids)} spectra from {self.input_uri} to {self.download_path}."
         )
         self.logger.info(f"Saving spectrum ids to {self.checkpoint_path}")
         return spectrum_ids

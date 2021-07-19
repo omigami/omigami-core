@@ -9,6 +9,7 @@ import requests
 from drfs import DRPath
 from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
+from matchms.importing.load_from_json import as_spectrum
 
 from omigami.config import IonModes
 from omigami.gateways.data_gateway import InputDataGateway
