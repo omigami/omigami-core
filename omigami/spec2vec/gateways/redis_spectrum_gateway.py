@@ -53,7 +53,6 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
             )
         pipe.execute()
 
-    # Not used atm
     def list_missing_documents(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether document exist on Redis.
         Return a list of IDs that do not exist.

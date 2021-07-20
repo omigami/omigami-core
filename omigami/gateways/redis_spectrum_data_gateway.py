@@ -70,7 +70,7 @@ class RedisSpectrumDataGateway:
         existing = set(self.client.hkeys(SPECTRUM_HASHES))
         return {sp_id for sp_id in spectrum_ids if sp_id.encode() in existing}
 
-    def read_spectra(self, spectrum_ids: Iterable[str] = None) -> Dict[str, Spectrum]:
+    def read_spectra(self, spectrum_ids: Iterable[str] = None) -> List[Spectrum]:
         """
         Read the spectra information from spectra IDs.
         Return a dict of Spectrum objects.
@@ -88,7 +88,7 @@ class RedisSpectrumDataGateway:
         """
         self._init_client()
         spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
-        return {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}
+        return spectra
 
     def get_spectrum_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1

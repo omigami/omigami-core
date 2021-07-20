@@ -7,7 +7,6 @@ from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
 
 from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
-
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
@@ -20,6 +19,7 @@ from omigami.spec2vec.tasks import (
 from omigami.spec2vec.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
+from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
     DownloadParameters,
@@ -35,19 +35,20 @@ class TrainingFlowParameters:
         self,
         input_dgw: InputDataGateway,
         spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
+        spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
         n_decimals: int,
-        skip_if_exists: bool,
+        overwrite_all_spectra: bool,
         iterations: int,
         window: int,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
-        overwrite: bool = False,
+        overwrite_model: bool = False,
         environment: str = "dev",
     ):
         self.input_dgw = input_dgw
@@ -62,17 +63,17 @@ class TrainingFlowParameters:
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
         )
-        self.save_raw_spectra_parameters = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw
+        self.save_raw_spectra = SaveRawSpectraParameters(
+            spectrum_dgw, input_dgw, spectrum_cleaner
         )
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
             n_decimals,
-            skip_if_exists,
+            overwrite_all_spectra,
         )
         self.training = TrainModelParameters(iterations, window)
         self.deploying = DeployModelParameters(
-            redis_db, ion_mode, overwrite, environment
+            redis_db, ion_mode, overwrite_model, environment
         )
 
 
@@ -128,16 +129,16 @@ def build_training_flow(
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        spectrum_ids_chunked = SaveRawSpectra(
-            flow_parameters.save_raw_spectra_parameters
-        ).map(gnps_chunks)
+        chunked_spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
+            gnps_chunks
+        )
 
-        processed_chunks = ProcessSpectrum(
+        processed_ids = ProcessSpectrum(
             flow_parameters.input_dgw, flow_parameters.processing
-        ).map(spectrum_ids_chunked)
+        ).map(chunked_spectrum_ids)
 
         model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(
-            processed_chunks
+            processed_ids
         )
 
         # TODO: add register model parameters
@@ -156,7 +157,7 @@ def build_training_flow(
             flow_parameters.processing.n_decimals,
             intensity_weighting_power,
             allowed_missing_percentage,
-        ).map(unmapped(model), unmapped(model_registry), spectrum_ids_chunked)
+        ).map(unmapped(model), unmapped(model_registry), chunked_spectrum_ids)
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)

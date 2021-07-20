@@ -4,6 +4,7 @@ from matchms import Spectrum
 from matchms.filtering import (
     select_by_mz,
     require_minimum_number_of_peaks,
+    normalize_intensities,
 )
 from matchms.importing.load_from_json import as_spectrum
 
@@ -26,33 +27,38 @@ INCORRECT_LAST_WORDS = [
 
 
 class SpectrumProcessor(SpectrumCleaner):
+    def __init__(self, is_minimal_flow: bool = False):
+        self._is_minimal_flow = is_minimal_flow
+
     def process_spectra(
         self,
         spectra: Union[List[Dict], List[Spectrum]],
         process_reference_spectra: bool = True,
         progress_logger: TaskProgressLogger = None,
     ) -> List[Spectrum]:
-        processed_spectrum_dicts = []
+        processed_spectra = []
         for i, spectrum in enumerate(spectra):
             if type(spectrum) == dict:
                 spectrum = as_spectrum(spectrum)
             if spectrum is not None:
-                spectrum = self._apply_filters(spectrum)
+                if self._is_minimal_flow:
+                    spectrum = self._select_ion_mode(spectrum)
+                    spectrum = self._common_cleaning(spectrum)  # this is only until
+                    # all the saved spectra are not cleaned
+                spectrum = normalize_intensities(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
                 if process_reference_spectra:
-                    spectrum = self._select_ion_mode(spectrum)
-                    spectrum = self._harmonize_spectrum(spectrum)
-                    spectrum = self._convert_metadata(spectrum)
-                    spectrum = self._get_missing_inchis(spectrum)
+                    # TODO: investigate how to run this in parallel
+                    # spectrum = self._get_missing_inchis(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
                 if spectrum is not None:
-                    processed_spectrum_dicts.append(spectrum)
+                    processed_spectra.append(spectrum)
 
                 if progress_logger:
                     progress_logger.log(i)
 
-        return processed_spectrum_dicts
+        return processed_spectra
 
     @staticmethod
     def _apply_ms2deepscore_filters(spectrum: Spectrum) -> Spectrum:
