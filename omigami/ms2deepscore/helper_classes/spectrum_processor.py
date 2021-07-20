@@ -27,8 +27,8 @@ INCORRECT_LAST_WORDS = [
 
 
 class SpectrumProcessor(SpectrumCleaner):
-    def __init__(self, minimal_flow: bool = False):
-        self._minimal_flow = minimal_flow
+    def __init__(self, is_minimal_flow: bool = False):
+        self._is_minimal_flow = is_minimal_flow
 
     def process_spectra(
         self,
@@ -41,7 +41,7 @@ class SpectrumProcessor(SpectrumCleaner):
             if type(spectrum) == dict:
                 spectrum = as_spectrum(spectrum)
             if spectrum is not None:
-                if self._minimal_flow:
+                if self._is_minimal_flow:
                     spectrum = self._select_ion_mode(spectrum)
                     spectrum = self._basic_cleaning(spectrum)  # this is only until
                     # all the saved spectra are not cleaned

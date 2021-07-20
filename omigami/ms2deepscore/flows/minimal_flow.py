@@ -20,17 +20,17 @@ class MinimalFlowParameters:
         input_dgw: InputDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
-        chunk_spectrum_ids_size: int,
+        n_chunks: int,
         overwrite: bool = False,
         environment: str = "dev",
-        skip_if_exists: bool = True,
+        overwrite_all: bool = True,
         redis_db: str = "0",
     ):
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
-        self.chunking = ChunkingParameters(chunk_spectrum_ids_size)
-        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, skip_if_exists)
+        self.chunking = ChunkingParameters(n_chunks)
+        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, overwrite_all)
         self.deploying = DeployModelParameters(redis_db, overwrite, environment)
 
 

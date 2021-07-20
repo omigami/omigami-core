@@ -52,13 +52,13 @@ def test_training_flow(flow_config):
     flow_parameters = TrainingFlowParameters(
         input_dgw=mock_input_dgw,
         spectrum_dgw=mock_spectrum_dgw,
-        cleaner=mock_cleaner,
+        spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
         output_dir="datasets",
         dataset_id="dataset-id",
         ion_mode="positive",
         chunk_size=150000,
-        skip_if_exists=False,
+        overwrite_all=False,
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -94,19 +94,19 @@ def test_run_training_flow(
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
-    cleaner = SpectrumCleaner()
+    spectrum_cleaner = SpectrumCleaner()
 
     flow_params = TrainingFlowParameters(
         input_dgw=input_dgw,
         spectrum_dgw=spectrum_dgw,
-        cleaner=cleaner,
+        spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
         ion_mode="positive",
-        skip_if_exists=True,
+        overwrite_all=True,
     )
 
     model_parameters = ModelGeneralParameters(

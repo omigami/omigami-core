@@ -15,7 +15,7 @@ from matchms.importing.load_from_json import as_spectrum
 
 
 class SpectrumCleaner:
-    def clean(self, spectra: List[Dict]):
+    def clean(self, spectra: List[Dict]) -> List[Spectrum]:
         processed_spectra = []
         for spectrum in spectra:
             spectrum = as_spectrum(spectrum)
@@ -24,7 +24,7 @@ class SpectrumCleaner:
                 processed_spectra.append(spectrum)
         return processed_spectra
 
-    def _basic_cleaning(self, spectrum: Spectrum) -> Optional[Spectrum]:
+    def _basic_cleaning(self, spectrum: Spectrum) -> Spectrum:
         spectrum = self._apply_filters(spectrum)
         spectrum = self._harmonize_spectrum(spectrum)
         spectrum = self._convert_metadata(spectrum)

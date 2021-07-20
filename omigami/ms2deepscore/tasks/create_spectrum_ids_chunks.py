@@ -1,3 +1,4 @@
+import numpy as np
 from dataclasses import dataclass
 from typing import List
 from prefect import Task
@@ -7,7 +8,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ChunkingParameters:
-    chunk_spectrum_ids_size: int
+    n_chunks: int
 
 
 class CreateSpectrumIDsChunks(Task):
@@ -18,7 +19,7 @@ class CreateSpectrumIDsChunks(Task):
         **kwargs,
     ):
         self._spectrum_dgw = spectrum_dgw
-        self._chunk_size = chunking_parameters.chunk_spectrum_ids_size
+        self._n_chunks = chunking_parameters.n_chunks
 
         config = merge_prefect_task_configs(kwargs)
 
@@ -28,10 +29,10 @@ class CreateSpectrumIDsChunks(Task):
         spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         self.logger.info(f"There are {len(spectrum_ids)} in the database.")
 
-       chunks = np.split(np.array(spectrum_ids), self._chunk_size)
+        chunks = np.split(np.array(spectrum_ids), self._n_chunks)
 
         self.logger.info(
-            f"Split spectra into {len(chunks)} chunks of size {self._chunk_size}"
+            f"Split spectra into {len(chunks)} chunks of size {self._n_chunks}"
         )
 
         return chunks

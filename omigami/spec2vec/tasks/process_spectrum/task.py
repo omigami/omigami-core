@@ -63,7 +63,7 @@ class ProcessSpectrum(Task):
 
         if self._skip_if_exists and not spectrum_documents:
             self.logger.info("No new documents have been processed.")
-            return all_spectrum_ids
+            return set(all_spectrum_ids)
 
         self.logger.info(
             f"Finished processing {len(spectrum_documents)}. "

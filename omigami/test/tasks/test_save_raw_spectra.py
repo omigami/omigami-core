@@ -15,9 +15,11 @@ from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParamet
 def create_parameters(overwrite_all: bool = True):
     spectrum_dgw = RedisSpectrumDataGateway()
     input_dgw = FSInputDataGateway()
-    cleaner = SpectrumCleaner()
+    spectrum_cleaner = SpectrumCleaner()
     parameters = SaveRawSpectraParameters(
-        spectrum_dgw=spectrum_dgw, input_dgw=input_dgw, cleaner=cleaner
+        spectrum_dgw=spectrum_dgw,
+        input_dgw=input_dgw,
+        spectrum_cleaner=spectrum_cleaner,
     )
     parameters.overwrite_all = overwrite_all
     return parameters

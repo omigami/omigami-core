@@ -18,8 +18,8 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
-    skip_if_exists: bool = True
-    minimal_flow: bool = False
+    overwrite_all: bool = True
+    is_minimal_flow: bool = False
 
 
 class ProcessSpectrum(Task):
@@ -29,8 +29,8 @@ class ProcessSpectrum(Task):
         **kwargs,
     ):
         self._spectrum_dgw = process_parameters.spectrum_dgw
-        self._skip_if_exists = process_parameters.skip_if_exists
-        self._processor = SpectrumProcessor(process_parameters.minimal_flow)
+        self._overwrite_all = process_parameters.overwrite_all
+        self._processor = SpectrumProcessor(process_parameters.is_minimal_flow)
         self._spectrum_binner = MS2DeepScoreSpectrumBinner()
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
@@ -39,8 +39,8 @@ class ProcessSpectrum(Task):
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
         all_spectrum_ids = deepcopy(spectrum_ids)
 
-        self.logger.info(f"Flag skip_if_exists is set to {self._skip_if_exists}.")
-        if self._skip_if_exists:
+        self.logger.info(f"Flag skip_if_exists is set to {self._overwrite_all}.")
+        if self._overwrite_all:
             missing_ids = self._spectrum_dgw.list_missing_binned_spectra(
                 list(spectrum_ids)
             )
@@ -67,7 +67,7 @@ class ProcessSpectrum(Task):
         )
         binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
 
-        if self._skip_if_exists and not binned_spectra:
+        if self._overwrite_all and not binned_spectra:
             self.logger.info("No new spectra have been processed.")
             return set(all_spectrum_ids)
 

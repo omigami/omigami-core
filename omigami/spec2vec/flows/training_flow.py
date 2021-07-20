@@ -35,14 +35,14 @@ class TrainingFlowParameters:
         self,
         input_dgw: InputDataGateway,
         spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
-        cleaner: SpectrumCleaner,
+        spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
         n_decimals: int,
-        skip_if_exists: bool,
+        overwrite_all: bool,
         iterations: int,
         window: int,
         dataset_name: str = "gnps.json",
@@ -64,12 +64,12 @@ class TrainingFlowParameters:
             self.downloading.download_path, chunk_size, ion_mode
         )
         self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw, cleaner
+            spectrum_dgw, input_dgw, spectrum_cleaner
         )
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
             n_decimals,
-            skip_if_exists,
+            overwrite_all,
         )
         self.training = TrainModelParameters(iterations, window)
         self.deploying = DeployModelParameters(
@@ -129,16 +129,16 @@ def build_training_flow(
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        spectrum_ids_chunked = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
+        chunked_spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
             gnps_chunks
         )
 
-        processed_ids_chunks = ProcessSpectrum(
+        processed_ids = ProcessSpectrum(
             flow_parameters.input_dgw, flow_parameters.processing
-        ).map(spectrum_ids_chunked)
+        ).map(chunked_spectrum_ids)
 
         model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(
-            processed_ids_chunks
+            processed_ids
         )
 
         # TODO: add register model parameters
@@ -157,7 +157,7 @@ def build_training_flow(
             flow_parameters.processing.n_decimals,
             intensity_weighting_power,
             allowed_missing_percentage,
-        ).map(unmapped(model), unmapped(model_registry), spectrum_ids_chunked)
+        ).map(unmapped(model), unmapped(model_registry), chunked_spectrum_ids)
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)

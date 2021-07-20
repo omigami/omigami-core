@@ -26,13 +26,13 @@ class TrainingFlowParameters:
         self,
         input_dgw: InputDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
-        cleaner: SpectrumCleaner,
+        spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
-        skip_if_exists: bool,
+        overwrite_all: bool,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
@@ -63,10 +63,10 @@ class TrainingFlowParameters:
             self.downloading.download_path, chunk_size, ion_mode
         )
         self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw, cleaner
+            spectrum_dgw, input_dgw, spectrum_cleaner
         )
 
-        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, skip_if_exists)
+        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, overwrite_all)
 
 
 # TODO: Add to model task when it is created

@@ -27,7 +27,7 @@ def test_deploy_minimal_flow():
         deploy_model=True,
         overwrite=True,
         auth=True,
-        skip_if_exists=False,
+        overwrite_all=False,
         **login_config,
     )
 
