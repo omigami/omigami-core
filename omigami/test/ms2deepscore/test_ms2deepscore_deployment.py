@@ -2,7 +2,7 @@ import pytest
 from typing_extensions import Literal
 
 from omigami.config import config, MLFLOW_SERVER
-from omigami.ms2deepscore.deployment import Deployer
+from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
 
 
 @pytest.mark.skip(
@@ -17,7 +17,7 @@ def test_deploy_minimal_flow():
     login_config = config["login"][env].get(dict)
     login_config.pop("token")
 
-    deployer = Deployer(
+    deployer = MS2DeepScoreDeployer(
         image="drtools/prefect:omigami-SNAPSHOT.9c2c10c",
         dataset_name="small",
         environment=env,
@@ -46,7 +46,7 @@ def test_deploy_training_flow():
     login_config = config["login"][env].get(dict)
     login_config.pop("token")
 
-    deployer = Deployer(
+    deployer = MS2DeepScoreDeployer(
         image="drtools/prefect:omigami-SNAPSHOT.f70e5c2",
         dataset_name="small",
         environment=env,

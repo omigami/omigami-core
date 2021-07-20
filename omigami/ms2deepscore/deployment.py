@@ -1,18 +1,10 @@
-from datetime import timedelta, datetime
-from typing import Optional
+from datetime import datetime
 
-from prefect import Client
-from typing_extensions import Literal
-
-from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
-    API_SERVER_URLS,
-    PROJECT_NAME,
     MLFLOW_SERVER,
     DATASET_IDS,
-    REDIS_DATABASES,
-    IonModes,
 )
+from omigami.deployment import Deployer
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -33,73 +25,18 @@ from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
 )
 
 
-class Deployer:
+class MS2DeepScoreDeployer(Deployer):
     def __init__(
         self,
-        image: str,
-        dataset_name: str,
-        project_name: str = PROJECT_NAME,
         mlflow_server: str = MLFLOW_SERVER,
-        environment: Literal["dev", "prod"] = "dev",
-        ion_mode: IonModes = "positive",
-        deploy_model: bool = False,
-        overwrite: bool = False,
-        schedule: timedelta = None,
-        auth: bool = False,
-        auth_url: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        api_server: Optional[str] = None,
-        session_token: Optional[str] = None,
-        overwrite_all: bool = True,
         spectrum_ids_chunk_size: int = 1000,
+        **kwargs,
     ):
-        self._image = image
-        self._project_name = project_name
+        super().__init__(**kwargs)
         self._mlflow_server = mlflow_server
-        self._ion_mode = ion_mode
-        self._deploy_model = deploy_model
-        self._overwrite = overwrite
-        self._schedule = schedule
-        self._auth = auth
-        self._auth_url = auth_url
-        self._username = username
-        self._password = password
-        self._api_server = api_server
-        self._session_token = session_token
-        self._overwrite_all = overwrite_all
-        self.spectrum_ids_chunk_size = spectrum_ids_chunk_size
-
-        if environment not in ["dev", "prod"]:
-            raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
-
-        if dataset_name not in DATASET_IDS[environment].keys():
-            raise ValueError(
-                f"No such option available for reference dataset: {dataset_name}. Available options are:"
-                f"{list(DATASET_IDS[environment].keys())}."
-            )
-
-        self._environment = environment
-        self._dataset_name = dataset_name
-        self._redis_db = REDIS_DATABASES[environment][dataset_name]
-
+        self._spectrum_ids_chunk_size = spectrum_ids_chunk_size
         self._input_dgw = FSInputDataGateway()
         self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
-
-    def _authenticate(self):
-        api_server = self._api_server or API_SERVER_URLS[self._environment]
-        if self._auth:
-            if not self._session_token:
-                authenticator = KratosAuthenticator(
-                    self._auth_url, self._username, self._password
-                )
-                self._session_token = authenticator.authenticate()
-
-            client = Client(api_server=api_server, api_token=self._session_token)
-        else:
-            client = Client(api_server=API_SERVER_URLS[self._environment])
-        client.create_project(self._project_name)
-        return client
 
     def deploy_minimal_flow(
         self,
@@ -135,7 +72,7 @@ class Deployer:
             spectrum_dgw=self._spectrum_dgw,
             overwrite_all=self._overwrite_all,
             redis_db=self._redis_db,
-            spectrum_ids_chunk_size=self.spectrum_ids_chunk_size,
+            spectrum_ids_chunk_size=self._spectrum_ids_chunk_size,
         )
 
         flow = build_minimal_flow(
