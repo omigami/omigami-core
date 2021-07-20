@@ -2,22 +2,15 @@ from __future__ import annotations
 
 import os
 import pickle
-from logging import Logger
 from typing import List, Iterable, Dict, Set
 
 import redis
 from matchms import Spectrum
-from ms2deepscore import BinnedSpectrum
-from spec2vec import SpectrumDocument
 
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
 )
-from omigami.gateways.data_gateway import SpectrumDataGateway
-from omigami.spec2vec.entities.embedding import Embedding
-from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-
 
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
@@ -35,12 +28,33 @@ def get_redis_client():
     return client
 
 
-class RedisSpectrumDataGateway(SpectrumDataGateway):
+class RedisSpectrumDataGateway:
     """Data gateway for Redis storage."""
 
     def __init__(self):
         # We initialize it with None so we can pickle this gateway when deploying the flow
         self.client = None
+
+    def write_raw_spectra(self, spectra: List[Spectrum]):
+        """Writes a list of raw spectra to the redis database unsing the spectrum_id as the key.
+
+        Parameters
+        ----------
+        spectra: List[Spectrum]
+            List containing objects the class matchms.Spectrum.
+        """
+        self._init_client()
+
+        for spectrum in spectra:
+            self.client.zadd(
+                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+                {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
+            )
+            self.client.hset(
+                SPECTRUM_HASHES,
+                spectrum.metadata["spectrum_id"],
+                pickle.dumps(spectrum),
+            )
 
     def _init_client(self):
         if self.client is None:
@@ -108,34 +122,6 @@ class RedisSpectrumDataGateway(SpectrumDataGateway):
     ) -> List[str]:
         self._init_client()
         return [id for id in spectrum_ids if not self.client.hexists(hash_name, id)]
-
-    def write_spectrum_documents(self, spectra_data: List[SpectrumDocumentData]):
-        pass
-
-    def write_embeddings(
-        self, embeddings: List[Embedding], run_id: str, logger: Logger = None
-    ):
-        pass
-
-    def read_embeddings(
-        self, run_id: str, spectrum_ids: List[str] = None
-    ) -> List[Embedding]:
-        pass
-
-    def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
-        pass
-
-    def read_documents_iter(self, spectrum_ids: List[str] = None) -> Iterable:
-        pass
-
-    def list_missing_binned_spectra(self, spectrum_ids: List[str]) -> List[str]:
-        pass
-
-    def write_binned_spectra(self, binned_spectra: List[BinnedSpectrum]):
-        pass
-
-    def read_binned_spectra(self, spectrum_ids: List[str] = None):
-        pass
 
 
 class RedisHashesIterator:

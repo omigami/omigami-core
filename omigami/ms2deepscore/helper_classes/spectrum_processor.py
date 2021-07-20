@@ -6,16 +6,29 @@ from matchms.filtering import (
     require_minimum_number_of_peaks,
 )
 from matchms.importing.load_from_json import as_spectrum
+from matchmsextras.pubchem_lookup import pubchem_metadata_lookup
 
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spectrum_cleaner import SpectrumCleaner
+
+INCORRECT_LAST_WORDS = [
+    "M",
+    "M?",
+    "?",
+    "M+2H/2",
+    "MS34+Na",
+    "M]",
+    "Cat+M]",
+    "Unk",
+    "--",
+]
 
 
 class SpectrumProcessor(SpectrumCleaner):
     def process_spectra(
         self,
         spectra: Union[List[Dict], List[Spectrum]],
-        reference_spectra: bool = True,
+        process_reference_spectra: bool = True,
         progress_logger: TaskProgressLogger = None,
     ) -> List[Spectrum]:
         processed_spectrum_dicts = []
@@ -25,10 +38,11 @@ class SpectrumProcessor(SpectrumCleaner):
             if spectrum is not None:
                 spectrum = self._apply_filters(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
-                if reference_spectra:
+                if process_reference_spectra:
                     spectrum = self._select_ion_mode(spectrum)
                     spectrum = self._harmonize_spectrum(spectrum)
                     spectrum = self._convert_metadata(spectrum)
+                    spectrum = self._get_missing_inchis(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
                 if spectrum is not None:
@@ -48,12 +62,36 @@ class SpectrumProcessor(SpectrumCleaner):
         spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)
         return spectrum
 
+    def _get_missing_inchis(
+        self,
+        spectrum: Spectrum,
+    ) -> Optional[Spectrum]:
+        if not spectrum:
+            return None
+
+        spectrum = self._process_compound_name(spectrum)
+        return pubchem_metadata_lookup(spectrum)
+
+    def _process_compound_name(self, spectrum: Spectrum) -> Spectrum:
+        original_name = spectrum.get("compound_name")
+        name = original_name.replace("F dial M", "")
+
+        # Remove last word if likely not correct:
+        if name.split(" ")[-1] in INCORRECT_LAST_WORDS:
+            name = " ".join(name.split(" ")[:-1]).strip()
+
+        if name != original_name:
+            spectrum.set("compound_name", name)
+        return spectrum
+
     @staticmethod
     def _check_inchikey(spectrum: Spectrum) -> Optional[Spectrum]:
         if spectrum:
             inchikey = spectrum.metadata.get("inchikey")
             if inchikey is not None and len(inchikey) > 13:
-                if spectrum.get("smiles") or spectrum.get("inchi"):
+                if spectrum.get("inchi"):
+                    cleaned_inchi = spectrum.get("inchi").replace('"', "")
+                    spectrum.set("inchi", cleaned_inchi)
                     return spectrum
 
     def _select_ion_mode(self, spectrum: Spectrum) -> Optional[Spectrum]:

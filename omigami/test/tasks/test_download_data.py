@@ -1,3 +1,6 @@
+import datetime
+import os
+import time
 from unittest.mock import MagicMock
 
 import pytest
@@ -5,13 +8,52 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.utils import create_prefect_result_from_path
-from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
-from omigami.spec2vec.tasks import DownloadData
-from omigami.spec2vec.tasks.download_data import DownloadParameters
+from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.tasks.download_data import DownloadParameters, DownloadData
 from omigami.test.conftest import ASSETS_DIR
+from omigami.utils import create_prefect_result_from_path
+
+
+def test_refresh_data(mock_default_config, tmpdir):
+    """
+    Test if the file is present, younger then 30 days and older then 30 days.
+    """
+    # Setting up test
+    file_name = "file_name"
+
+    input_dgw = MagicMock(spec=InputDataGateway)
+    download_params = DownloadParameters("input-uri", tmpdir, file_name, "checkpoint")
+
+    download = DownloadData(
+        input_dgw,
+        download_params,
+    )
+
+    file_dir = f"{tmpdir}/test"
+
+    # Running function and collecting results
+    # Check if file is present
+    is_no_file = download.refresh_download(file_dir)
+
+    open(file_dir, "a").close()
+
+    # Check if file is younger then 30 days
+    is_young_file = download.refresh_download(file_dir)
+
+    # Changing file creation date to 2017
+    date = datetime.datetime(year=2017, month=11, day=5, hour=19, minute=50, second=20)
+    modTime = time.mktime(date.timetuple())
+    os.utime(file_dir, (modTime, modTime))
+
+    # check if file is older then 30 days
+    is_old_file = download.refresh_download(file_dir)
+
+    # Evaluating results
+    assert is_no_file
+    assert not is_young_file
+    assert is_old_file
 
 
 def test_download_data(mock_default_config, tmpdir):
@@ -27,9 +69,10 @@ def test_download_data(mock_default_config, tmpdir):
         )()
         download.checkpointing = False
     res = test_flow.run()
-
+    return_res = res.result[download].result
     assert res.is_successful()
-    assert res.result[download].result == "spectrum_ids"
+
+    assert len(return_res) == 12
     input_dgw.download_gnps.assert_called_once_with(
         download_params.input_uri, download_params.download_path
     )

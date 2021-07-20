@@ -11,6 +11,7 @@ from pytest_redis import factories
 
 import omigami
 import omigami.config
+from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
     DOCUMENT_HASHES,
@@ -18,7 +19,6 @@ from omigami.spec2vec.config import (
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
 )
-from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway, KEYS
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -46,7 +46,7 @@ def pytest_configure(config):
 
 
 @pytest.fixture(scope="module")
-def local_gnps_small_json():
+def local_gnps_small_json() -> str:
     path = str(ASSETS_DIR / "SMALL_GNPS.json")
     return path
 

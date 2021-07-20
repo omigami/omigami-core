@@ -19,8 +19,6 @@ class MS2DeepScoreSpectrumBinner:
         if not spectra:
             return []
 
-        spectra_ids = [spectrum.metadata["spectrum_id"] for spectrum in spectra]
-
         divisions = cpu_count()
         if logger:
             logger.info(f"Performing parallelized binning on {divisions} CPUs.")
@@ -39,8 +37,8 @@ class MS2DeepScoreSpectrumBinner:
 
         binned_spectra = [item for sublist in binned_spectra for item in sublist]
 
-        binned_spectra = [
-            spectrum.set("spectrum_id", spectra_ids[i])
-            for i, spectrum in enumerate(binned_spectra)
-        ]
+        for binned_spectrum, spectrum in zip(binned_spectra, spectra):
+            binned_spectrum.set("spectrum_id", spectrum.get("spectrum_id"))
+            binned_spectrum.set("inchi", spectrum.get("inchi"))
+
         return binned_spectra

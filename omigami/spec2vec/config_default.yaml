@@ -1,8 +1,3 @@
-
-gnps_uri:
-  complete: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
-  partial: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json"
-
 storage:
   model_folder:
     dev: "s3://omigami-dev/spec2vec/mlflow"
@@ -12,3 +7,6 @@ storage:
     spectrum_hashes: "spectrum_data"
     document_hashes: "document_data"
     embedding_hashes: "embedding_data"
+    env_vars:
+      redis_host: "REDIS_HOST"
+      redis_db: "REDIS_DB"

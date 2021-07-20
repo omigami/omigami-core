@@ -3,8 +3,9 @@ from typing import Union, List, Dict, Tuple
 
 import numpy as np
 from matchms import calculate_scores
-from ms2deepscore.models import load_model as ms2deepscore_load_model
 from ms2deepscore import BinnedSpectrum
+from ms2deepscore.models import load_model as ms2deepscore_load_model
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -74,7 +75,7 @@ class MS2DeepScorePredictor(Predictor):
 
         log.info("Pre-processing data.")
         query_spectra = self.spectrum_processor.process_spectra(
-            data_input, reference_spectra=False
+            data_input, process_reference_spectra=False
         )
         query_binned_spectra = self.model.model.spectrum_binner.transform(query_spectra)
 

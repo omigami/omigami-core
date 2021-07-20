@@ -23,6 +23,8 @@ REDIS_DATABASES = {
     "prod": {"small": "2", "complete": "0"},
 }
 
+SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
+SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
 
 CLUSTERS = config["clusters"].get(dict)
 ION_MODES = {"positive", "negative"}

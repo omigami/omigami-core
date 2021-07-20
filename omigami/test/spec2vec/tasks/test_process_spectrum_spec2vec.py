@@ -4,9 +4,8 @@ from unittest.mock import MagicMock
 import pytest
 from prefect import Flow
 
-from omigami.gateways.data_gateway import SpectrumDataGateway
+from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -18,7 +17,7 @@ from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
 
 
 def test_process_spectrum_calls(local_gnps_small_json, spectrum_ids):
-    spectrum_gtw = MagicMock(spec=SpectrumDataGateway)
+    spectrum_gtw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
     input_gtw = FSInputDataGateway()
     parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
     spectrum_gtw.list_existing_spectra.side_effect = lambda x: x
@@ -51,7 +50,6 @@ def test_process_spectrum(local_gnps_small_json, spectrum_ids, mock_default_conf
     data = res.result[process_task].result
 
     assert set(data) == set(spectrum_ids)
-    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids)
 
 
 @pytest.mark.skipif(
