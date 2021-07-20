@@ -7,6 +7,7 @@ from prefect import Flow
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
+from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
 
 
@@ -14,8 +15,11 @@ from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParamet
 def create_parameters(overwrite_all: bool = True):
     spectrum_dgw = RedisSpectrumDataGateway()
     input_dgw = FSInputDataGateway()
+    spectrum_cleaner = SpectrumCleaner()
     parameters = SaveRawSpectraParameters(
-        spectrum_dgw=spectrum_dgw, input_dgw=input_dgw
+        spectrum_dgw=spectrum_dgw,
+        input_dgw=input_dgw,
+        spectrum_cleaner=spectrum_cleaner,
     )
     parameters.overwrite_all = overwrite_all
     return parameters
@@ -89,9 +93,7 @@ def test_save_raw_spectra_overwrite(
 
     # Test Results
     assert (
-        create_parameters.spectrum_dgw.read_spectra([preserved_id])[
-            preserved_id
-        ].metadata["scan"]
+        create_parameters.spectrum_dgw.read_spectra([preserved_id])[0].get("scan")
         != changed_value
     )
     assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100
@@ -145,8 +147,6 @@ def test_save_raw_spectra_add_new_spectra(create_parameters, local_gnps_small_js
     assert len(data) == 100
     assert len(create_parameters.spectrum_dgw.list_spectrum_ids()) == 100
     assert (
-        create_parameters.spectrum_dgw.read_spectra([preserved_id])[
-            preserved_id
-        ].metadata["ms_level"]
+        create_parameters.spectrum_dgw.read_spectra([preserved_id])[0].get("ms_level")
         == "5000000"
     )

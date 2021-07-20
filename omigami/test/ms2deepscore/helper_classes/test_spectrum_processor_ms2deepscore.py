@@ -18,23 +18,8 @@ def spectrum(loaded_data):
 
 
 @pytest.mark.slow
-def test_process_spectra(loaded_data, spectrum_processor):
-    cleaned_data = spectrum_processor.process_spectra(loaded_data, True)
-    assert isinstance(cleaned_data[0], Spectrum)
-
-    # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
-    assert cleaned_data[0].get("inchi") not in ["N/A", "NA", "n/a", None]
-    assert isinstance(cleaned_data[0].get("charge"), int)
-    assert cleaned_data[0].get("parent_mass")
-    assert cleaned_data[0].get("spectrum_id")
-
-
-def test_process_spectra_already_converted_type_spectrum(
-    loaded_data, spectrum_processor
-):
-    converted_spectra_data = [as_spectrum(s) for s in loaded_data]
-    cleaned_data = spectrum_processor.process_spectra(converted_spectra_data)
-
+def test_process_spectra(positive_spectra_data, spectrum_processor):
+    cleaned_data = spectrum_processor.process_spectra(positive_spectra_data, True)
     assert isinstance(cleaned_data[0], Spectrum)
 
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
@@ -64,8 +49,12 @@ def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processo
     assert filtered_spectrum is None
 
 
-def test_run_missing_smiles_inchi_against_pubchem(loaded_data, spectrum_processor):
-    cleaned_spectrum = spectrum_processor.process_spectra([loaded_data[2]], False)
+def test_run_missing_smiles_inchi_against_pubchem(
+    common_cleaned_data, spectrum_processor
+):
+    cleaned_spectrum = spectrum_processor.process_spectra(
+        [common_cleaned_data[2]], False
+    )
     spectrum_with_inchikey = spectrum_processor._get_missing_inchis(cleaned_spectrum[0])
 
     assert not cleaned_spectrum[0].metadata.get("inchikey")

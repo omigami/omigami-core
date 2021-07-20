@@ -29,7 +29,7 @@ def test_deploy_training_flow():
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         n_decimals=2,
-        skip_if_exists=True,
+        overwrite_all=True,
         chunk_size=int(1e8),
         environment=env,
         ion_mode="positive",
