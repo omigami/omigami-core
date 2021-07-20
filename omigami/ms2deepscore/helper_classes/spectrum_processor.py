@@ -54,22 +54,19 @@ class SpectrumProcessor(SpectrumCleaner):
 
         return processed_spectrum_dicts
 
-    @staticmethod
-    def _apply_ms2deepscore_filters(spectrum: Spectrum) -> Spectrum:
+    def _apply_ms2deepscore_filters(self, spectrum: Spectrum) -> Spectrum:
         """Remove spectra with less than 5 peaks with m/z values
         in the range between 10.0 and 1000.0 Da
         """
         spectrum = select_by_mz(spectrum, mz_from=10.0, mz_to=1000.0)
         spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)
-        spectrum = SpectrumProcessor._filter_negative_intensities(spectrum)
+        spectrum = self._filter_negative_intensities(spectrum)
         return spectrum
 
-    @staticmethod
-    def _filter_negative_intensities(spectrum: Spectrum) -> Optional[Spectrum]:
+    def _filter_negative_intensities(self, spectrum: Spectrum) -> Optional[Spectrum]:
         """Will return None if the given Spectrum's intensity has negative values."""
-        if not isinstance(spectrum, type(Spectrum)):
-            return spectrum
-        elif not all((spectrum.peaks.intensities < 0)[0]):
+
+        if spectrum and any((spectrum.peaks.intensities < 0)):
             return None
 
         return spectrum

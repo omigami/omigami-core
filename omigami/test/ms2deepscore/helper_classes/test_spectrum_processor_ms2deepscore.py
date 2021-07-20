@@ -20,7 +20,7 @@ def spectrum(loaded_data):
 @pytest.fixture
 def spectrum_negative_intensity():
     return Spectrum(
-        mz=np.random.rand(1, 216), intensities=np.random.uniform(-2, 2, [1, 216])
+        mz=np.random.rand(0, 216), intensities=np.random.uniform(-2, 2, [0, 216])
     )
 
 
