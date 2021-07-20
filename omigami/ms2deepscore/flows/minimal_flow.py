@@ -12,6 +12,7 @@ from omigami.ms2deepscore.tasks import (
     ChunkingParameters,
     CreateSpectrumIDsChunks,
 )
+from omigami.ms2deepscore.tasks.bin_spectra import BinSpectra
 
 
 class MinimalFlowParameters:
@@ -76,9 +77,10 @@ def build_minimal_flow(
             flow_parameters.chunking,
         )()
 
-        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
+        processed_spectra = ProcessSpectrum(flow_parameters.process_spectrum).map(
             spectrum_ids_chunks
         )
+        spectrum_binner = BinSpectra(flow_parameters.spectrum_dgw)(processed_spectra)
 
         model_registry = RegisterModel(
             project_name,

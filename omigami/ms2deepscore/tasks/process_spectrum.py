@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from typing import Set, List
+
+from matchms import Spectrum
 from prefect import Task
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.ms2deepscore.helper_classes.spectrum_binner import (
-    MS2DeepScoreSpectrumBinner,
-)
+from omigami.ms2deepscore.tasks.bin_spectra import BinSpectra
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
@@ -30,26 +31,26 @@ class ProcessSpectrum(Task):
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._overwrite_all = process_parameters.overwrite_all
         self._processor = SpectrumProcessor(process_parameters.is_minimal_flow)
-        self._spectrum_binner = MS2DeepScoreSpectrumBinner()
+        self._spectrum_binner = BinSpectra()
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, spectrum_ids: Set[str] = None) -> Set[str]:
+    def run(self, spectrum_ids: Set[str] = None) -> List[Spectrum]:
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
         spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
         if spectrum_ids_to_add:
-            binned_spectra = self._get_binned_spectra(spectrum_ids_to_add)
-            if binned_spectra:
-                self.logger.info(
-                    f"Finished processing {len(binned_spectra)} binned spectra. "
-                    f"Saving into spectrum database."
-                )
-                self._spectrum_dgw.write_binned_spectra(binned_spectra)
-                return {sp.metadata["spectrum_id"] for sp in binned_spectra}
+            spectra = self._spectrum_dgw.read_spectra(spectrum_ids)
+            self.logger.info(f"Processing {len(spectra)} spectra")
 
-        self.logger.info("No new spectra have been processed.")
-        return spectrum_ids
+            self.logger.info(f"Cleaning spectra and binning them")
+            progress_logger = TaskProgressLogger(
+                self.logger, len(spectra), 20, "Process Spectra task progress"
+            )
+            cleaned_spectra = self._processor.process_spectra(
+                spectra, process_reference_spectra=True, progress_logger=progress_logger
+            )
+            return cleaned_spectra
 
     def _get_spectrum_ids_to_add(self, spectrum_ids: List[str]) -> List[str]:
         self.logger.info(f"Flag overwrite_all is set to {self._overwrite_all}.")
@@ -64,16 +65,3 @@ class ProcessSpectrum(Task):
                 f"new and will be processed. "
             )
         return spectrum_ids_to_add
-
-    def _get_binned_spectra(self, spectrum_ids: List[str]):
-        spectra = self._spectrum_dgw.read_spectra(spectrum_ids)
-        self.logger.info(f"Processing {len(spectra)} spectra")
-
-        self.logger.info(f"Cleaning spectra and binning them")
-        progress_logger = TaskProgressLogger(
-            self.logger, len(spectra), 20, "Process Spectra task progress"
-        )
-        cleaned_spectra = self._processor.process_spectra(
-            spectra, process_reference_spectra=True, progress_logger=progress_logger
-        )
-        return self._spectrum_binner.bin_spectra(cleaned_spectra)
