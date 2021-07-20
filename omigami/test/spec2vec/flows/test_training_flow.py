@@ -62,7 +62,7 @@ def test_training_flow(flow_config):
         chunk_size=150000,
         ion_mode="positive",
         n_decimals=2,
-        overwrite_all=False,
+        overwrite_all_spectra=False,
         iterations=25,
         window=500,
     )
@@ -112,7 +112,7 @@ def test_run_training_flow(
         chunk_size=150000,
         ion_mode="positive",
         n_decimals=1,
-        overwrite_all=True,
+        overwrite_all_spectra=True,
         iterations=3,
         window=200,
     )

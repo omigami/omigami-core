@@ -32,7 +32,7 @@ class TrainingFlowParameters:
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
-        overwrite_all: bool,
+        overwrite_all_spectra: bool,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
@@ -66,7 +66,9 @@ class TrainingFlowParameters:
             spectrum_dgw, input_dgw, spectrum_cleaner
         )
 
-        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, overwrite_all)
+        self.process_spectrum = ProcessSpectrumParameters(
+            spectrum_dgw, overwrite_all_spectra
+        )
 
 
 # TODO: Add to model task when it is created

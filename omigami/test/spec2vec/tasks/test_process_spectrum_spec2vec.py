@@ -20,8 +20,8 @@ def test_process_spectrum_calls(spectrum_ids, basic_cleaned_data):
     spectrum_gtw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = basic_cleaned_data
     input_gtw = FSInputDataGateway()
-    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
-    spectrum_gtw.list_existing_spectra.side_effect = lambda x: x
+    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, True)
+
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(input_gtw, parameters)(spectrum_ids)
 

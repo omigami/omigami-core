@@ -110,10 +110,10 @@ def deploy_training_flow(
         chunk_size=chunk_size,
         ion_mode=ion_mode,
         n_decimals=n_decimals,
-        overwrite_all=overwrite_all,
+        overwrite_all_spectra=overwrite_all,
         iterations=iterations,
         window=window,
-        overwrite=overwrite,
+        overwrite_model=overwrite,
     )
 
     flow_config = make_flow_config(

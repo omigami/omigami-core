@@ -42,13 +42,13 @@ class TrainingFlowParameters:
         chunk_size: int,
         ion_mode: IonModes,
         n_decimals: int,
-        overwrite_all: bool,
+        overwrite_all_spectra: bool,
         iterations: int,
         window: int,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
-        overwrite: bool = False,
+        overwrite_model: bool = False,
         environment: str = "dev",
     ):
         self.input_dgw = input_dgw
@@ -69,11 +69,11 @@ class TrainingFlowParameters:
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
             n_decimals,
-            overwrite_all,
+            overwrite_all_spectra,
         )
         self.training = TrainModelParameters(iterations, window)
         self.deploying = DeployModelParameters(
-            redis_db, ion_mode, overwrite, environment
+            redis_db, ion_mode, overwrite_model, environment
         )
 
 

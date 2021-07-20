@@ -58,7 +58,7 @@ def test_training_flow(flow_config):
         dataset_id="dataset-id",
         ion_mode="positive",
         chunk_size=150000,
-        overwrite_all=False,
+        overwrite_all_spectra=False,
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -106,7 +106,7 @@ def test_run_training_flow(
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
         ion_mode="positive",
-        overwrite_all=True,
+        overwrite_all_spectra=True,
     )
 
     model_parameters = ModelGeneralParameters(

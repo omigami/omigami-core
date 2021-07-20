@@ -23,7 +23,7 @@ class MinimalFlowParameters:
         n_chunks: int,
         overwrite: bool = False,
         environment: str = "dev",
-        overwrite_all: bool = True,
+        overwrite_all: bool = False,
         redis_db: str = "0",
     ):
         self.input_dgw = input_dgw

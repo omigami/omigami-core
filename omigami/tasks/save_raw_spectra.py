@@ -61,13 +61,12 @@ class SaveRawSpectra(Task):
         """
         self.logger.info(f"Loading spectra from {gnps_path}")
         spectra_from_file = self._input_dgw.load_spectrum(gnps_path)
-
-        redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         spectrum_ids = [sp["spectrum_id"] for sp in spectra_from_file]
 
         if self._overwrite_all:
             spectrum_ids_to_add = spectrum_ids
         else:
+            redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
             spectrum_ids_to_add = set(spectrum_ids) - set(redis_spectrum_ids)
 
         self.logger.info(f"Need to add new IDs: {len(spectrum_ids_to_add) > 0}")
