@@ -1,7 +1,7 @@
 import pytest
 from matchms import Spectrum
 from matchms.importing.load_from_json import as_spectrum
-
+import numpy as np
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
@@ -17,9 +17,17 @@ def spectrum(loaded_data):
     return as_spectrum(loaded_data[0])
 
 
+@pytest.fixture
+def spectrum_negative_intensity(loaded_data):
+    return Spectrum(
+        mz=np.random.rand(1, 216), intensities=np.random.uniform(-2, 2, [1, 216])
+    )
+
+
 @pytest.mark.slow
 def test_process_spectra(loaded_data, spectrum_processor):
     cleaned_data = spectrum_processor.process_spectra(loaded_data, True)
+
     assert isinstance(cleaned_data[0], Spectrum)
 
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
@@ -61,6 +69,16 @@ def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processo
     filtered_spectrum = spectrum_processor._apply_ms2deepscore_filters(
         spectrum_with_not_enough_peaks
     )
+    assert filtered_spectrum is None
+
+
+def test_apply_ms2deepscore_filters_negative_intensity(
+    spectrum_negative_intensity, spectrum_processor
+):
+    filtered_spectrum = spectrum_processor._filter_negative_intensities(
+        spectrum_negative_intensity
+    )
+
     assert filtered_spectrum is None
 
 

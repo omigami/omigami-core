@@ -61,6 +61,15 @@ class SpectrumProcessor(SpectrumCleaner):
         """
         spectrum = select_by_mz(spectrum, mz_from=10.0, mz_to=1000.0)
         spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)
+        spectrum = SpectrumProcessor._filter_negative_intensities(spectrum)
+        return spectrum
+
+    @staticmethod
+    def _filter_negative_intensities(spectrum: Spectrum) -> Optional[Spectrum]:
+        """Will return None if the given Spectrum's intensity has negative values."""
+        if not all((spectrum.peaks.intensities < 0)[0]):
+            return None
+
         return spectrum
 
     def _get_missing_inchis(
