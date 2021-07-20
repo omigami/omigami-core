@@ -86,8 +86,6 @@ def build_training_flow(
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
     model_parameters: ModelGeneralParameters,
-    model_output_dir: str,
-    mlflow_server: str,
     deploy_model: bool = False,
 ) -> Flow:
     """
