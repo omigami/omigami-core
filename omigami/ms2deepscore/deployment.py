@@ -115,6 +115,12 @@ class Deployer:
         """
         client = self._authenticate()
 
+        if self._ion_mode != "positive":
+            raise ValueError(
+                f"Minimal flow can only be run with positive ion mode."
+                f"{self._ion_mode} has been passed"
+            )
+
         mlflow_output_dir = MODEL_DIRECTORIES[self._environment]["mlflow"]
 
         flow_parameters = MinimalFlowParameters(
