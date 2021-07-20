@@ -5,7 +5,7 @@ from omigami.config import (
     PROJECT_NAME,
     MLFLOW_SERVER,
 )
-from omigami.ms2deepscore.deployment import Deployer
+from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
 from omigami.utils import add_click_options
 
 auth_options = [
@@ -39,8 +39,8 @@ def cli():
 @add_click_options(auth_options)
 @add_click_options(configuration_options)
 def deploy_training_flow_cli(flow_name, *args, **kwargs):
-    deployer = Deployer(*args, **kwargs)
-    deployer.deploy_minimal_flow(flow_name=flow_name)
+    deployer = MS2DeepScoreDeployer(*args, **kwargs)
+    deployer.deploy_pretrained_flow(flow_name=flow_name)
 
 
 if __name__ == "__main__":

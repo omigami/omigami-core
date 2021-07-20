@@ -12,9 +12,9 @@ from omigami.flow_config import (
 )
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.ms2deepscore.config import MODEL_DIRECTORIES
-from omigami.ms2deepscore.flows.minimal_flow import (
-    build_minimal_flow,
-    MinimalFlowParameters,
+from omigami.ms2deepscore.flows.pretrained_flow import (
+    build_pretrained_flow,
+    PretrainedFlowParameters,
 )
 from omigami.ms2deepscore.flows.training_flow import (
     TrainingFlowParameters,
@@ -38,7 +38,7 @@ class MS2DeepScoreDeployer(Deployer):
         self._input_dgw = FSInputDataGateway()
         self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
-    def deploy_minimal_flow(
+    def deploy_pretrained_flow(
         self,
         flow_name: str = "ms2deepscore-minimal-flow",
     ):
@@ -64,7 +64,7 @@ class MS2DeepScoreDeployer(Deployer):
 
         mlflow_output_dir = MODEL_DIRECTORIES[self._environment]["mlflow"]
 
-        flow_parameters = MinimalFlowParameters(
+        flow_parameters = PretrainedFlowParameters(
             model_uri=MODEL_DIRECTORIES[self._environment]["pre-trained-model"],
             input_dgw=self._input_dgw,
             overwrite=self._overwrite,
@@ -75,7 +75,7 @@ class MS2DeepScoreDeployer(Deployer):
             spectrum_ids_chunk_size=self._spectrum_ids_chunk_size,
         )
 
-        flow = build_minimal_flow(
+        flow = build_pretrained_flow(
             self._project_name,
             flow_name,
             self._make_flow_config(),

@@ -14,7 +14,7 @@ from omigami.ms2deepscore.tasks import (
 )
 
 
-class MinimalFlowParameters:
+class PretrainedFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
@@ -40,17 +40,17 @@ class MinimalFlowParameters:
         )
 
 
-def build_minimal_flow(
+def build_pretrained_flow(
     project_name: str,
     flow_name: str,
     flow_config: FlowConfig,
-    flow_parameters: MinimalFlowParameters,
+    flow_parameters: PretrainedFlowParameters,
     mlflow_output_dir: str,
     mlflow_server: str,
     deploy_model: bool = False,
 ) -> Flow:
     """
-    Builds a minimal MS2DeepScore machine learning pipeline. It downloads a pre
+    Builds a pretrained MS2DeepScore machine learning pipeline. It downloads a pre
     trained model, registers it and deploys it to the API.
 
 

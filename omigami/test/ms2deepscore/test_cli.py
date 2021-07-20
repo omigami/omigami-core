@@ -11,7 +11,7 @@ def cli_parameters():
     parameters = dict(
         project_name=PROJECT_NAME,
         mlflow_server=MLFLOW_SERVER,
-        flow_name="ms2deepscore-minimal-flow",
+        flow_name="ms2deepscore-pretrained-flow",
         dataset_name="small",
         environment="dev",
         deploy_model=False,
@@ -27,7 +27,7 @@ def cli_parameters():
 
 def test_deploy_default_training_flow(monkeypatch, cli_parameters):
 
-    func = "omigami.ms2deepscore.cli.deploy_minimal_flow"
+    func = "omigami.ms2deepscore.cli.deploy_pretrained_flow"
 
     with patch(func, spec=True, return_value=True) as patch_func:
         runner = CliRunner()
@@ -51,7 +51,7 @@ def test_deploy_custom_training_flow(monkeypatch, cli_parameters):
     cli_parameters["environment"] = "prod"
     cli_parameters["deploy_model"] = True
 
-    func = "omigami.ms2deepscore.cli.deploy_minimal_flow"
+    func = "omigami.ms2deepscore.cli.deploy_pretrained_flow"
 
     with patch(func, spec=True, return_value=True) as patch_func:
         runner = CliRunner()

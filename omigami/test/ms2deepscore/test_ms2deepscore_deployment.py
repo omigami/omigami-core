@@ -8,7 +8,7 @@ from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
 @pytest.mark.skip(
     reason="This test uses internet connection and deploys a test flow to prefect."
 )
-def test_deploy_minimal_flow():
+def test_deploy_pretrained_flow():
     """
     BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
     what you are doing.
@@ -29,7 +29,7 @@ def test_deploy_minimal_flow():
         overwrite_all=False,
         **login_config,
     )
-    flow_id = deployer.deploy_minimal_flow(flow_name="running-dev")
+    flow_id = deployer.deploy_pretrained_flow(flow_name="running-dev")
 
     assert flow_id
 
