@@ -20,7 +20,8 @@ class SaveRawSpectraParameters:
     spectrum_cleaner: SpectrumCleaner
         A SpectrumCleaner that performs some common cleaning
     overwrite_all: bool = False
-        If True, it overwrites all Spectra stored in the database that are passed to the function. Otherwise only adds new ones.
+        If True, it overwrites all Spectra stored in the database that are passed to
+        the function. Otherwise only adds new ones.
     """
 
     spectrum_dgw: RedisSpectrumDataGateway
