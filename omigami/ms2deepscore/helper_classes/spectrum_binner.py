@@ -7,10 +7,9 @@ from ms2deepscore import BinnedSpectrum, SpectrumBinner
 class MS2DeepScoreSpectrumBinner:
     def bin_spectra(self, spectra: List[Spectrum]) -> List[BinnedSpectrum]:
         spectrum_binner = SpectrumBinner(number_of_bins=10000)
-        spectra_ids = [spectrum.metadata["spectrum_id"] for spectrum in spectra]
         binned_spectra = spectrum_binner.fit_transform(spectra)
-        binned_spectra = [
-            spectrum.set("spectrum_id", spectra_ids[i])
-            for i, spectrum in enumerate(binned_spectra)
-        ]
+
+        for binned_spectrum, spectrum in zip(binned_spectra, spectra):
+            binned_spectrum.set("spectrum_id", spectrum.get("spectrum_id"))
+            binned_spectrum.set("inchi", spectrum.get("inchi"))
         return binned_spectra

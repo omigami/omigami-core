@@ -46,7 +46,7 @@ def pytest_configure(config):
 
 
 @pytest.fixture(scope="module")
-def local_gnps_small_json():
+def local_gnps_small_json() -> str:
     path = str(ASSETS_DIR / "SMALL_GNPS.json")
     return path
 
@@ -66,6 +66,14 @@ def spectrum_ids_by_mode(loaded_data):
     for spectrum in loaded_data:
         spectrum_ids[spectrum["Ion_Mode"].lower()].append(spectrum["spectrum_id"])
     return spectrum_ids
+
+
+@pytest.fixture(scope="module")
+def common_cleaned_data():
+    path = str(ASSETS_DIR / "SMALL_GNPS_common_cleaned.pickle")
+    with open(path, "rb") as handle:
+        cleaned_data = pickle.load(handle)
+    return cleaned_data
 
 
 @pytest.fixture(scope="module")
@@ -128,9 +136,9 @@ def spectrum_ids(local_gnps_small_json):
 
 
 @pytest.fixture
-def spectra_stored(redis_db, cleaned_data):
+def spectra_stored(redis_db, common_cleaned_data):
     pipe = redis_db.pipeline()
-    for spectrum in cleaned_data:
+    for spectrum in common_cleaned_data:
         pipe.zadd(
             SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
             {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},

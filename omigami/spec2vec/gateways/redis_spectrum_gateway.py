@@ -11,8 +11,6 @@ from omigami.gateways.redis_spectrum_data_gateway import (
     RedisHashesIterator,
 )
 from omigami.spec2vec.config import (
-    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-    SPECTRUM_HASHES,
     DOCUMENT_HASHES,
     EMBEDDING_HASHES,
 )
@@ -30,14 +28,7 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         for spectrum in spectrum_data:
             spectrum_info = spectrum.spectrum
             document = spectrum.document
-            if spectrum_info and document:
-                pipe.zadd(
-                    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-                    {spectrum.spectrum_id: spectrum.precursor_mz},
-                )
-                pipe.hset(
-                    SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum_info)
-                )
+            if document:
                 pipe.hset(DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(document))
         pipe.execute()
 
@@ -60,7 +51,6 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
             )
         pipe.execute()
 
-    # Not used atm
     def list_missing_documents(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether document exist on Redis.
         Return a list of IDs that do not exist.
