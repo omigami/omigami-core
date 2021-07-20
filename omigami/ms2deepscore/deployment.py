@@ -50,6 +50,7 @@ class Deployer:
         username: Optional[str] = None,
         password: Optional[str] = None,
         api_server: Optional[str] = None,
+        session_token: Optional[str] = None,
         overwrite_all: bool = True,
         n_chunks: int = 10,
     ):
@@ -65,6 +66,7 @@ class Deployer:
         self._username = username
         self._password = password
         self._api_server = api_server
+        self._session_token = session_token
         self._overwrite_all = overwrite_all
         self._n_chunks = n_chunks
 
@@ -87,11 +89,13 @@ class Deployer:
     def _authenticate(self):
         api_server = self._api_server or API_SERVER_URLS[self._environment]
         if self._auth:
-            authenticator = KratosAuthenticator(
-                self._auth_url, self._username, self._password
-            )
-            session_token = authenticator.authenticate()
-            client = Client(api_server=api_server, api_token=session_token)
+            if not self._session_token:
+                authenticator = KratosAuthenticator(
+                    self._auth_url, self._username, self._password
+                )
+                self._session_token = authenticator.authenticate()
+
+            client = Client(api_server=api_server, api_token=self._session_token)
         else:
             client = Client(api_server=API_SERVER_URLS[self._environment])
         client.create_project(self._project_name)
