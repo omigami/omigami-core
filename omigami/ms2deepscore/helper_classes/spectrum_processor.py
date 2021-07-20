@@ -67,7 +67,9 @@ class SpectrumProcessor(SpectrumCleaner):
     @staticmethod
     def _filter_negative_intensities(spectrum: Spectrum) -> Optional[Spectrum]:
         """Will return None if the given Spectrum's intensity has negative values."""
-        if not all((spectrum.peaks.intensities < 0)[0]):
+        if not isinstance(spectrum, type(Spectrum)):
+            return spectrum
+        elif not all((spectrum.peaks.intensities < 0)[0]):
             return None
 
         return spectrum
