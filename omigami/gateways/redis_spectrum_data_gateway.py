@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import pickle
-from typing import List, Iterable, Dict, Set
+from typing import List, Iterable, Set
 
 import redis
 from matchms import Spectrum
@@ -35,6 +35,27 @@ class RedisSpectrumDataGateway:
         # We initialize it with None so we can pickle this gateway when deploying the flow
         self.client = None
 
+    def write_raw_spectra(self, spectra: List[Spectrum]):
+        """Writes a list of raw spectra to the redis database unsing the spectrum_id as the key.
+
+        Parameters
+        ----------
+        spectra: List[Spectrum]
+            List containing objects the class matchms.Spectrum.
+        """
+        self._init_client()
+
+        for spectrum in spectra:
+            self.client.zadd(
+                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
+                {spectrum.metadata["spectrum_id"]: spectrum.metadata["precursor_mz"]},
+            )
+            self.client.hset(
+                SPECTRUM_HASHES,
+                spectrum.metadata["spectrum_id"],
+                pickle.dumps(spectrum),
+            )
+
     def _init_client(self):
         if self.client is None:
             self.client = get_redis_client()
@@ -49,7 +70,7 @@ class RedisSpectrumDataGateway:
         existing = set(self.client.hkeys(SPECTRUM_HASHES))
         return {sp_id for sp_id in spectrum_ids if sp_id.encode() in existing}
 
-    def read_spectra(self, spectrum_ids: Iterable[str] = None) -> Dict[str, Spectrum]:
+    def read_spectra(self, spectrum_ids: Iterable[str] = None) -> List[Spectrum]:
         """
         Read the spectra information from spectra IDs.
         Return a dict of Spectrum objects.
@@ -67,7 +88,7 @@ class RedisSpectrumDataGateway:
         """
         self._init_client()
         spectra = self._read_hashes(SPECTRUM_HASHES, spectrum_ids)
-        return {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}
+        return spectra
 
     def get_spectrum_ids_within_range(
         self, min_mz: float = 0, max_mz: float = -1

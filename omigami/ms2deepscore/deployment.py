@@ -43,7 +43,8 @@ def deploy_minimal_flow(
     username: Optional[str] = None,
     password: Optional[str] = None,
     api_server: Optional[str] = None,
-    skip_if_exists: bool = True,
+    overwrite_all: bool = True,
+    spectrum_ids_chunk_size: int = 1000,
 ):
     """
     Deploys a model minimal flow to Prefect cloud and optionally deploys it as a
@@ -91,8 +92,9 @@ def deploy_minimal_flow(
         overwrite=overwrite,
         environment=environment,
         spectrum_dgw=spectrum_dgw,
-        skip_if_exists=skip_if_exists,
+        overwrite_all=overwrite_all,
         redis_db=redis_db,
+        spectrum_ids_chunk_size=spectrum_ids_chunk_size,
     )
 
     flow_config = make_flow_config(

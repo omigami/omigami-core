@@ -8,14 +8,16 @@ from prefect.schedules.clocks import IntervalClock
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-)
+from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
+from omigami.ms2deepscore.tasks import ProcessSpectrumParameters, ProcessSpectrum
+from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
     DownloadParameters,
     ChunkingParameters,
     CreateChunks,
+    SaveRawSpectraParameters,
+    SaveRawSpectra,
 )
 
 
@@ -23,12 +25,14 @@ class TrainingFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        spectrum_dgw: RedisSpectrumDataGateway,
+        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
+        spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
+        overwrite_all_spectra: bool,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
@@ -58,9 +62,16 @@ class TrainingFlowParameters:
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
         )
+        self.save_raw_spectra = SaveRawSpectraParameters(
+            spectrum_dgw, input_dgw, spectrum_cleaner
+        )
+
+        self.process_spectrum = ProcessSpectrumParameters(
+            spectrum_dgw, overwrite_all_spectra
+        )
 
 
-# Add to model task when it is created
+# TODO: Add to model task when it is created
 @dataclass
 class ModelGeneralParameters:
     model_output_dir: str
@@ -107,5 +118,13 @@ def build_training_flow(
             flow_parameters.input_dgw,
             flow_parameters.chunking,
         )(spectrum_ids)
+
+        spectrum_ids_chunks = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
+            gnps_chunks
+        )
+
+        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
+            spectrum_ids_chunks
+        )
 
     return training_flow

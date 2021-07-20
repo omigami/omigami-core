@@ -1,3 +1,6 @@
+import datetime
+import os
+import time
 from unittest.mock import MagicMock
 
 import pytest
@@ -5,16 +8,12 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-import datetime
-import os
-import time
-
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.utils import create_prefect_result_from_path
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.tasks.download_data import DownloadParameters, DownloadData
 from omigami.test.conftest import ASSETS_DIR
+from omigami.utils import create_prefect_result_from_path
 
 
 def test_refresh_data(mock_default_config, tmpdir):
@@ -70,9 +69,10 @@ def test_download_data(mock_default_config, tmpdir):
         )()
         download.checkpointing = False
     res = test_flow.run()
-
+    return_res = res.result[download].result
     assert res.is_successful()
-    assert res.result[download].result == "spectrum_ids"
+
+    assert len(return_res) == 12
     input_dgw.download_gnps.assert_called_once_with(
         download_params.input_uri, download_params.download_path
     )
