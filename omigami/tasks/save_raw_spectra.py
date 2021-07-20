@@ -1,11 +1,10 @@
 from dataclasses import dataclass
 from typing import List
 
-from matchms.importing.load_from_json import as_spectrum
 from prefect import Task
 
-
 from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
+from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.utils import merge_prefect_task_configs
 
 
@@ -18,12 +17,15 @@ class SaveRawSpectraParameters:
         A gateway that grants access to the redis database
     input_dgw: InputDataGateway
         A InputDataaGateway that is able to load the gnps dataset
+    spectrum_cleaner: SpectrumCleaner
+        A SpectrumCleaner that performs some common cleaning
     overwrite_all: bool = False
         If True, it overwrites all Spectra stored in the database that are passed to the function. Otherwise only adds new ones.
     """
 
     spectrum_dgw: RedisSpectrumDataGateway
     input_dgw: InputDataGateway
+    spectrum_cleaner: SpectrumCleaner
     overwrite_all: bool = False
 
 
@@ -39,6 +41,7 @@ class SaveRawSpectra(Task):
     ):
         self._spectrum_dgw = save_parameters.spectrum_dgw
         self._input_dgw = save_parameters.input_dgw
+        self._spectrum_cleaner = save_parameters.spectrum_cleaner
         self._overwrite_all = save_parameters.overwrite_all
         config = merge_prefect_task_configs(kwargs)
 
@@ -46,8 +49,9 @@ class SaveRawSpectra(Task):
             **config,
         )
 
-    def run(self, gnps_path: str) -> List[str]:
-        """The run method of a Prefect task takes a path to arw gnps json data and saves it as object of the class matchms.Spectrum to a database.
+    def run(self, gnps_path: str = None) -> List[str]:
+        """The run method of a Prefect task takes a path to raw gnps json data and
+        saves it as object of the class matchms.Spectrum to a database.
 
         Parameters:
         ----------
@@ -59,13 +63,12 @@ class SaveRawSpectra(Task):
         """
         self.logger.info(f"Loading spectra from {gnps_path}")
         spectra_from_file = self._input_dgw.load_spectrum(gnps_path)
-
-        redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         spectrum_ids = [sp["spectrum_id"] for sp in spectra_from_file]
 
         if self._overwrite_all:
             spectrum_ids_to_add = spectrum_ids
         else:
+            redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
             spectrum_ids_to_add = set(spectrum_ids) - set(redis_spectrum_ids)
 
         self.logger.info(f"Need to add new IDs: {len(spectrum_ids_to_add) > 0}")
@@ -81,10 +84,7 @@ class SaveRawSpectra(Task):
                 if sp["spectrum_id"] in spectrum_ids_to_add
             ]
 
-            # Diana TODO: Call correct function
-            spectra_to_add = [
-                as_spectrum(spectrum_data) for spectrum_data in spectra_to_add
-            ]
+            spectra_to_add = self._spectrum_cleaner.clean(spectra_to_add)
 
             self._spectrum_dgw.write_raw_spectra(spectra_to_add)
 

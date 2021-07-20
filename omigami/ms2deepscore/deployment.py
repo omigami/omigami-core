@@ -50,7 +50,8 @@ class Deployer:
         username: Optional[str] = None,
         password: Optional[str] = None,
         api_server: Optional[str] = None,
-        skip_if_exists: bool = True,
+        overwrite_all: bool = True,
+        n_chunks: int = 10,
     ):
         self.image = image
         self.project_name = project_name
@@ -64,7 +65,8 @@ class Deployer:
         self.username = username
         self.password = password
         self.api_server = api_server
-        self.skip_if_exists = skip_if_exists
+        self.overwrite_all = overwrite_all
+        self.n_chunks = n_chunks
 
         if environment not in ["dev", "prod"]:
             raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
@@ -121,8 +123,9 @@ class Deployer:
             overwrite=self.overwrite,
             environment=self.environment,
             spectrum_dgw=self.spectrum_dgw,
-            skip_if_exists=self.skip_if_exists,
+            overwrite_all=self.overwrite_all,
             redis_db=self.redis_db,
+            n_chunks=self.n_chunks,
         )
 
         flow = build_minimal_flow(

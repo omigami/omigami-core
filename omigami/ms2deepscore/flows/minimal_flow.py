@@ -2,17 +2,15 @@ from prefect import Flow
 
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-)
+from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.tasks import (
     DeployModel,
     DeployModelParameters,
     RegisterModel,
-)
-from omigami.ms2deepscore.tasks.process_spectrum import (
-    ProcessSpectrum,
     ProcessSpectrumParameters,
+    ProcessSpectrum,
+    ChunkingParameters,
+    CreateSpectrumIDsChunks,
 )
 
 
@@ -20,19 +18,20 @@ class MinimalFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        spectrum_dgw: RedisSpectrumDataGateway,
+        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
+        n_chunks: int,
         overwrite: bool = False,
         environment: str = "dev",
-        skip_if_exists: bool = True,
+        overwrite_all: bool = False,
         redis_db: str = "0",
     ):
         self.input_dgw = input_dgw
+        self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
+        self.chunking = ChunkingParameters(n_chunks)
+        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, overwrite_all)
         self.deploying = DeployModelParameters(redis_db, overwrite, environment)
-        self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, self.model_uri, skip_if_exists
-        )
 
 
 def build_minimal_flow(
@@ -72,7 +71,14 @@ def build_minimal_flow(
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
         ms2deepscore_model_path = flow_parameters.model_uri
 
-        ProcessSpectrum(flow_parameters.process_spectrum)()
+        spectrum_ids_chunks = CreateSpectrumIDsChunks(
+            flow_parameters.spectrum_dgw,
+            flow_parameters.chunking,
+        )()
+
+        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
+            spectrum_ids_chunks
+        )
 
         model_registry = RegisterModel(
             project_name,

@@ -35,11 +35,12 @@ def flow_config():
     return flow_config
 
 
-def test_minimal_flow(flow_config):
+def test_minimal_flow(flow_config, spectra_stored):
     mock_input_dgw = MagicMock(spec=InputDataGateway)
     spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
 
     expected_tasks = {
+        "CreateSpectrumIDsChunks",
         "ProcessSpectrum",
         "RegisterModel",
     }
@@ -47,6 +48,7 @@ def test_minimal_flow(flow_config):
         model_uri="some model",
         input_dgw=mock_input_dgw,
         spectrum_dgw=spectrum_dgw,
+        n_chunks=10,
     )
 
     flow = build_minimal_flow(
@@ -67,6 +69,10 @@ def test_minimal_flow(flow_config):
     assert task_names == expected_tasks
 
 
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
 @pytest.mark.skipif(
     not os.path.exists(
         str(
@@ -101,6 +107,7 @@ def test_run_minimal_flow(
             / "pretrained"
             / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
         ),
+        n_chunks=10,
     )
 
     flow = build_minimal_flow(

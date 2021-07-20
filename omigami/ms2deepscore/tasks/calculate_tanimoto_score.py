@@ -1,4 +1,4 @@
-from typing import Dict
+from prefect import Task
 
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -6,7 +6,6 @@ from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
 from omigami.ms2deepscore.helper_classes.tanimoto_score_calculator import (
     TanimotoScoreCalculator,
 )
-from prefect import Task
 from omigami.utils import merge_prefect_task_configs
 
 

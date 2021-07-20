@@ -14,12 +14,13 @@ from omigami.config import (
     IonModes,
     DATASET_IDS,
 )
+from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
 )
@@ -27,10 +28,10 @@ from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
+from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 def deploy_training_flow(
@@ -43,7 +44,7 @@ def deploy_training_flow(
     n_decimals: int = 2,
     chunk_size: int = int(1e8),
     ion_mode: IonModes = "positive",
-    skip_if_exists: bool = True,
+    overwrite_all: bool = True,
     source_uri: str = SOURCE_URI_PARTIAL_GNPS,
     project_name: str = PROJECT_NAME,
     mlflow_server: str = MLFLOW_SERVER,
@@ -97,20 +98,22 @@ def deploy_training_flow(
 
     input_dgw = FSInputDataGateway()
     spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
+    spectrum_cleaner = SpectrumCleaner()
 
     flow_parameters = TrainingFlowParameters(
         input_dgw=input_dgw,
         spectrum_dgw=spectrum_dgw,
+        spectrum_cleaner=spectrum_cleaner,
         source_uri=source_uri,
         output_dir=output_dir,
         dataset_id=dataset_id,
         chunk_size=chunk_size,
         ion_mode=ion_mode,
         n_decimals=n_decimals,
-        skip_if_exists=skip_if_exists,
+        overwrite_all_spectra=overwrite_all,
         iterations=iterations,
         window=window,
-        overwrite=overwrite,
+        overwrite_model=overwrite,
     )
 
     flow_config = make_flow_config(
