@@ -53,20 +53,20 @@ class Deployer:
         overwrite_all: bool = True,
         n_chunks: int = 10,
     ):
-        self.image = image
-        self.project_name = project_name
-        self.mlflow_server = mlflow_server
-        self.ion_mode = ion_mode
-        self.deploy_model = deploy_model
-        self.overwrite = overwrite
-        self.schedule = schedule
-        self.auth = auth
-        self.auth_url = auth_url
-        self.username = username
-        self.password = password
-        self.api_server = api_server
-        self.overwrite_all = overwrite_all
-        self.n_chunks = n_chunks
+        self._image = image
+        self._project_name = project_name
+        self._mlflow_server = mlflow_server
+        self._ion_mode = ion_mode
+        self._deploy_model = deploy_model
+        self._overwrite = overwrite
+        self._schedule = schedule
+        self._auth = auth
+        self._auth_url = auth_url
+        self._username = username
+        self._password = password
+        self._api_server = api_server
+        self._overwrite_all = overwrite_all
+        self._n_chunks = n_chunks
 
         if environment not in ["dev", "prod"]:
             raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
@@ -77,24 +77,24 @@ class Deployer:
                 f"{list(DATASET_IDS[environment].keys())}."
             )
 
-        self.environment = environment
-        self.dataset_name = dataset_name
-        self.redis_db = REDIS_DATABASES[environment][dataset_name]
+        self._environment = environment
+        self._dataset_name = dataset_name
+        self._redis_db = REDIS_DATABASES[environment][dataset_name]
 
-        self.input_dgw = FSInputDataGateway()
-        self.spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+        self._input_dgw = FSInputDataGateway()
+        self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
     def _authenticate(self):
-        api_server = self.api_server or API_SERVER_URLS[self.environment]
-        if self.auth:
+        api_server = self._api_server or API_SERVER_URLS[self._environment]
+        if self._auth:
             authenticator = KratosAuthenticator(
-                self.auth_url, self.username, self.password
+                self._auth_url, self._username, self._password
             )
             session_token = authenticator.authenticate()
             client = Client(api_server=api_server, api_token=session_token)
         else:
-            client = Client(api_server=API_SERVER_URLS[self.environment])
-        client.create_project(self.project_name)
+            client = Client(api_server=API_SERVER_URLS[self._environment])
+        client.create_project(self._project_name)
         return client
 
     def deploy_minimal_flow(
@@ -115,27 +115,27 @@ class Deployer:
         """
         client = self._authenticate()
 
-        mlflow_output_dir = MODEL_DIRECTORIES[self.environment]["mlflow"]
+        mlflow_output_dir = MODEL_DIRECTORIES[self._environment]["mlflow"]
 
         flow_parameters = MinimalFlowParameters(
-            model_uri=MODEL_DIRECTORIES[self.environment]["pre-trained-model"],
-            input_dgw=self.input_dgw,
-            overwrite=self.overwrite,
-            environment=self.environment,
-            spectrum_dgw=self.spectrum_dgw,
-            overwrite_all=self.overwrite_all,
-            redis_db=self.redis_db,
-            n_chunks=self.n_chunks,
+            model_uri=MODEL_DIRECTORIES[self._environment]["pre-trained-model"],
+            input_dgw=self._input_dgw,
+            overwrite=self._overwrite,
+            environment=self._environment,
+            spectrum_dgw=self._spectrum_dgw,
+            overwrite_all=self._overwrite_all,
+            redis_db=self._redis_db,
+            n_chunks=self._n_chunks,
         )
 
         flow = build_minimal_flow(
-            self.project_name,
+            self._project_name,
             flow_name,
             self._make_flow_config(),
             flow_parameters,
             mlflow_output_dir=mlflow_output_dir,
-            mlflow_server=self.mlflow_server,
-            deploy_model=self.deploy_model,
+            mlflow_server=self._mlflow_server,
+            deploy_model=self._deploy_model,
         )
         flow_run_id = self._create_flow_run(client, flow)
         return flow_run_id
@@ -158,28 +158,28 @@ class Deployer:
         """
 
         client = self._authenticate()
-        model_output_dir = MODEL_DIRECTORIES[self.environment]
+        model_output_dir = MODEL_DIRECTORIES[self._environment]
 
-        dataset_id = DATASET_IDS[self.environment][self.dataset_name].format(
+        dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(
             date=datetime.today()
         )
 
         flow_parameters = TrainingFlowParameters(
-            input_dgw=self.input_dgw,
-            environment=self.environment,
-            ion_mode=self.ion_mode,
-            spectrum_dgw=self.spectrum_dgw,
+            input_dgw=self._input_dgw,
+            environment=self._environment,
+            ion_mode=self._ion_mode,
+            spectrum_dgw=self._spectrum_dgw,
             dataset_id=dataset_id,
         )
 
         flow = build_training_flow(
-            self.project_name,
+            self._project_name,
             flow_name,
             self._make_flow_config(),
             flow_parameters,
             model_output_dir=model_output_dir,
-            mlflow_server=self.mlflow_server,
-            deploy_model=self.deploy_model,
+            mlflow_server=self._mlflow_server,
+            deploy_model=self._deploy_model,
         )
 
         flow_run_id = self._create_flow_run(client, flow)
@@ -188,22 +188,22 @@ class Deployer:
     def _create_flow_run(self, client, flow) -> str:
         flow_id = client.register(
             flow,
-            project_name=self.project_name,
+            project_name=self._project_name,
         )
 
         flow_run_id = client.create_flow_run(
             flow_id=flow_id,
-            run_name=f"run {self.project_name}",
+            run_name=f"run {self._project_name}",
         )
 
         return flow_run_id
 
     def _make_flow_config(self):
         return make_flow_config(
-            image=self.image,
+            image=self._image,
             storage_type=PrefectStorageMethods.S3,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
-            redis_db=self.redis_db,
-            environment=self.environment,
-            schedule=self.schedule,
+            redis_db=self._redis_db,
+            environment=self._environment,
+            schedule=self._schedule,
         )
