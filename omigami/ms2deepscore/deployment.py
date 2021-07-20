@@ -52,7 +52,7 @@ class Deployer:
         api_server: Optional[str] = None,
         session_token: Optional[str] = None,
         overwrite_all: bool = True,
-        n_chunks: int = 10,
+        spectrum_ids_chunk_size: int = 1000,
     ):
         self._image = image
         self._project_name = project_name
@@ -68,7 +68,7 @@ class Deployer:
         self._api_server = api_server
         self._session_token = session_token
         self._overwrite_all = overwrite_all
-        self._n_chunks = n_chunks
+        self.spectrum_ids_chunk_size = spectrum_ids_chunk_size
 
         if environment not in ["dev", "prod"]:
             raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
@@ -135,7 +135,7 @@ class Deployer:
             spectrum_dgw=self._spectrum_dgw,
             overwrite_all=self._overwrite_all,
             redis_db=self._redis_db,
-            n_chunks=self._n_chunks,
+            spectrum_ids_chunk_size=self.spectrum_ids_chunk_size,
         )
 
         flow = build_minimal_flow(

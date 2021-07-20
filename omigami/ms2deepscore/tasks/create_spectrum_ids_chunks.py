@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import List
 
-import numpy as np
 from prefect import Task
 
 from omigami.gateways import RedisSpectrumDataGateway
@@ -10,7 +9,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ChunkingParameters:
-    n_chunks: int
+    spectrum_ids_chunk_size: int
 
 
 class CreateSpectrumIDsChunks(Task):
@@ -21,7 +20,7 @@ class CreateSpectrumIDsChunks(Task):
         **kwargs,
     ):
         self._spectrum_dgw = spectrum_dgw
-        self._n_chunks = chunking_parameters.n_chunks
+        self._chunk_size = chunking_parameters.spectrum_ids_chunk_size
 
         config = merge_prefect_task_configs(kwargs)
 
@@ -29,12 +28,15 @@ class CreateSpectrumIDsChunks(Task):
 
     def run(self) -> List[List[str]]:
         spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
-        self.logger.info(f"There are {len(spectrum_ids)} in the database.")
+        self.logger.info(f"There are {len(spectrum_ids)} spectra in the database.")
 
-        chunks = np.split(np.array(spectrum_ids), self._n_chunks)
+        chunks = [
+            spectrum_ids[x : x + self._chunk_size]
+            for x in range(0, len(spectrum_ids), self._chunk_size)
+        ]
 
         self.logger.info(
-            f"Split spectra into {len(chunks)} chunks of size {self._n_chunks}"
+            f"Split spectra into {len(chunks)} chunks of size {self._chunk_size}"
         )
 
         return chunks
