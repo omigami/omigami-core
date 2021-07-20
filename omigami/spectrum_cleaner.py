@@ -19,12 +19,12 @@ class SpectrumCleaner:
         processed_spectra = []
         for spectrum in spectra:
             spectrum = as_spectrum(spectrum)
-            spectrum = self._basic_cleaning(spectrum)
+            spectrum = self._common_cleaning(spectrum)
             if spectrum is not None:
                 processed_spectra.append(spectrum)
         return processed_spectra
 
-    def _basic_cleaning(self, spectrum: Spectrum) -> Spectrum:
+    def _common_cleaning(self, spectrum: Spectrum) -> Spectrum:
         spectrum = self._apply_filters(spectrum)
         spectrum = self._harmonize_spectrum(spectrum)
         spectrum = self._convert_metadata(spectrum)

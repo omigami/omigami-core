@@ -50,10 +50,10 @@ def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processo
 
 
 def test_run_missing_smiles_inchi_against_pubchem(
-    basic_cleaned_data, spectrum_processor
+    common_cleaned_data, spectrum_processor
 ):
     cleaned_spectrum = spectrum_processor.process_spectra(
-        [basic_cleaned_data[2]], False
+        [common_cleaned_data[2]], False
     )
     spectrum_with_inchikey = spectrum_processor._get_missing_inchis(cleaned_spectrum[0])
 

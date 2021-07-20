@@ -14,8 +14,10 @@ from omigami.test.conftest import ASSETS_DIR
 
 
 @pytest.fixture
-def positive_spectra_data(basic_cleaned_data):
-    spectra = [data for data in basic_cleaned_data if data.get("ionmode") == "positive"]
+def positive_spectra_data(common_cleaned_data):
+    spectra = [
+        data for data in common_cleaned_data if data.get("ionmode") == "positive"
+    ]
     return spectra
 
 

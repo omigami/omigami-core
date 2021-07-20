@@ -16,9 +16,9 @@ from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
 )
 
 
-def test_process_spectrum_calls(spectrum_ids, basic_cleaned_data):
+def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
     spectrum_gtw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
-    spectrum_gtw.read_spectra.return_value = basic_cleaned_data
+    spectrum_gtw.read_spectra.return_value = common_cleaned_data
     input_gtw = FSInputDataGateway()
     parameters = ProcessSpectrumParameters(spectrum_gtw, 2, True)
 
@@ -74,10 +74,10 @@ def test_process_spectrum_map(spectrum_ids, spectra_stored, mock_default_config)
     assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids)
 
 
-def test_clean_data(basic_cleaned_data):
+def test_clean_data(common_cleaned_data):
     dc = SpectrumProcessor()
 
-    cleaned_data = dc.create_documents(basic_cleaned_data)
+    cleaned_data = dc.create_documents(common_cleaned_data)
 
     assert isinstance(cleaned_data[0], SpectrumDocumentData)
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None

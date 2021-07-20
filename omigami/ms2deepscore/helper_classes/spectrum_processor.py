@@ -43,7 +43,7 @@ class SpectrumProcessor(SpectrumCleaner):
             if spectrum is not None:
                 if self._is_minimal_flow:
                     spectrum = self._select_ion_mode(spectrum)
-                    spectrum = self._basic_cleaning(spectrum)  # this is only until
+                    spectrum = self._common_cleaning(spectrum)  # this is only until
                     # all the saved spectra are not cleaned
                 spectrum = normalize_intensities(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)

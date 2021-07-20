@@ -16,7 +16,7 @@ class SaveRawSpectraParameters:
     input_dgw: InputDataGateway
         A InputDataaGateway that is able to load the gnps dataset
     spectrum_cleaner: SpectrumCleaner
-        A SpectrumCleaner that performs some basic cleaning
+        A SpectrumCleaner that performs some common cleaning
     overwrite_all: bool = False
         If True, it overwrites all Spectra stored in the database that are passed to the function. Otherwise only adds new ones.
     """
