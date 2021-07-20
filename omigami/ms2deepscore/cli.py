@@ -5,7 +5,7 @@ from omigami.config import (
     PROJECT_NAME,
     MLFLOW_SERVER,
 )
-from omigami.ms2deepscore.deployment import deploy_minimal_flow
+from omigami.ms2deepscore.deployment import Deployer
 from omigami.utils import add_click_options
 
 auth_options = [
@@ -38,8 +38,9 @@ def cli():
 @click.option("--dataset-name", "-d", type=str, required=True)
 @add_click_options(auth_options)
 @add_click_options(configuration_options)
-def deploy_training_flow_cli(*args, **kwargs):
-    deploy_minimal_flow(*args, **kwargs)
+def deploy_training_flow_cli(flow_name, *args, **kwargs):
+    deployer = Deployer(*args, **kwargs)
+    deployer.deploy_minimal_flow(flow_name=flow_name)
 
 
 if __name__ == "__main__":
