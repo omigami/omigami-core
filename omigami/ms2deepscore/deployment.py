@@ -152,7 +152,7 @@ class Deployer:
         2) process database and filesystem configs
         3) instantiate gateways and task parameters
         4) create prefect flow configuration
-        5) builds the minimal flow graph
+        5) builds the training flow graph
         6) pushes the flow to prefect cloud
 
         """
