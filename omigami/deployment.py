@@ -1,7 +1,8 @@
 from datetime import timedelta
-from typing import Optional, Literal
+from typing import Optional
 
 from prefect import Client
+from typing_extensions import Literal
 
 from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
