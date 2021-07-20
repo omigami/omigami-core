@@ -58,13 +58,15 @@ def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processo
 
 
 def test_apply_ms2deepscore_filters_negative_intensity(
-    spectrum_negative_intensity, spectrum_processor
+    spectrum_negative_intensity, spectrum, spectrum_processor
 ):
-    filtered_spectrum = spectrum_processor._filter_negative_intensities(
+    spectrum_negative_intensity = spectrum_processor._filter_negative_intensities(
         spectrum_negative_intensity
     )
+    spectrum = spectrum_processor._filter_negative_intensities(spectrum)
 
-    assert filtered_spectrum is None
+    assert spectrum_negative_intensity is None
+    assert spectrum is not None
 
 
 def test_run_missing_smiles_inchi_against_pubchem(
