@@ -31,7 +31,13 @@ class MinimalFlowParameters:
         self.model_uri = model_uri
         self.chunking = ChunkingParameters(n_chunks)
         self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, overwrite_all)
-        self.deploying = DeployModelParameters(redis_db, overwrite, environment)
+        self.deploying = DeployModelParameters(
+            redis_db,
+            ion_mode="positive",
+            overwrite=overwrite,
+            environment=environment,
+            minimal=True,
+        )
 
 
 def build_minimal_flow(

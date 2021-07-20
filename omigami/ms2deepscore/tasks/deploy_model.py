@@ -13,6 +13,7 @@ class DeployModelParameters:
     ion_mode: str
     overwrite: bool
     environment: str = "dev"
+    minimal: bool = False
 
 
 class DeployModel(Task):
@@ -29,7 +30,11 @@ class DeployModel(Task):
         self._environment = deploy_parameters.environment
         self._overwrite = deploy_parameters.overwrite
         self._ion_mode = deploy_parameters.ion_mode
-        self._model_name = f"ms2deepscore-{self._ion_mode}"
+
+        if deploy_parameters.minimal:
+            self._model_name = f"pretrained-ms2deepscore-{self._ion_mode}"
+        else:
+            self._model_name = f"ms2deepscore-{self._ion_mode}"
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
