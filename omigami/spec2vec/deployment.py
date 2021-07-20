@@ -63,6 +63,7 @@ class Spec2VecDeployer(Deployer):
 
         """
         client = self._authenticate()
+        client.create_project(self._project_name)
 
         model_output_dir = MODEL_DIRECTORIES[self._environment]
         dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(

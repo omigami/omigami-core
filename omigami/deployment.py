@@ -76,5 +76,5 @@ class Deployer:
             client = Client(api_server=api_server, api_token=self._session_token)
         else:
             client = Client(api_server=API_SERVER_URLS[self._environment])
-        client.create_project(self._project_name)
+
         return client
