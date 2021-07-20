@@ -11,6 +11,7 @@ from omigami.config import (
     MLFLOW_SERVER,
     DATASET_IDS,
     REDIS_DATABASES,
+    IonModes,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -32,197 +33,174 @@ from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
 )
 
 
-def deploy_minimal_flow(
-    image: str,
-    dataset_name: str,
-    project_name: str = PROJECT_NAME,
-    mlflow_server: str = MLFLOW_SERVER,
-    flow_name: str = "ms2deepscore-minimal-flow",
-    environment: Literal["dev", "prod"] = "dev",
-    deploy_model: bool = False,
-    overwrite: bool = False,
-    schedule: timedelta = None,
-    auth: bool = False,
-    auth_url: Optional[str] = None,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
-    api_server: Optional[str] = None,
-    skip_if_exists: bool = True,
-):
-    """
-    Deploys a model minimal flow to Prefect cloud and optionally deploys it as a
-    Seldon deployment.
+class Deployer:
+    def __init__(
+        self,
+        image: str,
+        dataset_name: str,
+        project_name: str = PROJECT_NAME,
+        mlflow_server: str = MLFLOW_SERVER,
+        environment: Literal["dev", "prod"] = "dev",
+        ion_mode: IonModes = "positive",
+        deploy_model: bool = False,
+        overwrite: bool = False,
+        schedule: timedelta = None,
+        auth: bool = False,
+        auth_url: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        api_server: Optional[str] = None,
+        skip_if_exists: bool = True,
+    ):
+        self.image = image
+        self.project_name = project_name
+        self.mlflow_server = mlflow_server
+        self.ion_mode = ion_mode
+        self.deploy_model = deploy_model
+        self.overwrite = overwrite
+        self.schedule = schedule
+        self.auth = auth
+        self.auth_url = auth_url
+        self.username = username
+        self.password = password
+        self.api_server = api_server
+        self.skip_if_exists = skip_if_exists
 
-    1) authenticate user credentials using the auth service endpoint
-    2) process database and filesystem configs
-    3) instantiate gateways and task parameters
-    4) create prefect flow configuration
-    5) builds the minimal flow graph
-    6) pushes the flow to prefect cloud
+        if environment not in ["dev", "prod"]:
+            raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
 
-    """
+        if dataset_name not in DATASET_IDS[environment].keys():
+            raise ValueError(
+                f"No such option available for reference dataset: {dataset_name}. Available options are:"
+                f"{list(DATASET_IDS[environment].keys())}."
+            )
 
-    # authentication step
-    api_server = api_server or API_SERVER_URLS[environment]
-    if auth:
-        authenticator = KratosAuthenticator(auth_url, username, password)
-        session_token = authenticator.authenticate()
-        client = Client(api_server=api_server, api_token=session_token)
-    else:
-        client = Client(api_server=API_SERVER_URLS[environment])
-    client.create_project(project_name)
+        self.environment = environment
+        self.dataset_name = dataset_name
+        self.redis_db = REDIS_DATABASES[environment][dataset_name]
 
-    # validates parameters and use them to get task configuration variables
-    if environment not in ["dev", "prod"]:
-        raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
+        self.input_dgw = FSInputDataGateway()
+        self.spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
-    if dataset_name not in DATASET_IDS[environment].keys():
-        raise ValueError(
-            f"No such option available for reference dataset: {dataset_name}. Available options are:"
-            f"{list(DATASET_IDS[environment].keys())}."
+    def _authenticate(self):
+        api_server = self.api_server or API_SERVER_URLS[self.environment]
+        if self.auth:
+            authenticator = KratosAuthenticator(
+                self.auth_url, self.username, self.password
+            )
+            session_token = authenticator.authenticate()
+            client = Client(api_server=api_server, api_token=session_token)
+        else:
+            client = Client(api_server=API_SERVER_URLS[self.environment])
+        client.create_project(self.project_name)
+        return client
+
+    def deploy_minimal_flow(
+        self,
+        flow_name: str = "ms2deepscore-minimal-flow",
+    ):
+        """
+        Deploys a model minimal flow to Prefect cloud and optionally deploys it as a
+        Seldon deployment.
+
+        1) authenticate user credentials using the auth service endpoint
+        2) process database and filesystem configs
+        3) instantiate gateways and task parameters
+        4) create prefect flow configuration
+        5) builds the minimal flow graph
+        6) pushes the flow to prefect cloud
+
+        """
+        client = self._authenticate()
+
+        mlflow_output_dir = MODEL_DIRECTORIES[self.environment]["mlflow"]
+
+        flow_parameters = MinimalFlowParameters(
+            model_uri=MODEL_DIRECTORIES[self.environment]["pre-trained-model"],
+            input_dgw=self.input_dgw,
+            overwrite=self.overwrite,
+            environment=self.environment,
+            spectrum_dgw=self.spectrum_dgw,
+            skip_if_exists=self.skip_if_exists,
+            redis_db=self.redis_db,
         )
 
-    redis_db = REDIS_DATABASES[environment][dataset_name]
+        flow = build_minimal_flow(
+            self.project_name,
+            flow_name,
+            self._make_flow_config(),
+            flow_parameters,
+            mlflow_output_dir=mlflow_output_dir,
+            mlflow_server=self.mlflow_server,
+            deploy_model=self.deploy_model,
+        )
+        flow_run_id = self._create_flow_run(client, flow)
+        return flow_run_id
 
-    mlflow_output_dir = MODEL_DIRECTORIES[environment]["mlflow"]
+    def deploy_training_flow(
+        self,
+        flow_name: str = "ms2deepscore-training-flow",
+    ):
+        """
+        Deploys a model training flow to Prefect cloud and optionally deploys it as a
+        Seldon deployment.
 
-    input_dgw = FSInputDataGateway()
-    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+        1) authenticate user credentials using the auth service endpoint
+        2) process database and filesystem configs
+        3) instantiate gateways and task parameters
+        4) create prefect flow configuration
+        5) builds the minimal flow graph
+        6) pushes the flow to prefect cloud
 
-    flow_parameters = MinimalFlowParameters(
-        model_uri=MODEL_DIRECTORIES[environment]["pre-trained-model"],
-        input_dgw=input_dgw,
-        overwrite=overwrite,
-        environment=environment,
-        spectrum_dgw=spectrum_dgw,
-        skip_if_exists=skip_if_exists,
-        redis_db=redis_db,
-    )
+        """
 
-    flow_config = make_flow_config(
-        image=image,
-        storage_type=PrefectStorageMethods.S3,
-        executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db=redis_db,
-        environment=environment,
-        schedule=schedule,
-    )
+        client = self._authenticate()
+        model_output_dir = MODEL_DIRECTORIES[self.environment]
 
-    flow = build_minimal_flow(
-        project_name,
-        flow_name,
-        flow_config,
-        flow_parameters,
-        mlflow_output_dir=mlflow_output_dir,
-        mlflow_server=mlflow_server,
-        deploy_model=deploy_model,
-    )
-
-    minimal_flow_id = client.register(
-        flow,
-        project_name=project_name,
-    )
-
-    flow_run_id = client.create_flow_run(
-        flow_id=minimal_flow_id,
-        run_name=f"run {project_name}",
-    )
-
-    return flow_run_id
-
-
-def deploy_training_flow(
-    image: str,
-    dataset_name: str,
-    project_name: str = PROJECT_NAME,
-    mlflow_server: str = MLFLOW_SERVER,
-    flow_name: str = "ms2deepscore-minimal-flow",
-    environment: Literal["dev", "prod"] = "dev",
-    deploy_model: bool = False,
-    overwrite: bool = False,
-    schedule: timedelta = None,
-    auth: bool = False,
-    auth_url: Optional[str] = None,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
-    api_server: Optional[str] = None,
-    skip_if_exists: bool = True,
-):
-    """
-    Deploys a model minimal flow to Prefect cloud and optionally deploys it as a
-    Seldon deployment.
-
-    1) authenticate user credentials using the auth service endpoint
-    2) process database and filesystem configs
-    3) instantiate gateways and task parameters
-    4) create prefect flow configuration
-    5) builds the minimal flow graph
-    6) pushes the flow to prefect cloud
-
-    """
-
-    # authentication step
-    api_server = api_server or API_SERVER_URLS[environment]
-    if auth:
-        authenticator = KratosAuthenticator(auth_url, username, password)
-        session_token = authenticator.authenticate()
-        client = Client(api_server=api_server, api_token=session_token)
-    else:
-        client = Client(api_server=API_SERVER_URLS[environment])
-    client.create_project(project_name)
-
-    # validates parameters and use them to get task configuration variables
-    if environment not in ["dev", "prod"]:
-        raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
-
-    if dataset_name not in DATASET_IDS[environment].keys():
-        raise ValueError(
-            f"No such option available for reference dataset: {dataset_name}. Available options are:"
-            f"{list(DATASET_IDS[environment].keys())}."
+        dataset_id = DATASET_IDS[self.environment][self.dataset_name].format(
+            date=datetime.today()
         )
 
-    redis_db = REDIS_DATABASES[environment][dataset_name]
+        flow_parameters = TrainingFlowParameters(
+            input_dgw=self.input_dgw,
+            environment=self.environment,
+            ion_mode=self.ion_mode,
+            spectrum_dgw=self.spectrum_dgw,
+            dataset_id=dataset_id,
+        )
 
-    model_output_dir = MODEL_DIRECTORIES[environment]
-    dataset_id = DATASET_IDS[environment][dataset_name].format(date=datetime.today())
+        flow = build_training_flow(
+            self.project_name,
+            flow_name,
+            self._make_flow_config(),
+            flow_parameters,
+            model_output_dir=model_output_dir,
+            mlflow_server=self.mlflow_server,
+            deploy_model=self.deploy_model,
+        )
 
-    input_dgw = FSInputDataGateway()
-    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+        flow_run_id = self._create_flow_run(client, flow)
+        return flow_run_id
 
-    flow_parameters = TrainingFlowParameters(
-        input_dgw=input_dgw,
-        environment=environment,
-        spectrum_dgw=spectrum_dgw,
-        dataset_id=dataset_id,
-    )
+    def _create_flow_run(self, client, flow) -> str:
+        flow_id = client.register(
+            flow,
+            project_name=self.project_name,
+        )
 
-    flow_config = make_flow_config(
-        image=image,
-        storage_type=PrefectStorageMethods.S3,
-        executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db=redis_db,
-        environment=environment,
-        schedule=schedule,
-    )
+        flow_run_id = client.create_flow_run(
+            flow_id=flow_id,
+            run_name=f"run {self.project_name}",
+        )
 
-    flow = build_training_flow(
-        project_name,
-        flow_name,
-        flow_config,
-        flow_parameters,
-        model_output_dir=model_output_dir,
-        mlflow_server=mlflow_server,
-        deploy_model=deploy_model,
-    )
+        return flow_run_id
 
-    minimal_flow_id = client.register(
-        flow,
-        project_name=project_name,
-    )
-
-    flow_run_id = client.create_flow_run(
-        flow_id=minimal_flow_id,
-        run_name=f"run {project_name}",
-    )
-
-    return flow_run_id
+    def _make_flow_config(self):
+        return make_flow_config(
+            image=self.image,
+            storage_type=PrefectStorageMethods.S3,
+            executor_type=PrefectExecutorMethods.LOCAL_DASK,
+            redis_db=self.redis_db,
+            environment=self.environment,
+            schedule=self.schedule,
+        )
