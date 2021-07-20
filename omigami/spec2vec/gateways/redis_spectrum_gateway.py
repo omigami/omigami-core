@@ -30,14 +30,7 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         for spectrum in spectrum_data:
             spectrum_info = spectrum.spectrum
             document = spectrum.document
-            if spectrum_info and document:
-                pipe.zadd(
-                    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-                    {spectrum.spectrum_id: spectrum.precursor_mz},
-                )
-                pipe.hset(
-                    SPECTRUM_HASHES, spectrum.spectrum_id, pickle.dumps(spectrum_info)
-                )
+            if document:
                 pipe.hset(DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(document))
         pipe.execute()
 

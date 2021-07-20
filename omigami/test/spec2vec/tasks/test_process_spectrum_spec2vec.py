@@ -50,7 +50,6 @@ def test_process_spectrum(local_gnps_small_json, spectrum_ids, mock_default_conf
     data = res.result[process_task].result
 
     assert set(data) == set(spectrum_ids)
-    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids)
 
 
 @pytest.mark.skipif(

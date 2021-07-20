@@ -46,7 +46,7 @@ def pytest_configure(config):
 
 
 @pytest.fixture(scope="module")
-def local_gnps_small_json():
+def local_gnps_small_json() -> str:
     path = str(ASSETS_DIR / "SMALL_GNPS.json")
     return path
 
