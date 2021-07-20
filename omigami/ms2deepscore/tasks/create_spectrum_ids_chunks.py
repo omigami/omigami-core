@@ -28,10 +28,7 @@ class CreateSpectrumIDsChunks(Task):
         spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         self.logger.info(f"There are {len(spectrum_ids)} in the database.")
 
-        chunks = [
-            spectrum_ids[x : x + self._chunk_size]
-            for x in range(0, len(spectrum_ids), self._chunk_size)
-        ]
+       chunks = np.split(np.array(spectrum_ids), self._chunk_size)
 
         self.logger.info(
             f"Split spectra into {len(chunks)} chunks of size {self._chunk_size}"
