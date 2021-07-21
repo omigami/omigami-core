@@ -25,10 +25,13 @@ def spectrum_negative_intensity():
     )
 
 
-def test_clean_data(spectrum, spectrum_cleaner):
+def test_clean_data(spectrum, spectrum_cleaner, spectrum_negative_intensity):
 
     cleaned_data = spectrum_cleaner._common_cleaning(spectrum)
-
+    cleaned_data_negative_intensity = spectrum_cleaner._common_cleaning(
+        spectrum_negative_intensity
+    )
+    assert cleaned_data_negative_intensity is None
     assert isinstance(cleaned_data, Spectrum)
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
     assert cleaned_data.get("inchi") not in ["N/A", "NA", "n/a", None]
