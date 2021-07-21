@@ -34,6 +34,8 @@ def cli_parameters():
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5.0,
+        overwrite_model=False,
+        overwrite_all_spectra=False,
     )
     return parameters
 

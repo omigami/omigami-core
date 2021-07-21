@@ -24,7 +24,8 @@ configuration_options = [
     click.option("--flow-name", default="ms2deepscore-pretrained-flow"),
     click.option("--environment", "--env", default="dev"),
     click.option("--deploy-model", is_flag=True),
-    click.option("--overwrite", is_flag=True, help="Overwrite existing model"),
+    click.option("--overwrite-model", is_flag=True, help="Overwrite existing model"),
+    click.option("--overwrite-all-spectra", is_flag=True, help="Overwrite all spectra"),
 ]
 
 

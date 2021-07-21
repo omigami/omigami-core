@@ -18,6 +18,8 @@ configuration_options = [
     click.option("--flow-name", default="spec2vec-training-flow"),
     click.option("--model-output-dir", default=MODEL_DIRECTORIES),
     click.option("--mlflow-server", default=MLFLOW_SERVER),
+    click.option("--overwrite-model", is_flag=True, help="Overwrite existing model"),
+    click.option("--overwrite-all-spectra", is_flag=True, help="Overwrite all spectra"),
 ]
 
 auth_options = [

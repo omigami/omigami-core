@@ -3,6 +3,7 @@ from datetime import datetime
 from omigami.config import (
     MLFLOW_SERVER,
     DATASET_IDS,
+    S3_BUCKETS,
 )
 from omigami.deployment import Deployer
 from omigami.gateways.input_data_gateway import FSInputDataGateway
@@ -14,6 +15,7 @@ from omigami.ms2deepscore.flows.pretrained_flow import (
 from omigami.ms2deepscore.flows.training_flow import (
     TrainingFlowParameters,
     build_training_flow,
+    ModelGeneralParameters,
 )
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -104,6 +106,7 @@ class MS2DeepScoreDeployer(Deployer):
         client.create_project(self._project_name)
 
         model_output_dir = MODEL_DIRECTORIES[self._environment]
+        output_dir = S3_BUCKETS[self._environment]
 
         dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(
             date=datetime.today()
@@ -114,16 +117,23 @@ class MS2DeepScoreDeployer(Deployer):
             environment=self._environment,
             ion_mode=self._ion_mode,
             spectrum_dgw=self._spectrum_dgw,
+            output_dir=output_dir,
             dataset_id=dataset_id,
+            chunk_size=self._spectrum_ids_chunk_size,
+            overwrite_all_spectra=self._overwrite_all_spectra,
+        )
+
+        model_parameters = ModelGeneralParameters(
+            model_output_dir=model_output_dir,
+            mlflow_server=self._mlflow_server,
         )
 
         flow = build_training_flow(
-            self._project_name,
-            flow_name,
-            self._make_flow_config(),
-            flow_parameters,
-            model_output_dir=model_output_dir,
-            mlflow_server=self._mlflow_server,
+            project_name=self._project_name,
+            flow_name=flow_name,
+            flow_config=self._make_flow_config(),
+            flow_parameters=flow_parameters,
+            model_parameters=model_parameters,
             deploy_model=self._deploy_model,
         )
 

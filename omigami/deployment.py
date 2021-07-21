@@ -27,8 +27,8 @@ class Deployer:
         dataset_name: str,
         mlflow_server: str = MLFLOW_SERVER,
         environment: Literal["dev", "prod"] = "dev",
-        overwrite: bool = False,
-        overwrite_all: bool = True,
+        overwrite_model: bool = False,
+        overwrite_all_spectra: bool = True,
         auth: bool = False,
         auth_url: Optional[str] = None,
         ion_mode: IonModes = "positive",
@@ -46,8 +46,8 @@ class Deployer:
         self._ion_mode = ion_mode
         self._deploy_model = deploy_model
         self._schedule = schedule
-        self._overwrite = overwrite
-        self._overwrite_all = overwrite_all
+        self._overwrite_model = overwrite_model
+        self._overwrite_all_spectra = overwrite_all_spectra
 
         # validates parameters and use them to get task configuration variables
         if environment not in ["dev", "prod"]:

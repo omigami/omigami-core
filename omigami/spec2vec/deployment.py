@@ -80,10 +80,10 @@ class Spec2VecDeployer(Deployer):
             chunk_size=self._chunk_size,
             ion_mode=self._ion_mode,
             n_decimals=self._n_decimals,
-            overwrite_all_spectra=self._overwrite_all,
+            overwrite_all_spectra=self._overwrite_all_spectra,
             iterations=self._iterations,
             window=self._window,
-            overwrite_model=self._overwrite,
+            overwrite_model=self._overwrite_model,
         )
 
         flow_config = self._make_flow_config()
