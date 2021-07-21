@@ -27,7 +27,7 @@ def cli_parameters():
 
 def test_deploy_default_training_flow(monkeypatch, cli_parameters):
 
-    func = "omigami.ms2deepscore.cli.deploy_training_flow_cli"
+    func = "omigami.ms2deepscore.cli.MS2DeepScoreDeployer"
 
     with patch(func, spec=True, return_value=True) as patch_func:
         runner = CliRunner()
@@ -43,6 +43,8 @@ def test_deploy_default_training_flow(monkeypatch, cli_parameters):
         )
 
     assert result.exit_code == 0
+
+    cli_parameters.pop("flow_name")
     patch_func.assert_called_once_with(image="my-image", **cli_parameters)
 
 
@@ -51,7 +53,7 @@ def test_deploy_custom_training_flow(monkeypatch, cli_parameters):
     cli_parameters["environment"] = "prod"
     cli_parameters["deploy_model"] = True
 
-    func = "omigami.ms2deepscore.cli.deploy_training_flow_cli"
+    func = "omigami.ms2deepscore.cli.MS2DeepScoreDeployer"
 
     with patch(func, spec=True, return_value=True) as patch_func:
         runner = CliRunner()
@@ -72,4 +74,6 @@ def test_deploy_custom_training_flow(monkeypatch, cli_parameters):
         )
 
     assert result.exit_code == 0
+
+    cli_parameters.pop("flow_name")
     patch_func.assert_called_once_with(image="my-image", **cli_parameters)
