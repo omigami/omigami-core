@@ -18,13 +18,6 @@ def spectrum(loaded_data):
     return as_spectrum(loaded_data[0])
 
 
-@pytest.fixture
-def spectrum_negative_intensity():
-    return Spectrum(
-        mz=np.sort(np.random.rand(216)), intensities=np.random.uniform(-2, 2, 216)
-    )
-
-
 @pytest.mark.slow
 def test_process_spectra(positive_spectra_data, spectrum_processor):
     cleaned_data = spectrum_processor.process_spectra(positive_spectra_data, True)
@@ -55,18 +48,6 @@ def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processo
         spectrum_with_not_enough_peaks
     )
     assert filtered_spectrum is None
-
-
-def test_apply_ms2deepscore_filters_negative_intensity(
-    spectrum_negative_intensity, spectrum, spectrum_processor
-):
-    spectrum_negative_intensity = spectrum_processor._filter_negative_intensities(
-        spectrum_negative_intensity
-    )
-    spectrum = spectrum_processor._filter_negative_intensities(spectrum)
-
-    assert spectrum_negative_intensity is None
-    assert spectrum is not None
 
 
 def test_run_missing_smiles_inchi_against_pubchem(
