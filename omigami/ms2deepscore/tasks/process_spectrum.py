@@ -34,7 +34,8 @@ class ProcessSpectrum(Task):
         super().__init__(**config)
 
     def run(self, spectrum_ids: Set[str] = None) -> Set[str]:
-        spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
+        if not spectrum_ids:
+            spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
         binned_spectra = self._get_binned_spectra(spectrum_ids)
