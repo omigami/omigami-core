@@ -5,11 +5,6 @@ from omigami.config import (
     DATASET_IDS,
 )
 from omigami.deployment import Deployer
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.ms2deepscore.config import MODEL_DIRECTORIES
 from omigami.ms2deepscore.flows.pretrained_flow import (
@@ -147,13 +142,3 @@ class MS2DeepScoreDeployer(Deployer):
         )
 
         return flow_run_id
-
-    def _make_flow_config(self):
-        return make_flow_config(
-            image=self._image,
-            storage_type=PrefectStorageMethods.S3,
-            executor_type=PrefectExecutorMethods.LOCAL_DASK,
-            redis_db=self._redis_db,
-            environment=self._environment,
-            schedule=self._schedule,
-        )

@@ -1,17 +1,11 @@
 from datetime import datetime
 
 from omigami.config import (
-    REDIS_DATABASES,
     S3_BUCKETS,
     DATASET_IDS,
 )
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.deployment import Deployer
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
@@ -47,6 +41,10 @@ class Spec2VecDeployer(Deployer):
         self._chunk_size = chunk_size
         self._source_uri = source_uri
 
+        self._input_dgw = FSInputDataGateway()
+        self._spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
+        self._spectrum_cleaner = SpectrumCleaner()
+
     def deploy_training_flow(
         self,
         flow_name: str = "spec2vec-training-flow",
@@ -69,17 +67,13 @@ class Spec2VecDeployer(Deployer):
         dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(
             date=datetime.today()
         )
-        redis_db = REDIS_DATABASES[self._environment][self._dataset_name]
+
         output_dir = S3_BUCKETS[self._environment]
 
-        input_dgw = FSInputDataGateway()
-        spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
-        spectrum_cleaner = SpectrumCleaner()
-
         flow_parameters = TrainingFlowParameters(
-            input_dgw=input_dgw,
-            spectrum_dgw=spectrum_dgw,
-            spectrum_cleaner=spectrum_cleaner,
+            input_dgw=self._input_dgw,
+            spectrum_dgw=self._spectrum_dgw,
+            spectrum_cleaner=self._spectrum_cleaner,
             source_uri=self._source_uri,
             output_dir=output_dir,
             dataset_id=dataset_id,
@@ -92,14 +86,7 @@ class Spec2VecDeployer(Deployer):
             overwrite_model=self._overwrite,
         )
 
-        flow_config = make_flow_config(
-            image=self._image,
-            storage_type=PrefectStorageMethods.S3,
-            executor_type=PrefectExecutorMethods.LOCAL_DASK,
-            redis_db=redis_db,
-            environment=self._environment,
-            schedule=self._schedule,
-        )
+        flow_config = self._make_flow_config()
 
         flow = build_training_flow(
             self._project_name,

@@ -13,6 +13,11 @@ from omigami.config import (
     DATASET_IDS,
     IonModes,
 )
+from omigami.flow_config import (
+    make_flow_config,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
 
 
 class Deployer:
@@ -78,3 +83,13 @@ class Deployer:
             client = Client(api_server=API_SERVER_URLS[self._environment])
 
         return client
+
+    def _make_flow_config(self):
+        return make_flow_config(
+            image=self._image,
+            storage_type=PrefectStorageMethods.S3,
+            executor_type=PrefectExecutorMethods.LOCAL_DASK,
+            redis_db=self._redis_db,
+            environment=self._environment,
+            schedule=self._schedule,
+        )
