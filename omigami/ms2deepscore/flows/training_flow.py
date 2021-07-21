@@ -33,6 +33,7 @@ class TrainingFlowParameters:
         chunk_size: int,
         ion_mode: IonModes,
         overwrite_all_spectra: bool,
+        overwrite_model: bool,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",

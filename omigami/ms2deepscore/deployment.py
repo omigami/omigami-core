@@ -68,10 +68,10 @@ class MS2DeepScoreDeployer(Deployer):
         flow_parameters = PretrainedFlowParameters(
             model_uri=MODEL_DIRECTORIES[self._environment]["pre-trained-model"],
             input_dgw=self._input_dgw,
-            overwrite=self._overwrite_model,
+            overwrite_model=self._overwrite_model,
             environment=self._environment,
             spectrum_dgw=self._spectrum_dgw,
-            overwrite_all=self._overwrite_all_spectra,
+            overwrite_all_spectra=self._overwrite_all_spectra,
             redis_db=self._redis_db,
             spectrum_ids_chunk_size=self._spectrum_ids_chunk_size,
         )
@@ -125,6 +125,7 @@ class MS2DeepScoreDeployer(Deployer):
             output_dir=output_dir,
             dataset_id=dataset_id,
             chunk_size=self._spectrum_ids_chunk_size,
+            overwrite_model=self._overwrite_model,
             overwrite_all_spectra=self._overwrite_all_spectra,
             source_uri=self._source_uri,
             spectrum_cleaner=spectrum_cleaner,

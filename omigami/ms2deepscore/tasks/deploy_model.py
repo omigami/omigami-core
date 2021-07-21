@@ -11,7 +11,7 @@ from omigami.utils import merge_prefect_task_configs
 class DeployModelParameters:
     redis_db: str
     ion_mode: str
-    overwrite: bool
+    overwrite_model: bool
     environment: str = "dev"
     pretrained: bool = False
 
@@ -28,7 +28,7 @@ class DeployModel(Task):
     ):
         self._redis_db = deploy_parameters.redis_db
         self._environment = deploy_parameters.environment
-        self._overwrite = deploy_parameters.overwrite
+        self._overwrite = deploy_parameters.overwrite_model
         self._ion_mode = deploy_parameters.ion_mode
 
         if deploy_parameters.pretrained:

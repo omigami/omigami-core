@@ -21,20 +21,22 @@ class PretrainedFlowParameters:
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
         spectrum_ids_chunk_size: int,
-        overwrite: bool = False,
+        overwrite_model: bool = False,
         environment: str = "dev",
-        overwrite_all: bool = False,
+        overwrite_all_spectra: bool = False,
         redis_db: str = "0",
     ):
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
         self.chunking = ChunkingParameters(spectrum_ids_chunk_size)
-        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, overwrite_all)
+        self.process_spectrum = ProcessSpectrumParameters(
+            spectrum_dgw, overwrite_all_spectra
+        )
         self.deploying = DeployModelParameters(
             redis_db,
             ion_mode="positive",
-            overwrite=overwrite,
+            overwrite_model=overwrite_model,
             environment=environment,
             pretrained=True,
         )
