@@ -18,13 +18,13 @@ def test_deploy_pretrained_flow():
     login_config.pop("token")
 
     deployer = MS2DeepScoreDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.9c2c10c",
+        image="drtools/prefect:omigami-SNAPSHOT.1899006",
         dataset_name="small",
         environment=env,
         project_name="ms2deepscore-dev",
         mlflow_server=MLFLOW_SERVER,
         deploy_model=True,
-        overwrite=True,
+        overwrite_model=True,
         auth=True,
         overwrite_all=False,
         **login_config,
@@ -47,7 +47,7 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     deployer = MS2DeepScoreDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.f70e5c2",
+        image="drtools/prefect:omigami-SNAPSHOT.1899006",
         dataset_name="small",
         environment=env,
         project_name="ms2deepscore-dev",
