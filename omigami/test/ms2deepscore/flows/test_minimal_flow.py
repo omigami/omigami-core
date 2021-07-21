@@ -39,7 +39,6 @@ def test_minimal_flow(flow_config, spectra_stored):
     spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
 
     expected_tasks = {
-        "CreateSpectrumIDsChunks",
         "ProcessSpectrum",
         "RegisterModel",
     }
