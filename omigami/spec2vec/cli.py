@@ -5,15 +5,17 @@ from omigami.config import (
     PROJECT_NAME,
     S3_BUCKETS,
     MLFLOW_SERVER,
+    SOURCE_URI_PARTIAL_GNPS,
 )
-from omigami.spec2vec.config import SOURCE_URI_PARTIAL_GNPS, MODEL_DIRECTORIES
-from omigami.spec2vec.deployment import deploy_training_flow
+from omigami.spec2vec.config import MODEL_DIRECTORIES
+from omigami.spec2vec.deployment import Spec2VecDeployer
 from omigami.utils import add_click_options
 
 configuration_options = [
     click.option("--project-name", "-p", default=PROJECT_NAME),
     click.option("--source-uri", default=SOURCE_URI_PARTIAL_GNPS),
     click.option("--output-dir", default=S3_BUCKETS),
+    click.option("--flow-name", default="spec2vec-training-flow"),
     click.option("--model-output-dir", default=MODEL_DIRECTORIES),
     click.option("--mlflow-server", default=MLFLOW_SERVER),
 ]
@@ -45,8 +47,9 @@ def cli():
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
 @add_click_options(auth_options)
 @add_click_options(configuration_options)
-def deploy_training_flow_cli(*args, **kwargs):
-    _ = deploy_training_flow(*args, **kwargs)
+def deploy_training_flow_cli(flow_name, *args, **kwargs):
+    deployer = Spec2VecDeployer(*args, **kwargs)
+    deployer.deploy_training_flow(flow_name=flow_name)
 
 
 if __name__ == "__main__":

@@ -98,7 +98,7 @@ class Spec2VecDeployer(Deployer):
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=redis_db,
             environment=self._environment,
-            schedule=schedule,
+            schedule=self._schedule,
         )
 
         flow = build_training_flow(
