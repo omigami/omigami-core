@@ -40,17 +40,17 @@ class MS2DeepScoreDeployer(Deployer):
 
     def deploy_pretrained_flow(
         self,
-        flow_name: str = "ms2deepscore-minimal-flow",
+        flow_name: str = "ms2deepscore-pretrained-flow",
     ):
         """
-        Deploys a model minimal flow to Prefect cloud and optionally deploys it as a
+        Deploys a model pretrained flow to Prefect cloud and optionally deploys it as a
         Seldon deployment.
 
         1) authenticate user credentials using the auth service endpoint
         2) process database and filesystem configs
         3) instantiate gateways and task parameters
         4) create prefect flow configuration
-        5) builds the minimal flow graph
+        5) builds the pretrained flow graph
         6) pushes the flow to prefect cloud
 
         """

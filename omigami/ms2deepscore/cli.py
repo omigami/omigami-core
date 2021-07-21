@@ -21,7 +21,7 @@ auth_options = [
 configuration_options = [
     click.option("--project-name", "-p", default=PROJECT_NAME),
     click.option("--mlflow-server", default=MLFLOW_SERVER),
-    click.option("--flow-name", default="ms2deepscore-minimal-flow"),
+    click.option("--flow-name", default="ms2deepscore-pretrained-flow"),
     click.option("--environment", "--env", default="dev"),
     click.option("--deploy-model", is_flag=True),
     click.option("--overwrite", is_flag=True, help="Overwrite existing model"),

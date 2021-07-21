@@ -13,7 +13,7 @@ class DeployModelParameters:
     ion_mode: str
     overwrite: bool
     environment: str = "dev"
-    minimal: bool = False
+    pretrained: bool = False
 
 
 class DeployModel(Task):
@@ -31,7 +31,7 @@ class DeployModel(Task):
         self._overwrite = deploy_parameters.overwrite
         self._ion_mode = deploy_parameters.ion_mode
 
-        if deploy_parameters.minimal:
+        if deploy_parameters.pretrained:
             self._model_name = f"pretrained-ms2deepscore-{self._ion_mode}"
         else:
             self._model_name = f"ms2deepscore-{self._ion_mode}"

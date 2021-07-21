@@ -36,7 +36,7 @@ class PretrainedFlowParameters:
             ion_mode="positive",
             overwrite=overwrite,
             environment=environment,
-            minimal=True,
+            pretrained=True,
         )
 
 
