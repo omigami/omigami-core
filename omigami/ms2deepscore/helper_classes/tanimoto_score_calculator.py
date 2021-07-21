@@ -28,7 +28,7 @@ class TanimotoScoreCalculator:
         binned_spectra = self._spectrum_dgw.read_binned_spectra(spectrum_ids)
         unique_inchi_keys = self._get_unique_inchis(binned_spectra)
         tanimoto_scores = self._calculate_tanimoto_scores(unique_inchi_keys)
-        tanimoto_scores.to_pickle(scores_output_path)
+        tanimoto_scores.to_pickle(scores_output_path, compression="gzip")
         return scores_output_path
 
     @staticmethod
