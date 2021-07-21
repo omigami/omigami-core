@@ -2,10 +2,10 @@ import click
 
 from omigami.config import (
     API_SERVER_URLS,
-    PROJECT_NAME,
     MLFLOW_SERVER,
 )
-from omigami.ms2deepscore.deployment import deploy_minimal_flow
+from omigami.ms2deepscore.config import PROJECT_NAME
+from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
 from omigami.utils import add_click_options
 
 auth_options = [
@@ -21,10 +21,11 @@ auth_options = [
 configuration_options = [
     click.option("--project-name", "-p", default=PROJECT_NAME),
     click.option("--mlflow-server", default=MLFLOW_SERVER),
-    click.option("--flow-name", default="ms2deepscore-minimal-flow"),
+    click.option("--flow-name", default="ms2deepscore-pretrained-flow"),
     click.option("--environment", "--env", default="dev"),
     click.option("--deploy-model", is_flag=True),
-    click.option("--overwrite", is_flag=True, help="Overwrite existing model"),
+    click.option("--overwrite-model", is_flag=True, help="Overwrite existing model"),
+    click.option("--overwrite-all-spectra", is_flag=True, help="Overwrite all spectra"),
 ]
 
 
@@ -38,8 +39,9 @@ def cli():
 @click.option("--dataset-name", "-d", type=str, required=True)
 @add_click_options(auth_options)
 @add_click_options(configuration_options)
-def deploy_training_flow_cli(*args, **kwargs):
-    deploy_minimal_flow(*args, **kwargs)
+def deploy_training_flow_cli(flow_name, *args, **kwargs):
+    deployer = MS2DeepScoreDeployer(*args, **kwargs)
+    deployer.deploy_pretrained_flow(flow_name=flow_name)
 
 
 if __name__ == "__main__":
