@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from matchms import Spectrum
 from matchms.filtering import (
@@ -31,11 +31,19 @@ class SpectrumCleaner:
         spectrum = self._convert_metadata(spectrum)
         return spectrum
 
-    @staticmethod
-    def _apply_filters(spectrum: Spectrum) -> Spectrum:
+    def _apply_filters(self, spectrum: Spectrum) -> Spectrum:
         """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
         spectrum = add_parent_mass(spectrum)
+        self._filter_negative_intensities(spectrum)
+        return spectrum
+
+    def _filter_negative_intensities(self, spectrum: Spectrum) -> Optional[Spectrum]:
+        """Will return None if the given Spectrum's intensity has negative values."""
+
+        if spectrum and any(spectrum.peaks.intensities < 0):
+            return None
+
         return spectrum
 
     @staticmethod
