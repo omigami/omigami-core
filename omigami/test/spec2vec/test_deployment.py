@@ -4,7 +4,7 @@ from typing_extensions import Literal
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.config import config, MLFLOW_SERVER
 from omigami.spec2vec.deployment import (
-    deploy_training_flow,
+    Spec2VecDeployer,
 )
 
 
@@ -22,7 +22,7 @@ def test_deploy_training_flow():
     login_config = config["login"][env].get(dict)
     login_config.pop("token")
 
-    flow_id = deploy_training_flow(
+    deployer = Spec2VecDeployer(
         image="drtools/prefect:omigami-SNAPSHOT.e568c792",
         iterations=15,
         window=500,
@@ -37,11 +37,11 @@ def test_deploy_training_flow():
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         project_name="spec2vec",
         mlflow_server=MLFLOW_SERVER,
-        flow_name="training-flow/positive",
         deploy_model=True,
         overwrite=True,
         auth=True,
         **login_config,
     )
+    flow_id = deployer.deploy_training_flow(flow_name="training-flow/positive")
 
     assert flow_id

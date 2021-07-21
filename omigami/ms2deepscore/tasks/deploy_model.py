@@ -10,8 +10,10 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class DeployModelParameters:
     redis_db: str
-    overwrite: bool
+    ion_mode: str
+    overwrite_model: bool
     environment: str = "dev"
+    pretrained: bool = False
 
 
 class DeployModel(Task):
@@ -26,8 +28,13 @@ class DeployModel(Task):
     ):
         self._redis_db = deploy_parameters.redis_db
         self._environment = deploy_parameters.environment
-        self._overwrite = deploy_parameters.overwrite
-        self._model_name = f"ms2deepscore"
+        self._overwrite = deploy_parameters.overwrite_model
+        self._ion_mode = deploy_parameters.ion_mode
+
+        if deploy_parameters.pretrained:
+            self._model_name = f"pretrained-ms2deepscore-{self._ion_mode}"
+        else:
+            self._model_name = f"ms2deepscore-{self._ion_mode}"
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)

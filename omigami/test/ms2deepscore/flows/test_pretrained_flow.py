@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
+
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -11,9 +12,9 @@ from omigami.flow_config import (
 )
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.ms2deepscore.flows.minimal_flow import (
-    build_minimal_flow,
-    MinimalFlowParameters,
+from omigami.ms2deepscore.flows.pretrained_flow import (
+    build_pretrained_flow,
+    PretrainedFlowParameters,
 )
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -34,7 +35,7 @@ def flow_config():
     return flow_config
 
 
-def test_minimal_flow(flow_config, spectra_stored):
+def test_pretrained_flow(flow_config, spectra_stored):
     mock_input_dgw = MagicMock(spec=InputDataGateway)
     spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
 
@@ -42,13 +43,13 @@ def test_minimal_flow(flow_config, spectra_stored):
         "ProcessSpectrum",
         "RegisterModel",
     }
-    flow_params = MinimalFlowParameters(
+    flow_params = PretrainedFlowParameters(
         model_uri="some model",
         input_dgw=mock_input_dgw,
         spectrum_dgw=spectrum_dgw,
     )
 
-    flow = build_minimal_flow(
+    flow = build_pretrained_flow(
         project_name="test",
         flow_name="test-flow",
         flow_config=flow_config,
@@ -82,7 +83,7 @@ def test_minimal_flow(flow_config, spectra_stored):
     reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
     "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
 )
-def test_run_minimal_flow(
+def test_run_pretrained_flow(
     tmpdir,
     flow_config,
     mock_default_config,
@@ -95,7 +96,7 @@ def test_run_minimal_flow(
     input_dgw = FSInputDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
-    flow_params = MinimalFlowParameters(
+    flow_params = PretrainedFlowParameters(
         input_dgw=input_dgw,
         spectrum_dgw=spectrum_dgw,
         model_uri=str(
@@ -106,7 +107,7 @@ def test_run_minimal_flow(
         ),
     )
 
-    flow = build_minimal_flow(
+    flow = build_pretrained_flow(
         project_name="test",
         flow_config=flow_config,
         flow_name="test-flow",

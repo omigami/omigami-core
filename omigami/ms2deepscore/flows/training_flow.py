@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 from datetime import timedelta, date, datetime
 
+from prefect import Flow
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
+
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
@@ -15,9 +19,6 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
-from prefect import Flow
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
 
 
 class TrainingFlowParameters:
@@ -32,9 +33,11 @@ class TrainingFlowParameters:
         chunk_size: int,
         ion_mode: IonModes,
         overwrite_all_spectra: bool,
+        overwrite_model: bool,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
+        environment: str = "dev",
     ):
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
@@ -84,6 +87,7 @@ def build_training_flow(
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
     model_parameters: ModelGeneralParameters,
+    deploy_model: bool = False,
 ) -> Flow:
     """
     Builds the MS2DeepScore machine learning pipeline. It Downloads and process data, trains the model, makes

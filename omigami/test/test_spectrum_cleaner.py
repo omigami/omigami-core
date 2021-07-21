@@ -1,11 +1,9 @@
+import numpy as np
 import pytest
-
 from matchms import Spectrum
 from matchms.importing.load_from_json import as_spectrum
 
 from omigami.spectrum_cleaner import SpectrumCleaner
-
-import numpy as np
 
 
 @pytest.fixture

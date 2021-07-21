@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Set, List
 
+from prefect import Task
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -12,13 +14,13 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
 )
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
-from prefect import Task
 
 
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
-    is_minimal_flow: bool = False
+    overwrite_all: bool = True
+    is_pretrained_flow: bool = False
 
 
 class ProcessSpectrum(Task):
@@ -28,7 +30,8 @@ class ProcessSpectrum(Task):
         **kwargs,
     ):
         self._spectrum_dgw = process_parameters.spectrum_dgw
-        self._processor = SpectrumProcessor(process_parameters.is_minimal_flow)
+        self._overwrite_all = process_parameters.overwrite_all
+        self._processor = SpectrumProcessor(process_parameters.is_pretrained_flow)
         self._spectrum_binner = MS2DeepScoreSpectrumBinner()
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
