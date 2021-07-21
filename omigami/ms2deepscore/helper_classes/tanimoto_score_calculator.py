@@ -1,3 +1,4 @@
+from logging import getLogger
 from typing import List
 
 import pandas as pd
@@ -7,6 +8,8 @@ from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
 )
 from rdkit import Chem
 from rdkit.DataStructs import BulkTanimotoSimilarity
+
+log = getLogger(__name__)
 
 
 class TanimotoScoreCalculator:
@@ -54,6 +57,8 @@ class TanimotoScoreCalculator:
         def _derive_daylight_fingerprint(df, nbits: int):
             mol = Chem.MolFromInchi(df)
             return Chem.RDKFingerprint(mol, fpSize=nbits)
+
+        log.info(f"Calculating Tanimoto scores for {len(inchis)} unique InChIkeys")
 
         fingerprints = inchis.apply(
             _derive_daylight_fingerprint,
