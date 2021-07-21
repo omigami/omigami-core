@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import pickle
-from typing import List, Iterable, Dict, Set
+from typing import List, Iterable, Set
 
 import redis
 from matchms import Spectrum

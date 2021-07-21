@@ -1,6 +1,8 @@
 import os
+
 import pytest
 from prefect import Flow
+
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.ms2deepscore.tasks import ChunkingParameters, CreateSpectrumIDsChunks
 from omigami.test.conftest import TEST_TASK_CONFIG

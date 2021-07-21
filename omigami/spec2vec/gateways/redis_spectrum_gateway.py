@@ -11,8 +11,6 @@ from omigami.gateways.redis_spectrum_data_gateway import (
     RedisHashesIterator,
 )
 from omigami.spec2vec.config import (
-    SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-    SPECTRUM_HASHES,
     DOCUMENT_HASHES,
     EMBEDDING_HASHES,
 )
