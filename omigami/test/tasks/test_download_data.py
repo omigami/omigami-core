@@ -1,3 +1,6 @@
+import datetime
+import os
+import time
 from unittest.mock import MagicMock
 
 import pytest
@@ -5,16 +8,12 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-import datetime
-import os
-import time
-
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.utils import create_prefect_result_from_path
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.tasks.download_data import DownloadParameters, DownloadData
 from omigami.test.conftest import ASSETS_DIR
+from omigami.utils import create_prefect_result_from_path
 
 
 def test_refresh_data(mock_default_config, tmpdir):

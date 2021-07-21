@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Set, List
+
 from prefect import Task
+
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (

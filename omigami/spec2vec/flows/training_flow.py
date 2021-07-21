@@ -5,7 +5,6 @@ from prefect import Flow, unmapped
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
-
 from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,

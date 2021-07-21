@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Set, List
+
 from prefect import Task
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )

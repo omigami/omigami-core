@@ -1,13 +1,12 @@
+import pathlib
 from dataclasses import dataclass
+from datetime import datetime
 from typing import List
 
 from prefect import Task
 
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
-
-from datetime import datetime
-import pathlib
 
 
 @dataclass
