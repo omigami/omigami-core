@@ -1,5 +1,3 @@
-from prefect import Flow
-
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
@@ -9,9 +7,8 @@ from omigami.ms2deepscore.tasks import (
     RegisterModel,
     ProcessSpectrumParameters,
     ProcessSpectrum,
-    ChunkingParameters,
-    CreateSpectrumIDsChunks,
 )
+from prefect import Flow
 
 
 class MinimalFlowParameters:
@@ -20,17 +17,14 @@ class MinimalFlowParameters:
         input_dgw: InputDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
-        spectrum_ids_chunk_size: int,
         overwrite: bool = False,
         environment: str = "dev",
-        overwrite_all: bool = False,
         redis_db: str = "0",
     ):
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
-        self.chunking = ChunkingParameters(spectrum_ids_chunk_size)
-        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, overwrite_all)
+        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw)
         self.deploying = DeployModelParameters(redis_db, overwrite, environment)
 
 
@@ -71,14 +65,7 @@ def build_minimal_flow(
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
         ms2deepscore_model_path = flow_parameters.model_uri
 
-        spectrum_ids_chunks = CreateSpectrumIDsChunks(
-            flow_parameters.spectrum_dgw,
-            flow_parameters.chunking,
-        )()
-
-        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
-            spectrum_ids_chunks
-        )
+        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum)()
 
         model_registry = RegisterModel(
             project_name,

@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import Set, List
 
-from prefect import Task
-
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -14,12 +12,12 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
 )
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
+from prefect import Task
 
 
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
-    overwrite_all: bool = True
     is_minimal_flow: bool = False
 
 
@@ -30,42 +28,26 @@ class ProcessSpectrum(Task):
         **kwargs,
     ):
         self._spectrum_dgw = process_parameters.spectrum_dgw
-        self._overwrite_all = process_parameters.overwrite_all
         self._processor = SpectrumProcessor(process_parameters.is_minimal_flow)
         self._spectrum_binner = MS2DeepScoreSpectrumBinner()
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
     def run(self, spectrum_ids: Set[str] = None) -> Set[str]:
+        spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
-        spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
-        if spectrum_ids_to_add:
-            binned_spectra = self._get_binned_spectra(spectrum_ids_to_add)
-            if binned_spectra:
-                self.logger.info(
-                    f"Finished processing {len(binned_spectra)} binned spectra. "
-                    f"Saving into spectrum database."
-                )
-                self._spectrum_dgw.write_binned_spectra(binned_spectra)
-                return {sp.metadata["spectrum_id"] for sp in binned_spectra}
+        binned_spectra = self._get_binned_spectra(spectrum_ids)
+        if binned_spectra:
+            self.logger.info(
+                f"Finished processing {len(binned_spectra)} binned spectra. "
+                f"Saving into spectrum database."
+            )
+            self._spectrum_dgw.write_binned_spectra(binned_spectra)
+            return {sp.get("spectrum_id") for sp in binned_spectra}
 
         self.logger.info("No new spectra have been processed.")
-        return spectrum_ids
-
-    def _get_spectrum_ids_to_add(self, spectrum_ids: List[str]) -> List[str]:
-        self.logger.info(f"Flag overwrite_all is set to {self._overwrite_all}.")
-        if self._overwrite_all:
-            spectrum_ids_to_add = spectrum_ids
-        else:
-            spectrum_ids_to_add = self._spectrum_dgw.list_missing_binned_spectra(
-                spectrum_ids
-            )
-            self.logger.info(
-                f"{len(spectrum_ids_to_add)} out of {len(spectrum_ids)} spectra are "
-                f"new and will be processed. "
-            )
-        return spectrum_ids_to_add
+        return set(spectrum_ids)
 
     def _get_binned_spectra(self, spectrum_ids: List[str]):
         spectra = self._spectrum_dgw.read_spectra(spectrum_ids)

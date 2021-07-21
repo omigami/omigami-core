@@ -1,10 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta, date, datetime
 
-from prefect import Flow
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
-
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
@@ -19,6 +15,9 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
+from prefect import Flow
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
 
 
 class TrainingFlowParameters:
@@ -63,11 +62,11 @@ class TrainingFlowParameters:
             self.downloading.download_path, chunk_size, ion_mode
         )
         self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw, spectrum_cleaner
+            spectrum_dgw, input_dgw, spectrum_cleaner, overwrite_all_spectra
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, overwrite_all_spectra
+            spectrum_dgw,
         )
 
 

@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
-
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -48,7 +47,6 @@ def test_minimal_flow(flow_config, spectra_stored):
         model_uri="some model",
         input_dgw=mock_input_dgw,
         spectrum_dgw=spectrum_dgw,
-        spectrum_ids_chunk_size=10,
     )
 
     flow = build_minimal_flow(
@@ -107,7 +105,6 @@ def test_run_minimal_flow(
             / "pretrained"
             / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
         ),
-        spectrum_ids_chunk_size=10,
     )
 
     flow = build_minimal_flow(

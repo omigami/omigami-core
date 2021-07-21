@@ -1,9 +1,6 @@
 from datetime import timedelta
 from typing import Optional
 
-from prefect import Client
-from typing_extensions import Literal
-
 from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     API_SERVER_URLS,
@@ -26,6 +23,8 @@ from omigami.ms2deepscore.flows.minimal_flow import (
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
+from prefect import Client
+from typing_extensions import Literal
 
 
 def deploy_minimal_flow(
@@ -92,9 +91,7 @@ def deploy_minimal_flow(
         overwrite=overwrite,
         environment=environment,
         spectrum_dgw=spectrum_dgw,
-        overwrite_all=overwrite_all,
         redis_db=redis_db,
-        spectrum_ids_chunk_size=spectrum_ids_chunk_size,
     )
 
     flow_config = make_flow_config(
