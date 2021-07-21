@@ -35,7 +35,7 @@ class SpectrumCleaner:
         """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
         spectrum = add_parent_mass(spectrum)
-        self._filter_negative_intensities(spectrum)
+        spectrum = self._filter_negative_intensities(spectrum)
         return spectrum
 
     def _filter_negative_intensities(self, spectrum: Spectrum) -> Optional[Spectrum]:
