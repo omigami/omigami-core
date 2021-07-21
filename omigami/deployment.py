@@ -12,6 +12,7 @@ from omigami.config import (
     REDIS_DATABASES,
     DATASET_IDS,
     IonModes,
+    SOURCE_URI_PARTIAL_GNPS,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -26,6 +27,7 @@ class Deployer:
         image: str,
         dataset_name: str,
         mlflow_server: str = MLFLOW_SERVER,
+        source_uri: str = SOURCE_URI_PARTIAL_GNPS,
         environment: Literal["dev", "prod"] = "dev",
         overwrite_model: bool = False,
         overwrite_all_spectra: bool = True,
@@ -48,6 +50,7 @@ class Deployer:
         self._schedule = schedule
         self._overwrite_model = overwrite_model
         self._overwrite_all_spectra = overwrite_all_spectra
+        self._source_uri = source_uri
 
         # validates parameters and use them to get task configuration variables
         if environment not in ["dev", "prod"]:

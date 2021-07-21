@@ -20,6 +20,7 @@ from omigami.ms2deepscore.flows.training_flow import (
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
+from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 class MS2DeepScoreDeployer(Deployer):
@@ -65,10 +66,10 @@ class MS2DeepScoreDeployer(Deployer):
         flow_parameters = PretrainedFlowParameters(
             model_uri=MODEL_DIRECTORIES[self._environment]["pre-trained-model"],
             input_dgw=self._input_dgw,
-            overwrite=self._overwrite,
+            overwrite=self._overwrite_model,
             environment=self._environment,
             spectrum_dgw=self._spectrum_dgw,
-            overwrite_all=self._overwrite_all,
+            overwrite_all=self._overwrite_all_spectra,
             redis_db=self._redis_db,
             spectrum_ids_chunk_size=self._spectrum_ids_chunk_size,
         )
@@ -112,6 +113,8 @@ class MS2DeepScoreDeployer(Deployer):
             date=datetime.today()
         )
 
+        spectrum_cleaner = SpectrumCleaner()
+
         flow_parameters = TrainingFlowParameters(
             input_dgw=self._input_dgw,
             environment=self._environment,
@@ -121,6 +124,8 @@ class MS2DeepScoreDeployer(Deployer):
             dataset_id=dataset_id,
             chunk_size=self._spectrum_ids_chunk_size,
             overwrite_all_spectra=self._overwrite_all_spectra,
+            source_uri=self._source_uri,
+            spectrum_cleaner=spectrum_cleaner,
         )
 
         model_parameters = ModelGeneralParameters(

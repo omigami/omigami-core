@@ -4,7 +4,6 @@ from omigami.config import (
     S3_BUCKETS,
     DATASET_IDS,
 )
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.deployment import Deployer
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.config import (
@@ -29,7 +28,6 @@ class Spec2VecDeployer(Deployer):
         allowed_missing_percentage: float,
         n_decimals: int = 2,
         chunk_size: int = int(1e8),
-        source_uri: str = SOURCE_URI_PARTIAL_GNPS,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -39,7 +37,6 @@ class Spec2VecDeployer(Deployer):
         self._allowed_missing_percentage = allowed_missing_percentage
         self._n_decimals = n_decimals
         self._chunk_size = chunk_size
-        self._source_uri = source_uri
 
         self._input_dgw = FSInputDataGateway()
         self._spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
