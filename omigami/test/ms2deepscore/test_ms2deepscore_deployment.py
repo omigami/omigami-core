@@ -1,8 +1,7 @@
 import pytest
-from typing_extensions import Literal
-
 from omigami.config import config, MLFLOW_SERVER
 from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
+from typing_extensions import Literal
 
 
 @pytest.mark.skip(
@@ -26,7 +25,7 @@ def test_deploy_pretrained_flow():
         deploy_model=True,
         overwrite_model=True,
         auth=True,
-        overwrite_all_spectra=False,
+        overwrite_all_spectra=True,
         **login_config,
     )
     flow_id = deployer.deploy_pretrained_flow(flow_name="running-dev")

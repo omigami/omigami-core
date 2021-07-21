@@ -6,7 +6,6 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 import pytest
-
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -61,7 +60,7 @@ def test_get_unique_inchi(
 
 
 def test_get_tanimoto_scores(inchis, tanimoto_calculator):
-    scores = tanimoto_calculator._calculate_tanimoto_scores(inchis, 2048)
+    scores = tanimoto_calculator._calculate_tanimoto_scores(inchis)
 
     assert isinstance(scores, pd.DataFrame)
     assert (np.diag(scores) == 1).all()

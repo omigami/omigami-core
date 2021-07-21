@@ -1,10 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta, date, datetime
 
-from prefect import Flow
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
-
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
@@ -23,6 +19,9 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
+from prefect import Flow
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
 
 
 class TrainingFlowParameters:
@@ -37,7 +36,8 @@ class TrainingFlowParameters:
         chunk_size: int,
         ion_mode: IonModes,
         scores_output_path: str,
-        n_bits: int,
+        fingerprint_n_bits: int,
+        scores_decimals: int,
         overwrite_all_spectra: bool,
         overwrite_model: bool,
         schedule_task_days: int = 30,
@@ -79,7 +79,7 @@ class TrainingFlowParameters:
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
-            scores_output_path, n_bits
+            scores_output_path, fingerprint_n_bits, scores_decimals
         )
 
 
