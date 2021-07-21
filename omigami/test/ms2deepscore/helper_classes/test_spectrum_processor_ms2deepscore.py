@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 from matchms import Spectrum
 from matchms.importing.load_from_json import as_spectrum

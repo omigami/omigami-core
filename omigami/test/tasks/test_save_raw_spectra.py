@@ -12,7 +12,7 @@ from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParamet
 
 
 @pytest.fixture
-def create_parameters(overwrite_all: bool = True):
+def create_parameters(overwrite_all_spectra: bool = True):
     spectrum_dgw = RedisSpectrumDataGateway()
     input_dgw = FSInputDataGateway()
     spectrum_cleaner = SpectrumCleaner()
@@ -21,7 +21,7 @@ def create_parameters(overwrite_all: bool = True):
         input_dgw=input_dgw,
         spectrum_cleaner=spectrum_cleaner,
     )
-    parameters.overwrite_all = overwrite_all
+    parameters.overwrite_all_spectra = overwrite_all_spectra
     return parameters
 
 
@@ -123,7 +123,7 @@ def test_save_raw_spectra_empty_db(create_parameters, local_gnps_small_json):
 def test_save_raw_spectra_add_new_spectra(create_parameters, local_gnps_small_json):
     """Test if new spectra get added to a database which already hosts some"""
     # Setup Test
-    create_parameters.overwrite_all = False
+    create_parameters.overwrite_all_spectra = False
     empty_database(create_parameters, local_gnps_small_json)
 
     loaded_data = create_parameters.input_dgw.load_spectrum(local_gnps_small_json)

@@ -14,37 +14,45 @@ from omigami.ms2deepscore.tasks import (
 )
 
 
-class MinimalFlowParameters:
+class PretrainedFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
         spectrum_ids_chunk_size: int,
-        overwrite: bool = False,
+        overwrite_model: bool = False,
         environment: str = "dev",
-        overwrite_all: bool = False,
+        overwrite_all_spectra: bool = False,
         redis_db: str = "0",
     ):
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
         self.chunking = ChunkingParameters(spectrum_ids_chunk_size)
-        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw, overwrite_all)
-        self.deploying = DeployModelParameters(redis_db, overwrite, environment)
+        self.process_spectrum = ProcessSpectrumParameters(
+            spectrum_dgw, overwrite_all_spectra
+        )
+        self.deploying = DeployModelParameters(
+            redis_db,
+            ion_mode="positive",
+            overwrite_model=overwrite_model,
+            environment=environment,
+            pretrained=True,
+        )
 
 
-def build_minimal_flow(
+def build_pretrained_flow(
     project_name: str,
     flow_name: str,
     flow_config: FlowConfig,
-    flow_parameters: MinimalFlowParameters,
+    flow_parameters: PretrainedFlowParameters,
     mlflow_output_dir: str,
     mlflow_server: str,
     deploy_model: bool = False,
 ) -> Flow:
     """
-    Builds a minimal MS2DeepScore machine learning pipeline. It downloads a pre
+    Builds a pretrained MS2DeepScore machine learning pipeline. It downloads a pre
     trained model, registers it and deploys it to the API.
 
 
