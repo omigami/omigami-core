@@ -4,13 +4,12 @@ from mock import patch
 
 from omigami.config import (
     API_SERVER_URLS,
-    PROJECT_NAME,
     MLFLOW_SERVER,
     SOURCE_URI_PARTIAL_GNPS,
     S3_BUCKETS,
 )
 from omigami.spec2vec.cli import cli
-from omigami.spec2vec.config import MODEL_DIRECTORIES
+from omigami.spec2vec.config import MODEL_DIRECTORIES, PROJECT_NAME
 
 
 @pytest.fixture

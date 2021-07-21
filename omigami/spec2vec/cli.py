@@ -2,12 +2,11 @@ import click
 
 from omigami.config import (
     API_SERVER_URLS,
-    PROJECT_NAME,
     S3_BUCKETS,
     MLFLOW_SERVER,
     SOURCE_URI_PARTIAL_GNPS,
 )
-from omigami.spec2vec.config import MODEL_DIRECTORIES
+from omigami.spec2vec.config import MODEL_DIRECTORIES, PROJECT_NAME
 from omigami.spec2vec.deployment import Spec2VecDeployer
 from omigami.utils import add_click_options
 

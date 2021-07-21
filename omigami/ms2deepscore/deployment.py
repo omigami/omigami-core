@@ -7,7 +7,7 @@ from omigami.config import (
 )
 from omigami.deployment import Deployer
 from omigami.gateways.input_data_gateway import FSInputDataGateway
-from omigami.ms2deepscore.config import MODEL_DIRECTORIES
+from omigami.ms2deepscore.config import MODEL_DIRECTORIES, PROJECT_NAME
 from omigami.ms2deepscore.flows.pretrained_flow import (
     build_pretrained_flow,
     PretrainedFlowParameters,
@@ -28,6 +28,7 @@ class MS2DeepScoreDeployer(Deployer):
         self,
         mlflow_server: str = MLFLOW_SERVER,
         spectrum_ids_chunk_size: int = 1000,
+        project_name: str = PROJECT_NAME,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -35,6 +36,7 @@ class MS2DeepScoreDeployer(Deployer):
         self._spectrum_ids_chunk_size = spectrum_ids_chunk_size
         self._input_dgw = FSInputDataGateway()
         self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+        self._project_name = project_name
 
     def deploy_pretrained_flow(
         self,

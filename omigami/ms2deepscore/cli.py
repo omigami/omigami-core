@@ -2,9 +2,9 @@ import click
 
 from omigami.config import (
     API_SERVER_URLS,
-    PROJECT_NAME,
     MLFLOW_SERVER,
 )
+from omigami.ms2deepscore.config import PROJECT_NAME
 from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
 from omigami.utils import add_click_options
 

@@ -10,7 +10,6 @@ ROOT_DIR = Path(__file__).parents[0]
 
 # Prefect
 API_SERVER_URLS = config["prefect"]["api_server"].get(dict)
-PROJECT_NAME = config["prefect"]["project"].get(str)
 
 MLFLOW_SERVER = config["mlflow"].get(str)
 SELDON_PARAMS = config["seldon"].get(dict)

@@ -8,7 +8,6 @@ from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     API_SERVER_URLS,
     MLFLOW_SERVER,
-    PROJECT_NAME,
     REDIS_DATABASES,
     DATASET_IDS,
     IonModes,
@@ -38,7 +37,6 @@ class Deployer:
         password: Optional[str] = None,
         api_server: Optional[str] = None,
         session_token: Optional[str] = None,
-        project_name: str = PROJECT_NAME,
         deploy_model: bool = False,
         schedule: timedelta = None,
     ):
@@ -67,7 +65,6 @@ class Deployer:
         self._auth_url = auth_url
         self._username = username
         self._password = password
-        self._project_name = project_name
         self._api_server = api_server
         self._redis_db = REDIS_DATABASES[environment][dataset_name]
         self._session_token = session_token

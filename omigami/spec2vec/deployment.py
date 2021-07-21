@@ -8,6 +8,7 @@ from omigami.deployment import Deployer
 from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
+    PROJECT_NAME,
 )
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
@@ -28,6 +29,7 @@ class Spec2VecDeployer(Deployer):
         allowed_missing_percentage: float,
         n_decimals: int = 2,
         chunk_size: int = int(1e8),
+        project_name: str = PROJECT_NAME,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -37,6 +39,7 @@ class Spec2VecDeployer(Deployer):
         self._allowed_missing_percentage = allowed_missing_percentage
         self._n_decimals = n_decimals
         self._chunk_size = chunk_size
+        self._project_name = project_name
 
         self._input_dgw = FSInputDataGateway()
         self._spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
