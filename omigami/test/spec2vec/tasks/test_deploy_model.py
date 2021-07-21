@@ -10,7 +10,7 @@ from omigami.spec2vec.tasks import DeployModel, DeployModelParameters
 )
 def test_deploy_model_task():
     params = DeployModelParameters(
-        redis_db="2", ion_mode="neutral", overwrite=True, environment="dev"
+        redis_db="2", ion_mode="neutral", overwrite_model=True, environment="dev"
     )
     with Flow("test-flow") as test_flow:
         deploy_task = DeployModel(params)(registered_model={"model_uri": "uri"})

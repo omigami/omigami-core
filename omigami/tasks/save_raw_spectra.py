@@ -19,7 +19,7 @@ class SaveRawSpectraParameters:
         A InputDataaGateway that is able to load the gnps dataset
     spectrum_cleaner: SpectrumCleaner
         A SpectrumCleaner that performs some common cleaning
-    overwrite_all: bool = False
+    overwrite_all_spectra: bool = False
         If True, it overwrites all Spectra stored in the database that are passed to
         the function. Otherwise only adds new ones.
     """
@@ -27,7 +27,7 @@ class SaveRawSpectraParameters:
     spectrum_dgw: RedisSpectrumDataGateway
     input_dgw: InputDataGateway
     spectrum_cleaner: SpectrumCleaner
-    overwrite_all: bool = False
+    overwrite_all_spectra: bool = False
 
 
 class SaveRawSpectra(Task):
@@ -43,7 +43,7 @@ class SaveRawSpectra(Task):
         self._spectrum_dgw = save_parameters.spectrum_dgw
         self._input_dgw = save_parameters.input_dgw
         self._spectrum_cleaner = save_parameters.spectrum_cleaner
-        self._overwrite_all = save_parameters.overwrite_all
+        self._overwrite_all_spectra = save_parameters.overwrite_all_spectra
         config = merge_prefect_task_configs(kwargs)
 
         super().__init__(
@@ -66,7 +66,7 @@ class SaveRawSpectra(Task):
         spectra_from_file = self._input_dgw.load_spectrum(gnps_path)
         spectrum_ids = [sp["spectrum_id"] for sp in spectra_from_file]
 
-        if self._overwrite_all:
+        if self._overwrite_all_spectra:
             spectrum_ids_to_add = spectrum_ids
         else:
             redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
@@ -76,7 +76,7 @@ class SaveRawSpectra(Task):
         if len(spectrum_ids_to_add) > 0:
             self.logger.info(
                 f"Adding {len(spectrum_ids_to_add)} spectra to the db \n"
-                f"Overwrite: {self._overwrite_all}"
+                f"Overwrite: {self._overwrite_all_spectra}"
             )
 
             spectra_to_add = [

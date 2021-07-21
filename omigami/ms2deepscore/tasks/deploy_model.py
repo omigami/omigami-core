@@ -28,7 +28,7 @@ class DeployModel(Task):
     ):
         self._redis_db = deploy_parameters.redis_db
         self._environment = deploy_parameters.environment
-        self._overwrite = deploy_parameters.overwrite_model
+        self._overwrite_model = deploy_parameters.overwrite_model
         self._ion_mode = deploy_parameters.ion_mode
 
         if deploy_parameters.pretrained:
@@ -54,7 +54,7 @@ class DeployModel(Task):
             model_name=self._model_name,
             model_uri=model_uri,
             redis_db=self._redis_db,
-            overwrite_existing=self._overwrite,
+            overwrite_existing=self._overwrite_model,
         )
 
         self.logger.info(f"Model deployment finished")
