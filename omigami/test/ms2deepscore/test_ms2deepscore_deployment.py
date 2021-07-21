@@ -26,7 +26,7 @@ def test_deploy_pretrained_flow():
         deploy_model=True,
         overwrite_model=True,
         auth=True,
-        overwrite_all=False,
+        overwrite_all_spectra=False,
         **login_config,
     )
     flow_id = deployer.deploy_pretrained_flow(flow_name="running-dev")

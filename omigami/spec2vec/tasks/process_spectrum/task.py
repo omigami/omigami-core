@@ -19,7 +19,7 @@ from omigami.utils import merge_prefect_task_configs
 class ProcessSpectrumParameters:
     spectrum_dgw: Spec2VecRedisSpectrumDataGateway
     n_decimals: int = 2
-    overwrite_all: bool = True
+    overwrite_all_spectra: bool = True
 
 
 class ProcessSpectrum(Task):
@@ -32,7 +32,7 @@ class ProcessSpectrum(Task):
         self._input_dgw = input_dgw
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._n_decimals = process_parameters.n_decimals
-        self._overwrite_all = process_parameters.overwrite_all
+        self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
         self._processor = SpectrumProcessor()
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
@@ -56,8 +56,10 @@ class ProcessSpectrum(Task):
         return spectrum_ids
 
     def _get_spectrum_ids_to_add(self, spectrum_ids: List[str]) -> List[str]:
-        self.logger.info(f"Flag overwrite_all is set to {self._overwrite_all}.")
-        if self._overwrite_all:
+        self.logger.info(
+            f"Flag overwrite_all_spectra is set to {self._overwrite_all_spectra}."
+        )
+        if self._overwrite_all_spectra:
             spectrum_ids_to_add = spectrum_ids
         else:
             spectrum_ids_to_add = self._spectrum_dgw.list_missing_documents(

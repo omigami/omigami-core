@@ -19,7 +19,7 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
-    overwrite_all: bool = True
+    overwrite_all_spectra: bool = True
     is_pretrained_flow: bool = False
 
 
@@ -30,7 +30,7 @@ class ProcessSpectrum(Task):
         **kwargs,
     ):
         self._spectrum_dgw = process_parameters.spectrum_dgw
-        self._overwrite_all = process_parameters.overwrite_all
+        self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
         self._processor = SpectrumProcessor(process_parameters.is_pretrained_flow)
         self._spectrum_binner = MS2DeepScoreSpectrumBinner()
         config = merge_prefect_task_configs(kwargs)
@@ -54,8 +54,10 @@ class ProcessSpectrum(Task):
         return spectrum_ids
 
     def _get_spectrum_ids_to_add(self, spectrum_ids: List[str]) -> List[str]:
-        self.logger.info(f"Flag overwrite_all is set to {self._overwrite_all}.")
-        if self._overwrite_all:
+        self.logger.info(
+            f"Flag overwrite_all_spectra is set to {self._overwrite_all_spectra}."
+        )
+        if self._overwrite_all_spectra:
             spectrum_ids_to_add = spectrum_ids
         else:
             spectrum_ids_to_add = self._spectrum_dgw.list_missing_binned_spectra(
