@@ -47,8 +47,6 @@ class SpectrumProcessor(SpectrumCleaner):
                 spectrum = normalize_intensities(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
                 if process_reference_spectra:
-                    # TODO: investigate how to run this in parallel
-                    # spectrum = self._get_missing_inchis(spectrum)
                     spectrum = self._check_inchikey(spectrum)
 
                 if spectrum is not None:
@@ -68,6 +66,7 @@ class SpectrumProcessor(SpectrumCleaner):
         spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)
         return spectrum
 
+    #  not currently used (see issue MLOPS-361)
     def _get_missing_inchis(
         self,
         spectrum: Spectrum,
