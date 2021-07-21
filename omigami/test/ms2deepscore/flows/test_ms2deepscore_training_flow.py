@@ -47,6 +47,7 @@ def test_training_flow(flow_config):
         "CreateChunks",
         "SaveRawSpectra",
         "ProcessSpectrum",
+        "CalculateTanimotoScore",
     }
 
     flow_parameters = TrainingFlowParameters(
@@ -59,6 +60,8 @@ def test_training_flow(flow_config):
         ion_mode="positive",
         chunk_size=150000,
         overwrite_all_spectra=False,
+        scores_output_path="some-path",
+        n_bits=2048,
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -107,6 +110,8 @@ def test_run_training_flow(
         chunk_size=150000,
         ion_mode="positive",
         overwrite_all_spectra=True,
+        scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
+        n_bits=2048,
     )
 
     model_parameters = ModelGeneralParameters(
@@ -132,3 +137,5 @@ def test_run_training_flow(
     # assert "model" in os.listdir(tmpdir / "model-output")
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
+    assert fs.exists(tmpdir / "tanimoto_scores.pkl")
+    print(tmpdir)

@@ -10,6 +10,10 @@ from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.tasks import ProcessSpectrumParameters, ProcessSpectrum
+from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
+    CalculateTanimotoScoreParameters,
+    CalculateTanimotoScore,
+)
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
@@ -32,6 +36,8 @@ class TrainingFlowParameters:
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
+        scores_output_path: str,
+        n_bits: int,
         overwrite_all_spectra: bool,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
@@ -68,6 +74,10 @@ class TrainingFlowParameters:
 
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_dgw, overwrite_all_spectra
+        )
+
+        self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
+            scores_output_path, n_bits
         )
 
 
@@ -126,5 +136,9 @@ def build_training_flow(
         processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
             spectrum_ids_chunks
         )
+
+        scores_output_path = CalculateTanimotoScore(
+            flow_parameters.calculate_tanimoto_score
+        )(processed_ids_chunks)
 
     return training_flow

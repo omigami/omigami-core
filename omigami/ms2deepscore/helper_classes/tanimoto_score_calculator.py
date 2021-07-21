@@ -14,14 +14,17 @@ class TanimotoScoreCalculator:
     def __init__(self, spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway):
         self._spectrum_dgw = spectrum_dgw
 
-    def calculate(self, scores_output_path: str, n_bits: int = 2048) -> str:
-        binned_spectra = self._spectrum_dgw.read_binned_spectra()
+    def calculate(
+        self, spectrum_ids: List[str], scores_output_path: str, n_bits: int = 2048
+    ) -> str:
+        binned_spectra = self._spectrum_dgw.read_binned_spectra(spectrum_ids)
         unique_inchi_keys = self._get_unique_inchis(binned_spectra)
         tanimoto_scores = self._calculate_tanimoto_scores(unique_inchi_keys, n_bits)
         tanimoto_scores.to_pickle(scores_output_path)
         return scores_output_path
 
-    def _get_unique_inchis(self, binned_spectra: List[BinnedSpectrum]) -> pd.Series:
+    @staticmethod
+    def _get_unique_inchis(binned_spectra: List[BinnedSpectrum]) -> pd.Series:
         inchi_keys, inchi = zip(
             *[
                 (spectrum.get("inchikey")[:14], spectrum.get("inchi"))
@@ -36,9 +39,8 @@ class TanimotoScoreCalculator:
 
         return most_common_inchi["inchi"]
 
-    def _calculate_tanimoto_scores(
-        self, inchis: pd.Series, n_bits: int
-    ) -> pd.DataFrame:
+    @staticmethod
+    def _calculate_tanimoto_scores(inchis: pd.Series, n_bits: int) -> pd.DataFrame:
         def _derive_daylight_fingerprint(df, nbits: int):
             mol = Chem.MolFromInchi(df)
             return Chem.RDKFingerprint(mol, fpSize=nbits)

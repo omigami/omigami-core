@@ -69,8 +69,9 @@ def test_get_tanimoto_scores(inchis, tanimoto_calculator):
     assert scores.notnull().all().all()
 
 
-def test_calculate(binned_spectra_stored, tanimoto_calculator, tmpdir):
+def test_calculate(binned_spectra_stored, tanimoto_calculator, binned_spectra, tmpdir):
+    spectrum_ids = [spectrum.get("spectrum_id") for spectrum in binned_spectra]
     path = f"{tmpdir}/tanimoto_scores.pkl"
-    tanimoto_calculator.calculate(path)
+    tanimoto_calculator.calculate(spectrum_ids, path)
 
     assert os.path.exists(path)
