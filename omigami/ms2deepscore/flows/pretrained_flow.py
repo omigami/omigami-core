@@ -27,7 +27,7 @@ class PretrainedFlowParameters:
         self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, overwrite_all_spectra
+            spectrum_dgw, overwrite_all_spectra, is_pretrained_flow=True
         )
         self.deploying = DeployModelParameters(
             redis_db,
