@@ -3,14 +3,13 @@ from pathlib import Path
 
 import boto3
 import ijson
+import omigami
+import omigami.config
+import pandas as pd
 import pytest
 import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
-from pytest_redis import factories
-
-import omigami
-import omigami.config
 from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -19,6 +18,7 @@ from omigami.spec2vec.config import (
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
 )
+from pytest_redis import factories
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -213,6 +213,5 @@ def binned_spectra_tanimoto_score():
     path = str(
         ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_binned_spectra_tanimoto_score.pkl"
     )
-    with open(path, "rb") as handle:
-        tanimoto_score = pickle.load(handle)
+    tanimoto_score = pd.read_pickle(path, compression="gzip")
     return tanimoto_score
