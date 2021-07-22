@@ -2,8 +2,6 @@ import os
 
 import pytest
 from mock import MagicMock
-from prefect import Flow
-
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -12,12 +10,13 @@ from omigami.ms2deepscore.tasks.process_spectrum import (
     ProcessSpectrum,
 )
 from omigami.test.conftest import ASSETS_DIR
+from prefect import Flow
 
 
 def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
     spectrum_gtw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = common_cleaned_data
-    parameters = ProcessSpectrumParameters(spectrum_gtw, True)
+    parameters = ProcessSpectrumParameters(spectrum_gtw)
 
     with Flow("test-flow") as test_flow:
         ProcessSpectrum(parameters)(spectrum_ids)
@@ -52,7 +51,7 @@ def test_process_spectrum(
     mock_default_config,
 ):
     spectrum_gtw = MS2DeepScoreRedisSpectrumDataGateway()
-    parameters = ProcessSpectrumParameters(spectrum_gtw, False)
+    parameters = ProcessSpectrumParameters(spectrum_gtw)
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(parameters)(spectrum_ids)
 
