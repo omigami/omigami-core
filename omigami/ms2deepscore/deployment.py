@@ -29,6 +29,8 @@ class MS2DeepScoreDeployer(Deployer):
         mlflow_server: str = MLFLOW_SERVER,
         spectrum_ids_chunk_size: int = 1000,
         project_name: str = PROJECT_NAME,
+        fingerprint_n_bits: int = 2048,
+        scores_decimals: int = 5,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -37,6 +39,8 @@ class MS2DeepScoreDeployer(Deployer):
         self._input_dgw = FSInputDataGateway()
         self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
         self._project_name = project_name
+        self._fingerprint_n_bits = fingerprint_n_bits
+        self._scores_decimals = scores_decimals
 
     def deploy_pretrained_flow(
         self,
@@ -116,6 +120,7 @@ class MS2DeepScoreDeployer(Deployer):
         )
 
         spectrum_cleaner = SpectrumCleaner()
+        scores_output_path = MODEL_DIRECTORIES[self._environment]["scores"]
 
         flow_parameters = TrainingFlowParameters(
             input_dgw=self._input_dgw,
@@ -129,6 +134,9 @@ class MS2DeepScoreDeployer(Deployer):
             overwrite_all_spectra=self._overwrite_all_spectra,
             source_uri=self._source_uri,
             spectrum_cleaner=spectrum_cleaner,
+            scores_output_path=scores_output_path,
+            fingerprint_n_bits=self._fingerprint_n_bits,
+            scores_decimals=self._scores_decimals,
         )
 
         model_parameters = ModelGeneralParameters(

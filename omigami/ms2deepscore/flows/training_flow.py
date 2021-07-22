@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from datetime import timedelta, date, datetime
 
-from prefect import Flow
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
-
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.tasks import ProcessSpectrumParameters, ProcessSpectrum
+from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
+    CalculateTanimotoScoreParameters,
+    CalculateTanimotoScore,
+)
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
@@ -19,6 +19,9 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
+from prefect import Flow
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
 
 
 class TrainingFlowParameters:
@@ -32,6 +35,9 @@ class TrainingFlowParameters:
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
+        scores_output_path: str,
+        fingerprint_n_bits: int,
+        scores_decimals: int,
         overwrite_all_spectra: bool,
         overwrite_model: bool,
         schedule_task_days: int = 30,
@@ -70,6 +76,10 @@ class TrainingFlowParameters:
 
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_dgw, overwrite_all_spectra
+        )
+
+        self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
+            scores_output_path, fingerprint_n_bits, scores_decimals
         )
 
 
@@ -129,5 +139,9 @@ def build_training_flow(
         processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
             spectrum_ids_chunks
         )
+
+        scores_output_path = CalculateTanimotoScore(
+            flow_parameters.calculate_tanimoto_score
+        )(processed_ids_chunks)
 
     return training_flow
