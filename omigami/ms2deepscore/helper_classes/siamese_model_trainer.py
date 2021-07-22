@@ -6,8 +6,9 @@ import pandas as pd
 from ms2deepscore import SpectrumBinner, BinnedSpectrum
 from ms2deepscore.data_generators import DataGeneratorAllSpectrums
 from ms2deepscore.models import SiameseModel
-from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from tensorflow import keras
+
+from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 
 log = getLogger(__name__)
 
@@ -36,7 +37,7 @@ class SiameseModelTrainer:
         spectrum_ids: List[str],
         scores_output_path: str,
         spectrum_binner: SpectrumBinner,
-    ):
+    ) -> SiameseModel:
         binned_spectra = self._spectrum_gtw.read_binned_spectra(spectrum_ids)
         tanimoto_scores = pd.read_pickle(scores_output_path, compression="gzip")
 
@@ -56,7 +57,6 @@ class SiameseModelTrainer:
         model.compile(
             loss="mse", optimizer=keras.optimizers.Adam(lr=self._learning_rate)
         )
-        # model.summary()
         model.fit(
             train_data_gen, validation_data=validation_data_gen, epochs=self._epochs
         )

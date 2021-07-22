@@ -1,4 +1,7 @@
+import os
 from unittest.mock import Mock
+
+import pytest
 
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
@@ -6,15 +9,15 @@ from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
 )
 
 
-def test_train_validation_test_split(binned_spectra, binned_spectra_tanimoto_score):
+def test_train_validation_test_split(binned_spectra_to_train, tanimoto_scores):
     split_ratio = (0.8, 0.1, 0.1)
     trainer = SiameseModelTrainer(
         Mock(MS2DeepScoreRedisSpectrumDataGateway), split_ratio=split_ratio
     )
     train, validation, test = trainer._train_validation_test_split(
-        binned_spectra, binned_spectra_tanimoto_score, 100
+        binned_spectra_to_train, tanimoto_scores, 100
     )
-    n_inchikeys = len(binned_spectra_tanimoto_score)
+    n_inchikeys = len(tanimoto_scores)
 
     train_inchikeys = set(
         [spectrum.get("inchikey")[:14] for spectrum in train.binned_spectrums]
@@ -34,13 +37,19 @@ def test_train_validation_test_split(binned_spectra, binned_spectra_tanimoto_sco
     assert len(test_inchikeys) == n_test
 
 
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
 def test_train_model(
-    binned_spectra_stored,
-    spectrum_ids,
-    binned_spectra_tanimoto_score_path,
+    binned_spectra_to_train_stored,
+    tanimoto_scores_path,
     fitted_spectrum_binner,
+    binned_spectra_to_train,
 ):
-    trainer = SiameseModelTrainer(MS2DeepScoreRedisSpectrumDataGateway())
-    trainer.train(
-        spectrum_ids, binned_spectra_tanimoto_score_path, fitted_spectrum_binner
-    )
+    layer_base_dims = (600, 500, 400)
+    trainer = SiameseModelTrainer(MS2DeepScoreRedisSpectrumDataGateway(), epochs=5)
+    model = trainer.train([], tanimoto_scores_path, fitted_spectrum_binner)
+
+    assert len(model.model.layers) == len(layer_base_dims) + 1
+    assert model.input_dim == len(fitted_spectrum_binner.known_bins)
