@@ -1,8 +1,9 @@
+from typing import Dict, List, Optional
+
 from matchms import Spectrum
 from matchms.filtering import (
     default_filters,
     add_parent_mass,
-    normalize_intensities,
     harmonize_undefined_inchikey,
     harmonize_undefined_inchi,
     harmonize_undefined_smiles,
@@ -10,18 +11,39 @@ from matchms.filtering import (
     derive_inchi_from_smiles,
     derive_smiles_from_inchi,
     derive_inchikey_from_inchi,
-    derive_adduct_from_name,
 )
+from matchms.importing.load_from_json import as_spectrum
 
 
 class SpectrumCleaner:
-    @staticmethod
-    def _apply_filters(spectrum: Spectrum) -> Spectrum:
+    def clean(self, spectra: List[Dict]) -> List[Spectrum]:
+        processed_spectra = []
+        for spectrum in spectra:
+            spectrum = as_spectrum(spectrum)
+            spectrum = self._common_cleaning(spectrum)
+            if spectrum is not None:
+                processed_spectra.append(spectrum)
+        return processed_spectra
+
+    def _common_cleaning(self, spectrum: Spectrum) -> Spectrum:
+        spectrum = self._apply_filters(spectrum)
+        spectrum = self._harmonize_spectrum(spectrum)
+        spectrum = self._convert_metadata(spectrum)
+        return spectrum
+
+    def _apply_filters(self, spectrum: Spectrum) -> Spectrum:
         """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
-        spectrum = derive_adduct_from_name(spectrum)
         spectrum = add_parent_mass(spectrum)
-        spectrum = normalize_intensities(spectrum)
+        spectrum = self._filter_negative_intensities(spectrum)
+        return spectrum
+
+    def _filter_negative_intensities(self, spectrum: Spectrum) -> Optional[Spectrum]:
+        """Will return None if the given Spectrum's intensity has negative values."""
+
+        if spectrum and any(spectrum.peaks.intensities < 0):
+            return None
+
         return spectrum
 
     @staticmethod

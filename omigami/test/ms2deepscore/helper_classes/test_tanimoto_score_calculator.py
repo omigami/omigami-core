@@ -1,10 +1,10 @@
 import os
-import string
 import random
+import string
 from copy import deepcopy
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -60,7 +60,7 @@ def test_get_unique_inchi(
 
 
 def test_get_tanimoto_scores(inchis, tanimoto_calculator):
-    scores = tanimoto_calculator._calculate_tanimoto_scores(inchis, 2048)
+    scores = tanimoto_calculator._calculate_tanimoto_scores(inchis)
 
     assert isinstance(scores, pd.DataFrame)
     assert (np.diag(scores) == 1).all()
@@ -68,8 +68,9 @@ def test_get_tanimoto_scores(inchis, tanimoto_calculator):
     assert scores.notnull().all().all()
 
 
-def test_calculate(binned_spectra_stored, tanimoto_calculator, tmpdir):
+def test_calculate(binned_spectra_stored, tanimoto_calculator, binned_spectra, tmpdir):
+    spectrum_ids = [spectrum.get("spectrum_id") for spectrum in binned_spectra]
     path = f"{tmpdir}/tanimoto_scores.pkl"
-    tanimoto_calculator.calculate(path)
+    tanimoto_calculator.calculate(spectrum_ids, path)
 
     assert os.path.exists(path)

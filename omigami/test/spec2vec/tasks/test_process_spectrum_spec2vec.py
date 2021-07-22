@@ -16,13 +16,14 @@ from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
 )
 
 
-def test_process_spectrum_calls(local_gnps_small_json, spectrum_ids):
+def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
     spectrum_gtw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
+    spectrum_gtw.read_spectra.return_value = common_cleaned_data
     input_gtw = FSInputDataGateway()
-    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
-    spectrum_gtw.list_existing_spectra.side_effect = lambda x: x
+    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, True)
+
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(input_gtw, parameters)(local_gnps_small_json)
+        process_task = ProcessSpectrum(input_gtw, parameters)(spectrum_ids)
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -37,34 +38,30 @@ def test_process_spectrum_calls(local_gnps_small_json, spectrum_ids):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-@pytest.mark.slow
-def test_process_spectrum(local_gnps_small_json, spectrum_ids, mock_default_config):
+def test_process_spectrum(spectrum_ids, spectra_stored, mock_default_config):
     spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
-    spectrum_gtw.delete_spectra(spectrum_ids)
     parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
     input_gtw = FSInputDataGateway()
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(input_gtw, parameters)(local_gnps_small_json)
+        process_task = ProcessSpectrum(input_gtw, parameters)(spectrum_ids)
 
     res = test_flow.run()
     data = res.result[process_task].result
 
     assert set(data) == set(spectrum_ids)
-    assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids)
 
 
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-@pytest.mark.slow
-def test_process_spectrum_map(local_gnps_small_json, spectrum_ids, mock_default_config):
+def test_process_spectrum_map(spectrum_ids, spectra_stored, mock_default_config):
     spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
     input_gtw = FSInputDataGateway()
     parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
     chunked_paths = [
-        local_gnps_small_json,
-        local_gnps_small_json,
+        spectrum_ids[:50],
+        spectrum_ids[50:],
     ]
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(input_gtw, parameters).map(chunked_paths)
@@ -72,15 +69,15 @@ def test_process_spectrum_map(local_gnps_small_json, spectrum_ids, mock_default_
     res = test_flow.run()
     data = res.result[process_task].result
 
-    assert set(data[0]) == set(spectrum_ids)
-    assert set(data[1]) == set(spectrum_ids)
+    assert set(data[0]) == set(spectrum_ids[:50])
+    assert set(data[1]) == set(spectrum_ids[50:])
     assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids)
 
 
-def test_clean_data(loaded_data):
+def test_clean_data(common_cleaned_data):
     dc = SpectrumProcessor()
 
-    cleaned_data = dc.create_documents(loaded_data)
+    cleaned_data = dc.create_documents(common_cleaned_data)
 
     assert isinstance(cleaned_data[0], SpectrumDocumentData)
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None

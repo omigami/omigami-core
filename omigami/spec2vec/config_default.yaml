@@ -1,3 +1,5 @@
+prefect:
+  project: "spec2vec"
 storage:
   model_folder:
     dev: "s3://omigami-dev/spec2vec/mlflow"
@@ -7,3 +9,6 @@ storage:
     spectrum_hashes: "spectrum_data"
     document_hashes: "document_data"
     embedding_hashes: "embedding_data"
+    env_vars:
+      redis_host: "REDIS_HOST"
+      redis_db: "REDIS_DB"

@@ -2,50 +2,57 @@ from prefect import Flow
 
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
-from omigami.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-)
+from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.tasks import (
     DeployModel,
     DeployModelParameters,
     RegisterModel,
-)
-from omigami.ms2deepscore.tasks.process_spectrum import (
-    ProcessSpectrum,
     ProcessSpectrumParameters,
+    ProcessSpectrum,
+    ChunkingParameters,
+    CreateSpectrumIDsChunks,
 )
 
 
-class MinimalFlowParameters:
+class PretrainedFlowParameters:
     def __init__(
         self,
         input_dgw: InputDataGateway,
-        spectrum_dgw: RedisSpectrumDataGateway,
+        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
-        overwrite: bool = False,
+        spectrum_ids_chunk_size: int,
+        overwrite_model: bool = False,
         environment: str = "dev",
-        skip_if_exists: bool = True,
+        overwrite_all_spectra: bool = False,
         redis_db: str = "0",
     ):
         self.input_dgw = input_dgw
+        self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
-        self.deploying = DeployModelParameters(redis_db, overwrite, environment)
+        self.chunking = ChunkingParameters(spectrum_ids_chunk_size)
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, self.model_uri, skip_if_exists
+            spectrum_dgw, overwrite_all_spectra
+        )
+        self.deploying = DeployModelParameters(
+            redis_db,
+            ion_mode="positive",
+            overwrite_model=overwrite_model,
+            environment=environment,
+            pretrained=True,
         )
 
 
-def build_minimal_flow(
+def build_pretrained_flow(
     project_name: str,
     flow_name: str,
     flow_config: FlowConfig,
-    flow_parameters: MinimalFlowParameters,
+    flow_parameters: PretrainedFlowParameters,
     mlflow_output_dir: str,
     mlflow_server: str,
     deploy_model: bool = False,
 ) -> Flow:
     """
-    Builds a minimal MS2DeepScore machine learning pipeline. It downloads a pre
+    Builds a pretrained MS2DeepScore machine learning pipeline. It downloads a pre
     trained model, registers it and deploys it to the API.
 
 
@@ -72,7 +79,14 @@ def build_minimal_flow(
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
         ms2deepscore_model_path = flow_parameters.model_uri
 
-        ProcessSpectrum(flow_parameters.process_spectrum)()
+        spectrum_ids_chunks = CreateSpectrumIDsChunks(
+            flow_parameters.spectrum_dgw,
+            flow_parameters.chunking,
+        )()
+
+        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
+            spectrum_ids_chunks
+        )
 
         model_registry = RegisterModel(
             project_name,

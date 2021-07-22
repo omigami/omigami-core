@@ -1,147 +1,113 @@
-from datetime import timedelta, datetime
-from typing import Optional
+from datetime import datetime
 
-from prefect import Client
-from typing_extensions import Literal
-
-from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
-    API_SERVER_URLS,
-    PROJECT_NAME,
-    MLFLOW_SERVER,
-    REDIS_DATABASES,
     S3_BUCKETS,
-    IonModes,
     DATASET_IDS,
 )
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.deployment import Deployer
+from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
+    PROJECT_NAME,
 )
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.gateways.input_data_gateway import FSInputDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
+from omigami.spectrum_cleaner import SpectrumCleaner
 
 
-def deploy_training_flow(
-    image: str,
-    iterations: int,
-    window: int,
-    intensity_weighting_power: float,
-    allowed_missing_percentage: float,
-    dataset_name: str,
-    n_decimals: int = 2,
-    chunk_size: int = int(1e8),
-    ion_mode: IonModes = "positive",
-    skip_if_exists: bool = True,
-    source_uri: str = SOURCE_URI_PARTIAL_GNPS,
-    project_name: str = PROJECT_NAME,
-    mlflow_server: str = MLFLOW_SERVER,
-    flow_name: str = "spec2vec-training-flow",
-    environment: Literal["dev", "prod"] = "dev",
-    deploy_model: bool = False,
-    overwrite: bool = False,
-    schedule: timedelta = None,
-    auth: bool = False,
-    auth_url: Optional[str] = None,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
-):
-    """
-    Deploys a model training flow to Prefect cloud and optionally deploys it as a Seldon deployment.
+class Spec2VecDeployer(Deployer):
+    def __init__(
+        self,
+        iterations: int,
+        window: int,
+        intensity_weighting_power: float,
+        allowed_missing_percentage: float,
+        n_decimals: int = 2,
+        chunk_size: int = int(1e8),
+        project_name: str = PROJECT_NAME,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self._iterations = iterations
+        self._window = window
+        self._intensity_weighting_power = intensity_weighting_power
+        self._allowed_missing_percentage = allowed_missing_percentage
+        self._n_decimals = n_decimals
+        self._chunk_size = chunk_size
+        self._project_name = project_name
 
-    1) authenticate user credentials using the auth service endpoint
-    2) process database and filesystem configs
-    3) instantiate gateways and task parameters
-    4) create prefect flow configuration
-    5) builds the training flow graph
-    6) pushes the flow to prefect cloud
+        self._input_dgw = FSInputDataGateway()
+        self._spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
+        self._spectrum_cleaner = SpectrumCleaner()
 
-    """
+    def deploy_training_flow(
+        self,
+        flow_name: str = "spec2vec-training-flow",
+    ):
+        """
+        Deploys a model training flow to Prefect cloud and optionally deploys it as a Seldon deployment.
 
-    # authentication step
-    if auth:
-        authenticator = KratosAuthenticator(auth_url, username, password)
-        session_token = authenticator.authenticate()
-        client = Client(
-            api_server=API_SERVER_URLS[environment], api_token=session_token
-        )
-    else:
-        client = Client(api_server=API_SERVER_URLS[environment])
-    client.create_project(project_name)
+        1) authenticate user credentials using the auth service endpoint
+        2) process database and filesystem configs
+        3) instantiate gateways and task parameters
+        4) create prefect flow configuration
+        5) builds the training flow graph
+        6) pushes the flow to prefect cloud
 
-    # validates parameters and use them to get task configuration variables
-    if environment not in ["dev", "prod"]:
-        raise ValueError("Environment not valid. Should be either 'dev' or 'prod'.")
+        """
+        client = self._authenticate()
+        client.create_project(self._project_name)
 
-    if dataset_name not in DATASET_IDS[environment].keys():
-        raise ValueError(
-            f"No such option available for reference dataset: {dataset_name}. Available options are:"
-            f"{list(DATASET_IDS[environment].keys())}."
+        model_output_dir = MODEL_DIRECTORIES[self._environment]
+        dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(
+            date=datetime.today()
         )
 
-    model_output_dir = MODEL_DIRECTORIES[environment]
-    dataset_id = DATASET_IDS[environment][dataset_name].format(date=datetime.today())
-    redis_db = REDIS_DATABASES[environment][dataset_name]
-    output_dir = S3_BUCKETS[environment]
+        output_dir = S3_BUCKETS[self._environment]
 
-    input_dgw = FSInputDataGateway()
-    spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
+        flow_parameters = TrainingFlowParameters(
+            input_dgw=self._input_dgw,
+            spectrum_dgw=self._spectrum_dgw,
+            spectrum_cleaner=self._spectrum_cleaner,
+            source_uri=self._source_uri,
+            output_dir=output_dir,
+            dataset_id=dataset_id,
+            chunk_size=self._chunk_size,
+            ion_mode=self._ion_mode,
+            n_decimals=self._n_decimals,
+            overwrite_all_spectra=self._overwrite_all_spectra,
+            iterations=self._iterations,
+            window=self._window,
+            overwrite_model=self._overwrite_model,
+        )
 
-    flow_parameters = TrainingFlowParameters(
-        input_dgw=input_dgw,
-        spectrum_dgw=spectrum_dgw,
-        source_uri=source_uri,
-        output_dir=output_dir,
-        dataset_id=dataset_id,
-        chunk_size=chunk_size,
-        ion_mode=ion_mode,
-        n_decimals=n_decimals,
-        skip_if_exists=skip_if_exists,
-        iterations=iterations,
-        window=window,
-        overwrite=overwrite,
-    )
+        flow_config = self._make_flow_config()
 
-    flow_config = make_flow_config(
-        image=image,
-        storage_type=PrefectStorageMethods.S3,
-        executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db=redis_db,
-        environment=environment,
-        schedule=schedule,
-    )
+        flow = build_training_flow(
+            self._project_name,
+            flow_name,
+            flow_config,
+            flow_parameters,
+            intensity_weighting_power=self._intensity_weighting_power,
+            allowed_missing_percentage=self._allowed_missing_percentage,
+            model_output_dir=model_output_dir,
+            mlflow_server=self._mlflow_server,
+            deploy_model=self._deploy_model,
+        )
 
-    flow = build_training_flow(
-        project_name,
-        flow_name,
-        flow_config,
-        flow_parameters,
-        intensity_weighting_power=intensity_weighting_power,
-        allowed_missing_percentage=allowed_missing_percentage,
-        model_output_dir=model_output_dir,
-        mlflow_server=mlflow_server,
-        deploy_model=deploy_model,
-    )
+        training_flow_id = client.register(
+            flow,
+            project_name=self._project_name,
+        )
 
-    training_flow_id = client.register(
-        flow,
-        project_name=project_name,
-    )
+        flow_run_id = client.create_flow_run(
+            flow_id=training_flow_id,
+            run_name=f"run {self._project_name}",
+        )
 
-    flow_run_id = client.create_flow_run(
-        flow_id=training_flow_id,
-        run_name=f"run {project_name}",
-    )
-
-    return flow_run_id
+        return flow_run_id
