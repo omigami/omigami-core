@@ -1,8 +1,8 @@
 import pickle
 
+import pandas as pd
 import pytest
 from ms2deepscore.models import load_model
-
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
 )
@@ -111,3 +111,26 @@ def cleaned_data_ms2deep_score():
     with open(path, "rb") as handle:
         cleaned_data = pickle.load(handle)
     return cleaned_data
+
+
+@pytest.fixture()
+def binned_spectra_tanimoto_score_path():
+    return str(
+        ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_binned_spectra_tanimoto_score.pkl"
+    )
+
+
+@pytest.fixture()
+def binned_spectra_tanimoto_score(binned_spectra_tanimoto_score_path):
+    tanimoto_score = pd.read_pickle(
+        binned_spectra_tanimoto_score_path, compression="gzip"
+    )
+    return tanimoto_score
+
+
+@pytest.fixture()
+def fitted_spectrum_binner():
+    path = str(ASSETS_DIR / "ms2deepscore" / "fitted_spectrum_binner.pkl")
+    with open(path, "rb") as f:
+        spectrum_binner = pickle.load(f)
+    return spectrum_binner

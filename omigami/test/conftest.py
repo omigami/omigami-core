@@ -5,7 +5,6 @@ import boto3
 import ijson
 import omigami
 import omigami.config
-import pandas as pd
 import pytest
 import s3fs
 from drfs.filesystems import get_fs
@@ -206,12 +205,3 @@ def clean_chunk_files():
     fs = get_fs(str(ASSETS_DIR))
     _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "positive")]
     _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "negative")]
-
-
-@pytest.fixture()
-def binned_spectra_tanimoto_score():
-    path = str(
-        ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_binned_spectra_tanimoto_score.pkl"
-    )
-    tanimoto_score = pd.read_pickle(path, compression="gzip")
-    return tanimoto_score
