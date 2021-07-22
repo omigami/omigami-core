@@ -38,7 +38,7 @@ def test_deploy_training_flow():
         project_name="spec2vec",
         mlflow_server=MLFLOW_SERVER,
         deploy_model=True,
-        overwrite=True,
+        overwrite_model=True,
         auth=True,
         **login_config,
     )

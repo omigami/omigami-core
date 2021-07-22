@@ -1,3 +1,5 @@
+from prefect import Flow
+
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
@@ -8,7 +10,6 @@ from omigami.ms2deepscore.tasks import (
     ProcessSpectrumParameters,
     ProcessSpectrum,
 )
-from prefect import Flow
 
 
 class PretrainedFlowParameters:
@@ -35,8 +36,6 @@ class PretrainedFlowParameters:
             environment=environment,
             pretrained=True,
         )
-        self.process_spectrum = ProcessSpectrumParameters(spectrum_dgw)
-        self.deploying = DeployModelParameters(redis_db, overwrite, environment)
 
 
 def build_pretrained_flow(
@@ -76,7 +75,7 @@ def build_pretrained_flow(
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
         ms2deepscore_model_path = flow_parameters.model_uri
 
-        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum)()
+        ProcessSpectrum(flow_parameters.process_spectrum)()
 
         model_registry = RegisterModel(
             project_name,
