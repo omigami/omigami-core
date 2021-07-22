@@ -17,7 +17,6 @@ def test_train_model(
     tmpdir, binned_spectra_to_train_stored, tanimoto_scores_path, fitted_spectrum_binner
 ):
     model_path = f"{tmpdir}/model.hdf5"
-    print(model_path)
     parameters = TrainModelParameters(model_path, epochs=2)
 
     with Flow("test") as flow:

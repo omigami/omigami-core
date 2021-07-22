@@ -24,6 +24,7 @@ class PretrainedFlowParameters:
         overwrite_model: bool = False,
         environment: str = "dev",
         overwrite_all_spectra: bool = False,
+        spectrum_binner_n_bins: int = 10000,
         redis_db: str = "0",
     ):
         self.input_dgw = input_dgw
@@ -31,7 +32,10 @@ class PretrainedFlowParameters:
         self.model_uri = model_uri
         self.chunking = ChunkingParameters(spectrum_ids_chunk_size)
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, overwrite_all_spectra
+            spectrum_dgw,
+            overwrite_all_spectra,
+            is_pretrained_flow=True,
+            n_bins=spectrum_binner_n_bins,
         )
         self.deploying = DeployModelParameters(
             redis_db,

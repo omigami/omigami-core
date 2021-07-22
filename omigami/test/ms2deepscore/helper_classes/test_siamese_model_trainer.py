@@ -6,31 +6,41 @@ import pytest
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
     SiameseModelTrainer,
+    SplitRatio,
 )
 
 
 def test_train_validation_test_split(binned_spectra_to_train, tanimoto_scores):
-    split_ratio = (0.8, 0.1, 0.1)
+    split_ratio = SplitRatio(0.8, 0.1, 0.1)
     trainer = SiameseModelTrainer(
         Mock(MS2DeepScoreRedisSpectrumDataGateway), split_ratio=split_ratio
     )
-    train, validation, test = trainer._train_validation_test_split(
+    generators = trainer._train_validation_test_split(
         binned_spectra_to_train, tanimoto_scores, 100
     )
     n_inchikeys = len(tanimoto_scores)
 
     train_inchikeys = set(
-        [spectrum.get("inchikey")[:14] for spectrum in train.binned_spectrums]
+        [
+            spectrum.get("inchikey")[:14]
+            for spectrum in generators["training"].binned_spectrums
+        ]
     )
     validation_inchikeys = set(
-        [spectrum.get("inchikey")[:14] for spectrum in validation.binned_spectrums]
+        [
+            spectrum.get("inchikey")[:14]
+            for spectrum in generators["validation"].binned_spectrums
+        ]
     )
     test_inchikeys = set(
-        [spectrum.get("inchikey")[:14] for spectrum in test.binned_spectrums]
+        [
+            spectrum.get("inchikey")[:14]
+            for spectrum in generators["testing"].binned_spectrums
+        ]
     )
 
-    n_train = int(split_ratio[0] * n_inchikeys)
-    n_validation = int(split_ratio[1] * n_inchikeys)
+    n_train = int(split_ratio.train * n_inchikeys)
+    n_validation = int(split_ratio.validation * n_inchikeys)
     n_test = n_inchikeys - n_validation - n_train
     assert len(train_inchikeys) == n_train
     assert len(validation_inchikeys) == n_validation

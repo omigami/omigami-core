@@ -9,6 +9,7 @@ from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
 )
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
     SiameseModelTrainer,
+    SplitRatio,
 )
 from omigami.utils import merge_prefect_task_configs
 
@@ -21,7 +22,7 @@ class TrainModelParameters:
     layer_base_dims: Tuple[int] = (600, 500, 400)
     embedding_dim: int = 400
     dropout_rate: float = 0.2
-    split_ratio: Tuple[float, float, float] = (0.9, 0.05, 0.05)
+    split_ratio: SplitRatio = SplitRatio()
 
 
 class TrainModel(Task):
