@@ -64,4 +64,4 @@ class ProcessSpectrum(Task):
         cleaned_spectra = self._processor.process_spectra(
             spectra, process_reference_spectra=True, progress_logger=progress_logger
         )
-        return self._spectrum_binner.bin_spectra(cleaned_spectra)
+        return self._spectrum_binner.bin_spectra(cleaned_spectra, logger=self.logger)
