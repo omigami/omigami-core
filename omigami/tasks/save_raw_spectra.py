@@ -89,4 +89,9 @@ class SaveRawSpectra(Task):
 
             self._spectrum_dgw.write_raw_spectra(spectra_to_add)
 
+            cleaned_spectrum_ids_to_add = [
+                sp.metadata["spectrum_id"] for sp in spectra_to_add
+            ]
+            return cleaned_spectrum_ids_to_add
+
         return spectrum_ids
