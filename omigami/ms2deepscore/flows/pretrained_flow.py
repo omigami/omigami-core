@@ -9,8 +9,6 @@ from omigami.ms2deepscore.tasks import (
     RegisterModel,
     ProcessSpectrumParameters,
     ProcessSpectrum,
-    ChunkingParameters,
-    CreateSpectrumIDsChunks,
 )
 
 
@@ -20,7 +18,6 @@ class PretrainedFlowParameters:
         input_dgw: InputDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
-        spectrum_ids_chunk_size: int,
         overwrite_model: bool = False,
         environment: str = "dev",
         overwrite_all_spectra: bool = False,
@@ -30,7 +27,6 @@ class PretrainedFlowParameters:
         self.input_dgw = input_dgw
         self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
-        self.chunking = ChunkingParameters(spectrum_ids_chunk_size)
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_dgw,
             overwrite_all_spectra,
@@ -83,14 +79,7 @@ def build_pretrained_flow(
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
         ms2deepscore_model_path = flow_parameters.model_uri
 
-        spectrum_ids_chunks = CreateSpectrumIDsChunks(
-            flow_parameters.spectrum_dgw,
-            flow_parameters.chunking,
-        )()
-
-        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
-            spectrum_ids_chunks
-        )
+        ProcessSpectrum(flow_parameters.process_spectrum)()
 
         model_registry = RegisterModel(
             project_name,

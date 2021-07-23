@@ -38,37 +38,21 @@ class ProcessSpectrum(Task):
         super().__init__(**config)
 
     def run(self, spectrum_ids: Set[str] = None) -> Set[str]:
+        if not spectrum_ids:
+            spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
-        spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
-        if spectrum_ids_to_add:
-            binned_spectra = self._get_binned_spectra(spectrum_ids_to_add)
-            if binned_spectra:
-                self.logger.info(
-                    f"Finished processing {len(binned_spectra)} binned spectra. "
-                    f"Saving into spectrum database."
-                )
-                self._spectrum_dgw.write_binned_spectra(binned_spectra)
-                return {sp.metadata["spectrum_id"] for sp in binned_spectra}
+        binned_spectra = self._get_binned_spectra(spectrum_ids)
+        if binned_spectra:
+            self.logger.info(
+                f"Finished processing {len(binned_spectra)} binned spectra. "
+                f"Saving into spectrum database."
+            )
+            self._spectrum_dgw.write_binned_spectra(binned_spectra)
+            return {sp.get("spectrum_id") for sp in binned_spectra}
 
         self.logger.info("No new spectra have been processed.")
-        return spectrum_ids
-
-    def _get_spectrum_ids_to_add(self, spectrum_ids: List[str]) -> List[str]:
-        self.logger.info(
-            f"Flag overwrite_all_spectra is set to {self._overwrite_all_spectra}."
-        )
-        if self._overwrite_all_spectra:
-            spectrum_ids_to_add = spectrum_ids
-        else:
-            spectrum_ids_to_add = self._spectrum_dgw.list_missing_binned_spectra(
-                spectrum_ids
-            )
-            self.logger.info(
-                f"{len(spectrum_ids_to_add)} out of {len(spectrum_ids)} spectra are "
-                f"new and will be processed. "
-            )
-        return spectrum_ids_to_add
+        return set(spectrum_ids)
 
     def _get_binned_spectra(self, spectrum_ids: List[str]):
         spectra = self._spectrum_dgw.read_spectra(spectrum_ids)
@@ -81,4 +65,4 @@ class ProcessSpectrum(Task):
         cleaned_spectra = self._processor.process_spectra(
             spectra, process_reference_spectra=True, progress_logger=progress_logger
         )
-        return self._spectrum_binner.bin_spectra(cleaned_spectra)
+        return self._spectrum_binner.bin_spectra(cleaned_spectra, logger=self.logger)

@@ -73,11 +73,11 @@ class TrainingFlowParameters:
             self.downloading.download_path, chunk_size, ion_mode
         )
         self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw, spectrum_cleaner
+            spectrum_dgw, input_dgw, spectrum_cleaner, overwrite_all_spectra
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, overwrite_all_spectra, n_bins=spectrum_binner_n_bins
+            spectrum_dgw, n_bins=spectrum_binner_n_bins
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
