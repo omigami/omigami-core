@@ -126,7 +126,7 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
+        processed_ids = ProcessSpectrum(flow_parameters.process_spectrum)(
             spectrum_ids_chunks
         )
 

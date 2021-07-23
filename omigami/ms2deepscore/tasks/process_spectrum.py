@@ -1,6 +1,8 @@
 from dataclasses import dataclass
-from typing import Set, List
+from typing import Set, List, Tuple
 
+import prefect
+from ms2deepscore import SpectrumBinner
 from prefect import Task
 
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
@@ -34,10 +36,14 @@ class ProcessSpectrum(Task):
         self._processor = SpectrumProcessor(process_parameters.is_pretrained_flow)
         self._spectrum_binner = MS2DeepScoreSpectrumBinner()
         config = merge_prefect_task_configs(kwargs)
-        super().__init__(**config)
+        super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, spectrum_ids: Set[str] = None) -> Set[str]:
-        if not spectrum_ids:
+    def run(
+        self, spectrum_ids_chunks: List[Set[str]] = None
+    ) -> Tuple[Set[str], SpectrumBinner]:
+        if spectrum_ids_chunks:
+            spectrum_ids = [item for elem in spectrum_ids_chunks for item in elem]
+        else:
             spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
