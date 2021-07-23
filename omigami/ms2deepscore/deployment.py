@@ -125,6 +125,7 @@ class MS2DeepScoreDeployer(Deployer):
             ion_mode=self._ion_mode,
             spectrum_dgw=self._spectrum_dgw,
             output_dir=output_dir,
+            chunk_size=self._chunk_size,
             dataset_id=dataset_id,
             overwrite_model=self._overwrite_model,
             overwrite_all_spectra=self._overwrite_all_spectra,
