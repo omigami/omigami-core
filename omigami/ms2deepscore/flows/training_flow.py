@@ -143,6 +143,6 @@ def build_training_flow(
 
         scores_output_path = CalculateTanimotoScore(
             flow_parameters.calculate_tanimoto_score
-        )()
+        )(processed_ids)
 
     return training_flow
