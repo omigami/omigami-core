@@ -75,7 +75,7 @@ class SaveRawSpectra(Task):
         self.logger.info(f"Need to add new IDs: {len(spectrum_ids_to_add) > 0}")
         if len(spectrum_ids_to_add) > 0:
             self.logger.info(
-                f"Adding {len(spectrum_ids_to_add)} spectra to the db \n"
+                f"Cleaning {len(spectrum_ids_to_add)} spectra before adding to db\n"
                 f"Overwrite: {self._overwrite_all_spectra}"
             )
 
@@ -92,6 +92,10 @@ class SaveRawSpectra(Task):
             cleaned_spectrum_ids_to_add = [
                 sp.metadata["spectrum_id"] for sp in spectra_to_add
             ]
+
+            self.logger.info(
+                f"Adding {len(cleaned_spectrum_ids_to_add)} spectra to the db"
+            )
             return cleaned_spectrum_ids_to_add
 
         return spectrum_ids
