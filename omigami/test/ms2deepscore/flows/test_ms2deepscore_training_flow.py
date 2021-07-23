@@ -65,6 +65,7 @@ def test_training_flow(flow_config):
         fingerprint_n_bits=2048,
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
+        model_output_path="some-path",
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -118,6 +119,7 @@ def test_run_training_flow(
         fingerprint_n_bits=2048,
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
+        model_output_path=str(tmpdir / "model.hdf5"),
     )
 
     model_parameters = ModelGeneralParameters(
@@ -144,3 +146,4 @@ def test_run_training_flow(
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
+    assert fs.exists(tmpdir / "model.hdf5")

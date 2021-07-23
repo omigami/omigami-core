@@ -16,7 +16,7 @@ from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScoreParameters,
     CalculateTanimotoScore,
 )
-from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
+from omigami.ms2deepscore.tasks.train_model import TrainModelParameters, TrainModel
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
@@ -45,6 +45,15 @@ class TrainingFlowParameters:
         overwrite_all_spectra: bool,
         spectrum_binner_n_bins: int,
         overwrite_model: bool,
+        model_output_path: str,
+        epochs: int = 50,
+        learning_rate: float = 0.001,
+        layer_base_dims: Tuple[int] = (600, 500, 400),
+        embedding_dim: int = 400,
+        dropout_rate: float = 0.2,
+        train_ratio: float = 0.9,
+        validation_ratio: float = 0.05,
+        test_ratio: float = 0.05,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
@@ -158,5 +167,9 @@ def build_training_flow(
         scores_output_path = CalculateTanimotoScore(
             flow_parameters.calculate_tanimoto_score
         )(processed_ids)
+
+        model_output_path = TrainModel(
+            flow_parameters.spectrum_dgw, flow_parameters.training
+        )(processed_ids, scores_output_path, spectrum_binner)
 
     return training_flow

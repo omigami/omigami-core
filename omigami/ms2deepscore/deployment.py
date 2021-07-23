@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Tuple
 
 from omigami.config import (
     MLFLOW_SERVER,
@@ -31,6 +32,14 @@ class MS2DeepScoreDeployer(Deployer):
         fingerprint_n_bits: int = 2048,
         scores_decimals: int = 5,
         spectrum_binner_n_bins: int = 10000,
+        epochs: int = 50,
+        learning_rate: float = 0.001,
+        layer_base_dims: Tuple[int] = (600, 500, 400),
+        embedding_dim: int = 400,
+        dropout_rate: float = 0.2,
+        train_ratio: float = 0.9,
+        validation_ratio: float = 0.05,
+        test_ratio: float = 0.05,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -41,6 +50,14 @@ class MS2DeepScoreDeployer(Deployer):
         self._fingerprint_n_bits = fingerprint_n_bits
         self._scores_decimals = scores_decimals
         self._spectrum_binner_n_bins = spectrum_binner_n_bins
+        self._epochs = epochs
+        self._learning_rate = learning_rate
+        self._layer_base_dims = layer_base_dims
+        self._embedding_dim = embedding_dim
+        self._dropout_rate = dropout_rate
+        self._train_ratio = train_ratio
+        self._validation_ratio = validation_ratio
+        self._test_ratio = test_ratio
 
     def deploy_pretrained_flow(
         self,
@@ -121,6 +138,7 @@ class MS2DeepScoreDeployer(Deployer):
 
         spectrum_cleaner = SpectrumCleaner()
         scores_output_path = MODEL_DIRECTORIES[self._environment]["scores"]
+        model_output_path = MODEL_DIRECTORIES[self._environment]["model"]
 
         flow_parameters = TrainingFlowParameters(
             input_dgw=self._input_dgw,
@@ -138,6 +156,15 @@ class MS2DeepScoreDeployer(Deployer):
             fingerprint_n_bits=self._fingerprint_n_bits,
             scores_decimals=self._scores_decimals,
             spectrum_binner_n_bins=self._spectrum_binner_n_bins,
+            model_output_path=model_output_path,
+            epochs=self._epochs,
+            learning_rate=self._learning_rate,
+            layer_base_dims=self._layer_base_dims,
+            embedding_dim=self._embedding_dim,
+            dropout_rate=self._dropout_rate,
+            train_ratio=self._train_ratio,
+            validation_ratio=self._validation_ratio,
+            test_ratio=self._test_ratio,
         )
 
         model_parameters = ModelGeneralParameters(
