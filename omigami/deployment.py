@@ -28,6 +28,7 @@ class Deployer:
         mlflow_server: str = MLFLOW_SERVER,
         source_uri: str = SOURCE_URI_PARTIAL_GNPS,
         environment: Literal["dev", "prod"] = "dev",
+        chunk_size: int = int(1e8),
         overwrite_model: bool = False,
         overwrite_all_spectra: bool = True,
         auth: bool = False,
@@ -49,6 +50,7 @@ class Deployer:
         self._overwrite_model = overwrite_model
         self._overwrite_all_spectra = overwrite_all_spectra
         self._source_uri = source_uri
+        self._chunk_size = chunk_size
 
         # validates parameters and use them to get task configuration variables
         if environment not in ["dev", "prod"]:
