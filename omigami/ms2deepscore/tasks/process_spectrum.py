@@ -1,8 +1,8 @@
+import pickle
 from dataclasses import dataclass
-from typing import Set, List, Tuple
+from typing import Set, List
 
 import prefect
-from ms2deepscore import SpectrumBinner
 from prefect import Task
 
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
@@ -21,6 +21,7 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
+    spectrum_binner_output_path: str
     overwrite_all_spectra: bool = True
     is_pretrained_flow: bool = False
     n_bins: int = 10000
@@ -34,14 +35,15 @@ class ProcessSpectrum(Task):
     ):
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
+        self._spectrum_binner_output_path = (
+            process_parameters.spectrum_binner_output_path
+        )
         self._processor = SpectrumProcessor(process_parameters.is_pretrained_flow)
         self._spectrum_binner = MS2DeepScoreSpectrumBinner(process_parameters.n_bins)
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(
-        self, spectrum_ids_chunks: List[Set[str]] = None
-    ) -> Tuple[Set[str], SpectrumBinner]:
+    def run(self, spectrum_ids_chunks: List[Set[str]] = None) -> Set[str]:
         if spectrum_ids_chunks:
             spectrum_ids = [item for elem in spectrum_ids_chunks for item in elem]
         else:
@@ -55,12 +57,10 @@ class ProcessSpectrum(Task):
                 f"Saving into spectrum database."
             )
             self._spectrum_dgw.write_binned_spectra(binned_spectra)
-            return {
-                sp.get("spectrum_id") for sp in binned_spectra
-            }, self._spectrum_binner.spectrum_binner
+            return {sp.get("spectrum_id") for sp in binned_spectra}
 
         self.logger.info("No new spectra have been processed.")
-        return set(spectrum_ids), self._spectrum_binner.spectrum_binner
+        return set(spectrum_ids)
 
     def _get_binned_spectra(self, spectrum_ids: List[str]):
         spectra = self._spectrum_dgw.read_spectra(spectrum_ids)
@@ -73,4 +73,8 @@ class ProcessSpectrum(Task):
         cleaned_spectra = self._processor.process_spectra(
             spectra, process_reference_spectra=True, progress_logger=progress_logger
         )
-        return self._spectrum_binner.bin_spectra(cleaned_spectra)
+        binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
+        with open(self._spectrum_binner_output_path, "wb") as f:
+            pickle.dump(self._spectrum_binner.spectrum_binner, f)
+
+        return binned_spectra

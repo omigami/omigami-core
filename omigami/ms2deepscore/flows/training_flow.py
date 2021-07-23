@@ -43,6 +43,7 @@ class TrainingFlowParameters:
         fingerprint_n_bits: int,
         scores_decimals: int,
         overwrite_all_spectra: bool,
+        spectrum_binner_output_path: str,
         spectrum_binner_n_bins: int,
         overwrite_model: bool,
         model_output_path: str,
@@ -89,7 +90,7 @@ class TrainingFlowParameters:
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, n_bins=spectrum_binner_n_bins
+            spectrum_dgw, spectrum_binner_output_path, n_bins=spectrum_binner_n_bins
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
@@ -98,6 +99,7 @@ class TrainingFlowParameters:
 
         self.training = TrainModelParameters(
             model_output_path,
+            spectrum_binner_output_path,
             epochs,
             learning_rate,
             layer_base_dims,
@@ -160,9 +162,9 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_ids, spectrum_binner = ProcessSpectrum(
-            flow_parameters.process_spectrum
-        )(spectrum_ids_chunks)
+        processed_ids = ProcessSpectrum(flow_parameters.process_spectrum)(
+            spectrum_ids_chunks
+        )
 
         scores_output_path = CalculateTanimotoScore(
             flow_parameters.calculate_tanimoto_score
@@ -170,6 +172,6 @@ def build_training_flow(
 
         model_output_path = TrainModel(
             flow_parameters.spectrum_dgw, flow_parameters.training
-        )(processed_ids, scores_output_path, spectrum_binner)
+        )(processed_ids, scores_output_path)
 
     return training_flow

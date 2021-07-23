@@ -24,6 +24,7 @@ REDIS_DATABASES = {
 
 SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
+SOURCE_URI_PARTIAL_GNPS_500_SPECTRA = config["gnps_uri"]["partial_500_spectra"].get(str)
 
 CLUSTERS = config["clusters"].get(dict)
 ION_MODES = {"positive", "negative"}

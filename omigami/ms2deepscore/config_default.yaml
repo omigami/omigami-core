@@ -7,10 +7,12 @@ storage:
       mlflow: "s3://omigami-dev/ms2deepscore/mlflow/"
       scores: "s3://omigami-dev/ms2deepscore/tanimoto-scores/tanimoto_scores.pkl"
       model: "s3://omigami-dev/ms2deepscore/model/trained/ms2deep_score.hdf5"
+      spectrum_binner: "s3://omigami-dev/ms2deepscore/model/trained/spectrum_binner.pkl"
     prod:
       pre-trained-model: "s3://omigami/ms2deepscore/model/pre-trained/ms2deep_score.hdf5"
       mlflow: "s3://omigami/ms2deepscore/mlflow/"
       scores: "s3://omigami/ms2deepscore/tanimoto-scores/tanimoto_scores.pkl"
       model: "s3://omigami/ms2deepscore/model/trained/ms2deep_score.hdf5"
+      spectrum_binner: "s3://omigami/ms2deepscore/model/trained/spectrum_binner.pkl"
   redis:
     binned_spectrum_hashes: "binned_spectrum_data"

@@ -85,6 +85,9 @@ class MS2DeepScoreDeployer(Deployer):
             )
 
         mlflow_output_dir = MODEL_DIRECTORIES[self._environment]["mlflow"]
+        spectrum_binner_output_path = MODEL_DIRECTORIES[self._environment][
+            "spectrum_binner"
+        ]
 
         flow_parameters = PretrainedFlowParameters(
             model_uri=MODEL_DIRECTORIES[self._environment]["pre-trained-model"],
@@ -95,6 +98,7 @@ class MS2DeepScoreDeployer(Deployer):
             overwrite_all_spectra=self._overwrite_all_spectra,
             redis_db=self._redis_db,
             spectrum_binner_n_bins=self._spectrum_binner_n_bins,
+            spectrum_binner_output_path=spectrum_binner_output_path,
         )
 
         flow = build_pretrained_flow(
@@ -137,8 +141,12 @@ class MS2DeepScoreDeployer(Deployer):
         )
 
         spectrum_cleaner = SpectrumCleaner()
-        scores_output_path = MODEL_DIRECTORIES[self._environment]["scores"]
+
+        spectrum_binner_output_path = MODEL_DIRECTORIES[self._environment][
+            "spectrum_binner"
+        ]
         model_output_path = MODEL_DIRECTORIES[self._environment]["model"]
+        scores_output_path = MODEL_DIRECTORIES[self._environment]["scores"]
 
         flow_parameters = TrainingFlowParameters(
             input_dgw=self._input_dgw,
@@ -155,6 +163,7 @@ class MS2DeepScoreDeployer(Deployer):
             scores_output_path=scores_output_path,
             fingerprint_n_bits=self._fingerprint_n_bits,
             scores_decimals=self._scores_decimals,
+            spectrum_binner_output_path=spectrum_binner_output_path,
             spectrum_binner_n_bins=self._spectrum_binner_n_bins,
             model_output_path=model_output_path,
             epochs=self._epochs,

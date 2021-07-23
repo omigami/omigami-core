@@ -47,6 +47,7 @@ def test_pretrained_flow(flow_config, spectra_stored):
         model_uri="some model",
         input_dgw=mock_input_dgw,
         spectrum_dgw=spectrum_dgw,
+        spectrum_binner_output_path="some path",
     )
 
     flow = build_pretrained_flow(
@@ -105,6 +106,7 @@ def test_run_pretrained_flow(
             / "pretrained"
             / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
         ),
+        spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
     )
 
     flow = build_pretrained_flow(

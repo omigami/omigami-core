@@ -2,7 +2,6 @@ import os
 
 import pytest
 from mock import MagicMock
-from ms2deepscore import SpectrumBinner
 from prefect import Flow
 
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
@@ -18,7 +17,7 @@ from omigami.test.conftest import ASSETS_DIR
 def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
     spectrum_gtw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = common_cleaned_data
-    parameters = ProcessSpectrumParameters(spectrum_gtw)
+    parameters = ProcessSpectrumParameters(spectrum_gtw, "some-path")
 
     with Flow("test-flow") as test_flow:
         ProcessSpectrum(parameters)(spectrum_ids)
@@ -51,15 +50,20 @@ def test_process_spectrum(
     spectrum_ids,
     ms2deepscore_real_model_path,
     mock_default_config,
+    tmpdir,
 ):
     spectrum_gtw = MS2DeepScoreRedisSpectrumDataGateway()
-    parameters = ProcessSpectrumParameters(spectrum_gtw)
+    spectrum_binner_output_path = str(tmpdir / "spectrum_binner.pkl")
+    parameters = ProcessSpectrumParameters(spectrum_gtw, spectrum_binner_output_path)
+    spectrum_ids_chunks = [
+        spectrum_ids[x : x + 10] for x in range(0, len(spectrum_ids), 10)
+    ]
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(parameters)(spectrum_ids)
+        process_task = ProcessSpectrum(parameters)(spectrum_ids_chunks)
 
     res = test_flow.run()
-    res_spectrum_ids, binner = res.result[process_task].result
+    res_spectrum_ids = res.result[process_task].result
 
     assert res_spectrum_ids
     assert not spectrum_gtw.list_missing_binned_spectra(res_spectrum_ids)
-    assert isinstance(binner, SpectrumBinner)
+    assert os.path.exists(spectrum_binner_output_path)

@@ -64,3 +64,4 @@ spec2vec:
 gnps_uri:
   complete: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
   partial: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json"
+  partial_500_spectra: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS_500_spectra.json"

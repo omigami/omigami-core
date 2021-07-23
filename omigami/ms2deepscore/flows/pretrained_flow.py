@@ -18,6 +18,7 @@ class PretrainedFlowParameters:
         input_dgw: InputDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
+        spectrum_binner_output_path: str,
         overwrite_model: bool = False,
         environment: str = "dev",
         overwrite_all_spectra: bool = False,
@@ -29,6 +30,7 @@ class PretrainedFlowParameters:
         self.model_uri = model_uri
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_dgw,
+            spectrum_binner_output_path,
             overwrite_all_spectra,
             is_pretrained_flow=True,
             n_bins=spectrum_binner_n_bins,

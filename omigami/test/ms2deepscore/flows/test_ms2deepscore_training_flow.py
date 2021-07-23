@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -48,6 +48,7 @@ def test_training_flow(flow_config):
         "SaveRawSpectra",
         "ProcessSpectrum",
         "CalculateTanimotoScore",
+        "TrainModel",
     }
 
     flow_parameters = TrainingFlowParameters(
@@ -66,6 +67,7 @@ def test_training_flow(flow_config):
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
         model_output_path="some-path",
+        spectrum_binner_output_path="some-path",
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -107,10 +109,10 @@ def test_run_training_flow(
         input_dgw=input_dgw,
         spectrum_dgw=spectrum_dgw,
         spectrum_cleaner=spectrum_cleaner,
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
         output_dir=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
-        dataset_name="SMALL_GNPS.json",
+        dataset_name="SMALL_GNPS_500_spectra.json",
         chunk_size=150000,
         ion_mode="positive",
         overwrite_model=True,
@@ -119,7 +121,10 @@ def test_run_training_flow(
         fingerprint_n_bits=2048,
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
+        spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
         model_output_path=str(tmpdir / "model.hdf5"),
+        dataset_checkpoint_name="spectrum_ids_500.pkl",
+        epochs=10,
     )
 
     model_parameters = ModelGeneralParameters(
@@ -143,7 +148,7 @@ def test_run_training_flow(
     results.result[d].is_cached()
     # Model does not yet get created by flow
     # assert "model" in os.listdir(tmpdir / "model-output")
-    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
+    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 18
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")

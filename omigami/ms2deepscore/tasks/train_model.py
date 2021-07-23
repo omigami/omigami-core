@@ -1,7 +1,7 @@
+import pickle
 from dataclasses import dataclass
 from typing import Tuple, List
 
-from ms2deepscore import SpectrumBinner
 from prefect import Task
 
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
@@ -17,6 +17,7 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class TrainModelParameters:
     output_path: str
+    spectrum_binner_output_path: str
     epochs: int = 50
     learning_rate: float = 0.001
     layer_base_dims: Tuple[int] = (600, 500, 400)
@@ -33,6 +34,7 @@ class TrainModel(Task):
         **kwargs,
     ):
         self._spectrum_gtw = spectrum_dgw
+        self._spectrum_binner_output_path = train_parameters.spectrum_binner_output_path
         self._output_path = train_parameters.output_path
         self._epochs = train_parameters.epochs
         self._learning_rate = train_parameters.learning_rate
@@ -48,8 +50,10 @@ class TrainModel(Task):
         self,
         spectrum_ids: List[str] = None,
         scores_output_path: str = None,
-        spectrum_binner: SpectrumBinner = None,
     ) -> str:
+        with open(self._spectrum_binner_output_path, "rb") as f:
+            spectrum_binner = pickle.load(f)
+
         trainer = SiameseModelTrainer(
             self._spectrum_gtw,
             self._epochs,

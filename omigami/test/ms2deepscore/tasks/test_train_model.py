@@ -14,16 +14,21 @@ from omigami.ms2deepscore.tasks.train_model import TrainModel, TrainModelParamet
     reason="It can only be run if the Redis is up",
 )
 def test_train_model(
-    tmpdir, binned_spectra_to_train_stored, tanimoto_scores_path, fitted_spectrum_binner
+    tmpdir,
+    binned_spectra_to_train_stored,
+    tanimoto_scores_path,
+    fitted_spectrum_binner_path,
 ):
     model_path = f"{tmpdir}/model.hdf5"
-    parameters = TrainModelParameters(model_path, epochs=2)
+    parameters = TrainModelParameters(
+        model_path, spectrum_binner_output_path=fitted_spectrum_binner_path, epochs=2
+    )
 
     with Flow("test") as flow:
         TrainModel(
             spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(),
             train_parameters=parameters,
-        )([], tanimoto_scores_path, fitted_spectrum_binner)
+        )([], tanimoto_scores_path)
 
     state = flow.run()
     assert state.is_successful()
