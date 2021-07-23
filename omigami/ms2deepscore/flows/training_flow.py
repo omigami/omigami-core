@@ -6,6 +6,10 @@ from prefect import Flow
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
+from prefect import Flow
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
+
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway

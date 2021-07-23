@@ -1,6 +1,6 @@
 import pickle
 from dataclasses import dataclass
-from typing import Set, List
+from typing import Set, List, Tuple
 
 import prefect
 from prefect import Task
