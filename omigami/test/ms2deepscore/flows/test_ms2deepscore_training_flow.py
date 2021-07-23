@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
-
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.flow_config import (
     make_flow_config,
@@ -47,6 +46,7 @@ def test_training_flow(flow_config):
         "CreateChunks",
         "SaveRawSpectra",
         "ProcessSpectrum",
+        "CalculateTanimotoScore",
     }
 
     flow_parameters = TrainingFlowParameters(
@@ -60,6 +60,9 @@ def test_training_flow(flow_config):
         chunk_size=150000,
         overwrite_model=True,
         overwrite_all_spectra=False,
+        scores_output_path="some-path",
+        fingerprint_n_bits=2048,
+        scores_decimals=5,
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -109,6 +112,9 @@ def test_run_training_flow(
         ion_mode="positive",
         overwrite_model=True,
         overwrite_all_spectra=True,
+        scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
+        fingerprint_n_bits=2048,
+        scores_decimals=5,
     )
 
     model_parameters = ModelGeneralParameters(
@@ -134,3 +140,4 @@ def test_run_training_flow(
     # assert "model" in os.listdir(tmpdir / "model-output")
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
+    assert fs.exists(tmpdir / "tanimoto_scores.pkl")
