@@ -55,10 +55,12 @@ class ProcessSpectrum(Task):
                 f"Saving into spectrum database."
             )
             self._spectrum_dgw.write_binned_spectra(binned_spectra)
-            return {sp.get("spectrum_id") for sp in binned_spectra}
+            return {
+                sp.get("spectrum_id") for sp in binned_spectra
+            }, self._spectrum_binner.spectrum_binner
 
         self.logger.info("No new spectra have been processed.")
-        return set(spectrum_ids)
+        return set(spectrum_ids), self._spectrum_binner.spectrum_binner
 
     def _get_binned_spectra(self, spectrum_ids: List[str]):
         spectra = self._spectrum_dgw.read_spectra(spectrum_ids)

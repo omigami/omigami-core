@@ -2,6 +2,9 @@ import os
 
 import pytest
 from mock import MagicMock
+from ms2deepscore import SpectrumBinner
+from prefect import Flow
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -10,7 +13,6 @@ from omigami.ms2deepscore.tasks.process_spectrum import (
     ProcessSpectrum,
 )
 from omigami.test.conftest import ASSETS_DIR
-from prefect import Flow
 
 
 def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
@@ -56,7 +58,8 @@ def test_process_spectrum(
         process_task = ProcessSpectrum(parameters)(spectrum_ids)
 
     res = test_flow.run()
-    res_spectrum_ids = res.result[process_task].result
+    res_spectrum_ids, binner = res.result[process_task].result
 
     assert res_spectrum_ids
     assert not spectrum_gtw.list_missing_binned_spectra(res_spectrum_ids)
+    assert isinstance(binner, SpectrumBinner)

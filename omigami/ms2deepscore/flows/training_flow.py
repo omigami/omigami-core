@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta, date, datetime
+from typing import Tuple
 
 from prefect import Flow
 from prefect.schedules import Schedule
@@ -9,11 +10,13 @@ from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import InputDataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
+from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
 from omigami.ms2deepscore.tasks import ProcessSpectrumParameters, ProcessSpectrum
 from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScoreParameters,
     CalculateTanimotoScore,
 )
+from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
@@ -84,6 +87,16 @@ class TrainingFlowParameters:
             scores_output_path, fingerprint_n_bits, scores_decimals
         )
 
+        self.training = TrainModelParameters(
+            model_output_path,
+            epochs,
+            learning_rate,
+            layer_base_dims,
+            embedding_dim,
+            dropout_rate,
+            SplitRatio(train_ratio, validation_ratio, test_ratio),
+        )
+
 
 # TODO: Add to model task when it is created
 @dataclass
@@ -138,12 +151,12 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_ids = ProcessSpectrum(flow_parameters.process_spectrum)(
-            spectrum_ids_chunks
-        )
+        processed_ids, spectrum_binner = ProcessSpectrum(
+            flow_parameters.process_spectrum
+        )(spectrum_ids_chunks)
 
         scores_output_path = CalculateTanimotoScore(
             flow_parameters.calculate_tanimoto_score
-        )(processed_ids_chunks)
+        )(processed_ids)
 
     return training_flow
