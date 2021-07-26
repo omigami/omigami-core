@@ -28,7 +28,6 @@ class Spec2VecDeployer(Deployer):
         intensity_weighting_power: float,
         allowed_missing_percentage: float,
         n_decimals: int = 2,
-        chunk_size: int = int(1e8),
         project_name: str = PROJECT_NAME,
         **kwargs,
     ):
@@ -38,7 +37,6 @@ class Spec2VecDeployer(Deployer):
         self._intensity_weighting_power = intensity_weighting_power
         self._allowed_missing_percentage = allowed_missing_percentage
         self._n_decimals = n_decimals
-        self._chunk_size = chunk_size
         self._project_name = project_name
 
         self._input_dgw = FSInputDataGateway()

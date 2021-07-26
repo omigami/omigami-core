@@ -27,7 +27,6 @@ class MS2DeepScoreDeployer(Deployer):
     def __init__(
         self,
         mlflow_server: str = MLFLOW_SERVER,
-        spectrum_ids_chunk_size: int = 1000,
         project_name: str = PROJECT_NAME,
         fingerprint_n_bits: int = 2048,
         scores_decimals: int = 5,
@@ -36,7 +35,6 @@ class MS2DeepScoreDeployer(Deployer):
     ):
         super().__init__(**kwargs)
         self._mlflow_server = mlflow_server
-        self._spectrum_ids_chunk_size = spectrum_ids_chunk_size
         self._input_dgw = FSInputDataGateway()
         self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
         self._project_name = project_name
@@ -79,7 +77,6 @@ class MS2DeepScoreDeployer(Deployer):
             spectrum_dgw=self._spectrum_dgw,
             overwrite_all_spectra=self._overwrite_all_spectra,
             redis_db=self._redis_db,
-            spectrum_ids_chunk_size=self._spectrum_ids_chunk_size,
             spectrum_binner_n_bins=self._spectrum_binner_n_bins,
         )
 
@@ -131,8 +128,8 @@ class MS2DeepScoreDeployer(Deployer):
             ion_mode=self._ion_mode,
             spectrum_dgw=self._spectrum_dgw,
             output_dir=output_dir,
+            chunk_size=self._chunk_size,
             dataset_id=dataset_id,
-            chunk_size=self._spectrum_ids_chunk_size,
             overwrite_model=self._overwrite_model,
             overwrite_all_spectra=self._overwrite_all_spectra,
             source_uri=self._source_uri,

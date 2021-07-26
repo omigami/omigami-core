@@ -73,7 +73,7 @@ class TrainingFlowParameters:
             self.downloading.download_path, chunk_size, ion_mode
         )
         self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw, spectrum_cleaner
+            spectrum_dgw, input_dgw, spectrum_cleaner, overwrite_all_spectra
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
@@ -138,12 +138,12 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_ids_chunks = ProcessSpectrum(flow_parameters.process_spectrum).map(
+        processed_ids = ProcessSpectrum(flow_parameters.process_spectrum)(
             spectrum_ids_chunks
         )
 
         scores_output_path = CalculateTanimotoScore(
             flow_parameters.calculate_tanimoto_score
-        )(processed_ids_chunks)
+        )(processed_ids)
 
     return training_flow
