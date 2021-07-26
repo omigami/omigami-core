@@ -31,6 +31,7 @@ class MS2DeepScoreDeployer(Deployer):
         project_name: str = PROJECT_NAME,
         fingerprint_n_bits: int = 2048,
         scores_decimals: int = 5,
+        spectrum_binner_n_bins: int = 10000,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -41,6 +42,7 @@ class MS2DeepScoreDeployer(Deployer):
         self._project_name = project_name
         self._fingerprint_n_bits = fingerprint_n_bits
         self._scores_decimals = scores_decimals
+        self._spectrum_binner_n_bins = spectrum_binner_n_bins
 
     def deploy_pretrained_flow(
         self,
@@ -78,6 +80,7 @@ class MS2DeepScoreDeployer(Deployer):
             overwrite_all_spectra=self._overwrite_all_spectra,
             redis_db=self._redis_db,
             spectrum_ids_chunk_size=self._spectrum_ids_chunk_size,
+            spectrum_binner_n_bins=self._spectrum_binner_n_bins,
         )
 
         flow = build_pretrained_flow(
@@ -137,6 +140,7 @@ class MS2DeepScoreDeployer(Deployer):
             scores_output_path=scores_output_path,
             fingerprint_n_bits=self._fingerprint_n_bits,
             scores_decimals=self._scores_decimals,
+            spectrum_binner_n_bins=self._spectrum_binner_n_bins,
         )
 
         model_parameters = ModelGeneralParameters(

@@ -1,13 +1,15 @@
 from logging import getLogger
 from typing import List
 
+import numpy as np
 import pandas as pd
 from ms2deepscore import BinnedSpectrum
+from rdkit import Chem
+from rdkit.DataStructs import BulkTanimotoSimilarity
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from rdkit import Chem
-from rdkit.DataStructs import BulkTanimotoSimilarity
 
 log = getLogger(__name__)
 
@@ -48,7 +50,9 @@ class TanimotoScoreCalculator:
             pd.Series.mode
         )
 
-        return most_common_inchi["inchi"]
+        return most_common_inchi["inchi"].apply(
+            lambda x: x[0] if isinstance(x, np.ndarray) else x
+        )
 
     def _calculate_tanimoto_scores(
         self,
