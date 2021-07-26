@@ -43,5 +43,6 @@ class CalculateTanimotoScore(Task):
         path = calculator.calculate(
             list(spectrum_ids),
             self._scores_output_path,
+            self.logger,
         )
         return path

@@ -69,7 +69,9 @@ class TrainModel(Task):
             self._dropout_rate,
             self._split_ratio,
         )
-        model = trainer.train(spectrum_ids, scores_output_path, spectrum_binner)
+        model = trainer.train(
+            spectrum_ids, scores_output_path, spectrum_binner, self.logger
+        )
         self._save_model(model)
         return self._output_path
 
