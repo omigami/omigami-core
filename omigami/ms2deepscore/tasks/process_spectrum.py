@@ -1,10 +1,10 @@
-import pickle
 from dataclasses import dataclass
-from typing import Set, List, Tuple
+from typing import Set, List
 
 import prefect
 from prefect import Task
 
+from omigami.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -20,6 +20,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ProcessSpectrumParameters:
+    fs_gtw: DataGateway
     spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
     spectrum_binner_output_path: str
     overwrite_all_spectra: bool = True
@@ -33,6 +34,7 @@ class ProcessSpectrum(Task):
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
+        self._fs_gtw = process_parameters.fs_gtw
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
         self._spectrum_binner_output_path = (
@@ -74,7 +76,9 @@ class ProcessSpectrum(Task):
             spectra, process_reference_spectra=True, progress_logger=progress_logger
         )
         binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
-        with open(self._spectrum_binner_output_path, "wb") as f:
-            pickle.dump(self._spectrum_binner.spectrum_binner, f)
+
+        self._fs_gtw.serialize_to_file(
+            self._spectrum_binner_output_path, self._spectrum_binner.spectrum_binner
+        )
 
         return binned_spectra

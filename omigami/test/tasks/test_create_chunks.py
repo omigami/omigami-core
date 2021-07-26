@@ -2,7 +2,7 @@ import pytest
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.tasks import CreateChunks, ChunkingParameters
 from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 
@@ -21,12 +21,12 @@ def test_create_chunks(
     ion_mode,
     expected_chunk_files,
 ):
-    input_dgw = FSInputDataGateway()
+    data_gtw = FSDataGateway()
     fs = get_fs(local_gnps_small_json)
     chunking_parameters = ChunkingParameters(local_gnps_small_json, 150000, ion_mode)
     with Flow("test-flow") as test_flow:
         chunks = CreateChunks(
-            input_dgw=input_dgw,
+            data_gtw=data_gtw,
             chunking_parameters=chunking_parameters,
             **TEST_TASK_CONFIG,
         )(spectrum_ids)

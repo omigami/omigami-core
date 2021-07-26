@@ -5,7 +5,7 @@ from omigami.config import (
     DATASET_IDS,
 )
 from omigami.deployment import Deployer
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
     PROJECT_NAME,
@@ -39,7 +39,7 @@ class Spec2VecDeployer(Deployer):
         self._n_decimals = n_decimals
         self._project_name = project_name
 
-        self._input_dgw = FSInputDataGateway()
+        self._data_gtw = FSDataGateway()
         self._spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
         self._spectrum_cleaner = SpectrumCleaner()
 
@@ -69,7 +69,7 @@ class Spec2VecDeployer(Deployer):
         output_dir = S3_BUCKETS[self._environment]
 
         flow_parameters = TrainingFlowParameters(
-            input_dgw=self._input_dgw,
+            data_gtw=self._data_gtw,
             spectrum_dgw=self._spectrum_dgw,
             spectrum_cleaner=self._spectrum_cleaner,
             source_uri=self._source_uri,

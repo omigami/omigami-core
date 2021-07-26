@@ -1,12 +1,13 @@
 import pytest
-from omigami.config import config, MLFLOW_SERVER
-from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
 from typing_extensions import Literal
 
+from omigami.config import config, MLFLOW_SERVER
+from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_pretrained_flow():
     """
     BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
@@ -17,8 +18,8 @@ def test_deploy_pretrained_flow():
     login_config.pop("token")
 
     deployer = MS2DeepScoreDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.1899006",
-        dataset_name="small",
+        image="drtools/prefect:omigami-SNAPSHOT.c9e85bb",
+        dataset_name="10k",  # ms2deepscore can not be trained with the small dataset
         environment=env,
         project_name="ms2deepscore-dev",
         mlflow_server=MLFLOW_SERVER,
@@ -26,9 +27,10 @@ def test_deploy_pretrained_flow():
         overwrite_model=True,
         auth=True,
         overwrite_all_spectra=True,
+        epochs=10,
         **login_config,
     )
-    flow_id = deployer.deploy_pretrained_flow(flow_name="running-dev")
+    flow_id = deployer.deploy_pretrained_flow(flow_name="added-training-task")
 
     assert flow_id
 

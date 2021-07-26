@@ -6,13 +6,9 @@ from prefect import Flow
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
-from prefect import Flow
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
-
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import DataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
 from omigami.ms2deepscore.tasks import ProcessSpectrumParameters, ProcessSpectrum
@@ -35,7 +31,7 @@ from omigami.tasks import (
 class TrainingFlowParameters:
     def __init__(
         self,
-        input_dgw: InputDataGateway,
+        data_gtw: DataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
@@ -64,7 +60,7 @@ class TrainingFlowParameters:
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
         environment: str = "dev",
     ):
-        self.input_dgw = input_dgw
+        self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
 
         if schedule_task_days != None:
@@ -90,11 +86,14 @@ class TrainingFlowParameters:
             self.downloading.download_path, chunk_size, ion_mode
         )
         self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw, spectrum_cleaner, overwrite_all_spectra
+            spectrum_dgw, data_gtw, spectrum_cleaner, overwrite_all_spectra
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, spectrum_binner_output_path, n_bins=spectrum_binner_n_bins
+            data_gtw,
+            spectrum_dgw,
+            spectrum_binner_output_path,
+            n_bins=spectrum_binner_n_bins,
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
@@ -153,12 +152,12 @@ def build_training_flow(
     with Flow(name=flow_name, **flow_config.kwargs) as training_flow:
 
         spectrum_ids = DownloadData(
-            flow_parameters.input_dgw,
+            flow_parameters.data_gtw,
             flow_parameters.downloading,
         )()
 
         gnps_chunks = CreateChunks(
-            flow_parameters.input_dgw,
+            flow_parameters.data_gtw,
             flow_parameters.chunking,
         )(spectrum_ids)
 

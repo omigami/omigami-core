@@ -4,7 +4,7 @@ from typing import List, Any
 from omigami.spec2vec.entities.data_models import SpectrumInputData
 
 
-class InputDataGateway(ABC):
+class DataGateway(ABC):
     @abstractmethod
     def download_gnps(self, uri: str, output_path: str):
         pass
@@ -31,4 +31,8 @@ class InputDataGateway(ABC):
 
     @abstractmethod
     def serialize_to_file(self, path: str, object: Any) -> bool:
+        pass
+
+    @abstractmethod
+    def read_from_file(self, path: str) -> Any:
         pass

@@ -3,7 +3,7 @@ from typing import List
 
 from prefect import Task
 
-from omigami.gateways import RedisSpectrumDataGateway, InputDataGateway
+from omigami.gateways import RedisSpectrumDataGateway, DataGateway
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.utils import merge_prefect_task_configs
 
@@ -15,7 +15,7 @@ class SaveRawSpectraParameters:
 
     spectrum_dgw: RedisSpectrumDataGateway
         A gateway that grants access to the redis database
-    input_dgw: InputDataGateway
+    data_gtw: InputDataGateway
         A InputDataaGateway that is able to load the gnps dataset
     spectrum_cleaner: SpectrumCleaner
         A SpectrumCleaner that performs some common cleaning
@@ -25,7 +25,7 @@ class SaveRawSpectraParameters:
     """
 
     spectrum_dgw: RedisSpectrumDataGateway
-    input_dgw: InputDataGateway
+    data_gtw: DataGateway
     spectrum_cleaner: SpectrumCleaner
     overwrite_all_spectra: bool = False
 
@@ -41,7 +41,7 @@ class SaveRawSpectra(Task):
         **kwargs,
     ):
         self._spectrum_dgw = save_parameters.spectrum_dgw
-        self._input_dgw = save_parameters.input_dgw
+        self._data_gtw = save_parameters.data_gtw
         self._spectrum_cleaner = save_parameters.spectrum_cleaner
         self._overwrite_all_spectra = save_parameters.overwrite_all_spectra
         config = merge_prefect_task_configs(kwargs)
@@ -63,7 +63,7 @@ class SaveRawSpectra(Task):
             A list of all the spectrum_ids contained in the files data
         """
         self.logger.info(f"Loading spectra from {gnps_path}")
-        spectra_from_file = self._input_dgw.load_spectrum(gnps_path)
+        spectra_from_file = self._data_gtw.load_spectrum(gnps_path)
         spectrum_ids = [sp["spectrum_id"] for sp in spectra_from_file]
 
         if self._overwrite_all_spectra:

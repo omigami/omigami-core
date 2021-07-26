@@ -4,6 +4,7 @@ import pytest
 from mock import MagicMock
 from prefect import Flow
 
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -15,9 +16,10 @@ from omigami.test.conftest import ASSETS_DIR
 
 
 def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
+    fs_gtw = MagicMock(spec=FSDataGateway)
     spectrum_gtw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = common_cleaned_data
-    parameters = ProcessSpectrumParameters(spectrum_gtw, "some-path")
+    parameters = ProcessSpectrumParameters(fs_gtw, spectrum_gtw, "some-path")
 
     with Flow("test-flow") as test_flow:
         ProcessSpectrum(parameters)(spectrum_ids)
@@ -52,9 +54,12 @@ def test_process_spectrum(
     mock_default_config,
     tmpdir,
 ):
+    fs_gtw = FSDataGateway()
     spectrum_gtw = MS2DeepScoreRedisSpectrumDataGateway()
     spectrum_binner_output_path = str(tmpdir / "spectrum_binner.pkl")
-    parameters = ProcessSpectrumParameters(spectrum_gtw, spectrum_binner_output_path)
+    parameters = ProcessSpectrumParameters(
+        fs_gtw, spectrum_gtw, spectrum_binner_output_path
+    )
     spectrum_ids_chunks = [
         spectrum_ids[x : x + 10] for x in range(0, len(spectrum_ids), 10)
     ]

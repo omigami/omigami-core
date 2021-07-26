@@ -10,8 +10,8 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.gateways.data_gateway import InputDataGateway
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.data_gateway import DataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.flows.pretrained_flow import (
     build_pretrained_flow,
     PretrainedFlowParameters,
@@ -36,7 +36,7 @@ def flow_config():
 
 
 def test_pretrained_flow(flow_config, spectra_stored):
-    mock_input_dgw = MagicMock(spec=InputDataGateway)
+    mock_data_gtw = MagicMock(spec=DataGateway)
     spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
 
     expected_tasks = {
@@ -45,7 +45,7 @@ def test_pretrained_flow(flow_config, spectra_stored):
     }
     flow_params = PretrainedFlowParameters(
         model_uri="some model",
-        input_dgw=mock_input_dgw,
+        data_gtw=mock_data_gtw,
         spectrum_dgw=spectrum_dgw,
         spectrum_binner_output_path="some path",
     )
@@ -94,11 +94,11 @@ def test_run_pretrained_flow(
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
-    input_dgw = FSInputDataGateway()
+    data_gtw = FSDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
     flow_params = PretrainedFlowParameters(
-        input_dgw=input_dgw,
+        data_gtw=data_gtw,
         spectrum_dgw=spectrum_dgw,
         model_uri=str(
             ASSETS_DIR

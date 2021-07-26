@@ -7,7 +7,7 @@ from omigami.config import (
     S3_BUCKETS,
 )
 from omigami.deployment import Deployer
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.config import MODEL_DIRECTORIES, PROJECT_NAME
 from omigami.ms2deepscore.flows.pretrained_flow import (
     build_pretrained_flow,
@@ -44,7 +44,7 @@ class MS2DeepScoreDeployer(Deployer):
     ):
         super().__init__(**kwargs)
         self._mlflow_server = mlflow_server
-        self._input_dgw = FSInputDataGateway()
+        self._data_gtw = FSDataGateway()
         self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
         self._project_name = project_name
         self._fingerprint_n_bits = fingerprint_n_bits
@@ -91,7 +91,7 @@ class MS2DeepScoreDeployer(Deployer):
 
         flow_parameters = PretrainedFlowParameters(
             model_uri=MODEL_DIRECTORIES[self._environment]["pre-trained-model"],
-            input_dgw=self._input_dgw,
+            data_gtw=self._data_gtw,
             overwrite_model=self._overwrite_model,
             environment=self._environment,
             spectrum_dgw=self._spectrum_dgw,
@@ -149,7 +149,7 @@ class MS2DeepScoreDeployer(Deployer):
         scores_output_path = MODEL_DIRECTORIES[self._environment]["scores"]
 
         flow_parameters = TrainingFlowParameters(
-            input_dgw=self._input_dgw,
+            data_gtw=self._data_gtw,
             environment=self._environment,
             ion_mode=self._ion_mode,
             spectrum_dgw=self._spectrum_dgw,

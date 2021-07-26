@@ -1,7 +1,7 @@
 from prefect import Flow
 
 from omigami.flow_config import FlowConfig
-from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import DataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.tasks import (
     DeployModel,
@@ -15,7 +15,7 @@ from omigami.ms2deepscore.tasks import (
 class PretrainedFlowParameters:
     def __init__(
         self,
-        input_dgw: InputDataGateway,
+        data_gtw: DataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
         spectrum_binner_output_path: str,
@@ -25,10 +25,11 @@ class PretrainedFlowParameters:
         spectrum_binner_n_bins: int = 10000,
         redis_db: str = "0",
     ):
-        self.input_dgw = input_dgw
+        self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
         self.process_spectrum = ProcessSpectrumParameters(
+            data_gtw,
             spectrum_dgw,
             spectrum_binner_output_path,
             overwrite_all_spectra,

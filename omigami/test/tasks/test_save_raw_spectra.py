@@ -5,7 +5,7 @@ from matchms.importing.load_from_json import as_spectrum
 from prefect import Flow
 
 from omigami.gateways import RedisSpectrumDataGateway
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParameters
@@ -14,11 +14,11 @@ from omigami.tasks.save_raw_spectra import SaveRawSpectra, SaveRawSpectraParamet
 @pytest.fixture
 def create_parameters(overwrite_all_spectra: bool = True):
     spectrum_dgw = RedisSpectrumDataGateway()
-    input_dgw = FSInputDataGateway()
+    data_gtw = FSDataGateway()
     spectrum_cleaner = SpectrumCleaner()
     parameters = SaveRawSpectraParameters(
         spectrum_dgw=spectrum_dgw,
-        input_dgw=input_dgw,
+        data_gtw=data_gtw,
         spectrum_cleaner=spectrum_cleaner,
     )
     parameters.overwrite_all_spectra = overwrite_all_spectra
@@ -27,7 +27,7 @@ def create_parameters(overwrite_all_spectra: bool = True):
 
 @pytest.fixture
 def empty_database(parameters: SaveRawSpectraParameters, local_gnps_small_json):
-    spectra = parameters.input_dgw.load_spectrum(local_gnps_small_json)
+    spectra = parameters.data_gtw.load_spectrum(local_gnps_small_json)
     parameters.spectrum_dgw.delete_spectra(
         [spec_id["spectrum_id"] for spec_id in spectra]
     )
@@ -78,7 +78,7 @@ def test_save_raw_spectra_overwrite(
 ):
     """Test if overwrite the task wörks by changing up the data"""
     # Setup Test
-    loaded_data = create_parameters.input_dgw.load_spectrum(local_gnps_small_json)
+    loaded_data = create_parameters.data_gtw.load_spectrum(local_gnps_small_json)
     changed_value = loaded_data[0]["scan"]
     loaded_data[0]["scan"] = 5
     preserved_id = loaded_data[0]["spectrum_id"]
@@ -126,7 +126,7 @@ def test_save_raw_spectra_add_new_spectra(create_parameters, local_gnps_small_js
     create_parameters.overwrite_all_spectra = False
     empty_database(create_parameters, local_gnps_small_json)
 
-    loaded_data = create_parameters.input_dgw.load_spectrum(local_gnps_small_json)
+    loaded_data = create_parameters.data_gtw.load_spectrum(local_gnps_small_json)
 
     loaded_data[0]["ms_level"] = "5000000"
     preserved_id = loaded_data[0]["spectrum_id"]
