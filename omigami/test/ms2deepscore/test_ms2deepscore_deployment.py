@@ -34,10 +34,9 @@ def test_deploy_pretrained_flow():
     assert flow_id
 
 
-#
-# @pytest.mark.skip(
-#     reason="This test uses internet connection and deploys a test flow to prefect."
-# )
+@pytest.mark.skip(
+    reason="This test uses internet connection and deploys a test flow to prefect."
+)
 def test_deploy_training_flow():
     """
     BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
@@ -48,7 +47,7 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     deployer = MS2DeepScoreDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.c9e85bb",
+        image="drtools/prefect:omigami-SNAPSHOT.48aa979",
         dataset_name="10k",  # ms2deepscore can not be trained with the small dataset
         environment=env,
         project_name="ms2deepscore-dev",
@@ -58,6 +57,6 @@ def test_deploy_training_flow():
         epochs=10,
         **login_config,
     )
-    flow_id = deployer.deploy_training_flow(flow_name="added-training-task")
+    flow_id = deployer.deploy_training_flow(flow_name="running-dev")
 
     assert flow_id
