@@ -90,8 +90,6 @@ class TrainingFlowParameters:
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
-            data_gtw,
-            spectrum_dgw,
             spectrum_binner_output_path,
             n_bins=spectrum_binner_n_bins,
         )
@@ -165,16 +163,20 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_ids = ProcessSpectrum(flow_parameters.process_spectrum)(
-            spectrum_ids_chunks
-        )
+        processed_ids = ProcessSpectrum(
+            flow_parameters.data_gtw,
+            flow_parameters.spectrum_dgw,
+            flow_parameters.process_spectrum,
+        )(spectrum_ids_chunks)
 
         scores_output_path = CalculateTanimotoScore(
             flow_parameters.calculate_tanimoto_score
         )(processed_ids)
 
         model_output_path = TrainModel(
-            flow_parameters.spectrum_dgw, flow_parameters.training
+            flow_parameters.data_gtw,
+            flow_parameters.spectrum_dgw,
+            flow_parameters.training,
         )(processed_ids, scores_output_path)
 
     return training_flow

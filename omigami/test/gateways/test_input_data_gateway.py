@@ -4,6 +4,7 @@ import pytest
 import requests_mock
 from drfs import DRPath
 from drfs.filesystems import get_fs
+from ms2deepscore import SpectrumBinner
 
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
@@ -122,3 +123,18 @@ def test_chunk_gnps_data_consistency(
         chunked_ids += dgw.get_spectrum_ids(str(p))
 
     assert set(chunked_ids) == set(spectrum_ids_by_mode[ion_mode])
+
+
+def test_serialize_to_file(tmpdir, fitted_spectrum_binner):
+    dgw = FSDataGateway()
+    path = str(tmpdir / "object.pkl")
+    dgw.serialize_to_file(path, fitted_spectrum_binner)
+
+    assert dgw.fs.exists(path)
+
+
+def test_read_from_file(tmpdir, fitted_spectrum_binner_path):
+    dgw = FSDataGateway()
+    obj = dgw.read_from_file(fitted_spectrum_binner_path)
+
+    assert isinstance(obj, SpectrumBinner)

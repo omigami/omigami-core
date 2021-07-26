@@ -130,18 +130,6 @@ def tanimoto_scores(tanimoto_scores_path):
 
 
 @pytest.fixture()
-def fitted_spectrum_binner_path():
-    return str(ASSETS_DIR / "ms2deepscore" / "to_train" / "fitted_spectrum_binner.pkl")
-
-
-@pytest.fixture()
-def fitted_spectrum_binner(fitted_spectrum_binner_path):
-    with open(fitted_spectrum_binner_path, "rb") as f:
-        spectrum_binner = pickle.load(f)
-    return spectrum_binner
-
-
-@pytest.fixture()
 def binned_spectra_to_train():
     path = str(ASSETS_DIR / "ms2deepscore" / "to_train" / "binned_spectra.pkl")
     with open(path, "rb") as f:

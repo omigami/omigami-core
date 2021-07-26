@@ -29,8 +29,6 @@ class PretrainedFlowParameters:
         self.spectrum_dgw = spectrum_dgw
         self.model_uri = model_uri
         self.process_spectrum = ProcessSpectrumParameters(
-            data_gtw,
-            spectrum_dgw,
             spectrum_binner_output_path,
             overwrite_all_spectra,
             is_pretrained_flow=True,
@@ -82,7 +80,11 @@ def build_pretrained_flow(
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
         ms2deepscore_model_path = flow_parameters.model_uri
 
-        ProcessSpectrum(flow_parameters.process_spectrum)()
+        ProcessSpectrum(
+            flow_parameters.data_gtw,
+            flow_parameters.spectrum_dgw,
+            flow_parameters.process_spectrum,
+        )()
 
         model_registry = RegisterModel(
             project_name,

@@ -20,8 +20,6 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ProcessSpectrumParameters:
-    fs_gtw: DataGateway
-    spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
     spectrum_binner_output_path: str
     overwrite_all_spectra: bool = True
     is_pretrained_flow: bool = False
@@ -31,11 +29,13 @@ class ProcessSpectrumParameters:
 class ProcessSpectrum(Task):
     def __init__(
         self,
+        fs_gtw: DataGateway,
+        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
-        self._fs_gtw = process_parameters.fs_gtw
-        self._spectrum_dgw = process_parameters.spectrum_dgw
+        self._fs_gtw = fs_gtw
+        self._spectrum_dgw = spectrum_dgw
         self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
         self._spectrum_binner_output_path = (
             process_parameters.spectrum_binner_output_path

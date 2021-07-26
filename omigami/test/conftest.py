@@ -206,3 +206,15 @@ def clean_chunk_files():
     fs = get_fs(str(ASSETS_DIR))
     _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "positive")]
     _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "negative")]
+
+
+@pytest.fixture()
+def fitted_spectrum_binner_path():
+    return str(ASSETS_DIR / "ms2deepscore" / "to_train" / "fitted_spectrum_binner.pkl")
+
+
+@pytest.fixture()
+def fitted_spectrum_binner(fitted_spectrum_binner_path):
+    with open(fitted_spectrum_binner_path, "rb") as f:
+        spectrum_binner = pickle.load(f)
+    return spectrum_binner

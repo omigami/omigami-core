@@ -19,10 +19,10 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
     fs_gtw = MagicMock(spec=FSDataGateway)
     spectrum_gtw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = common_cleaned_data
-    parameters = ProcessSpectrumParameters(fs_gtw, spectrum_gtw, "some-path")
+    parameters = ProcessSpectrumParameters("some-path")
 
     with Flow("test-flow") as test_flow:
-        ProcessSpectrum(parameters)(spectrum_ids)
+        ProcessSpectrum(fs_gtw, spectrum_gtw, parameters)(spectrum_ids)
 
     res = test_flow.run()
 
@@ -57,14 +57,14 @@ def test_process_spectrum(
     fs_gtw = FSDataGateway()
     spectrum_gtw = MS2DeepScoreRedisSpectrumDataGateway()
     spectrum_binner_output_path = str(tmpdir / "spectrum_binner.pkl")
-    parameters = ProcessSpectrumParameters(
-        fs_gtw, spectrum_gtw, spectrum_binner_output_path
-    )
+    parameters = ProcessSpectrumParameters(spectrum_binner_output_path)
     spectrum_ids_chunks = [
         spectrum_ids[x : x + 10] for x in range(0, len(spectrum_ids), 10)
     ]
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(parameters)(spectrum_ids_chunks)
+        process_task = ProcessSpectrum(fs_gtw, spectrum_gtw, parameters)(
+            spectrum_ids_chunks
+        )
 
     res = test_flow.run()
     res_spectrum_ids = res.result[process_task].result
