@@ -1,6 +1,11 @@
 from dataclasses import dataclass
 from typing import Tuple, List
 
+import h5py
+from drfs import DRPath
+from drfs.filesystems import get_fs
+from keras.saving import hdf5_format
+from ms2deepscore.models import SiameseModel
 from prefect import Task
 
 from omigami.gateways import DataGateway
@@ -65,5 +70,13 @@ class TrainModel(Task):
             self._split_ratio,
         )
         model = trainer.train(spectrum_ids, scores_output_path, spectrum_binner)
-        model.save(self._output_path)
+        self._save_model(model)
         return self._output_path
+
+    def _save_model(self, model: SiameseModel):
+        path = DRPath(self._output_path)
+        fs = get_fs(path)
+
+        f = h5py.File(fs.open(path, "wb"), "w")
+        hdf5_format.save_model_to_hdf5(model.model, f)
+        f.attrs["spectrum_binner"] = model.spectrum_binner.to_json()
