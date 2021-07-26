@@ -46,7 +46,7 @@ def test_save_model_local(ms2deepscore_model, tmpdir):
     task._save_model(ms2deepscore_model.model)
 
     fs = get_fs(model_path)
-    assert fs.exist(model_path)
+    assert fs.exists(model_path)
 
 
 def test_save_model_s3(ms2deepscore_model, s3_mock):
@@ -56,4 +56,4 @@ def test_save_model_s3(ms2deepscore_model, s3_mock):
     task._save_model(ms2deepscore_model.model)
 
     fs = get_fs(model_path)
-    assert fs.exist(model_path)
+    assert fs.exists(model_path)
