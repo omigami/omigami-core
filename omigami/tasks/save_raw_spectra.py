@@ -60,17 +60,21 @@ class SaveRawSpectra(Task):
             A string leading to a json datafile containing spectrum data
 
         Returns:
-            A list of all the spectrum_ids contained in the files data
+            A list of all the spectrum_ids contained in the files data that
+            passed the cleaning process.
         """
         self.logger.info(f"Loading spectra from {gnps_path}")
         spectra_from_file = self._input_dgw.load_spectrum(gnps_path)
         spectrum_ids = [sp["spectrum_id"] for sp in spectra_from_file]
 
+        redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
+
         if self._overwrite_all_spectra:
             spectrum_ids_to_add = spectrum_ids
         else:
-            redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
             spectrum_ids_to_add = set(spectrum_ids) - set(redis_spectrum_ids)
+
+        spectrum_ids_already_added = list(set(spectrum_ids) - set(spectrum_ids_to_add))
 
         self.logger.info(f"Need to add new IDs: {len(spectrum_ids_to_add) > 0}")
         if len(spectrum_ids_to_add) > 0:
@@ -96,6 +100,7 @@ class SaveRawSpectra(Task):
             self.logger.info(
                 f"Adding {len(cleaned_spectrum_ids_to_add)} spectra to the db"
             )
-            return cleaned_spectrum_ids_to_add
+
+            return cleaned_spectrum_ids_to_add + spectrum_ids_already_added
 
         return spectrum_ids
