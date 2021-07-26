@@ -23,6 +23,7 @@ class ProcessSpectrumParameters:
     spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway
     overwrite_all_spectra: bool = True
     is_pretrained_flow: bool = False
+    n_bins: int = 10000
 
 
 class ProcessSpectrum(Task):
@@ -34,7 +35,7 @@ class ProcessSpectrum(Task):
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
         self._processor = SpectrumProcessor(process_parameters.is_pretrained_flow)
-        self._spectrum_binner = MS2DeepScoreSpectrumBinner()
+        self._spectrum_binner = MS2DeepScoreSpectrumBinner(process_parameters.n_bins)
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 

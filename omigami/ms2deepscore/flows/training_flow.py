@@ -40,6 +40,7 @@ class TrainingFlowParameters:
         fingerprint_n_bits: int,
         scores_decimals: int,
         overwrite_all_spectra: bool,
+        spectrum_binner_n_bins: int,
         overwrite_model: bool,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
@@ -76,7 +77,7 @@ class TrainingFlowParameters:
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw,
+            spectrum_dgw, overwrite_all_spectra, n_bins=spectrum_binner_n_bins
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(

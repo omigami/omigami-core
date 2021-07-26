@@ -65,6 +65,7 @@ def test_training_flow(flow_config):
         scores_output_path="some-path",
         fingerprint_n_bits=2048,
         scores_decimals=5,
+        spectrum_binner_n_bins=10000,
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -114,6 +115,7 @@ def test_run_training_flow(
         scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
         fingerprint_n_bits=2048,
         scores_decimals=5,
+        spectrum_binner_n_bins=10000,
     )
 
     model_parameters = ModelGeneralParameters(
