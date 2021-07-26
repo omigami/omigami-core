@@ -36,7 +36,7 @@ class MS2DeepScoreDeployer(Deployer):
         learning_rate: float = 0.001,
         layer_base_dims: Tuple[int] = (600, 500, 400),
         embedding_dim: int = 400,
-        dropout_rate: float = 0.2,
+        dropout_rate: float = 0.5,
         train_ratio: float = 0.9,
         validation_ratio: float = 0.05,
         test_ratio: float = 0.05,
