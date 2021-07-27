@@ -176,6 +176,7 @@ class MS2DeepScoreDeployer(Deployer):
             project_name=self._project_name,
             mlflow_output_dir=model_output_dir,
             mlflow_server=self._mlflow_server,
+            redis_db=self._redis_db,
         )
 
         flow = build_training_flow(
