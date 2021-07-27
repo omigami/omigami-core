@@ -4,4 +4,7 @@ from omigami.ms2deepscore.tasks.process_spectrum import (
     ProcessSpectrum,
     ProcessSpectrumParameters,
 )
-from omigami.ms2deepscore.tasks.register_model import RegisterModel
+from omigami.ms2deepscore.tasks.register_model import (
+    RegisterModel,
+    RegisterModelParameters,
+)

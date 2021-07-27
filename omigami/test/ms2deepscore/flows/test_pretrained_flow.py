@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
-
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -48,15 +47,15 @@ def test_pretrained_flow(flow_config, spectra_stored):
         data_gtw=mock_data_gtw,
         spectrum_dgw=spectrum_dgw,
         spectrum_binner_output_path="some path",
+        project_name="test",
+        mlflow_output_dir="model-output",
+        mlflow_server="mlflow-server",
     )
 
     flow = build_pretrained_flow(
-        project_name="test",
         flow_name="test-flow",
         flow_config=flow_config,
         flow_parameters=flow_params,
-        mlflow_output_dir="model-output",
-        mlflow_server="mlflow-server",
         deploy_model=False,
     )
 
@@ -107,15 +106,15 @@ def test_run_pretrained_flow(
             / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
         ),
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
+        project_name="test",
+        mlflow_output_dir=f"{tmpdir}/mlflow-model-output",
+        mlflow_server="mlflow-server",
     )
 
     flow = build_pretrained_flow(
-        project_name="test",
         flow_config=flow_config,
         flow_name="test-flow",
         flow_parameters=flow_params,
-        mlflow_output_dir=f"{tmpdir}/mlflow-model-output",
-        mlflow_server="mlflow-server",
         deploy_model=False,
     )
 

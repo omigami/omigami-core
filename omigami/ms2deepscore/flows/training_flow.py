@@ -1,17 +1,19 @@
-from dataclasses import dataclass
 from datetime import timedelta, date, datetime
 from typing import Tuple
-
-from prefect import Flow
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import DataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
-from omigami.ms2deepscore.tasks import ProcessSpectrumParameters, ProcessSpectrum
+from omigami.ms2deepscore.tasks import (
+    ProcessSpectrumParameters,
+    ProcessSpectrum,
+    RegisterModel,
+    DeployModel,
+    DeployModelParameters,
+    RegisterModelParameters,
+)
 from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScoreParameters,
     CalculateTanimotoScore,
@@ -26,6 +28,9 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
+from prefect import Flow
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
 
 
 class TrainingFlowParameters:
@@ -47,6 +52,9 @@ class TrainingFlowParameters:
         spectrum_binner_n_bins: int,
         overwrite_model: bool,
         model_output_path: str,
+        project_name: str,
+        mlflow_output_dir: str,
+        mlflow_server: str,
         epochs: int = 50,
         learning_rate: float = 0.001,
         layer_base_dims: Tuple[int] = (600, 500, 400),
@@ -59,6 +67,7 @@ class TrainingFlowParameters:
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
         environment: str = "dev",
+        redis_db: str = "0",
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
@@ -109,21 +118,19 @@ class TrainingFlowParameters:
             SplitRatio(train_ratio, validation_ratio, test_ratio),
         )
 
+        self.registering = RegisterModelParameters(
+            project_name, mlflow_output_dir, mlflow_server
+        )
 
-# TODO: Add to model task when it is created
-@dataclass
-class ModelGeneralParameters:
-    model_output_dir: str
-    mlflow_server: str
-    deploy_model: bool = False
+        self.deploying = DeployModelParameters(
+            redis_db, ion_mode, overwrite_model, environment
+        )
 
 
 def build_training_flow(
-    project_name: str,
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
-    model_parameters: ModelGeneralParameters,
     deploy_model: bool = False,
 ) -> Flow:
     """
@@ -141,8 +148,6 @@ def build_training_flow(
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Dataclass containing all flow parameters
-    model_parameters:
-        Dataclass containing general information for how to handle the model, like the output directory.
     -------
 
     """
@@ -173,10 +178,17 @@ def build_training_flow(
             flow_parameters.calculate_tanimoto_score
         )(processed_ids)
 
-        model_output_path = TrainModel(
+        ms2deepscore_model_path = TrainModel(
             flow_parameters.data_gtw,
             flow_parameters.spectrum_dgw,
             flow_parameters.training,
         )(processed_ids, scores_output_path)
+
+        model_registry = RegisterModel(flow_parameters.registering)(
+            ms2deepscore_model_path
+        )
+
+        if deploy_model:
+            DeployModel(flow_parameters.deploying)(model_registry)
 
     return training_flow

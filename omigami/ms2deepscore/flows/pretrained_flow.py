@@ -1,5 +1,3 @@
-from prefect import Flow
-
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import DataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
@@ -9,7 +7,9 @@ from omigami.ms2deepscore.tasks import (
     RegisterModel,
     ProcessSpectrumParameters,
     ProcessSpectrum,
+    RegisterModelParameters,
 )
+from prefect import Flow
 
 
 class PretrainedFlowParameters:
@@ -19,6 +19,9 @@ class PretrainedFlowParameters:
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         model_uri: str,
         spectrum_binner_output_path: str,
+        project_name: str,
+        mlflow_output_dir: str,
+        mlflow_server: str,
         overwrite_model: bool = False,
         environment: str = "dev",
         overwrite_all_spectra: bool = False,
@@ -34,6 +37,9 @@ class PretrainedFlowParameters:
             is_pretrained_flow=True,
             n_bins=spectrum_binner_n_bins,
         )
+        self.registering = RegisterModelParameters(
+            project_name, mlflow_output_dir, mlflow_server
+        )
         self.deploying = DeployModelParameters(
             redis_db,
             ion_mode="positive",
@@ -44,12 +50,9 @@ class PretrainedFlowParameters:
 
 
 def build_pretrained_flow(
-    project_name: str,
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: PretrainedFlowParameters,
-    mlflow_output_dir: str,
-    mlflow_server: str,
     deploy_model: bool = False,
 ) -> Flow:
     """
@@ -59,18 +62,12 @@ def build_pretrained_flow(
 
     Parameters
     ----------
-    project_name: str
-        Prefect parameter. The project name.
     flow_name:
         Name of the flow
     flow_config: FlowConfig
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Class containing all flow parameters
-    mlflow_output_dir:
-        Directory for saving the model.
-    mlflow_server:
-        Server used for MLFlow to save the model.
     deploy_model:
         Whether to create a seldon deployment with the result of the training flow.
     Returns
@@ -86,11 +83,9 @@ def build_pretrained_flow(
             flow_parameters.process_spectrum,
         )()
 
-        model_registry = RegisterModel(
-            project_name,
-            mlflow_output_dir,
-            mlflow_server,
-        )(ms2deepscore_model_path)
+        model_registry = RegisterModel(flow_parameters.registering)(
+            ms2deepscore_model_path
+        )
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)

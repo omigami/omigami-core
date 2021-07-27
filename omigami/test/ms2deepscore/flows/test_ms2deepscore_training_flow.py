@@ -14,7 +14,6 @@ from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
-    ModelGeneralParameters,
 )
 from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
@@ -49,6 +48,7 @@ def test_training_flow(flow_config):
         "ProcessSpectrum",
         "CalculateTanimotoScore",
         "TrainModel",
+        "RegisterModel",
     }
 
     flow_parameters = TrainingFlowParameters(
@@ -68,18 +68,15 @@ def test_training_flow(flow_config):
         spectrum_binner_n_bins=10000,
         model_output_path="some-path",
         spectrum_binner_output_path="some-path",
-    )
-    model_parameters = ModelGeneralParameters(
-        model_output_dir="model-output",
-        mlflow_server="mlflow-server",
-        deploy_model=False,
-    )
-    flow = build_training_flow(
         project_name="test",
+        mlflow_output_dir="model-output",
+        mlflow_server="mlflow-server",
+    )
+
+    flow = build_training_flow(
         flow_name=flow_name,
         flow_config=flow_config,
         flow_parameters=flow_parameters,
-        model_parameters=model_parameters,
     )
 
     assert flow
@@ -121,20 +118,15 @@ def test_run_training_flow(
         model_output_path=str(tmpdir / "model.hdf5"),
         dataset_checkpoint_name="spectrum_ids_500.pkl",
         epochs=10,
-    )
-
-    model_parameters = ModelGeneralParameters(
-        model_output_dir=f"{tmpdir}/model-output",
+        project_name="test",
+        mlflow_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
-        deploy_model=False,
     )
 
     flow = build_training_flow(
-        project_name="test",
         flow_config=flow_config,
         flow_name="test-flow",
         flow_parameters=flow_params,
-        model_parameters=model_parameters,
     )
 
     results = flow.run()
@@ -142,9 +134,8 @@ def test_run_training_flow(
 
     assert results.is_successful()
     results.result[d].is_cached()
-    # Model does not yet get created by flow
-    # assert "model" in os.listdir(tmpdir / "model-output")
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 18
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")
+    assert "model" in os.listdir(tmpdir / "model-output")
