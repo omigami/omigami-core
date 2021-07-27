@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
-
 from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
 from omigami.flow_config import (
     make_flow_config,
@@ -17,6 +16,7 @@ from omigami.ms2deepscore.flows.training_flow import (
     TrainingFlowParameters,
     ModelGeneralParameters,
 )
+from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -97,7 +97,7 @@ def test_run_training_flow(
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
-    data_gtw = FSDataGateway()
+    data_gtw = MS2DeepScoreFSDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
     spectrum_cleaner = SpectrumCleaner()
 

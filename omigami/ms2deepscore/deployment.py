@@ -7,7 +7,6 @@ from omigami.config import (
     S3_BUCKETS,
 )
 from omigami.deployment import Deployer
-from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.config import MODEL_DIRECTORIES, PROJECT_NAME
 from omigami.ms2deepscore.flows.pretrained_flow import (
     build_pretrained_flow,
@@ -18,6 +17,7 @@ from omigami.ms2deepscore.flows.training_flow import (
     build_training_flow,
     ModelGeneralParameters,
 )
+from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -44,7 +44,7 @@ class MS2DeepScoreDeployer(Deployer):
     ):
         super().__init__(**kwargs)
         self._mlflow_server = mlflow_server
-        self._data_gtw = FSDataGateway()
+        self._data_gtw = MS2DeepScoreFSDataGateway()
         self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
         self._project_name = project_name
         self._fingerprint_n_bits = fingerprint_n_bits

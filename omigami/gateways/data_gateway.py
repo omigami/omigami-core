@@ -36,3 +36,7 @@ class DataGateway(ABC):
     @abstractmethod
     def read_from_file(self, path: str) -> Any:
         pass
+
+    @abstractmethod
+    def save_model(self, model, output_path: str):
+        pass
