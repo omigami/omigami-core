@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -26,7 +26,7 @@ def test_train_model(
 
     with Flow("test") as flow:
         TrainModel(
-            fs_gtw=FSDataGateway(),
+            fs_gtw=MS2DeepScoreFSDataGateway(),
             spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(),
             train_parameters=parameters,
         )([], tanimoto_scores_path)
