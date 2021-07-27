@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from logging import getLogger
+from logging import Logger
 from typing import List, Tuple, Dict
 
 import numpy as np
@@ -10,8 +10,6 @@ from ms2deepscore.models import SiameseModel
 from tensorflow import keras
 
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
-
-log = getLogger(__name__)
 
 
 @dataclass
@@ -45,6 +43,7 @@ class SiameseModelTrainer:
         spectrum_ids: List[str],
         scores_output_path: str,
         spectrum_binner: SpectrumBinner,
+        logger: Logger = None,
     ) -> SiameseModel:
         binned_spectra = self._spectrum_gtw.read_binned_spectra(spectrum_ids)
         tanimoto_scores = pd.read_pickle(scores_output_path, compression="gzip")
@@ -52,6 +51,20 @@ class SiameseModelTrainer:
         data_generators = self._train_validation_test_split(
             binned_spectra, tanimoto_scores, len(spectrum_binner.known_bins)
         )
+        if logger:
+            logger.info(
+                f"{len(data_generators['training'].binned_spectrums)} spectra in "
+                f"training data "
+            )
+            logger.info(
+                f"{len(data_generators['validation'].binned_spectrums)} spectra in "
+                f"validation data "
+            )
+            logger.info(
+                f"{len(data_generators['testing'].binned_spectrums)} spectra in test "
+                f"data "
+            )
+
         model = SiameseModel(
             spectrum_binner,
             base_dims=self._layer_base_dims,
@@ -84,11 +97,6 @@ class SiameseModelTrainer:
         n_validation = int(self._split_ratio.validation * n_inchikeys)
         n_test = n_inchikeys - n_train - n_validation
 
-        log.info(
-            f"Split dataset into train: {n_train}, validation: {n_validation } "
-            f"and test: {n_test} InChiKeys"
-        )
-
         train_idx = np.random.choice(idx, n_train, replace=False)
         validation_idx = np.random.choice(
             list(set(idx) - set(train_idx)), n_validation, replace=False
@@ -106,10 +114,6 @@ class SiameseModelTrainer:
             )
             for key, idx in idxs.items()
         }
-
-        log.info(f"{len(spectra['training'])} spectra in training data")
-        log.info(f"{len(spectra['validation'])} spectra in validation data")
-        log.info(f"{len(spectra['testing'])} spectra in test data")
 
         data_generators = {
             key: DataGeneratorAllSpectrums(

@@ -9,9 +9,8 @@ import requests
 from drfs import DRPath
 from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
-
 from omigami.config import IonModes
-from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import DataGateway
 from omigami.spec2vec.entities.data_models import SpectrumInputData
 
 KEYS = [
@@ -55,7 +54,7 @@ KEYS = [
 ]
 
 
-class FSInputDataGateway(InputDataGateway):
+class FSDataGateway(DataGateway):
     def __init__(self, fs: Optional[FileSystemBase] = None):
         self.fs = fs
 
@@ -219,3 +218,22 @@ class FSInputDataGateway(InputDataGateway):
             pickle.dump(obj, f)
 
         return True
+
+    def read_from_file(self, path: str) -> Any:
+        path = DRPath(path)
+        if self.fs is None:
+            self.fs = get_fs(path)
+
+        with self.fs.open(path, "rb") as f:
+            obj = pickle.load(f)
+
+        return obj
+
+    def put(self, tmp_path: str, path: str):
+        if self.fs is None:
+            self.fs = get_fs(path)
+
+        self.fs.put(tmp_path, path)
+
+    def save(self, obj, output_path: str):
+        pass

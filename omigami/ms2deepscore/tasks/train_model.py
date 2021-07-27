@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from typing import Tuple, List
 
-from ms2deepscore import SpectrumBinner
-from prefect import Task
-
+from omigami.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -12,11 +10,13 @@ from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
     SplitRatio,
 )
 from omigami.utils import merge_prefect_task_configs
+from prefect import Task
 
 
 @dataclass
 class TrainModelParameters:
     output_path: str
+    spectrum_binner_output_path: str
     epochs: int = 50
     learning_rate: float = 0.001
     layer_base_dims: Tuple[int] = (600, 500, 400)
@@ -28,11 +28,14 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
+        fs_gtw: DataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         train_parameters: TrainModelParameters,
         **kwargs,
     ):
+        self._fs_gtw = fs_gtw
         self._spectrum_gtw = spectrum_dgw
+        self._spectrum_binner_output_path = train_parameters.spectrum_binner_output_path
         self._output_path = train_parameters.output_path
         self._epochs = train_parameters.epochs
         self._learning_rate = train_parameters.learning_rate
@@ -48,8 +51,9 @@ class TrainModel(Task):
         self,
         spectrum_ids: List[str] = None,
         scores_output_path: str = None,
-        spectrum_binner: SpectrumBinner = None,
     ) -> str:
+        spectrum_binner = self._fs_gtw.read_from_file(self._spectrum_binner_output_path)
+
         trainer = SiameseModelTrainer(
             self._spectrum_gtw,
             self._epochs,
@@ -59,6 +63,8 @@ class TrainModel(Task):
             self._dropout_rate,
             self._split_ratio,
         )
-        model = trainer.train(spectrum_ids, scores_output_path, spectrum_binner)
-        model.save(self._output_path)
+        model = trainer.train(
+            spectrum_ids, scores_output_path, spectrum_binner, self.logger
+        )
+        self._fs_gtw.save(model, self._output_path)
         return self._output_path

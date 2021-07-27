@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import List, Set
+from typing import Set
 
-import prefect
+from prefect import Task
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -9,7 +10,6 @@ from omigami.ms2deepscore.helper_classes.tanimoto_score_calculator import (
     TanimotoScoreCalculator,
 )
 from omigami.utils import merge_prefect_task_configs
-from prefect import Task
 
 
 @dataclass
@@ -33,16 +33,16 @@ class CalculateTanimotoScore(Task):
         self._n_bits = parameters.n_bits
         self._decimals = parameters.decimals
         config = merge_prefect_task_configs(kwargs)
-        super().__init__(**config, trigger=prefect.triggers.all_successful)
+        super().__init__(**config)
 
-    def run(self, spectrum_ids_chunks: List[Set[str]] = None) -> str:
-        flattened_ids = [item for elem in spectrum_ids_chunks for item in elem]
+    def run(self, spectrum_ids: Set[str] = None) -> str:
         self.logger.info(f"Calculating the Tanimoto Scores")
         calculator = TanimotoScoreCalculator(
             spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(), n_bits=self._n_bits
         )
         path = calculator.calculate(
-            flattened_ids,
+            list(spectrum_ids),
             self._scores_output_path,
+            self.logger,
         )
         return path

@@ -4,19 +4,19 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
-
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
     ModelGeneralParameters,
 )
+from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -37,9 +37,8 @@ def flow_config():
     return flow_config
 
 
-@pytest.mark.skip(reason="This test will be fixed in the next PR merges.")
 def test_training_flow(flow_config):
-    mock_input_dgw = MagicMock(spec=FSInputDataGateway)
+    mock_data_gtw = MagicMock(spec=FSDataGateway)
     mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     mock_cleaner = MagicMock(spec=SpectrumCleaner)
     flow_name = "test-flow"
@@ -49,10 +48,11 @@ def test_training_flow(flow_config):
         "SaveRawSpectra",
         "ProcessSpectrum",
         "CalculateTanimotoScore",
+        "TrainModel",
     }
 
     flow_parameters = TrainingFlowParameters(
-        input_dgw=mock_input_dgw,
+        data_gtw=mock_data_gtw,
         spectrum_dgw=mock_spectrum_dgw,
         spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
@@ -66,6 +66,8 @@ def test_training_flow(flow_config):
         fingerprint_n_bits=2048,
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
+        model_output_path="some-path",
+        spectrum_binner_output_path="some-path",
     )
     model_parameters = ModelGeneralParameters(
         model_output_dir="model-output",
@@ -88,7 +90,6 @@ def test_training_flow(flow_config):
     assert task_names == expected_tasks
 
 
-@pytest.mark.skip(reason="This test will be fixed in the next PR merges.")
 def test_run_training_flow(
     tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
 ):
@@ -96,18 +97,18 @@ def test_run_training_flow(
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
-    input_dgw = FSInputDataGateway()
+    data_gtw = MS2DeepScoreFSDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
     spectrum_cleaner = SpectrumCleaner()
 
     flow_params = TrainingFlowParameters(
-        input_dgw=input_dgw,
+        data_gtw=data_gtw,
         spectrum_dgw=spectrum_dgw,
         spectrum_cleaner=spectrum_cleaner,
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
         output_dir=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
-        dataset_name="SMALL_GNPS.json",
+        dataset_name="SMALL_GNPS_500_spectra.json",
         chunk_size=150000,
         ion_mode="positive",
         overwrite_model=True,
@@ -116,6 +117,10 @@ def test_run_training_flow(
         fingerprint_n_bits=2048,
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
+        spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
+        model_output_path=str(tmpdir / "model.hdf5"),
+        dataset_checkpoint_name="spectrum_ids_500.pkl",
+        epochs=10,
     )
 
     model_parameters = ModelGeneralParameters(
@@ -139,6 +144,7 @@ def test_run_training_flow(
     results.result[d].is_cached()
     # Model does not yet get created by flow
     # assert "model" in os.listdir(tmpdir / "model-output")
-    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
+    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 18
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
+    assert fs.exists(tmpdir / "model.hdf5")

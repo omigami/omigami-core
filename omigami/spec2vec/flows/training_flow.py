@@ -4,7 +4,7 @@ from prefect import Flow, unmapped
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import DataGateway
 from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
@@ -32,7 +32,7 @@ from omigami.tasks import (
 class TrainingFlowParameters:
     def __init__(
         self,
-        input_dgw: InputDataGateway,
+        data_gtw: DataGateway,
         spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
@@ -50,7 +50,7 @@ class TrainingFlowParameters:
         overwrite_model: bool = False,
         environment: str = "dev",
     ):
-        self.input_dgw = input_dgw
+        self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
 
         if ion_mode not in ION_MODES:
@@ -63,7 +63,7 @@ class TrainingFlowParameters:
             self.downloading.download_path, chunk_size, ion_mode
         )
         self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw, spectrum_cleaner
+            spectrum_dgw, data_gtw, spectrum_cleaner
         )
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
@@ -119,12 +119,12 @@ def build_training_flow(
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
         spectrum_ids = DownloadData(
-            flow_parameters.input_dgw,
+            flow_parameters.data_gtw,
             flow_parameters.downloading,
         )()
 
         gnps_chunks = CreateChunks(
-            flow_parameters.input_dgw,
+            flow_parameters.data_gtw,
             flow_parameters.chunking,
         )(spectrum_ids)
 
@@ -133,7 +133,7 @@ def build_training_flow(
         )
 
         processed_ids = ProcessSpectrum(
-            flow_parameters.input_dgw, flow_parameters.processing
+            flow_parameters.data_gtw, flow_parameters.processing
         ).map(chunked_spectrum_ids)
 
         model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(

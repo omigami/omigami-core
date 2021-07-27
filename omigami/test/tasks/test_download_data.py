@@ -9,8 +9,8 @@ from drfs.filesystems import get_fs
 from prefect import Flow
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.gateways.data_gateway import InputDataGateway
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.data_gateway import DataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.tasks.download_data import DownloadParameters, DownloadData
 from omigami.test.conftest import ASSETS_DIR
 from omigami.utils import create_prefect_result_from_path
@@ -23,11 +23,11 @@ def test_refresh_data(mock_default_config, tmpdir):
     # Setting up test
     file_name = "file_name"
 
-    input_dgw = MagicMock(spec=InputDataGateway)
+    data_gtw = MagicMock(spec=DataGateway)
     download_params = DownloadParameters("input-uri", tmpdir, file_name, "checkpoint")
 
     download = DownloadData(
-        input_dgw,
+        data_gtw,
         download_params,
     )
 
@@ -57,14 +57,14 @@ def test_refresh_data(mock_default_config, tmpdir):
 
 
 def test_download_data(mock_default_config, tmpdir):
-    input_dgw = MagicMock(spec=InputDataGateway)
-    input_dgw.download_gnps.return_value = "download"
-    input_dgw.get_spectrum_ids.return_value = "spectrum_ids"
+    data_gtw = MagicMock(spec=DataGateway)
+    data_gtw.download_gnps.return_value = "download"
+    data_gtw.get_spectrum_ids.return_value = "spectrum_ids"
     download_params = DownloadParameters("input-uri", tmpdir, "file_name", "checkpoint")
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
-            input_dgw,
+            data_gtw,
             download_params,
         )()
         download.checkpointing = False
@@ -73,19 +73,19 @@ def test_download_data(mock_default_config, tmpdir):
     assert res.is_successful()
 
     assert len(return_res) == 12
-    input_dgw.download_gnps.assert_called_once_with(
+    data_gtw.download_gnps.assert_called_once_with(
         download_params.input_uri, download_params.download_path
     )
-    input_dgw.get_spectrum_ids.assert_called_once_with(download_params.download_path)
-    input_dgw.serialize_to_file.assert_called_once_with(
+    data_gtw.get_spectrum_ids.assert_called_once_with(download_params.download_path)
+    data_gtw.serialize_to_file.assert_called_once_with(
         download_params.checkpoint_path, "spectrum_ids"
     )
 
 
 def test_download_existing_data(mock_default_config):
     file_name = "SMALL_GNPS.json"
-    input_dgw = FSInputDataGateway()
-    input_dgw.download_gnps = lambda *args: None
+    data_gtw = FSDataGateway()
+    data_gtw.download_gnps = lambda *args: None
     fs = get_fs(ASSETS_DIR)
     params = DownloadParameters(
         SOURCE_URI_PARTIAL_GNPS,
@@ -96,7 +96,7 @@ def test_download_existing_data(mock_default_config):
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
-            input_dgw,
+            data_gtw,
             params,
         )()
 
@@ -115,7 +115,7 @@ def test_download_existing_data_s3(mock_default_config):
     checkpoint_name = (
         "spec2vec-training-flow/downloaded_datasets/test_10k/spectrum_ids.pkl"
     )
-    input_dgw = FSInputDataGateway()
+    data_gtw = FSDataGateway()
     fs = get_fs(dir_)
     download_params = DownloadParameters(
         SOURCE_URI_PARTIAL_GNPS, dir_, file_name, checkpoint_name
@@ -123,7 +123,7 @@ def test_download_existing_data_s3(mock_default_config):
 
     with Flow("test-flow") as test_flow:
         download = DownloadData(
-            input_dgw,
+            data_gtw,
             download_params,
             **create_prefect_result_from_path(download_params.download_path),
         )()

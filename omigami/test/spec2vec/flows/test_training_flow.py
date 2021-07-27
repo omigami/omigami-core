@@ -11,7 +11,7 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
 )
@@ -41,7 +41,7 @@ def flow_config():
 
 def test_training_flow(flow_config):
     mock_spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
-    mock_input_dgw = MagicMock(spec=FSInputDataGateway)
+    mock_data_gtw = MagicMock(spec=FSDataGateway)
     mock_cleaner = MagicMock(spec=SpectrumCleaner)
     expected_tasks = {
         "DownloadData",
@@ -53,7 +53,7 @@ def test_training_flow(flow_config):
         "TrainModel",
     }
     flow_params = TrainingFlowParameters(
-        input_dgw=mock_input_dgw,
+        data_gtw=mock_data_gtw,
         spectrum_dgw=mock_spectrum_dgw,
         spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
@@ -99,11 +99,11 @@ def test_run_training_flow(
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
-    input_dgw = FSInputDataGateway()
+    data_gtw = FSDataGateway()
     spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
     spectrum_cleaner = SpectrumCleaner()
     flow_params = TrainingFlowParameters(
-        input_dgw=input_dgw,
+        data_gtw=data_gtw,
         spectrum_dgw=spectrum_dgw,
         spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,

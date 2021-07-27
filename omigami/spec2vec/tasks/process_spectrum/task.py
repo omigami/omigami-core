@@ -3,7 +3,7 @@ from typing import Set, List
 
 from prefect import Task
 
-from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import DataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
@@ -25,11 +25,11 @@ class ProcessSpectrumParameters:
 class ProcessSpectrum(Task):
     def __init__(
         self,
-        input_dgw: InputDataGateway,
+        data_gtw: DataGateway,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
-        self._input_dgw = input_dgw
+        self._data_gtw = data_gtw
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._n_decimals = process_parameters.n_decimals
         self._overwrite_all_spectra = process_parameters.overwrite_all_spectra

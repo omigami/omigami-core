@@ -4,17 +4,18 @@ import pytest
 import requests_mock
 from drfs import DRPath
 from drfs.filesystems import get_fs
+from ms2deepscore import SpectrumBinner
 
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     SOURCE_URI_COMPLETE_GNPS,
 )
-from omigami.gateways.input_data_gateway import FSInputDataGateway, KEYS
+from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.test.conftest import ASSETS_DIR
 
 
 def test_load_gnps(local_gnps_small_json):
-    for res in FSInputDataGateway().load_spectrum(local_gnps_small_json):
+    for res in FSDataGateway().load_spectrum(local_gnps_small_json):
         assert isinstance(res, dict)
         for k in KEYS:
             assert k in res
@@ -30,7 +31,7 @@ def test_load_gnps(local_gnps_small_json):
     ],
 )
 def test_download_gnps_and_serialize_to_local(uri, tmpdir):
-    _ = FSInputDataGateway().download_gnps(uri=uri, output_path=tmpdir / "test-ds")
+    _ = FSDataGateway().download_gnps(uri=uri, output_path=tmpdir / "test-ds")
 
     assert (tmpdir / "test-ds").exists()
 
@@ -38,7 +39,7 @@ def test_download_gnps_and_serialize_to_local(uri, tmpdir):
 def test_download_and_serialize_to_remote(loaded_data, s3_mock):
     with requests_mock.Mocker() as m:
         m.get(SOURCE_URI_PARTIAL_GNPS, text="bac")
-        _ = FSInputDataGateway().download_gnps(
+        _ = FSDataGateway().download_gnps(
             uri=SOURCE_URI_PARTIAL_GNPS,
             output_path="s3://test-bucket/test-ds",
         )
@@ -52,7 +53,7 @@ def test_resume_download(tmpdir, local_gnps_small_json):
     existing_file_size = path.stat().st_size
     new_path = f"{tmpdir}/SMALL_GNPS_remaining.json"
 
-    FSInputDataGateway(get_fs(path))._resume_download(
+    FSDataGateway(get_fs(path))._resume_download(
         existing_file_size, SOURCE_URI_COMPLETE_GNPS, new_path
     )
 
@@ -62,14 +63,14 @@ def test_resume_download(tmpdir, local_gnps_small_json):
 
 
 def test_get_spectrum_ids(local_gnps_small_json):
-    ids = FSInputDataGateway().get_spectrum_ids(local_gnps_small_json)
+    ids = FSDataGateway().get_spectrum_ids(local_gnps_small_json)
 
     assert len(ids) == 100
     assert ids[0] == "CCMSLIB00000001547"
 
 
 def test_load_spectrum_ids(local_gnps_small_json, spectrum_ids):
-    spectrum_data = FSInputDataGateway().load_spectrum_ids(
+    spectrum_data = FSDataGateway().load_spectrum_ids(
         local_gnps_small_json, spectrum_ids[:10]
     )
 
@@ -87,7 +88,7 @@ def test_load_spectrum_ids(local_gnps_small_json, spectrum_ids):
 def test_chunk_gnps_outputs(
     local_gnps_small_json, clean_chunk_files, ion_mode, expected_chunk_files
 ):
-    dgw = FSInputDataGateway()
+    dgw = FSDataGateway()
     fs = get_fs(ASSETS_DIR)
 
     dgw.chunk_gnps(local_gnps_small_json, chunk_size=150000, ion_mode=ion_mode)
@@ -109,7 +110,7 @@ def test_chunk_gnps_data_consistency(
     expected_chunk_files,
     spectrum_ids_by_mode,
 ):
-    dgw = FSInputDataGateway()
+    dgw = FSDataGateway()
     fs = get_fs(ASSETS_DIR)
 
     dgw.chunk_gnps(local_gnps_small_json, chunk_size=150000, ion_mode=ion_mode)
@@ -122,3 +123,18 @@ def test_chunk_gnps_data_consistency(
         chunked_ids += dgw.get_spectrum_ids(str(p))
 
     assert set(chunked_ids) == set(spectrum_ids_by_mode[ion_mode])
+
+
+def test_serialize_to_file(tmpdir, fitted_spectrum_binner):
+    dgw = FSDataGateway()
+    path = str(tmpdir / "object.pkl")
+    dgw.serialize_to_file(path, fitted_spectrum_binner)
+
+    assert dgw.fs.exists(path)
+
+
+def test_read_from_file(tmpdir, fitted_spectrum_binner_path):
+    dgw = FSDataGateway()
+    obj = dgw.read_from_file(fitted_spectrum_binner_path)
+
+    assert isinstance(obj, SpectrumBinner)

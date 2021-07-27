@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta, date, datetime
+from typing import Tuple
 
 from prefect import Flow
 from prefect.schedules import Schedule
@@ -7,13 +8,15 @@ from prefect.schedules.clocks import IntervalClock
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import DataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
+from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
 from omigami.ms2deepscore.tasks import ProcessSpectrumParameters, ProcessSpectrum
 from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScoreParameters,
     CalculateTanimotoScore,
 )
+from omigami.ms2deepscore.tasks.train_model import TrainModelParameters, TrainModel
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
@@ -28,7 +31,7 @@ from omigami.tasks import (
 class TrainingFlowParameters:
     def __init__(
         self,
-        input_dgw: InputDataGateway,
+        data_gtw: DataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
@@ -40,14 +43,24 @@ class TrainingFlowParameters:
         fingerprint_n_bits: int,
         scores_decimals: int,
         overwrite_all_spectra: bool,
+        spectrum_binner_output_path: str,
         spectrum_binner_n_bins: int,
         overwrite_model: bool,
+        model_output_path: str,
+        epochs: int = 50,
+        learning_rate: float = 0.001,
+        layer_base_dims: Tuple[int] = (600, 500, 400),
+        embedding_dim: int = 400,
+        dropout_rate: float = 0.2,
+        train_ratio: float = 0.9,
+        validation_ratio: float = 0.05,
+        test_ratio: float = 0.05,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
         environment: str = "dev",
     ):
-        self.input_dgw = input_dgw
+        self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
 
         if schedule_task_days != None:
@@ -73,15 +86,27 @@ class TrainingFlowParameters:
             self.downloading.download_path, chunk_size, ion_mode
         )
         self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, input_dgw, spectrum_cleaner, overwrite_all_spectra
+            spectrum_dgw, data_gtw, spectrum_cleaner, overwrite_all_spectra
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
-            spectrum_dgw, overwrite_all_spectra, n_bins=spectrum_binner_n_bins
+            spectrum_binner_output_path,
+            n_bins=spectrum_binner_n_bins,
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
             scores_output_path, fingerprint_n_bits, scores_decimals
+        )
+
+        self.training = TrainModelParameters(
+            model_output_path,
+            spectrum_binner_output_path,
+            epochs,
+            learning_rate,
+            layer_base_dims,
+            embedding_dim,
+            dropout_rate,
+            SplitRatio(train_ratio, validation_ratio, test_ratio),
         )
 
 
@@ -125,12 +150,12 @@ def build_training_flow(
     with Flow(name=flow_name, **flow_config.kwargs) as training_flow:
 
         spectrum_ids = DownloadData(
-            flow_parameters.input_dgw,
+            flow_parameters.data_gtw,
             flow_parameters.downloading,
         )()
 
         gnps_chunks = CreateChunks(
-            flow_parameters.input_dgw,
+            flow_parameters.data_gtw,
             flow_parameters.chunking,
         )(spectrum_ids)
 
@@ -138,12 +163,20 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_ids = ProcessSpectrum(flow_parameters.process_spectrum)(
-            spectrum_ids_chunks
-        )
+        processed_ids = ProcessSpectrum(
+            flow_parameters.data_gtw,
+            flow_parameters.spectrum_dgw,
+            flow_parameters.process_spectrum,
+        )(spectrum_ids_chunks)
 
         scores_output_path = CalculateTanimotoScore(
             flow_parameters.calculate_tanimoto_score
         )(processed_ids)
+
+        model_output_path = TrainModel(
+            flow_parameters.data_gtw,
+            flow_parameters.spectrum_dgw,
+            flow_parameters.training,
+        )(processed_ids, scores_output_path)
 
     return training_flow

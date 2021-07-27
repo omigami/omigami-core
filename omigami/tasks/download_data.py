@@ -5,7 +5,7 @@ from typing import List
 
 from prefect import Task
 
-from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import DataGateway
 from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
 
@@ -61,7 +61,7 @@ class DownloadData(Task):
 
     Parameters:
     ----------
-    input_dgw: InputDataGateway
+    data_gtw: InputDataGateway
         Class that holds the functions and requirments to download the dataset in need
     download_parameters: DownloadParameters
         Dataclass holding variables for the downloading process
@@ -71,11 +71,11 @@ class DownloadData(Task):
 
     def __init__(
         self,
-        input_dgw: InputDataGateway,
+        data_gtw: DataGateway,
         download_parameters: DownloadParameters,
         **kwargs,
     ):
-        self._input_dgw = input_dgw
+        self._data_gtw = data_gtw
         self.input_uri = download_parameters.input_uri
         self.download_path = download_parameters.download_path
         self.checkpoint_path = download_parameters.checkpoint_path
@@ -118,10 +118,10 @@ class DownloadData(Task):
     def run(self) -> List[str]:
 
         if self.refresh_download(self.download_path):
-            self._input_dgw.download_gnps(self.input_uri, self.download_path)
+            self._data_gtw.download_gnps(self.input_uri, self.download_path)
 
-        spectrum_ids = self._input_dgw.get_spectrum_ids(self.download_path)
-        self._input_dgw.serialize_to_file(self.checkpoint_path, spectrum_ids)
+        spectrum_ids = self._data_gtw.get_spectrum_ids(self.download_path)
+        self._data_gtw.serialize_to_file(self.checkpoint_path, spectrum_ids)
         self.logger.info(
             f"Downloaded {len(spectrum_ids)} spectra from {self.input_uri} to {self.download_path}."
         )

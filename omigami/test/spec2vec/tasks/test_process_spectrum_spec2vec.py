@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from prefect import Flow
 
-from omigami.gateways.input_data_gateway import FSInputDataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
@@ -19,11 +19,11 @@ from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
 def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
     spectrum_gtw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = common_cleaned_data
-    input_gtw = FSInputDataGateway()
+    data_gtw = FSDataGateway()
     parameters = ProcessSpectrumParameters(spectrum_gtw, 2, True)
 
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(input_gtw, parameters)(spectrum_ids)
+        process_task = ProcessSpectrum(data_gtw, parameters)(spectrum_ids)
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -41,9 +41,9 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
 def test_process_spectrum(spectrum_ids, spectra_stored, mock_default_config):
     spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
     parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
-    input_gtw = FSInputDataGateway()
+    data_gtw = FSDataGateway()
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(input_gtw, parameters)(spectrum_ids)
+        process_task = ProcessSpectrum(data_gtw, parameters)(spectrum_ids)
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -57,14 +57,14 @@ def test_process_spectrum(spectrum_ids, spectra_stored, mock_default_config):
 )
 def test_process_spectrum_map(spectrum_ids, spectra_stored, mock_default_config):
     spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
-    input_gtw = FSInputDataGateway()
+    data_gtw = FSDataGateway()
     parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
     chunked_paths = [
         spectrum_ids[:50],
         spectrum_ids[50:],
     ]
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(input_gtw, parameters).map(chunked_paths)
+        process_task = ProcessSpectrum(data_gtw, parameters).map(chunked_paths)
 
     res = test_flow.run()
     data = res.result[process_task].result

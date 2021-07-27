@@ -5,7 +5,7 @@ from drfs import DRPath
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.gateways.data_gateway import InputDataGateway
+from omigami.gateways.data_gateway import DataGateway
 from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
 
@@ -26,11 +26,11 @@ class ChunkingParameters:
 class CreateChunks(Task):
     def __init__(
         self,
-        input_dgw: InputDataGateway,
+        data_gtw: DataGateway,
         chunking_parameters: ChunkingParameters,
         **kwargs,
     ):
-        self._input_dgw = input_dgw
+        self._data_gtw = data_gtw
         self._chunk_size = chunking_parameters.chunk_size
         self._file_path = chunking_parameters.file_path
         self._ion_mode = chunking_parameters.ion_mode
@@ -47,7 +47,7 @@ class CreateChunks(Task):
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
         self.logger.info(f"Loading file {self._file_path} for chunking.")
         # maybe we should save which ids are on each chunk in the pickle file
-        chunk_paths = self._input_dgw.chunk_gnps(
+        chunk_paths = self._data_gtw.chunk_gnps(
             self._file_path, self._chunk_size, self._ion_mode, self.logger
         )
         self.logger.info(
@@ -56,6 +56,6 @@ class CreateChunks(Task):
         )
 
         self.logger.info(f"Saving pickle with file paths to {self._chunk_paths_file}")
-        self._input_dgw.serialize_to_file(self._chunk_paths_file, chunk_paths)
+        self._data_gtw.serialize_to_file(self._chunk_paths_file, chunk_paths)
 
         return chunk_paths
