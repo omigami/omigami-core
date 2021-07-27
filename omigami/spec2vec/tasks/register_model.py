@@ -1,33 +1,38 @@
+from dataclasses import dataclass
 from typing import Union, Dict
 
 import mlflow
 from gensim.models import Word2Vec
-from prefect import Task
-
 from omigami.model_register import MLFlowModelRegister
 from omigami.spec2vec.predictor import Spec2VecPredictor
 from omigami.utils import merge_prefect_task_configs
+from prefect import Task
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
+
+
+@dataclass
+class RegisterModelParameters:
+    experiment_name: str
+    mlflow_output_path: str
+    server_uri: str
+    n_decimals: int
+    intensity_weighting_power: Union[float, int]
+    allowed_missing_percentage: Union[float, int]
 
 
 class RegisterModel(Task):
     def __init__(
         self,
-        experiment_name: str,
-        path: str,
-        n_decimals: int,
-        intensity_weighting_power: Union[float, int],
-        allowed_missing_percentage: Union[float, int],
-        server_uri: str,
+        parameters: RegisterModelParameters,
         **kwargs,
     ):
-        self._experiment_name = experiment_name
-        self._path = path
-        self._n_decimals = n_decimals
-        self._intensity_weighting_power = intensity_weighting_power
-        self._allowed_missing_percentage = allowed_missing_percentage
-        self._server_uri = server_uri
+        self._experiment_name = parameters.experiment_name
+        self._path = parameters.mlflow_output_path
+        self._n_decimals = parameters.n_decimals
+        self._intensity_weighting_power = parameters.intensity_weighting_power
+        self._allowed_missing_percentage = parameters.allowed_missing_percentage
+        self._server_uri = parameters.server_uri
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 

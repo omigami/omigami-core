@@ -140,8 +140,6 @@ def build_training_flow(
 
     Parameters
     ----------
-    project_name: str
-        Prefect parameter. The project name.
     flow_name:
         Name of the flow
     flow_config: FlowConfig

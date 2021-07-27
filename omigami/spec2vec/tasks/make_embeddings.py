@@ -1,8 +1,7 @@
+from dataclasses import dataclass
 from typing import Union, Dict, Set
 
 from gensim.models import Word2Vec
-from prefect import Task
-
 from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
     RedisSpectrumDataGateway,
@@ -10,21 +9,27 @@ from omigami.gateways.redis_spectrum_data_gateway import (
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
+from prefect import Task
+
+
+@dataclass
+class MakeEmbeddingsParameters:
+    n_decimals: int
+    intensity_weighting_power: Union[float, int] = 0.5
+    allowed_missing_percentage: Union[float, int] = 5.0
 
 
 class MakeEmbeddings(Task):
     def __init__(
         self,
         spectrum_dgw: RedisSpectrumDataGateway,
-        n_decimals: int,
-        intensity_weighting_power: Union[float, int] = 0.5,
-        allowed_missing_percentage: Union[float, int] = 5.0,
+        parameters: MakeEmbeddingsParameters,
         **kwargs,
     ):
         self._spectrum_dgw = spectrum_dgw
-        self._embedding_maker = EmbeddingMaker(n_decimals=n_decimals)
-        self._intensity_weighting_power = intensity_weighting_power
-        self._allowed_missing_percentage = allowed_missing_percentage
+        self._embedding_maker = EmbeddingMaker(n_decimals=parameters.n_decimals)
+        self._intensity_weighting_power = parameters.intensity_weighting_power
+        self._allowed_missing_percentage = parameters.allowed_missing_percentage
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)

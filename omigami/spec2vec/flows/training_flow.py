@@ -1,7 +1,5 @@
 from typing import Union
 
-from prefect import Flow, unmapped
-
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import DataGateway
@@ -14,6 +12,8 @@ from omigami.spec2vec.tasks import (
     TrainModel,
     TrainModelParameters,
     RegisterModel,
+    RegisterModelParameters,
+    MakeEmbeddingsParameters,
 )
 from omigami.spec2vec.tasks.process_spectrum import (
     ProcessSpectrumParameters,
@@ -27,6 +27,7 @@ from omigami.tasks import (
     SaveRawSpectra,
     SaveRawSpectraParameters,
 )
+from prefect import Flow, unmapped
 
 
 class TrainingFlowParameters:
@@ -44,6 +45,11 @@ class TrainingFlowParameters:
         overwrite_all_spectra: bool,
         iterations: int,
         window: int,
+        project_name: str,
+        model_output_dir: str,
+        mlflow_server: str,
+        intensity_weighting_power: Union[float, int] = 0.5,
+        allowed_missing_percentage: Union[float, int] = 5.0,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
@@ -71,21 +77,26 @@ class TrainingFlowParameters:
             overwrite_all_spectra,
         )
         self.training = TrainModelParameters(iterations, window)
+        self.registering = RegisterModelParameters(
+            project_name,
+            model_output_dir,
+            mlflow_server,
+            n_decimals,
+            intensity_weighting_power,
+            allowed_missing_percentage,
+        )
+        self.embedding = MakeEmbeddingsParameters(
+            n_decimals, intensity_weighting_power, allowed_missing_percentage
+        )
         self.deploying = DeployModelParameters(
             redis_db, ion_mode, overwrite_model, environment
         )
 
 
 def build_training_flow(
-    project_name: str,
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
-    # TODO: incorporate the next parameters into data classes
-    model_output_dir: str,
-    mlflow_server: str,
-    intensity_weighting_power: Union[float, int] = 0.5,
-    allowed_missing_percentage: Union[float, int] = 5.0,
     deploy_model: bool = False,
 ) -> Flow:
     """
@@ -95,22 +106,12 @@ def build_training_flow(
 
     Parameters
     ----------
-    project_name: str
-        Prefect parameter. The project name.
     flow_name:
         Name of the flow
     flow_config: FlowConfig
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Class containing all flow parameters
-    model_output_dir:
-        Directory for saving the model.
-    mlflow_server:
-        Server used for MLFlow to save the model.
-    intensity_weighting_power:
-        Exponent used to scale intensity weights for each word.
-    allowed_missing_percentage:
-        Number of what percentage of a spectrum is allowed to be unknown to the model.
     deploy_model:
         Whether to create a seldon deployment with the result of the training flow.
     Returns
@@ -140,22 +141,12 @@ def build_training_flow(
             processed_ids
         )
 
-        # TODO: add register model parameters
-        model_registry = RegisterModel(
-            project_name,
-            model_output_dir,
-            flow_parameters.processing.n_decimals,
-            intensity_weighting_power,
-            allowed_missing_percentage,
-            mlflow_server,
-        )(model)
+        model_registry = RegisterModel(flow_parameters.registering)(model)
 
         # TODO: this task prob doesnt need chunking or can be done in larger chunks
         _ = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
-            flow_parameters.processing.n_decimals,
-            intensity_weighting_power,
-            allowed_missing_percentage,
+            flow_parameters.embedding,
         ).map(unmapped(model), unmapped(model_registry), chunked_spectrum_ids)
 
         if deploy_model:

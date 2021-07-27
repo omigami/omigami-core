@@ -47,7 +47,7 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     deployer = MS2DeepScoreDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.b8908e8",
+        image="drtools/prefect:omigami-SNAPSHOT.c166359",
         dataset_name="10k",  # ms2deepscore can not be trained with the small dataset
         # because the minimum batch size to train is 32 samples and the small dataset
         # will lead to less samples than that.
@@ -58,6 +58,7 @@ def test_deploy_training_flow():
         overwrite_all_spectra=True,
         epochs=10,
         **login_config,
+        deploy_model=True,
     )
     flow_id = deployer.deploy_training_flow(flow_name="running-dev")
 
