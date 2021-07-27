@@ -229,5 +229,11 @@ class FSDataGateway(DataGateway):
 
         return obj
 
-    def save_model(self, model, output_path: str):
+    def put(self, tmp_path: str, path: str):
+        if self.fs is None:
+            self.fs = get_fs(path)
+
+        self.fs.put(tmp_path, path)
+
+    def save(self, obj, output_path: str):
         pass

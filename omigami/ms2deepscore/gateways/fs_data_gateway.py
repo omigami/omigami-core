@@ -15,7 +15,7 @@ class MS2DeepScoreFSDataGateway(FSDataGateway):
     def __init__(self, fs: Optional[FileSystemBase] = None):
         super().__init__(fs)
 
-    def save_model(self, model: SiameseModel, output_path: str):
+    def save(self, model: SiameseModel, output_path: str):
         path = DRPath(output_path)
         if self.fs is None:
             self.fs = get_fs(path)
@@ -26,6 +26,6 @@ class MS2DeepScoreFSDataGateway(FSDataGateway):
             _, tmp_path = tempfile.mkstemp()
             model.save(tmp_path)
             try:
-                self.fs.put(tmp_path, path)
+                self.put(tmp_path, path)
             finally:
                 os.remove(tmp_path)
