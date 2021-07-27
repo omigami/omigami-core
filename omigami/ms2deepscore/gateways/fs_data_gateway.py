@@ -20,11 +20,11 @@ class MS2DeepScoreFSDataGateway(FSDataGateway):
         if self.fs is None:
             self.fs = get_fs(path)
 
-        _, tmp_path = tempfile.mkstemp()
-        model.save(tmp_path)
         if isinstance(self.fs, LocalFileSystem):
-            self.fs.move(tmp_path, path)
+            model.save(path)
         elif isinstance(self.fs, S3FileSystem):
+            _, tmp_path = tempfile.mkstemp()
+            model.save(tmp_path)
             try:
                 self.fs.put(tmp_path, path)
             finally:
