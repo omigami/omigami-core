@@ -5,7 +5,6 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore import BinnedSpectrum
 from ms2deepscore.models import load_model as ms2deepscore_load_model
-
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -21,9 +20,8 @@ log = getLogger(__name__)
 
 
 class MS2DeepScorePredictor(Predictor):
-    def __init__(self, run_id: str = None):
+    def __init__(self):
         super().__init__(MS2DeepScoreRedisSpectrumDataGateway())
-        self.run_id = run_id
         self.spectrum_processor = SpectrumProcessor()
         self.model = None
 
@@ -96,9 +94,6 @@ class MS2DeepScorePredictor(Predictor):
 
         log.info("Finishing prediction.")
         return best_matches
-
-    def set_run_id(self, run_id: str):
-        self.run_id = run_id
 
     @staticmethod
     def _parse_input(

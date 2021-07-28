@@ -87,7 +87,6 @@ class ModelRegister(MLFlowModelRegister):
         experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
         with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
             run_id = run.info.run_id
-            model.set_run_id(run_id)
 
             self.log_model(
                 model,

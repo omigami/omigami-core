@@ -59,6 +59,7 @@ def test_deploy_training_flow():
         epochs=10,
         **login_config,
         deploy_model=True,
+        overwrite_model=True,
     )
     flow_id = deployer.deploy_training_flow(flow_name="running-dev")
 
