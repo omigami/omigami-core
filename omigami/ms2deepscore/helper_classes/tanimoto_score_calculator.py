@@ -4,29 +4,33 @@ from typing import List
 import numpy as np
 import pandas as pd
 from ms2deepscore import BinnedSpectrum
-from rdkit import Chem
-from rdkit.DataStructs import BulkTanimotoSimilarity
-
+from omigami.config import IonModes
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
+from rdkit import Chem
+from rdkit.DataStructs import BulkTanimotoSimilarity
 
 
 class TanimotoScoreCalculator:
     def __init__(
         self,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
+        ion_mode: IonModes,
         n_bits: int = 2048,
         decimals: int = 5,
     ):
         self._spectrum_dgw = spectrum_dgw
+        self._ion_mode = ion_mode
         self._n_bits = n_bits
         self._decimals = decimals
 
     def calculate(
         self, spectrum_ids: List[str], scores_output_path: str, logger: Logger = None
     ) -> str:
-        binned_spectra = self._spectrum_dgw.read_binned_spectra(spectrum_ids)
+        binned_spectra = self._spectrum_dgw.read_binned_spectra(
+            self._ion_mode, spectrum_ids
+        )
         unique_inchi_keys = self._get_unique_inchis(binned_spectra)
 
         if logger:

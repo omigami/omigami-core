@@ -5,6 +5,7 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore import BinnedSpectrum
 from ms2deepscore.models import load_model as ms2deepscore_load_model
+from omigami.config import IonModes
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -20,8 +21,9 @@ log = getLogger(__name__)
 
 
 class MS2DeepScorePredictor(Predictor):
-    def __init__(self):
+    def __init__(self, ion_mode: IonModes):
         super().__init__(MS2DeepScoreRedisSpectrumDataGateway())
+        self.ion_mode = ion_mode
         self.spectrum_processor = SpectrumProcessor()
         self.model = None
 
@@ -140,5 +142,5 @@ class MS2DeepScorePredictor(Predictor):
         self, spectrum_ids: List[List[str]]
     ) -> List[BinnedSpectrum]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
-        binned_spectra = self.dgw.read_binned_spectra(list(unique_ids))
+        binned_spectra = self.dgw.read_binned_spectra(self.ion_mode, list(unique_ids))
         return binned_spectra

@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from typing import Set, List
 
 import prefect
-from prefect import Task
-
+from omigami.config import IonModes
 from omigami.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -16,11 +15,13 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
 )
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
+from prefect import Task
 
 
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_binner_output_path: str
+    ion_mode: IonModes
     overwrite_all_spectra: bool = True
     is_pretrained_flow: bool = False
     n_bins: int = 10000
@@ -40,6 +41,7 @@ class ProcessSpectrum(Task):
         self._spectrum_binner_output_path = (
             process_parameters.spectrum_binner_output_path
         )
+        self._ion_mode = process_parameters.ion_mode
         self._processor = SpectrumProcessor(process_parameters.is_pretrained_flow)
         self._spectrum_binner = MS2DeepScoreSpectrumBinner(process_parameters.n_bins)
         config = merge_prefect_task_configs(kwargs)
@@ -58,7 +60,9 @@ class ProcessSpectrum(Task):
                 f"Finished processing {len(binned_spectra)} binned spectra. "
                 f"Saving into spectrum database."
             )
-            self._spectrum_dgw.write_binned_spectra(binned_spectra)
+            self._spectrum_dgw.write_binned_spectra(
+                binned_spectra, self._ion_mode, self.logger
+            )
             return {sp.get("spectrum_id") for sp in binned_spectra}
 
         self.logger.info("No new spectra have been processed.")

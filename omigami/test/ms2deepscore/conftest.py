@@ -3,8 +3,6 @@ import pickle
 import pandas as pd
 import pytest
 from ms2deepscore.models import load_model
-from pytest_redis import factories
-
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
     MS2DeepScoreBinnedSpectrum,
@@ -14,6 +12,7 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
 )
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.test.conftest import ASSETS_DIR
+from pytest_redis import factories
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -70,7 +69,7 @@ def ms2deepscore_spectrum_similarity(ms2deepscore_model_path):
 
 @pytest.fixture()
 def ms2deepscore_predictor(ms2deepscore_model):
-    predictor = MS2DeepScorePredictor()
+    predictor = MS2DeepScorePredictor(ion_mode="positive")
     predictor.model = ms2deepscore_model
 
     return predictor
@@ -94,7 +93,7 @@ def ms2deepscore_real_model(ms2deepscore_real_model_path):
 
 @pytest.fixture()
 def ms2deepscore_real_predictor(ms2deepscore_real_model):
-    ms2deepscore_predictor = MS2DeepScorePredictor()
+    ms2deepscore_predictor = MS2DeepScorePredictor(ion_mode="positive")
     ms2deepscore_predictor.model = MS2DeepScoreBinnedSpectrum(ms2deepscore_real_model)
     return ms2deepscore_predictor
 
@@ -142,7 +141,7 @@ def binned_spectra_to_train_stored(redis_db, binned_spectra_to_train):
     pipe = redis_db.pipeline()
     for spectrum in binned_spectra_to_train:
         pipe.hset(
-            f"{BINNED_SPECTRUM_HASHES}",
+            f"{BINNED_SPECTRUM_HASHES}_positive",
             spectrum.metadata["spectrum_id"],
             pickle.dumps(spectrum),
         )

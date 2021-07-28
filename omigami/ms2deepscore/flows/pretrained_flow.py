@@ -33,12 +33,13 @@ class PretrainedFlowParameters:
         self.model_uri = model_uri
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_binner_output_path,
-            overwrite_all_spectra,
+            ion_mode="positive",
+            overwrite_all_spectra=overwrite_all_spectra,
             is_pretrained_flow=True,
             n_bins=spectrum_binner_n_bins,
         )
         self.registering = RegisterModelParameters(
-            project_name, mlflow_output_dir, mlflow_server
+            project_name, mlflow_output_dir, mlflow_server, "positive"
         )
         self.deploying = DeployModelParameters(
             redis_db,

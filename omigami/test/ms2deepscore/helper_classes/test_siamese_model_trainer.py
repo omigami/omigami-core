@@ -2,7 +2,6 @@ import os
 from unittest.mock import Mock
 
 import pytest
-
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
     SiameseModelTrainer,
@@ -13,7 +12,7 @@ from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
 def test_train_validation_test_split(binned_spectra_to_train, tanimoto_scores):
     split_ratio = SplitRatio(0.8, 0.1, 0.1)
     trainer = SiameseModelTrainer(
-        Mock(MS2DeepScoreRedisSpectrumDataGateway), split_ratio=split_ratio
+        Mock(MS2DeepScoreRedisSpectrumDataGateway), "positive", split_ratio=split_ratio
     )
     generators = trainer._train_validation_test_split(
         binned_spectra_to_train, tanimoto_scores, 100
@@ -58,7 +57,9 @@ def test_train_model(
     binned_spectra_to_train,
 ):
     layer_base_dims = (600, 500, 400)
-    trainer = SiameseModelTrainer(MS2DeepScoreRedisSpectrumDataGateway(), epochs=5)
+    trainer = SiameseModelTrainer(
+        MS2DeepScoreRedisSpectrumDataGateway(), "positive", epochs=5
+    )
     model = trainer.train([], tanimoto_scores_path, fitted_spectrum_binner)
 
     assert len(model.model.layers) == len(layer_base_dims) + 1
