@@ -43,7 +43,7 @@ class MS2DeepScoreSpectrumBinner:
         ):
             if (
                 100 * missing_fractions[i]
-                >= self.spectrum_binner.allowed_missing_percentage
+                > self.spectrum_binner.allowed_missing_percentage
             ):
                 print(
                     f"{100 * missing_fractions[i]:.2f} of weighted spectrum is unknown to the model. GUILTY={spectra[i].get('spectrum_id')}"
