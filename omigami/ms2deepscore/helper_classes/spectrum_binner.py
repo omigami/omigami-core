@@ -48,6 +48,7 @@ class MS2DeepScoreSpectrumBinner:
                 print(
                     f"{100 * missing_fractions[i]:.2f} of weighted spectrum is unknown to the model. GUILTY={spectra[i].get('spectrum_id')}"
                 )
+                continue
             spectrum = BinnedSpectrum(
                 binned_peaks=create_peak_dict(peak_list),
                 metadata={"inchikey": spectra[i].get("inchikey")},
