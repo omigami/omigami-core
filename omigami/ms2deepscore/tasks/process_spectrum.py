@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from typing import Set, List
 
 import prefect
-from prefect import Task
-
 from omigami.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -16,6 +14,7 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
 )
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
+from prefect import Task
 
 
 @dataclass
@@ -75,7 +74,7 @@ class ProcessSpectrum(Task):
         cleaned_spectra = self._processor.process_spectra(
             spectra, process_reference_spectra=True, progress_logger=progress_logger
         )
-        binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
+        binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra, self.logger)
 
         self._fs_gtw.serialize_to_file(
             self._spectrum_binner_output_path, self._spectrum_binner.spectrum_binner

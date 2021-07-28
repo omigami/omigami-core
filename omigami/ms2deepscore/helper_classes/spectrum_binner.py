@@ -13,7 +13,7 @@ class MS2DeepScoreSpectrumBinner:
     def __init__(self, n_bins: int = 10000):
         self.spectrum_binner = SpectrumBinner(number_of_bins=n_bins)
 
-    def bin_spectra(self, spectra: List[Spectrum]) -> List[BinnedSpectrum]:
+    def bin_spectra(self, spectra: List[Spectrum], logger=None) -> List[BinnedSpectrum]:
 
         # binned_spectra = self.spectrum_binner.fit_transform(spectra)
 
@@ -45,7 +45,7 @@ class MS2DeepScoreSpectrumBinner:
                 100 * missing_fractions[i]
                 > self.spectrum_binner.allowed_missing_percentage
             ):
-                print(
+                logger.info(
                     f"{100 * missing_fractions[i]:.2f} of weighted spectrum is unknown to the model. GUILTY={spectra[i].get('spectrum_id')}"
                 )
                 continue
