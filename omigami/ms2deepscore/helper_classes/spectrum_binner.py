@@ -25,10 +25,13 @@ class MS2DeepScoreSpectrumBinner:
             for i, peak_list in enumerate(
                 peak_lists,
             ):
-                assert (
+                if (
                     100 * missing_fractions[i]
                     <= self.spectrum_binner.allowed_missing_percentage
-                ), f"{100 * missing_fractions[i]:.2f} of weighted spectrum is unknown to the model. GUILTY={spectra[i].get('spectrum_id')}"
+                ):
+                    print(
+                        f"{100 * missing_fractions[i]:.2f} of weighted spectrum is unknown to the model. GUILTY={spectra[i].get('spectrum_id')}"
+                    )
 
         spectrums_binned = []
         for binned_spectrum, spectrum in zip(binned_spectra, spectra):
