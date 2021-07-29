@@ -82,19 +82,19 @@ class Spec2VecDeployer(Deployer):
             iterations=self._iterations,
             window=self._window,
             overwrite_model=self._overwrite_model,
+            project_name=self._project_name,
+            intensity_weighting_power=self._intensity_weighting_power,
+            allowed_missing_percentage=self._allowed_missing_percentage,
+            model_output_dir=model_output_dir,
+            mlflow_server=self._mlflow_server,
         )
 
         flow_config = self._make_flow_config()
 
         flow = build_training_flow(
-            self._project_name,
             flow_name,
             flow_config,
             flow_parameters,
-            intensity_weighting_power=self._intensity_weighting_power,
-            allowed_missing_percentage=self._allowed_missing_percentage,
-            model_output_dir=model_output_dir,
-            mlflow_server=self._mlflow_server,
             deploy_model=self._deploy_model,
         )
 

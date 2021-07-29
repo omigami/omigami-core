@@ -3,10 +3,13 @@ from pathlib import Path
 
 import mlflow
 from mlflow.pyfunc import PyFuncModel
-from prefect import Flow
-
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
-from omigami.ms2deepscore.tasks.register_model import ModelRegister, RegisterModel
+from omigami.ms2deepscore.tasks.register_model import (
+    ModelRegister,
+    RegisterModel,
+    RegisterModelParameters,
+)
+from prefect import Flow
 
 os.chdir(Path(__file__).parents[4])
 
@@ -45,11 +48,11 @@ def test_load_registered_model(ms2deepscore_model_path, tmpdir):
 
 def test_model_register_task(ms2deepscore_model_path, tmpdir):
     path = f"{tmpdir}/mlflow/"
-
+    parameters = RegisterModelParameters(
+        experiment_name="experiment", mlflow_output_path=path, server_uri=path
+    )
     with Flow("test") as flow:
-        res = RegisterModel(
-            experiment_name="experiment", mlflow_output_path=path, server_uri=path
-        )(model_path=ms2deepscore_model_path)
+        res = RegisterModel(parameters)(model_path=ms2deepscore_model_path)
 
     state = flow.run()
     assert state.is_successful()

@@ -95,7 +95,9 @@ class SpectrumProcessor(SpectrumCleaner):
             inchikey = spectrum.metadata.get("inchikey")
             if inchikey is not None and len(inchikey) > 13:
                 if spectrum.get("inchi"):
-                    cleaned_inchi = spectrum.get("inchi").replace('"', "")
+                    cleaned_inchi = (
+                        spectrum.get("inchi").replace('"', "").replace(" ", "")
+                    )
                     spectrum.set("inchi", cleaned_inchi)
                     return spectrum
 

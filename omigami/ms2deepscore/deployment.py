@@ -15,7 +15,6 @@ from omigami.ms2deepscore.flows.pretrained_flow import (
 from omigami.ms2deepscore.flows.training_flow import (
     TrainingFlowParameters,
     build_training_flow,
-    ModelGeneralParameters,
 )
 from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
@@ -99,15 +98,15 @@ class MS2DeepScoreDeployer(Deployer):
             redis_db=self._redis_db,
             spectrum_binner_n_bins=self._spectrum_binner_n_bins,
             spectrum_binner_output_path=spectrum_binner_output_path,
+            project_name=self._project_name,
+            mlflow_output_dir=mlflow_output_dir,
+            mlflow_server=self._mlflow_server,
         )
 
         flow = build_pretrained_flow(
-            self._project_name,
             flow_name,
             self._make_flow_config(),
             flow_parameters,
-            mlflow_output_dir=mlflow_output_dir,
-            mlflow_server=self._mlflow_server,
             deploy_model=self._deploy_model,
         )
         flow_run_id = self._create_flow_run(client, flow)
@@ -174,19 +173,16 @@ class MS2DeepScoreDeployer(Deployer):
             train_ratio=self._train_ratio,
             validation_ratio=self._validation_ratio,
             test_ratio=self._test_ratio,
-        )
-
-        model_parameters = ModelGeneralParameters(
-            model_output_dir=model_output_dir,
+            project_name=self._project_name,
+            mlflow_output_dir=model_output_dir,
             mlflow_server=self._mlflow_server,
+            redis_db=self._redis_db,
         )
 
         flow = build_training_flow(
-            project_name=self._project_name,
             flow_name=flow_name,
             flow_config=self._make_flow_config(),
             flow_parameters=flow_parameters,
-            model_parameters=model_parameters,
             deploy_model=self._deploy_model,
         )
 

@@ -83,7 +83,6 @@ def test_save_raw_spectra_overwrite(
     loaded_data[0]["scan"] = 5
     preserved_id = loaded_data[0]["spectrum_id"]
 
-    # Diana TODO: Call correct function
     db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data]
     create_parameters.spectrum_dgw.write_raw_spectra(db_entries)
 
@@ -131,7 +130,6 @@ def test_save_raw_spectra_add_new_spectra(create_parameters, local_gnps_small_js
     loaded_data[0]["ms_level"] = "5000000"
     preserved_id = loaded_data[0]["spectrum_id"]
 
-    # Diana TODO: Call correct function
     db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data[:30]]
     create_parameters.spectrum_dgw.write_raw_spectra(db_entries)
 

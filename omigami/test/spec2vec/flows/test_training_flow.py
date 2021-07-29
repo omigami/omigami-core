@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
-
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.flow_config import (
     make_flow_config,
@@ -66,17 +65,17 @@ def test_training_flow(flow_config):
         overwrite_all_spectra=False,
         iterations=25,
         window=500,
-    )
-
-    flow = build_training_flow(
         project_name="test",
-        flow_name="test-flow",
-        flow_config=flow_config,
-        flow_parameters=flow_params,
         model_output_dir="model-output",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
+    )
+
+    flow = build_training_flow(
+        flow_name="test-flow",
+        flow_config=flow_config,
+        flow_parameters=flow_params,
         deploy_model=False,
     )
 
@@ -117,17 +116,17 @@ def test_run_training_flow(
         overwrite_all_spectra=True,
         iterations=3,
         window=200,
-    )
-
-    flow = build_training_flow(
         project_name="test",
-        flow_config=flow_config,
-        flow_name="test-flow",
-        flow_parameters=flow_params,
         model_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
+    )
+
+    flow = build_training_flow(
+        flow_config=flow_config,
+        flow_name="test-flow",
+        flow_parameters=flow_params,
         deploy_model=False,
     )
 
