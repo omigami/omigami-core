@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Dict
 
 import mlflow
-from mlflow.pyfunc import PythonModel
 from omigami.model_register import MLFlowModelRegister
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.utils import merge_prefect_task_configs
@@ -35,7 +34,10 @@ class RegisterModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, model_path: str = None) -> Dict[str, str]:
+    def run(
+        self,
+        model_path: str = None,
+    ) -> Dict[str, str]:
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._mlflow_output_path}."
         )
@@ -62,7 +64,7 @@ class ModelRegister(MLFlowModelRegister):
 
     def register_model(
         self,
-        model: PythonModel,
+        model: MS2DeepScorePredictor,
         experiment_name: str,
         output_path: str,
         conda_env_path: str = None,
@@ -74,11 +76,16 @@ class ModelRegister(MLFlowModelRegister):
 
         Parameters
         ----------
-        model: PythonModel class to execute the predictions
-        experiment_name: MLFlow Experiment name
-        output_path: path to save the artifacts
-        conda_env_path: Conda environment requirements file
-        artifacts: Dictionary of artifacts to be stored along with the model
+        model: MS2DeepScorePredictor
+            PythonModel class to execute the predictions
+        experiment_name: str
+            MLFlow Experiment name
+        output_path: str
+            Path to save the artifacts
+        conda_env_path: str = None
+            Conda environment requirements file
+        artifacts: Dict = None
+            Dictionary of artifacts to be stored along with the model
 
         Returns
         -------
@@ -87,6 +94,13 @@ class ModelRegister(MLFlowModelRegister):
         experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
         with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
             run_id = run.info.run_id
+
+            params = {
+                "iter": model.model.epochs,
+                "window": model.model.window,
+            }
+            params.update(model.training_parameters.asdict())
+            mlflow.log_params(params)
 
             self.log_model(
                 model,

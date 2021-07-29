@@ -3,13 +3,18 @@ from pathlib import Path
 
 import mlflow
 from mlflow.pyfunc import PyFuncModel
+
+from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
-from omigami.ms2deepscore.tasks.register_model import (
+from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
+
+from omigami.ms2deepscore.tasks import (
     ModelRegister,
     RegisterModel,
     RegisterModelParameters,
 )
 from prefect import Flow
+
 
 os.chdir(Path(__file__).parents[4])
 
@@ -18,8 +23,18 @@ def test_register_model(ms2deepscore_model_path, tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = ModelRegister(path)
 
+    paras = TrainModelParameters(
+        ms2deepscore_model_path,
+        "Test/Path/SpectrumBinner",
+        500,
+        0.3,
+        30,
+        60,
+        0.5,
+        SplitRatio(0.8, 0.1, 0.1),
+    )
     _ = model_register.register_model(
-        model=MS2DeepScorePredictor(),
+        model=MS2DeepScorePredictor(paras),
         experiment_name="experiment",
         output_path=path,
         artifacts={"ms2deepscore_model_path": ms2deepscore_model_path},

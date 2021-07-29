@@ -14,16 +14,18 @@ from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
+from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
 from omigami.predictor import Predictor, SpectrumMatches
 
 log = getLogger(__name__)
 
 
 class MS2DeepScorePredictor(Predictor):
-    def __init__(self):
+    def __init__(self, training_parameters: TrainModelParameters):
         super().__init__(MS2DeepScoreRedisSpectrumDataGateway())
         self.spectrum_processor = SpectrumProcessor()
         self.model = None
+        self.training_parameters = training_parameters
 
     def load_context(self, context):
         model_path = context.artifacts["ms2deepscore_model_path"]
