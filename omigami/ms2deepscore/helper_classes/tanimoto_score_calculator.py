@@ -1,7 +1,6 @@
 from logging import Logger
 from typing import List
 
-import numpy as np
 import pandas as pd
 from ms2deepscore import BinnedSpectrum
 from rdkit import Chem
@@ -52,18 +51,14 @@ class TanimotoScoreCalculator:
             ]
         )
         inchi_keys_2_inchi = pd.DataFrame({"inchi": inchi, "inchi_key": inchi_keys})
-        inchi_keys_2_inchi.to_pickle(
-            "s3://omigami-dev/ms2deepscore/tanimoto-scores/inchikeys2inchis.pkl",
-            compression="gzip",
-        )
 
-        most_common_inchi = inchi_keys_2_inchi.groupby(["inchi_key"]).agg(
-            pd.Series.mode
-        )
+        def custom_mode(x):
+            mode = x.mode()
+            return mode[0] if len(mode) > 1 else mode
 
-        return most_common_inchi["inchi"].apply(
-            lambda x: x[0] if isinstance(x, np.ndarray) else x
-        )
+        most_common_inchi = inchi_keys_2_inchi.groupby(["inchi_key"]).agg(custom_mode)
+
+        return most_common_inchi["inchi"]
 
     def _calculate_tanimoto_scores(
         self,
