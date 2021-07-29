@@ -4,11 +4,12 @@ from typing import List
 import numpy as np
 import pandas as pd
 from ms2deepscore import BinnedSpectrum
+from rdkit import Chem
+from rdkit.DataStructs import BulkTanimotoSimilarity
+
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from rdkit import Chem
-from rdkit.DataStructs import BulkTanimotoSimilarity
 
 
 class TanimotoScoreCalculator:
@@ -33,7 +34,7 @@ class TanimotoScoreCalculator:
                 f"Calculating Tanimoto scores for {len(unique_inchi_keys)} unique InChIkeys"
             )
 
-        tanimoto_scores = self._calculate_tanimoto_scores(unique_inchi_keys)
+        tanimoto_scores = self._calculate_tanimoto_scores(unique_inchi_keys, logger)
         tanimoto_scores.to_pickle(scores_output_path, compression="gzip")
         return scores_output_path
 
@@ -51,19 +52,22 @@ class TanimotoScoreCalculator:
             pd.Series.mode
         )
 
-        return (
-            most_common_inchi["inchi"]
-            .apply(lambda x: x[0] if isinstance(x, np.ndarray) else x)
-            .dropna()
+        return most_common_inchi["inchi"].apply(
+            lambda x: x[0] if isinstance(x, np.ndarray) else x
         )
 
     def _calculate_tanimoto_scores(
         self,
         inchis: pd.Series,
+        logger=None,
     ) -> pd.DataFrame:
         def _derive_daylight_fingerprint(df, nbits: int):
             mol = Chem.MolFromInchi(df)
-            return Chem.RDKFingerprint(mol, fpSize=nbits)
+            try:
+                return Chem.RDKFingerprint(mol, fpSize=nbits)
+            except:
+                logger.info(f"bad inchi = {df}")
+                logger.info(f"None mol = = {mol}")
 
         fingerprints = inchis.apply(
             _derive_daylight_fingerprint,
