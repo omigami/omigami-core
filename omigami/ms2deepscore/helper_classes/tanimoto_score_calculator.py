@@ -4,12 +4,13 @@ from typing import List
 import numpy as np
 import pandas as pd
 from ms2deepscore import BinnedSpectrum
+from rdkit import Chem
+from rdkit.DataStructs import BulkTanimotoSimilarity
+
 from omigami.config import IonModes
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from rdkit import Chem
-from rdkit.DataStructs import BulkTanimotoSimilarity
 
 
 class TanimotoScoreCalculator:
@@ -51,6 +52,10 @@ class TanimotoScoreCalculator:
             ]
         )
         inchi_keys_2_inchi = pd.DataFrame({"inchi": inchi, "inchi_key": inchi_keys})
+        inchi_keys_2_inchi.to_pickle(
+            "s3://omigami-dev/ms2deepscore/tanimoto-scores/inchikeys2inchis.pkl",
+            compression="gzip",
+        )
 
         most_common_inchi = inchi_keys_2_inchi.groupby(["inchi_key"]).agg(
             pd.Series.mode
