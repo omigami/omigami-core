@@ -34,7 +34,7 @@ class TanimotoScoreCalculator:
                 f"Calculating Tanimoto scores for {len(unique_inchi_keys)} unique InChIkeys"
             )
 
-        tanimoto_scores = self._calculate_tanimoto_scores(unique_inchi_keys, logger)
+        tanimoto_scores = self._calculate_tanimoto_scores(unique_inchi_keys)
         tanimoto_scores.to_pickle(scores_output_path, compression="gzip")
         return scores_output_path
 
@@ -59,15 +59,10 @@ class TanimotoScoreCalculator:
     def _calculate_tanimoto_scores(
         self,
         inchis: pd.Series,
-        logger=None,
     ) -> pd.DataFrame:
         def _derive_daylight_fingerprint(df, nbits: int):
             mol = Chem.MolFromInchi(df)
-            try:
-                return Chem.RDKFingerprint(mol, fpSize=nbits)
-            except:
-                logger.info(f"bad inchi = {df}")
-                logger.info(f"None mol = = {mol}")
+            return Chem.RDKFingerprint(mol, fpSize=nbits)
 
         fingerprints = inchis.apply(
             _derive_daylight_fingerprint,
