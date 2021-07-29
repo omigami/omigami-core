@@ -38,5 +38,9 @@ class DataGateway(ABC):
         pass
 
     @abstractmethod
-    def save_model(self, model, output_path: str):
+    def put(self, tmp_path: str, path: str):
+        pass
+
+    @abstractmethod
+    def save(self, obj, output_path: str):
         pass

@@ -70,5 +70,5 @@ class TrainModel(Task):
         model = trainer.train(
             spectrum_ids, scores_output_path, spectrum_binner, self.logger
         )
-        self._fs_gtw.save_model(model, self._output_path)
+        self._fs_gtw.save(model, self._output_path)
         return self._output_path
