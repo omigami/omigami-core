@@ -5,6 +5,8 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore import BinnedSpectrum
 from ms2deepscore.models import load_model as ms2deepscore_load_model
+
+from omigami.config import IonModes
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -20,8 +22,9 @@ log = getLogger(__name__)
 
 
 class MS2DeepScorePredictor(Predictor):
-    def __init__(self):
+    def __init__(self, ion_mode: IonModes):
         super().__init__(MS2DeepScoreRedisSpectrumDataGateway())
+        self.ion_mode = ion_mode
         self.spectrum_processor = SpectrumProcessor()
         self.model = None
 
@@ -78,14 +81,10 @@ class MS2DeepScorePredictor(Predictor):
         query_binned_spectra = self.model.model.spectrum_binner.transform(query_spectra)
 
         log.info("Calculating best matches.")
-        best_matches = {}
-        for i, input_spectrum in enumerate(query_binned_spectra):
-            spectrum_best_matches = self._calculate_best_matches(
-                reference_binned_spectra,
-                reference_spectra_ids[i],
-                input_spectrum,
-            )
-            best_matches[f"spectrum-{i}"] = spectrum_best_matches
+        best_matches = self._calculate_best_matches(
+            reference_binned_spectra,
+            query_binned_spectra,
+        )
 
         if parameters.get("include_metadata", None):
             best_matches = self._add_metadata(
@@ -110,35 +109,36 @@ class MS2DeepScorePredictor(Predictor):
     def _calculate_best_matches(
         self,
         all_references: List[BinnedSpectrum],
-        references_ids: List[str],
-        query: BinnedSpectrum,
+        queries: List[BinnedSpectrum],
         n_best_spectra: int = 10,
     ) -> SpectrumMatches:
-        references = [
-            reference
-            for reference in all_references
-            if reference.metadata["spectrum_id"] in references_ids
-        ]
+
         scores = calculate_scores(
-            references,
-            [query],
+            all_references,
+            queries,
             self.model,
         )
-        all_scores = scores.scores_by_query(query, sort=True)
-        all_scores = [
-            (spectrum, score) for spectrum, score in all_scores if not np.isnan(score)
-        ]
-        spectrum_best_scores = all_scores[:n_best_spectra]
-        spectrum_best_matches = {}
-        for spectrum_match in spectrum_best_scores:
-            spectrum_best_matches[spectrum_match[0].metadata["spectrum_id"]] = {
-                "score": spectrum_match[1]
-            }
-        return spectrum_best_matches
+        best_matches = {}
+        for i, query in enumerate(queries):
+            all_scores = scores.scores_by_query(query, sort=True)
+
+            all_scores = [
+                (spectrum, score)
+                for spectrum, score in all_scores
+                if not np.isnan(score)
+            ]
+            spectrum_best_scores = all_scores[:n_best_spectra]
+            spectrum_best_matches = {}
+            for spectrum_match in spectrum_best_scores:
+                spectrum_best_matches[spectrum_match[0].metadata["spectrum_id"]] = {
+                    "score": spectrum_match[1]
+                }
+            best_matches[f"spectrum-{i}"] = spectrum_best_matches
+        return best_matches
 
     def _load_binned_spectra(
         self, spectrum_ids: List[List[str]]
     ) -> List[BinnedSpectrum]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
-        binned_spectra = self.dgw.read_binned_spectra(list(unique_ids))
+        binned_spectra = self.dgw.read_binned_spectra(self.ion_mode, list(unique_ids))
         return binned_spectra

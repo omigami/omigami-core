@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Tuple, List
 
+from omigami.config import IonModes
 from omigami.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -16,6 +17,7 @@ from prefect import Task
 @dataclass
 class TrainModelParameters:
     output_path: str
+    ion_mode: IonModes
     spectrum_binner_output_path: str
     epochs: int = 50
     learning_rate: float = 0.001
@@ -35,6 +37,7 @@ class TrainModel(Task):
     ):
         self._fs_gtw = fs_gtw
         self._spectrum_gtw = spectrum_dgw
+        self._ion_mode = train_parameters.ion_mode
         self._spectrum_binner_output_path = train_parameters.spectrum_binner_output_path
         self._output_path = train_parameters.output_path
         self._epochs = train_parameters.epochs
@@ -56,6 +59,7 @@ class TrainModel(Task):
 
         trainer = SiameseModelTrainer(
             self._spectrum_gtw,
+            self._ion_mode,
             self._epochs,
             self._learning_rate,
             self._layer_base_dims,

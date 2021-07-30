@@ -3,14 +3,12 @@ from pathlib import Path
 
 import boto3
 import ijson
+import omigami
+import omigami.config
 import pytest
 import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
-from pytest_redis import factories
-
-import omigami
-import omigami.config
 from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -19,6 +17,7 @@ from omigami.spec2vec.config import (
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
 )
+from pytest_redis import factories
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -187,7 +186,7 @@ def binned_spectra_stored(redis_db, binned_spectra):
     pipe = redis_db.pipeline()
     for spectrum in binned_spectra:
         pipe.hset(
-            f"{BINNED_SPECTRUM_HASHES}",
+            f"{BINNED_SPECTRUM_HASHES}_positive",
             spectrum.metadata["spectrum_id"],
             pickle.dumps(spectrum),
         )
