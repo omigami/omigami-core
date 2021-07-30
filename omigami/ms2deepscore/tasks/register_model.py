@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Any
 
 import mlflow
 from omigami.model_register import MLFlowModelRegister
@@ -100,18 +100,7 @@ class ModelRegister(MLFlowModelRegister):
             run_id = run.info.run_id
 
             if train_parameters:
-
-                train_paras = train_parameters.__dict__
-                del train_paras["output_path"]
-                del train_paras["spectrum_binner_output_path"]
-
-                # TODO: At this point the model is always None. Becuase it is never assigned.
-                if model.model.model:
-                    model_metrics = model.model.model.history.history
-                    del model_metrics["loss"]
-                    train_paras.update(model_metrics)
-
-                mlflow.log_params(train_paras)
+                mlflow.log_params(self._get_train_parameters(model, train_parameters))
 
             self.log_model(
                 model,
@@ -126,3 +115,20 @@ class ModelRegister(MLFlowModelRegister):
             )
 
             return run_id
+
+    @staticmethod
+    def _convert_train_parameters(
+        model: MS2DeepScorePredictor, train_parameters: TrainModelParameters
+    ) -> Dict:
+        """Converts training parameters and the models metrics into a dict"""
+        train_params = train_parameters.__dict__
+        del train_params["output_path"]
+        del train_params["spectrum_binner_output_path"]
+
+        # TODO: At this point the model is always None. Becuase it is never assigned.
+        if model.model.model:
+            model_metrics = model.model.model.history.history
+            del model_metrics["loss"]
+            train_params.update(model_metrics)
+
+        return train_params
