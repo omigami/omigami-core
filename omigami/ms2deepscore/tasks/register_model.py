@@ -4,6 +4,7 @@ from typing import Dict
 import mlflow
 from omigami.model_register import MLFlowModelRegister
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
+from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
 from omigami.utils import merge_prefect_task_configs
 from prefect import Task
 
@@ -25,19 +26,18 @@ class RegisterModel(Task):
     def __init__(
         self,
         parameters: RegisterModelParameters,
+        training_parameters: TrainModelParameters,
         **kwargs,
     ):
         self._experiment_name = parameters.experiment_name
         self._mlflow_output_path = parameters.mlflow_output_path
         self._server_uri = parameters.server_uri
+        self.training_parameters = training_parameters
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(
-        self,
-        model_path: str = None,
-    ) -> Dict[str, str]:
+    def run(self, model_path: str = None) -> Dict[str, str]:
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._mlflow_output_path}."
         )
@@ -47,6 +47,7 @@ class RegisterModel(Task):
             MS2DeepScorePredictor(),
             self._experiment_name,
             self._mlflow_output_path,
+            self.training_parameters,
             CONDA_ENV_PATH,
             artifacts={"ms2deepscore_model_path": model_path},
         )
@@ -67,6 +68,7 @@ class ModelRegister(MLFlowModelRegister):
         model: MS2DeepScorePredictor,
         experiment_name: str,
         output_path: str,
+        train_parameters: TrainModelParameters,
         conda_env_path: str = None,
         artifacts: Dict = None,
         **kwargs,
@@ -82,6 +84,8 @@ class ModelRegister(MLFlowModelRegister):
             MLFlow Experiment name
         output_path: str
             Path to save the artifacts
+        train_parameters: TrainModelParameters
+            Training Parameters used to train the model
         conda_env_path: str = None
             Conda environment requirements file
         artifacts: Dict = None
@@ -95,12 +99,7 @@ class ModelRegister(MLFlowModelRegister):
         with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
             run_id = run.info.run_id
 
-            params = {
-                "iter": model.model.epochs,
-                "window": model.model.window,
-            }
-            params.update(model.training_parameters.asdict())
-            mlflow.log_params(params)
+            mlflow.log_params(train_parameters.__dict__)
 
             self.log_model(
                 model,

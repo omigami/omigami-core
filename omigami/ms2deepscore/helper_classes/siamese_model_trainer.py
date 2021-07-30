@@ -88,13 +88,13 @@ class SiameseModelTrainer:
         tanimoto_scores: pd.DataFrame,
         input_vector_dimension: int,
     ) -> Dict[str, DataGeneratorAllSpectrums]:
-
         np.random.seed(100)
 
         n_inchikeys = len(tanimoto_scores)
         idx = np.arange(0, n_inchikeys)
         n_train = int(self._split_ratio.train * n_inchikeys)
         n_validation = int(self._split_ratio.validation * n_inchikeys)
+        # TODO: n_test is not used?!?
         n_test = n_inchikeys - n_train - n_validation
 
         train_idx = np.random.choice(idx, n_train, replace=False)

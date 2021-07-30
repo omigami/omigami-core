@@ -182,9 +182,9 @@ def build_training_flow(
             flow_parameters.training,
         )(processed_ids, scores_output_path)
 
-        model_registry = RegisterModel(flow_parameters.registering)(
-            ms2deepscore_model_path
-        )
+        model_registry = RegisterModel(
+            flow_parameters.registering, training_parameters=flow_parameters.training
+        )(ms2deepscore_model_path)
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)
