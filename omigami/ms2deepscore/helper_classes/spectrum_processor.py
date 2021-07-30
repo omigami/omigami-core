@@ -119,7 +119,8 @@ class SpectrumProcessor(SpectrumCleaner):
 
         n_peaks = np.sum(spectrum.peaks.intensities > 0)
         if n_peaks < n_required:
-            print(spectrum.get("spectrum_id"))
+            if spectrum.peaks.intensities.size > n_required:
+                print(spectrum.get("spectrum_id"))
             return None
 
         return spectrum
