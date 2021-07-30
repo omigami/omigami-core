@@ -7,9 +7,9 @@ import pandas as pd
 from ms2deepscore import SpectrumBinner, BinnedSpectrum
 from ms2deepscore.data_generators import DataGeneratorAllSpectrums
 from ms2deepscore.models import SiameseModel
-from tensorflow import keras
-
+from omigami.config import IonModes
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
+from tensorflow import keras
 
 
 @dataclass
@@ -23,6 +23,7 @@ class SiameseModelTrainer:
     def __init__(
         self,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
+        ion_mode: IonModes,
         epochs: int = 50,
         learning_rate: float = 0.001,
         layer_base_dims: Tuple[int] = (600, 500, 400),
@@ -31,6 +32,7 @@ class SiameseModelTrainer:
         split_ratio: SplitRatio = SplitRatio(),
     ):
         self._spectrum_gtw = spectrum_dgw
+        self._ion_mode = ion_mode
         self._epochs = epochs
         self._learning_rate = learning_rate
         self._layer_base_dims = layer_base_dims
@@ -45,7 +47,9 @@ class SiameseModelTrainer:
         spectrum_binner: SpectrumBinner,
         logger: Logger = None,
     ) -> SiameseModel:
-        binned_spectra = self._spectrum_gtw.read_binned_spectra(spectrum_ids)
+        binned_spectra = self._spectrum_gtw.read_binned_spectra(
+            self._ion_mode, spectrum_ids
+        )
         tanimoto_scores = pd.read_pickle(scores_output_path, compression="gzip")
 
         data_generators = self._train_validation_test_split(

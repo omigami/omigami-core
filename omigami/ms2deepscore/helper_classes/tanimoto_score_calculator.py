@@ -1,12 +1,12 @@
 from logging import Logger
 from typing import List
 
-import numpy as np
 import pandas as pd
 from ms2deepscore import BinnedSpectrum
 from rdkit import Chem
 from rdkit.DataStructs import BulkTanimotoSimilarity
 
+from omigami.config import IonModes
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -16,17 +16,21 @@ class TanimotoScoreCalculator:
     def __init__(
         self,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
+        ion_mode: IonModes,
         n_bits: int = 2048,
         decimals: int = 5,
     ):
         self._spectrum_dgw = spectrum_dgw
+        self._ion_mode = ion_mode
         self._n_bits = n_bits
         self._decimals = decimals
 
     def calculate(
         self, spectrum_ids: List[str], scores_output_path: str, logger: Logger = None
     ) -> str:
-        binned_spectra = self._spectrum_dgw.read_binned_spectra(spectrum_ids)
+        binned_spectra = self._spectrum_dgw.read_binned_spectra(
+            self._ion_mode, spectrum_ids
+        )
         unique_inchi_keys = self._get_unique_inchis(binned_spectra)
 
         if logger:
@@ -48,13 +52,13 @@ class TanimotoScoreCalculator:
         )
         inchi_keys_2_inchi = pd.DataFrame({"inchi": inchi, "inchi_key": inchi_keys})
 
-        most_common_inchi = inchi_keys_2_inchi.groupby(["inchi_key"]).agg(
-            pd.Series.mode
-        )
+        def custom_mode(x):
+            mode = x.mode()
+            return mode[0] if len(mode) > 1 else mode
 
-        return most_common_inchi["inchi"].apply(
-            lambda x: x[0] if isinstance(x, np.ndarray) else x
-        )
+        most_common_inchi = inchi_keys_2_inchi.groupby(["inchi_key"]).agg(custom_mode)
+
+        return most_common_inchi["inchi"]
 
     def _calculate_tanimoto_scores(
         self,

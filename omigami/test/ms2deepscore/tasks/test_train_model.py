@@ -21,7 +21,10 @@ def test_train_model(
 ):
     model_path = f"{tmpdir}/model.hdf5"
     parameters = TrainModelParameters(
-        model_path, spectrum_binner_output_path=fitted_spectrum_binner_path, epochs=2
+        model_path,
+        "positive",
+        spectrum_binner_output_path=fitted_spectrum_binner_path,
+        epochs=2,
     )
 
     with Flow("test") as flow:

@@ -16,7 +16,9 @@ from omigami.ms2deepscore.helper_classes.tanimoto_score_calculator import (
 
 @pytest.fixture()
 def tanimoto_calculator():
-    return TanimotoScoreCalculator(spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway())
+    return TanimotoScoreCalculator(
+        spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(), ion_mode="positive"
+    )
 
 
 @pytest.fixture()

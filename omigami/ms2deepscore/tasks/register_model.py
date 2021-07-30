@@ -3,6 +3,7 @@ from typing import Dict
 
 import mlflow
 from mlflow.pyfunc import PythonModel
+from omigami.config import IonModes
 from omigami.model_register import MLFlowModelRegister
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.utils import merge_prefect_task_configs
@@ -16,6 +17,7 @@ class RegisterModelParameters:
     experiment_name: str
     mlflow_output_path: str
     server_uri: str
+    ion_mode: IonModes
 
 
 class RegisterModel(Task):
@@ -31,6 +33,7 @@ class RegisterModel(Task):
         self._experiment_name = parameters.experiment_name
         self._mlflow_output_path = parameters.mlflow_output_path
         self._server_uri = parameters.server_uri
+        self._ion_mode = parameters.ion_mode
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
@@ -42,7 +45,7 @@ class RegisterModel(Task):
 
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
-            MS2DeepScorePredictor(),
+            MS2DeepScorePredictor(self._ion_mode),
             self._experiment_name,
             self._mlflow_output_path,
             CONDA_ENV_PATH,

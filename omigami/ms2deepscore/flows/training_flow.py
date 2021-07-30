@@ -100,15 +100,17 @@ class TrainingFlowParameters:
 
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_binner_output_path,
+            ion_mode=ion_mode,
             n_bins=spectrum_binner_n_bins,
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
-            scores_output_path, fingerprint_n_bits, scores_decimals
+            scores_output_path, ion_mode, fingerprint_n_bits, scores_decimals
         )
 
         self.training = TrainModelParameters(
             model_output_path,
+            ion_mode,
             spectrum_binner_output_path,
             epochs,
             learning_rate,
@@ -119,7 +121,7 @@ class TrainingFlowParameters:
         )
 
         self.registering = RegisterModelParameters(
-            project_name, mlflow_output_dir, mlflow_server
+            project_name, mlflow_output_dir, mlflow_server, ion_mode
         )
 
         self.deploying = DeployModelParameters(
@@ -173,7 +175,7 @@ def build_training_flow(
         )(spectrum_ids_chunks)
 
         scores_output_path = CalculateTanimotoScore(
-            flow_parameters.calculate_tanimoto_score
+            flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score
         )(processed_ids)
 
         ms2deepscore_model_path = TrainModel(

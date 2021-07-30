@@ -19,7 +19,7 @@ def test_register_model(ms2deepscore_model_path, tmpdir):
     model_register = ModelRegister(path)
 
     _ = model_register.register_model(
-        model=MS2DeepScorePredictor(),
+        model=MS2DeepScorePredictor(ion_mode="positive"),
         experiment_name="experiment",
         output_path=path,
         artifacts={"ms2deepscore_model_path": ms2deepscore_model_path},
@@ -36,7 +36,7 @@ def test_load_registered_model(ms2deepscore_model_path, tmpdir):
     model_register = ModelRegister(path)
 
     model_register.register_model(
-        model=MS2DeepScorePredictor(),
+        model=MS2DeepScorePredictor(ion_mode="positive"),
         experiment_name="experiment",
         output_path=path,
         artifacts={"ms2deepscore_model_path": ms2deepscore_model_path},
@@ -49,7 +49,10 @@ def test_load_registered_model(ms2deepscore_model_path, tmpdir):
 def test_model_register_task(ms2deepscore_model_path, tmpdir):
     path = f"{tmpdir}/mlflow/"
     parameters = RegisterModelParameters(
-        experiment_name="experiment", mlflow_output_path=path, server_uri=path
+        experiment_name="experiment",
+        mlflow_output_path=path,
+        server_uri=path,
+        ion_mode="positive",
     )
     with Flow("test") as flow:
         res = RegisterModel(parameters)(model_path=ms2deepscore_model_path)
