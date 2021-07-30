@@ -92,7 +92,7 @@ class MS2DeepScorePredictor(Predictor):
             )
 
         log.info("Finishing prediction.")
-        print(best_matches)
+        log.info(best_matches)
         return best_matches
 
     @staticmethod
