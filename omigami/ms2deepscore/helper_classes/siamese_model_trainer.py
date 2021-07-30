@@ -7,7 +7,7 @@ import pandas as pd
 from ms2deepscore import SpectrumBinner, BinnedSpectrum
 from ms2deepscore.data_generators import DataGeneratorAllSpectrums
 from ms2deepscore.models import SiameseModel
-from tensorflow import keras
+from tensorflow import keras, metrics
 
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 
@@ -72,7 +72,12 @@ class SiameseModelTrainer:
             dropout_rate=self._dropout_rate,
         )
         model.compile(
-            loss="mse", optimizer=keras.optimizers.Adam(lr=self._learning_rate)
+            loss="mse",
+            optimizer=keras.optimizers.Adam(lr=self._learning_rate),
+            metrics=[
+                metrics.MeanSquaredError(),
+                metrics.AUC(),
+            ],
         )
         model.fit(
             data_generators["training"],
@@ -94,8 +99,6 @@ class SiameseModelTrainer:
         idx = np.arange(0, n_inchikeys)
         n_train = int(self._split_ratio.train * n_inchikeys)
         n_validation = int(self._split_ratio.validation * n_inchikeys)
-        # TODO: n_test is not used?!?
-        n_test = n_inchikeys - n_train - n_validation
 
         train_idx = np.random.choice(idx, n_train, replace=False)
         validation_idx = np.random.choice(

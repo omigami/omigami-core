@@ -26,7 +26,7 @@ class RegisterModel(Task):
     def __init__(
         self,
         parameters: RegisterModelParameters,
-        training_parameters: TrainModelParameters,
+        training_parameters: TrainModelParameters = None,
         **kwargs,
     ):
         self._experiment_name = parameters.experiment_name
@@ -99,7 +99,19 @@ class ModelRegister(MLFlowModelRegister):
         with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
             run_id = run.info.run_id
 
-            mlflow.log_params(train_parameters.__dict__)
+            if train_parameters:
+
+                train_paras = train_parameters.__dict__
+                del train_paras["output_path"]
+                del train_paras["spectrum_binner_output_path"]
+
+                # TODO: At this point the model is always None. Becuase it is never assigned.
+                if model.model.model:
+                    model_metrics = model.model.model.history.history
+                    del model_metrics["loss"]
+                    train_paras.update(model_metrics)
+
+                mlflow.log_params(train_paras)
 
             self.log_model(
                 model,
