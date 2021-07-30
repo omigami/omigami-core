@@ -48,10 +48,11 @@ class RegisterModel(Task):
 
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
-            MS2DeepScorePredictor(self._ion_mode),
-            self._experiment_name,
-            self._mlflow_output_path,
-            CONDA_ENV_PATH,
+            model=MS2DeepScorePredictor(self._ion_mode),
+            experiment_name=self._experiment_name,
+            output_path=self._mlflow_output_path,
+            train_parameters=self.training_parameters,
+            conda_env_path=CONDA_ENV_PATH,
             artifacts={"ms2deepscore_model_path": model_path},
         )
         run = mlflow.get_run(run_id)
@@ -71,7 +72,7 @@ class ModelRegister(MLFlowModelRegister):
         model: MS2DeepScorePredictor,
         experiment_name: str,
         output_path: str,
-        train_parameters: TrainModelParameters,
+        train_parameters: TrainModelParameters = None,
         conda_env_path: str = None,
         artifacts: Dict = None,
         **kwargs,
@@ -131,7 +132,7 @@ class ModelRegister(MLFlowModelRegister):
         del train_params["spectrum_binner_output_path"]
 
         # TODO: At this point the model is always None. Becuase it is never assigned.
-        if model.model.model:
+        if model.model:
             model_metrics = model.model.model.history.history
             del model_metrics["loss"]
             train_params.update(model_metrics)
