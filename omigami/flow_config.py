@@ -3,12 +3,11 @@ from enum import Enum
 
 from attr import dataclass
 from drfs import DRPath
+from omigami.config import ROOT_DIR, S3_BUCKETS
 from prefect.executors import Executor, LocalDaskExecutor
 from prefect.run_configs import RunConfig, KubernetesRun
 from prefect.schedules import IntervalSchedule
 from prefect.storage import Storage, S3
-
-from omigami.config import ROOT_DIR, S3_BUCKETS
 
 """
     Implemented Prefect flow configurations:
@@ -61,6 +60,7 @@ def make_flow_config(
         labels=["dev"],
         service_account_name="prefect-server-serviceaccount",
         env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
+        memory_request="12Gi",
     )
 
     # storage_type
