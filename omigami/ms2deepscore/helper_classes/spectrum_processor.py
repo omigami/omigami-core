@@ -3,7 +3,6 @@ from typing import List, Dict, Optional, Union
 from matchms import Spectrum
 from matchms.filtering import (
     select_by_mz,
-    require_minimum_number_of_peaks,
     normalize_intensities,
 )
 from matchms.importing.load_from_json import as_spectrum
@@ -57,13 +56,12 @@ class SpectrumProcessor(SpectrumCleaner):
 
         return processed_spectra
 
-    @staticmethod
-    def _apply_ms2deepscore_filters(spectrum: Spectrum) -> Spectrum:
+    def _apply_ms2deepscore_filters(self, spectrum: Spectrum) -> Spectrum:
         """Remove spectra with less than 5 peaks with m/z values
         in the range between 10.0 and 1000.0 Da
         """
         spectrum = select_by_mz(spectrum, mz_from=10.0, mz_to=1000.0)
-        spectrum = require_minimum_number_of_peaks(spectrum, n_required=5)
+        spectrum = self._require_minimum_number_of_peaks(spectrum, n_required=5)
         return spectrum
 
     #  not currently used (see issue MLOPS-361)
@@ -109,3 +107,22 @@ class SpectrumProcessor(SpectrumCleaner):
             if ion_mode:
                 if ion_mode.lower() == "positive":
                     return spectrum
+
+    @staticmethod
+    def _require_minimum_number_of_peaks(
+        spectrum_in: Spectrum, n_required: int
+    ) -> Optional[Spectrum]:
+        if spectrum_in is None:
+            return None
+
+        spectrum = spectrum_in.clone()
+
+        if (
+            len(
+                [intensity for intensity in spectrum.peaks.intensities if intensity > 0]
+            )
+            < n_required
+        ):
+            return None
+
+        return spectrum
