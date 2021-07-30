@@ -1,5 +1,6 @@
 from typing import List, Dict, Optional, Union
 
+import numpy as np
 from matchms import Spectrum
 from matchms.filtering import (
     select_by_mz,
@@ -7,7 +8,6 @@ from matchms.filtering import (
 )
 from matchms.importing.load_from_json import as_spectrum
 from matchmsextras.pubchem_lookup import pubchem_metadata_lookup
-
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spectrum_cleaner import SpectrumCleaner
 
@@ -117,12 +117,8 @@ class SpectrumProcessor(SpectrumCleaner):
 
         spectrum = spectrum_in.clone()
 
-        if (
-            len(
-                [intensity for intensity in spectrum.peaks.intensities if intensity > 0]
-            )
-            < n_required
-        ):
+        n_peaks = np.sum(spectrum.peaks.intensities > 0)
+        if n_peaks < n_required:
             return None
 
         return spectrum
