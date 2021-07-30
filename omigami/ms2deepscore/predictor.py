@@ -41,7 +41,7 @@ class MS2DeepScorePredictor(Predictor):
         self,
         context,
         data_input: Dict[str, List],
-        mz_range: int = 1,
+        mz_range: int = 100,
     ) -> Dict:
         """Match spectra from a json payload input with spectra having the highest
         structural similarity scores in the GNPS spectra library. Return a list
