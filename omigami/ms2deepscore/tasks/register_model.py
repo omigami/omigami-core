@@ -3,6 +3,8 @@ from typing import Dict, Any
 
 import mlflow
 from mlflow.pyfunc import PythonModel
+
+from omigami.config import IonModes
 from omigami.model_register import MLFlowModelRegister
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
@@ -28,13 +30,14 @@ class RegisterModel(Task):
     def __init__(
         self,
         parameters: RegisterModelParameters,
+        training_parameters: TrainModelParameters = None,
         **kwargs,
     ):
         self._experiment_name = parameters.experiment_name
         self._mlflow_output_path = parameters.mlflow_output_path
         self._server_uri = parameters.server_uri
         self._ion_mode = parameters.ion_mode
-	self.training_parameters = training_parameters
+        self.training_parameters = training_parameters
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
@@ -100,7 +103,9 @@ class ModelRegister(MLFlowModelRegister):
             run_id = run.info.run_id
 
             if train_parameters:
-                mlflow.log_params(self._get_train_parameters(model, train_parameters))
+                mlflow.log_params(
+                    self._convert_train_parameters(model, train_parameters)
+                )
 
             self.log_model(
                 model,
