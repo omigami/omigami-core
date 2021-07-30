@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from logging import getLogger
 from typing import Union, List, Dict, Tuple
 
@@ -5,7 +6,6 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore import BinnedSpectrum
 from ms2deepscore.models import load_model as ms2deepscore_load_model
-
 from omigami.config import IonModes
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -118,7 +118,7 @@ class MS2DeepScorePredictor(Predictor):
             queries,
             self.model,
         )
-        best_matches = {}
+        best_matches = OrderedDict()
         for i, query in enumerate(queries):
             all_scores = scores.scores_by_query(query, sort=True)
 
@@ -128,7 +128,7 @@ class MS2DeepScorePredictor(Predictor):
                 if not np.isnan(score)
             ]
             spectrum_best_scores = all_scores[:n_best_spectra]
-            spectrum_best_matches = {}
+            spectrum_best_matches = OrderedDict()
             for spectrum_match in spectrum_best_scores:
                 spectrum_best_matches[spectrum_match[0].metadata["spectrum_id"]] = {
                     "score": spectrum_match[1]
