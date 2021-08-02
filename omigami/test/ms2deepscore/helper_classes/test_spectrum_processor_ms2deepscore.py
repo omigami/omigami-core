@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 from matchms import Spectrum
 from matchms.importing.load_from_json import as_spectrum
@@ -59,3 +60,15 @@ def test_run_missing_smiles_inchi_against_pubchem(
 
     assert not cleaned_spectrum[0].metadata.get("inchikey")
     assert len(spectrum_with_inchikey.metadata.get("inchikey")) > 13
+
+
+def test_require_minimum_number_of_peaks(common_cleaned_data, spectrum_processor):
+    assert spectrum_processor._require_minimum_number_of_peaks(
+        common_cleaned_data[0], 5
+    )
+    mz = common_cleaned_data[0].peaks.mz
+    spectrum_0_intensities = Spectrum(mz, np.zeros(len(mz)))
+
+    assert not spectrum_processor._require_minimum_number_of_peaks(
+        spectrum_0_intensities, 5
+    )

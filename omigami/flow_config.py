@@ -61,6 +61,7 @@ def make_flow_config(
         labels=["dev"],
         service_account_name="prefect-server-serviceaccount",
         env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
+        memory_request="12Gi",
     )
 
     # storage_type
