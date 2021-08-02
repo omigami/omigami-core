@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict
 
 import mlflow
-from mlflow.pyfunc import PythonModel
 
 from omigami.config import IonModes
 from omigami.model_register import MLFlowModelRegister
