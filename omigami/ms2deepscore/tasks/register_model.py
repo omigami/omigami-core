@@ -128,7 +128,6 @@ class ModelRegister(MLFlowModelRegister):
         """Converts training parameters and the models metrics into a dict"""
 
         train_params = {
-            "spectrum_binner_output_path": train_parameters.spectrum_binner_output_path,
             "epochs": train_parameters.epochs,
             "learning_rate": train_parameters.learning_rate,
             "layer_base_dims": train_parameters.layer_base_dims,
@@ -137,7 +136,6 @@ class ModelRegister(MLFlowModelRegister):
             "split_ratio": train_parameters.split_ratio,
         }
 
-        # TODO: At this point the model is always None. Becuase it is never assigned.
         if model.model:
             model_metrics = model.model.model.history.history
             del model_metrics["loss"]
