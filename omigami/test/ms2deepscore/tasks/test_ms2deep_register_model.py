@@ -24,14 +24,15 @@ os.chdir(Path(__file__).parents[4])
 def train_parameters(ms2deepscore_model_path):
 
     return TrainModelParameters(
-        ms2deepscore_model_path,
-        "Test/Path/SpectrumBinner",
-        500,
-        0.3,
-        30,
-        60,
-        0.5,
-        SplitRatio(0.8, 0.1, 0.1),
+        output_path=ms2deepscore_model_path,
+        ion_mode="Test/Path/SpectrumBinner",
+        spectrum_binner_output_path=500,
+        epochs=0.3,
+        learning_rate=30,
+        layer_base_dims=60,
+        embedding_dim=5,
+        dropout_rate=0.5,
+        split_ratio=SplitRatio(0.8, 0.1, 0.1),
     )
 
 
