@@ -23,13 +23,13 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     deployer = Spec2VecDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.e568c792",
+        image="drtools/prefect:omigami-SNAPSHOT.1180d27",
         iterations=15,
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
         n_decimals=2,
-        overwrite_all=True,
+        overwrite_all_spectra=True,
         chunk_size=int(1e8),
         environment=env,
         ion_mode="positive",
@@ -42,6 +42,6 @@ def test_deploy_training_flow():
         auth=True,
         **login_config,
     )
-    flow_id = deployer.deploy_training_flow(flow_name="training-flow/positive")
+    flow_id = deployer.deploy_training_flow(flow_name="spec2vec/positive")
 
     assert flow_id
