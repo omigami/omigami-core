@@ -3,11 +3,13 @@ from typing import Dict
 
 import mlflow
 from mlflow.pyfunc import PythonModel
+from pandas import Timestamp
+from prefect import Task
+
 from omigami.config import IonModes
 from omigami.model_register import MLFlowModelRegister
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.utils import merge_prefect_task_configs
-from prefect import Task
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 
@@ -42,6 +44,7 @@ class RegisterModel(Task):
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._mlflow_output_path}."
         )
+        run_name = f"ms2deepscore-{self._ion_mode}-{Timestamp.now():%Y%m%dT%H%M}"
 
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
@@ -50,6 +53,7 @@ class RegisterModel(Task):
             self._mlflow_output_path,
             CONDA_ENV_PATH,
             artifacts={"ms2deepscore_model_path": model_path},
+            run_name=run_name,
         )
         run = mlflow.get_run(run_id)
         self.logger.info(f"{run.info}")
@@ -70,6 +74,7 @@ class ModelRegister(MLFlowModelRegister):
         output_path: str,
         conda_env_path: str = None,
         artifacts: Dict = None,
+        run_name: str = "ms2deepscore",
         **kwargs,
     ):
         """
@@ -82,13 +87,15 @@ class ModelRegister(MLFlowModelRegister):
         output_path: path to save the artifacts
         conda_env_path: Conda environment requirements file
         artifacts: Dictionary of artifacts to be stored along with the model
-
+        run_name: Name of the run to identify in the MLFlow
         Returns
         -------
             Return the MLFLow run ID
         """
         experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
-        with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
+        with mlflow.start_run(
+            run_name=run_name, experiment_id=experiment_id, nested=True
+        ) as run:
             run_id = run.info.run_id
 
             self.log_model(
