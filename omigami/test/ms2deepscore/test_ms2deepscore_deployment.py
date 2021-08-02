@@ -56,7 +56,6 @@ def test_deploy_training_flow():
         mlflow_server=MLFLOW_SERVER,
         auth=True,
         overwrite_all_spectra=True,
-        epochs=10,
         **login_config,
         deploy_model=True,
         overwrite_model=True,
