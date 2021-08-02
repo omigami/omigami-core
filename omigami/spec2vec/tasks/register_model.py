@@ -3,10 +3,12 @@ from typing import Union, Dict
 
 import mlflow
 from gensim.models import Word2Vec
+from pandas import Timestamp
+from prefect import Task
+
 from omigami.model_register import MLFlowModelRegister
 from omigami.spec2vec.predictor import Spec2VecPredictor
 from omigami.utils import merge_prefect_task_configs
-from prefect import Task
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 
@@ -40,6 +42,7 @@ class RegisterModel(Task):
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._path}."
         )
+        run_name = f"spec2vec-{Timestamp.now():%Y%m%dT%H%M}"
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
             Spec2VecPredictor(
@@ -51,6 +54,7 @@ class RegisterModel(Task):
             self._experiment_name,
             self._path,
             CONDA_ENV_PATH,
+            run_name,
         )
         run = mlflow.get_run(run_id)
         self.logger.info(f"{run.info}")
@@ -66,9 +70,12 @@ class ModelRegister(MLFlowModelRegister):
         experiment_name: str,
         output_path: str = None,
         conda_env_path: str = None,
+        run_name: str = "spec2vec",
     ) -> str:
         experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
-        with mlflow.start_run(experiment_id=experiment_id, nested=True) as run:
+        with mlflow.start_run(
+            run_name=run_name, experiment_id=experiment_id, nested=True
+        ) as run:
             params = {
                 "n_decimals_for_documents": model.n_decimals,
                 "intensity_weighting_power": model.intensity_weighting_power,
