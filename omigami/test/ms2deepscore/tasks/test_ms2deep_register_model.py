@@ -22,7 +22,6 @@ os.chdir(Path(__file__).parents[4])
 
 @pytest.fixture
 def train_parameters(ms2deepscore_model_path):
-
     return TrainModelParameters(
         output_path=ms2deepscore_model_path,
         ion_mode="Test/Path/SpectrumBinner",
@@ -87,3 +86,24 @@ def test_model_register_task(ms2deepscore_model_path, tmpdir, train_parameters):
     assert state.is_successful()
     assert isinstance(state.result[res].result, dict)
     assert list(state.result[res].result.keys()) == ["model_uri", "run_id"]
+
+
+def test_convert_train_parameters(ms2deepscore_model_path, tmpdir, train_parameters):
+    model_register = ModelRegister("")
+    parameters = model_register._convert_train_parameters(
+        model=MS2DeepScorePredictor(ion_mode="positive"),
+        train_parameters=train_parameters,
+    )
+
+    expected_keys = [
+        "epochs",
+        "learning_rate",
+        "layer_base_dims",
+        "embedding_dim",
+        "dropout_rate",
+        "split_ratio",
+    ]
+
+    assert len(parameters) == 6
+    assert type(dict()) == type(parameters)
+    assert list(parameters.keys()) == expected_keys
