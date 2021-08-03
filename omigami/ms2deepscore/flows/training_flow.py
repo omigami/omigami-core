@@ -13,6 +13,8 @@ from omigami.ms2deepscore.tasks import (
     DeployModel,
     DeployModelParameters,
     RegisterModelParameters,
+    MakeEmbeddingsParameters,
+    MakeEmbeddings,
 )
 from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScoreParameters,
@@ -124,6 +126,8 @@ class TrainingFlowParameters:
             project_name, mlflow_output_dir, mlflow_server, ion_mode
         )
 
+        self.embedding = MakeEmbeddingsParameters(ion_mode)
+
         self.deploying = DeployModelParameters(
             redis_db, ion_mode, overwrite_model, environment
         )
@@ -187,6 +191,11 @@ def build_training_flow(
         model_registry = RegisterModel(flow_parameters.registering)(
             ms2deepscore_model_path
         )
+
+        _ = MakeEmbeddings(
+            flow_parameters.spectrum_dgw,
+            flow_parameters.embedding,
+        )(ms2deepscore_model_path, model_registry, processed_ids)
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)
