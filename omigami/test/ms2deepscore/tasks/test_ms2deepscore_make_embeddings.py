@@ -2,6 +2,7 @@ import os
 
 import pytest
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
+from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.tasks.make_embeddings import (
     MakeEmbeddings,
     MakeEmbeddingsParameters,
@@ -28,8 +29,9 @@ def test_make_embeddings(
     spectrum_ids = [spectrum.get("spectrum_id") for spectrum in binned_spectra]
     parameters = MakeEmbeddingsParameters(ion_mode="positive")
     spectrum_gtw = MS2DeepScoreRedisSpectrumDataGateway()
+    fs_gtw = MS2DeepScoreFSDataGateway()
     with Flow("test") as flow:
-        MakeEmbeddings(spectrum_gtw, parameters)(
+        MakeEmbeddings(spectrum_gtw, fs_gtw, parameters)(
             ms2deepscore_real_model_path, {"run_id": "1"}, spectrum_ids
         )
 

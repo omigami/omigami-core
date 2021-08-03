@@ -194,6 +194,7 @@ def build_training_flow(
 
         _ = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
+            flow_parameters.data_gtw,
             flow_parameters.embedding,
         )(ms2deepscore_model_path, model_registry, processed_ids)
 
