@@ -97,7 +97,8 @@ class ModelRegister(MLFlowModelRegister):
             Conda environment requirements file
         artifacts: Dict = None
             Dictionary of artifacts to be stored along with the model
-        run_name: Name of the run to identify in the MLFlow
+        run_name: str = "ms2deepscore"
+            Name of the run to identify in the MLFlow
         Returns
         -------
             Return the MLFLow run ID
