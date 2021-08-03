@@ -2,14 +2,12 @@ from dataclasses import dataclass
 from typing import Dict
 
 import mlflow
-from mlflow.pyfunc import PythonModel
-from pandas import Timestamp
-from prefect import Task
-
 from omigami.config import IonModes
 from omigami.model_register import MLFlowModelRegister
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.utils import merge_prefect_task_configs
+from pandas import Timestamp
+from prefect import Task
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 
@@ -48,7 +46,7 @@ class RegisterModel(Task):
 
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
-            MS2DeepScorePredictor(self._ion_mode),
+            MS2DeepScorePredictor(),
             self._experiment_name,
             self._mlflow_output_path,
             CONDA_ENV_PATH,
@@ -69,7 +67,7 @@ class ModelRegister(MLFlowModelRegister):
 
     def register_model(
         self,
-        model: PythonModel,
+        model: MS2DeepScorePredictor,
         experiment_name: str,
         output_path: str,
         conda_env_path: str = None,
@@ -97,6 +95,7 @@ class ModelRegister(MLFlowModelRegister):
             run_name=run_name, experiment_id=experiment_id, nested=True
         ) as run:
             run_id = run.info.run_id
+            model.set_run_id(run_id)
 
             self.log_model(
                 model,

@@ -69,7 +69,7 @@ def ms2deepscore_spectrum_similarity(ms2deepscore_model_path):
 
 @pytest.fixture()
 def ms2deepscore_predictor(ms2deepscore_model):
-    predictor = MS2DeepScorePredictor(ion_mode="positive")
+    predictor = MS2DeepScorePredictor(run_id="2")
     predictor.model = ms2deepscore_model
 
     return predictor
@@ -93,17 +93,9 @@ def ms2deepscore_real_model(ms2deepscore_real_model_path):
 
 @pytest.fixture()
 def ms2deepscore_real_predictor(ms2deepscore_real_model):
-    ms2deepscore_predictor = MS2DeepScorePredictor(ion_mode="positive")
+    ms2deepscore_predictor = MS2DeepScorePredictor(run_id="2")
     ms2deepscore_predictor.model = MS2DeepScoreEmbedding(ms2deepscore_real_model)
     return ms2deepscore_predictor
-
-
-@pytest.fixture()
-def embeddings_from_real_predictor():
-    path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_embeddings.pickle")
-    with open(path, "rb") as handle:
-        embeddings = pickle.load(handle)
-    return embeddings
 
 
 @pytest.fixture(scope="module")

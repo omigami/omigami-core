@@ -1,12 +1,16 @@
 from dataclasses import dataclass
 from typing import Dict, Set
 
+from ms2deepscore.models import load_model as ms2deepscore_load_model
 from omigami.config import IonModes
 from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
 )
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
+from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
+    MS2DeepScoreEmbedding,
+)
 from omigami.utils import merge_prefect_task_configs
 from prefect import Task
 
@@ -45,10 +49,12 @@ class MakeEmbeddings(Task):
         )
 
         embeddings = []
+        siamese_model = ms2deepscore_load_model(model_path)
+        model = MS2DeepScoreEmbedding(siamese_model)
         for i, binned_spectrum in enumerate(binned_spectra):
             embeddings.append(
                 self._embedding_maker.make_embedding(
-                    model_path,
+                    model,
                     binned_spectrum,
                 )
             )

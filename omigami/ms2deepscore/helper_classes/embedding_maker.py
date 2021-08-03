@@ -1,6 +1,5 @@
 import numpy as np
 from ms2deepscore import BinnedSpectrum
-from ms2deepscore.models import load_model as ms2deepscore_load_model
 from omigami.ms2deepscore.entities.embedding import Embedding
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
     MS2DeepScoreEmbedding,
@@ -10,11 +9,9 @@ from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
 class EmbeddingMaker:
     def make_embedding(
         self,
-        model_path: str,
+        model: MS2DeepScoreEmbedding,
         binned_spectrum: BinnedSpectrum,
     ) -> Embedding:
-        siamese_model = ms2deepscore_load_model(model_path)
-        model = MS2DeepScoreEmbedding(siamese_model)
         vector = model.model.base.predict(
             self._create_input_vector(binned_spectrum, model.input_vector_dim)
         )
@@ -25,9 +22,8 @@ class EmbeddingMaker:
             binned_spectrum.get("inchikey"),
         )
 
-    def _create_input_vector(
-        self, binned_spectrum: BinnedSpectrum, input_vector_dim: int
-    ):
+    @staticmethod
+    def _create_input_vector(binned_spectrum: BinnedSpectrum, input_vector_dim: int):
         """Creates input vector for model.base based on binned peaks and intensities"""
         X = np.zeros((1, input_vector_dim))
 
