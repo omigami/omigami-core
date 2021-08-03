@@ -86,3 +86,15 @@ class KratosAuthenticator(Authenticator):
             logger.error("Error while trying to fetch Session Token")
             raise e
         return session_token
+
+    #  TODO: Delete this once the prod cluster is updated
+    def authenticate_prod(self):
+        flow = requests.get(
+            "https://omigami.datarevenue.com/.ory/kratos/public/self-service/login/api"
+        )
+        action_url = flow.json()["methods"]["password"]["config"]["action"]
+        auth = requests.post(
+            action_url, json={"identifier": self._username, "password": self._password}
+        )
+        token = auth.json()["session_token"]
+        return token

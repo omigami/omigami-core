@@ -1,9 +1,6 @@
 from datetime import timedelta
 from typing import Optional
 
-from prefect import Client
-from typing_extensions import Literal
-
 from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     API_SERVER_URLS,
@@ -18,6 +15,8 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
+from prefect import Client
+from typing_extensions import Literal
 
 
 class Deployer:
@@ -78,7 +77,11 @@ class Deployer:
                 authenticator = KratosAuthenticator(
                     self._auth_url, self._username, self._password
                 )
-                self._session_token = authenticator.authenticate()
+                #  TODO: Delete this once the prod cluster is updated
+                if self._environment == "prod":
+                    self._session_token = authenticator.authenticate_prod()
+                else:
+                    self._session_token = authenticator.authenticate()
 
             client = Client(api_server=api_server, api_token=self._session_token)
         else:
