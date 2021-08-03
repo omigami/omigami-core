@@ -15,6 +15,8 @@ from omigami.ms2deepscore.tasks import (
     RegisterModelParameters,
     MakeEmbeddingsParameters,
     MakeEmbeddings,
+    CreateSpectrumIDsChunks,
+    ChunkingIDsParameters,
 )
 from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScoreParameters,
@@ -30,7 +32,7 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
-from prefect import Flow
+from prefect import Flow, unmapped
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
@@ -65,6 +67,7 @@ class TrainingFlowParameters:
         train_ratio: float = 0.9,
         validation_ratio: float = 0.05,
         test_ratio: float = 0.05,
+        spectrum_ids_chunk_size: int = 1000,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
@@ -126,6 +129,8 @@ class TrainingFlowParameters:
             project_name, mlflow_output_dir, mlflow_server, ion_mode
         )
 
+        self.spectrum_chunking = ChunkingIDsParameters(spectrum_ids_chunk_size)
+
         self.embedding = MakeEmbeddingsParameters(ion_mode)
 
         self.deploying = DeployModelParameters(
@@ -152,6 +157,8 @@ def build_training_flow(
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Dataclass containing all flow parameters
+    deploy_model:
+        If the model will be deployed or not
     -------
 
     """
@@ -192,11 +199,19 @@ def build_training_flow(
             ms2deepscore_model_path
         )
 
-        _ = MakeEmbeddings(
+        processed_chunks = CreateSpectrumIDsChunks(flow_parameters.spectrum_chunking)(
+            processed_ids
+        )
+
+        MakeEmbeddings(
             flow_parameters.spectrum_dgw,
             flow_parameters.data_gtw,
             flow_parameters.embedding,
-        )(ms2deepscore_model_path, model_registry, processed_ids)
+        ).map(
+            unmapped(ms2deepscore_model_path),
+            unmapped(model_registry),
+            processed_chunks,
+        )
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)

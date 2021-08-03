@@ -49,6 +49,7 @@ def test_training_flow(flow_config):
         "CalculateTanimotoScore",
         "TrainModel",
         "RegisterModel",
+        "CreateSpectrumIDsChunks",
         "MakeEmbeddings",
     }
 
@@ -72,6 +73,7 @@ def test_training_flow(flow_config):
         project_name="test",
         mlflow_output_dir="model-output",
         mlflow_server="mlflow-server",
+        spectrum_ids_chunk_size=10,
     )
 
     flow = build_training_flow(
@@ -127,6 +129,7 @@ def test_run_training_flow(
         project_name="test",
         mlflow_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
+        spectrum_ids_chunk_size=10,
     )
 
     flow = build_training_flow(
