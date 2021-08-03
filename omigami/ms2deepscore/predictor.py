@@ -5,13 +5,12 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore import BinnedSpectrum
 from ms2deepscore.models import load_model as ms2deepscore_load_model
-
 from omigami.config import IonModes
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
-    MS2DeepScoreBinnedSpectrum,
+from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
+    MS2DeepScoreEmbedding,
 )
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
@@ -33,7 +32,7 @@ class MS2DeepScorePredictor(Predictor):
         try:
             log.info(f"Loading model from {model_path}")
             siamese_model = ms2deepscore_load_model(model_path)
-            self.model = MS2DeepScoreBinnedSpectrum(siamese_model)
+            self.model = MS2DeepScoreEmbedding(siamese_model)
         except FileNotFoundError:
             log.error(f"Could not find MS2DeepScore model in {model_path}")
 
