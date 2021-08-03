@@ -18,7 +18,7 @@ def test_deploy_pretrained_flow():
     login_config.pop("token")
 
     deployer = MS2DeepScoreDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.c9e85bb",
+        image="drtools/prefect:omigami-SNAPSHOT.1180d27",
         dataset_name="small",
         environment=env,
         project_name="ms2deepscore-dev",
