@@ -48,6 +48,8 @@ def test_training_flow(flow_config):
         "ProcessSpectrum",
         "CalculateTanimotoScore",
         "TrainModel",
+        "TrainModel[0]",
+        "TrainModel[1]",
         "RegisterModel",
     }
 
@@ -71,6 +73,9 @@ def test_training_flow(flow_config):
         project_name="test",
         mlflow_output_dir="model-output",
         mlflow_server="mlflow-server",
+        train_ratio=0.6,
+        validation_ratio=0.3,
+        test_ratio=0.1,
     )
 
     flow = build_training_flow(
@@ -125,6 +130,9 @@ def test_run_training_flow(
         project_name="test",
         mlflow_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
+        train_ratio=0.6,
+        validation_ratio=0.3,
+        test_ratio=0.1,
     )
 
     flow = build_training_flow(

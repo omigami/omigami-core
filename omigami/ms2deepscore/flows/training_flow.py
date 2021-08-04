@@ -178,15 +178,16 @@ def build_training_flow(
             flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score
         )(processed_ids)
 
-        ms2deepscore_model_path = TrainModel(
+        ms2deepscore_model_path, validation_loss = TrainModel(
             flow_parameters.data_gtw,
             flow_parameters.spectrum_dgw,
             flow_parameters.training,
+            nout=2,
         )(processed_ids, scores_output_path)
 
         model_registry = RegisterModel(
             flow_parameters.registering, training_parameters=flow_parameters.training
-        )(ms2deepscore_model_path)
+        )(ms2deepscore_model_path, validation_loss=validation_loss)
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)

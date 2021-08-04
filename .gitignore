@@ -138,3 +138,4 @@ dmypy.json
 **/S2DeepScore_allGNPSpositive_10k_500_500_200.hdf5
 **/chunks/
 *.orig
+mlflow-server/*

@@ -54,7 +54,7 @@ class TrainModel(Task):
         self,
         spectrum_ids: List[str] = None,
         scores_output_path: str = None,
-    ) -> str:
+    ) -> Tuple:
         spectrum_binner = self._fs_gtw.read_from_file(self._spectrum_binner_output_path)
 
         trainer = SiameseModelTrainer(
@@ -71,4 +71,5 @@ class TrainModel(Task):
             spectrum_ids, scores_output_path, spectrum_binner, self.logger
         )
         self._fs_gtw.save(model, self._output_path)
-        return self._output_path
+
+        return self._output_path, model.model.history.history["val_loss"][-1]

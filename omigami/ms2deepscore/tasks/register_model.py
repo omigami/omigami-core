@@ -41,7 +41,11 @@ class RegisterModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, model_path: str = None) -> Dict[str, str]:
+    def run(
+        self,
+        model_path: str = None,
+        validation_loss: list = None,
+    ) -> Dict[str, str]:
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._mlflow_output_path}."
         )
@@ -53,6 +57,7 @@ class RegisterModel(Task):
             experiment_name=self._experiment_name,
             output_path=self._mlflow_output_path,
             train_parameters=self.training_parameters,
+            validation_loss=validation_loss,
             conda_env_path=CONDA_ENV_PATH,
             artifacts={"ms2deepscore_model_path": model_path},
             run_name=run_name,
@@ -75,6 +80,7 @@ class ModelRegister(MLFlowModelRegister):
         experiment_name: str,
         output_path: str,
         train_parameters: TrainModelParameters = None,
+        validation_loss: float = None,
         conda_env_path: str = None,
         artifacts: Dict = None,
         run_name: str = "ms2deepscore",
@@ -91,8 +97,10 @@ class ModelRegister(MLFlowModelRegister):
             MLFlow Experiment name
         output_path: str
             Path to save the artifacts
-        train_parameters: TrainModelParameters
+        train_parameters: TrainModelParameters = None
             Training Parameters used to train the model
+        validation_loss: float = None
+            Last validation loss of the training
         conda_env_path: str = None
             Conda environment requirements file
         artifacts: Dict = None
@@ -111,7 +119,7 @@ class ModelRegister(MLFlowModelRegister):
 
             if train_parameters:
                 mlflow.log_params(
-                    self._convert_train_parameters(model, train_parameters)
+                    self._convert_train_parameters(train_parameters, validation_loss)
                 )
 
             self.log_model(
@@ -130,7 +138,7 @@ class ModelRegister(MLFlowModelRegister):
 
     @staticmethod
     def _convert_train_parameters(
-        model: MS2DeepScorePredictor, train_parameters: TrainModelParameters
+        train_parameters: TrainModelParameters, validation_loss: float
     ) -> Dict:
         """Converts training parameters and the models metrics into a dict"""
 
@@ -141,11 +149,7 @@ class ModelRegister(MLFlowModelRegister):
             "embedding_dim": train_parameters.embedding_dim,
             "dropout_rate": train_parameters.dropout_rate,
             "split_ratio": train_parameters.split_ratio,
+            "validation_loss": validation_loss,
         }
-
-        if model.model:
-            model_metrics = model.model.model.history.history
-            del model_metrics["loss"]
-            train_params.update(model_metrics)
 
         return train_params

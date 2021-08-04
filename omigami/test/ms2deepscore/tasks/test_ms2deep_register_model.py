@@ -91,8 +91,7 @@ def test_model_register_task(ms2deepscore_model_path, tmpdir, train_parameters):
 def test_convert_train_parameters(ms2deepscore_model_path, tmpdir, train_parameters):
     model_register = ModelRegister("")
     parameters = model_register._convert_train_parameters(
-        model=MS2DeepScorePredictor(ion_mode="positive"),
-        train_parameters=train_parameters,
+        train_parameters=train_parameters, validation_loss=0.4
     )
 
     expected_keys = [
@@ -102,8 +101,9 @@ def test_convert_train_parameters(ms2deepscore_model_path, tmpdir, train_paramet
         "embedding_dim",
         "dropout_rate",
         "split_ratio",
+        "validation_loss",
     ]
 
-    assert len(parameters) == 6
+    assert len(parameters) == 7
     assert type(dict()) == type(parameters)
     assert list(parameters.keys()) == expected_keys
