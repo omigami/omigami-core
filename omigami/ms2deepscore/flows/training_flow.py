@@ -1,6 +1,10 @@
 from datetime import timedelta, date, datetime
 from typing import Tuple
 
+from prefect import Flow
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
+
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import DataGateway
@@ -28,9 +32,6 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
-from prefect import Flow
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
 
 
 class TrainingFlowParameters:
@@ -178,15 +179,16 @@ def build_training_flow(
             flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score
         )(processed_ids)
 
-        ms2deepscore_model_path = TrainModel(
+        train_model_output = TrainModel(
             flow_parameters.data_gtw,
             flow_parameters.spectrum_dgw,
             flow_parameters.training,
+            nout=2,
         )(processed_ids, scores_output_path)
 
-        model_registry = RegisterModel(flow_parameters.registering)(
-            ms2deepscore_model_path
-        )
+        model_registry = RegisterModel(
+            flow_parameters.registering, training_parameters=flow_parameters.training
+        )(train_model_output)
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)

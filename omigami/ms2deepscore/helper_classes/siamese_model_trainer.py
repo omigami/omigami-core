@@ -9,8 +9,7 @@ from ms2deepscore.data_generators import DataGeneratorAllSpectrums
 from ms2deepscore.models import SiameseModel
 from omigami.config import IonModes
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
-from tensorflow import keras
-
+from tensorflow import keras, metrics
 
 @dataclass
 class SplitRatio:

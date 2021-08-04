@@ -8,6 +8,10 @@ from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
 from omigami.ms2deepscore.tasks.train_model import TrainModel, TrainModelParameters
 from prefect import Flow
 
+from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
+    SplitRatio,
+)
+
 
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
@@ -25,6 +29,7 @@ def test_train_model(
         "positive",
         spectrum_binner_output_path=fitted_spectrum_binner_path,
         epochs=2,
+        split_ratio=SplitRatio(0.6, 0.3, 0.1),
     )
 
     with Flow("test") as flow:
