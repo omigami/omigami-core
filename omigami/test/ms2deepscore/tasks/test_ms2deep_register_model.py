@@ -4,17 +4,15 @@ from pathlib import Path
 import mlflow
 import pytest
 from mlflow.pyfunc import PyFuncModel
+from prefect import Flow
 
+from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
-
 from omigami.ms2deepscore.tasks import (
     ModelRegister,
     RegisterModel,
     RegisterModelParameters,
 )
-from prefect import Flow
-
-from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
 
 os.chdir(Path(__file__).parents[4])
@@ -71,15 +69,22 @@ def test_load_registered_model(ms2deepscore_model_path, tmpdir, train_parameters
 
 def test_model_register_task(ms2deepscore_model_path, tmpdir, train_parameters):
     path = f"{tmpdir}/mlflow/"
+
     parameters = RegisterModelParameters(
         experiment_name="experiment",
         mlflow_output_path=path,
         server_uri=path,
         ion_mode="positive",
     )
+
+    train_model_output = {
+        "ms2deepscore_model_path": ms2deepscore_model_path,
+        "validation_loss": 50,
+    }
+
     with Flow("test") as flow:
         res = RegisterModel(parameters, train_parameters)(
-            model_path=ms2deepscore_model_path
+            train_model_output=train_model_output
         )
 
     state = flow.run()
