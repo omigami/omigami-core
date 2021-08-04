@@ -46,7 +46,7 @@ class RegisterModel(Task):
 
         model_register = ModelRegister(self._server_uri)
         run_id = model_register.register_model(
-            MS2DeepScorePredictor(),
+            MS2DeepScorePredictor(self._ion_mode),
             self._experiment_name,
             self._mlflow_output_path,
             CONDA_ENV_PATH,

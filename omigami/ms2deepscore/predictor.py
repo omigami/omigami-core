@@ -21,8 +21,9 @@ log = getLogger(__name__)
 
 
 class MS2DeepScorePredictor(Predictor):
-    def __init__(self, run_id: str = None):
+    def __init__(self, ion_mode: str = None, run_id: str = None):
         super().__init__(MS2DeepScoreRedisSpectrumDataGateway())
+        self.ion_mode = ion_mode
         self.run_id = run_id
         self.spectrum_processor = SpectrumProcessor()
         self.embedding_maker = EmbeddingMaker()
@@ -145,5 +146,7 @@ class MS2DeepScorePredictor(Predictor):
 
     def _load_embeddings(self, spectrum_ids: List[List[str]]) -> List[Embedding]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
-        embeddings = self.dgw.read_embeddings(self.run_id, list(unique_ids))
+        embeddings = self.dgw.read_embeddings(
+            self.ion_mode, self.run_id, list(unique_ids)
+        )
         return embeddings

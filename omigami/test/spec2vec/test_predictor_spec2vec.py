@@ -4,13 +4,11 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from pytest_redis import factories
-
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.predictor import Spec2VecPredictor
-from omigami.spec2vec.tasks.register_model import ModelRegister
 from omigami.test.conftest import ASSETS_DIR
+from pytest_redis import factories
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -61,6 +59,7 @@ def big_payload():
 def model(word2vec_model):
     return Spec2VecPredictor(
         word2vec_model,
+        ion_mode="positive",
         n_decimals=1,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,

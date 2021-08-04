@@ -16,6 +16,7 @@ from spec2vec import SpectrumDocument
 
 class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
     """Data gateway for Redis storage."""
+    project = "spec2vec"
 
     def write_spectrum_documents(self, spectrum_data: List[SpectrumDocumentData]):
         """Write spectra data on the redis database. The spectra ids and precursor_MZ are required."""

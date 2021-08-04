@@ -82,11 +82,12 @@ class TrainingFlowParameters:
             model_output_dir,
             mlflow_server,
             n_decimals,
+            ion_mode,
             intensity_weighting_power,
             allowed_missing_percentage,
         )
         self.embedding = MakeEmbeddingsParameters(
-            n_decimals, intensity_weighting_power, allowed_missing_percentage
+            ion_mode, n_decimals, intensity_weighting_power, allowed_missing_percentage
         )
         self.deploying = DeployModelParameters(
             redis_db, ion_mode, overwrite_model, environment

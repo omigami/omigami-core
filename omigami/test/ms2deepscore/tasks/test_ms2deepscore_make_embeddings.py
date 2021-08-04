@@ -37,4 +37,6 @@ def test_make_embeddings(
 
     state = flow.run()
     assert state.is_successful()
-    assert len(spectrum_gtw.read_embeddings("1", spectrum_ids)) == len(spectrum_ids)
+    assert len(spectrum_gtw.read_embeddings("positive", "1", spectrum_ids)) == len(
+        spectrum_ids
+    )

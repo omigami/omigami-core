@@ -1,12 +1,11 @@
 import pytest
-from typing_extensions import Literal
-
 from omigami.config import (
     config,
     MLFLOW_SERVER,
     SOURCE_URI_COMPLETE_GNPS,
 )
 from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
+from typing_extensions import Literal
 
 
 @pytest.mark.skip(
@@ -51,8 +50,8 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     deployer = MS2DeepScoreDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.1180d27",
-        dataset_name="10k",  # ms2deepscore can not be trained with the small dataset
+        image="drtools/prefect:omigami-SNAPSHOT.f28bfc3",
+        dataset_name="complete",  # ms2deepscore can not be trained with the small dataset
         # because the minimum batch size to train is 32 samples and the small dataset
         # will lead to less samples than that.
         environment=env,
@@ -60,7 +59,7 @@ def test_deploy_training_flow():
         mlflow_server=MLFLOW_SERVER,
         source_uri=SOURCE_URI_COMPLETE_GNPS,
         auth=True,
-        overwrite_all_spectra=True,
+        overwrite_all_spectra=False,
         **login_config,
         deploy_model=True,
         overwrite_model=True,

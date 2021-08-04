@@ -13,6 +13,7 @@ def test_register_model(word2vec_model, tmpdir):
     run_id = model_register.register_model(
         model=Spec2VecPredictor(
             word2vec_model,
+            "positive",
             n_decimals=2,
             intensity_weighting_power=0.5,
             allowed_missing_percentage=5.0,

@@ -3,9 +3,6 @@ from typing import Iterable
 
 import pytest
 from matchms.Spectrum import Spectrum
-from pytest_redis import factories
-from spec2vec.SpectrumDocument import SpectrumDocument
-
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     DOCUMENT_HASHES,
@@ -15,6 +12,8 @@ from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
+from pytest_redis import factories
+from spec2vec.SpectrumDocument import SpectrumDocument
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -80,7 +79,7 @@ def test_read_documents(documents_data, documents_stored):
 
 def test_read_embeddings(embeddings, embeddings_stored):
     dgw = Spec2VecRedisSpectrumDataGateway()
-    embeddings_read = dgw.read_embeddings("1")
+    embeddings_read = dgw.read_embeddings("positive", "1")
     assert len(embeddings_read) == len(embeddings)
     for embedding in embeddings_read:
         assert isinstance(embedding, Embedding)
@@ -95,7 +94,7 @@ def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_sto
         SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
     )
     spectrum_ids_within_range = dgw.get_spectrum_ids_within_range(mz_min, mz_max)
-    embeddings_read = dgw.read_embeddings("1", spectrum_ids_within_range)
+    embeddings_read = dgw.read_embeddings("positive", "1", spectrum_ids_within_range)
     assert len(embeddings_read) == len(filtered_spectra)
     for embedding in embeddings_read:
         assert isinstance(embedding, Embedding)
