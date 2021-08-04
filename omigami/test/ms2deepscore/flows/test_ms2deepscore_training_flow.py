@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
+
 from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
 from omigami.flow_config import (
     make_flow_config,
@@ -48,8 +49,6 @@ def test_training_flow(flow_config):
         "ProcessSpectrum",
         "CalculateTanimotoScore",
         "TrainModel",
-        "TrainModel[0]",
-        "TrainModel[1]",
         "RegisterModel",
     }
 
