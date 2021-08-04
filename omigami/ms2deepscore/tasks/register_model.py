@@ -43,9 +43,11 @@ class RegisterModel(Task):
 
     def run(
         self,
-        model_path: str = None,
-        validation_loss: list = None,
+        train_model_output: dict = None,
     ) -> Dict[str, str]:
+        model_path = train_model_output["ms2deepscore_model_path"]
+        validation_loss = train_model_output["validation_loss"]
+
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._mlflow_output_path}."
         )
