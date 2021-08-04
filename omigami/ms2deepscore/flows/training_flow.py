@@ -190,15 +190,16 @@ def build_training_flow(
             flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score
         )(processed_ids)
 
-        ms2deepscore_model_path = TrainModel(
+        train_model_output = TrainModel(
             flow_parameters.data_gtw,
             flow_parameters.spectrum_dgw,
             flow_parameters.training,
+            nout=2,
         )(processed_ids, scores_output_path)
 
-        model_registry = RegisterModel(flow_parameters.registering)(
-            ms2deepscore_model_path
-        )
+        model_registry = RegisterModel(
+            flow_parameters.registering, training_parameters=flow_parameters.training
+        )(train_model_output)
 
         processed_chunks = CreateSpectrumIDsChunks(flow_parameters.spectrum_chunking)(
             processed_ids

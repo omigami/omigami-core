@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Tuple, List
 
+from prefect import Task
+
 from omigami.config import IonModes
 from omigami.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
@@ -11,7 +13,6 @@ from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
     SplitRatio,
 )
 from omigami.utils import merge_prefect_task_configs
-from prefect import Task
 
 
 @dataclass
@@ -54,7 +55,7 @@ class TrainModel(Task):
         self,
         spectrum_ids: List[str] = None,
         scores_output_path: str = None,
-    ) -> str:
+    ) -> dict:
         spectrum_binner = self._fs_gtw.read_from_file(self._spectrum_binner_output_path)
 
         trainer = SiameseModelTrainer(
@@ -71,4 +72,8 @@ class TrainModel(Task):
             spectrum_ids, scores_output_path, spectrum_binner, self.logger
         )
         self._fs_gtw.save(model, self._output_path)
-        return self._output_path
+
+        return {
+            "ms2deepscore_model_path": self._output_path,
+            "validation_loss": model.model.history.history["val_loss"][-1],
+        }

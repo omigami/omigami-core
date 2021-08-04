@@ -8,6 +8,7 @@ from matchms.filtering import (
 )
 from matchms.importing.load_from_json import as_spectrum
 from matchmsextras.pubchem_lookup import pubchem_metadata_lookup
+
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spectrum_cleaner import SpectrumCleaner
 

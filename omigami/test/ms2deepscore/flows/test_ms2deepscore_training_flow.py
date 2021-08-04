@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
+
 from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
 from omigami.flow_config import (
     make_flow_config,
@@ -73,6 +74,9 @@ def test_training_flow(flow_config):
         project_name="test",
         mlflow_output_dir="model-output",
         mlflow_server="mlflow-server",
+        train_ratio=0.6,
+        validation_ratio=0.3,
+        test_ratio=0.1,
         spectrum_ids_chunk_size=10,
     )
 
@@ -129,6 +133,9 @@ def test_run_training_flow(
         project_name="test",
         mlflow_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
+        train_ratio=0.6,
+        validation_ratio=0.3,
+        test_ratio=0.1,
         spectrum_ids_chunk_size=10,
     )
 
