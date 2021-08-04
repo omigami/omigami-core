@@ -32,7 +32,9 @@ def test_make_embeddings(
     fs_gtw = MS2DeepScoreFSDataGateway()
     with Flow("test") as flow:
         MakeEmbeddings(spectrum_gtw, fs_gtw, parameters)(
-            ms2deepscore_real_model_path, {"run_id": "1"}, spectrum_ids
+            {"ms2deepscore_model_path": ms2deepscore_real_model_path},
+            {"run_id": "1"},
+            spectrum_ids,
         )
 
     state = flow.run()

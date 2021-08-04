@@ -38,10 +38,11 @@ class MakeEmbeddings(Task):
 
     def run(
         self,
-        model_path: str = None,
+        train_model_output: Dict = None,
         model_registry: Dict[str, str] = None,
         spectrum_ids: Set[str] = None,
     ) -> Set[str]:
+        model_path = train_model_output["ms2deepscore_model_path"]
         self.logger.info(f"Creating {len(spectrum_ids)} embeddings.")
         binned_spectra = self._spectrum_dgw.read_binned_spectra(
             self._ion_mode, spectrum_ids
