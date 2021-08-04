@@ -39,7 +39,7 @@ class MS2DeepScoreDeployer(Deployer):
         train_ratio: float = 0.9,
         validation_ratio: float = 0.05,
         test_ratio: float = 0.05,
-        spectrum_ids_chunk_size: int = 1000,
+        spectrum_ids_chunk_size: int = 10000,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -134,7 +134,7 @@ class MS2DeepScoreDeployer(Deployer):
         client = self._authenticate()
         client.create_project(self._project_name)
 
-        model_output_dir = MODEL_DIRECTORIES[self._environment]
+        model_output_dir = MODEL_DIRECTORIES[self._environment]["mlflow"]
         output_dir = S3_BUCKETS[self._environment]
 
         dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(

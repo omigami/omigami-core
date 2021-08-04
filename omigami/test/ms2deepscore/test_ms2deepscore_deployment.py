@@ -1,7 +1,11 @@
 import pytest
 from typing_extensions import Literal
 
-from omigami.config import config, MLFLOW_SERVER
+from omigami.config import (
+    config,
+    MLFLOW_SERVER,
+    SOURCE_URI_COMPLETE_GNPS,
+)
 from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
 
 
@@ -54,8 +58,9 @@ def test_deploy_training_flow():
         environment=env,
         project_name="ms2deepscore-dev",
         mlflow_server=MLFLOW_SERVER,
+        source_uri=SOURCE_URI_COMPLETE_GNPS,
         auth=True,
-        overwrite_all_spectra=False,
+        overwrite_all_spectra=True,
         **login_config,
         deploy_model=True,
         overwrite_model=True,

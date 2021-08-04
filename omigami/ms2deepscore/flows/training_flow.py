@@ -1,6 +1,10 @@
 from datetime import timedelta, date, datetime
 from typing import Tuple
 
+from prefect import Flow, unmapped
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
+
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import DataGateway
@@ -32,9 +36,6 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
-from prefect import Flow, unmapped
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
 
 
 class TrainingFlowParameters:
@@ -67,7 +68,7 @@ class TrainingFlowParameters:
         train_ratio: float = 0.9,
         validation_ratio: float = 0.05,
         test_ratio: float = 0.05,
-        spectrum_ids_chunk_size: int = 1000,
+        spectrum_ids_chunk_size: int = 10000,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
