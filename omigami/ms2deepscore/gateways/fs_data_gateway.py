@@ -10,8 +10,9 @@ from drfs.filesystems.local import LocalFileSystem
 from drfs.filesystems.s3 import S3FileSystem
 from ms2deepscore import SpectrumBinner
 from ms2deepscore.models import SiameseModel
-from omigami.gateways.fs_data_gateway import FSDataGateway
 from tensorflow.python.keras.saving import hdf5_format
+
+from omigami.gateways.fs_data_gateway import FSDataGateway
 
 
 class MS2DeepScoreFSDataGateway(FSDataGateway):
@@ -33,7 +34,7 @@ class MS2DeepScoreFSDataGateway(FSDataGateway):
             finally:
                 os.remove(tmp_path)
 
-    def load_model(self, model_path: str):
+    def load_model(self, model_path: str) -> SiameseModel:
         path = DRPath(model_path)
         if self.fs is None:
             self.fs = get_fs(path)

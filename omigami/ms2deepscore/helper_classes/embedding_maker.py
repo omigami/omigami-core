@@ -1,5 +1,6 @@
 import numpy as np
 from ms2deepscore import BinnedSpectrum
+
 from omigami.ms2deepscore.entities.embedding import Embedding
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
     MS2DeepScoreEmbedding,
@@ -23,7 +24,9 @@ class EmbeddingMaker:
         )
 
     @staticmethod
-    def _create_input_vector(binned_spectrum: BinnedSpectrum, input_vector_dim: int):
+    def _create_input_vector(
+        binned_spectrum: BinnedSpectrum, input_vector_dim: int
+    ) -> np.ndarray:
         """Creates input vector for model.base based on binned peaks and intensities"""
         X = np.zeros((1, input_vector_dim))
 
