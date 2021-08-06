@@ -4,6 +4,7 @@ from typing import Union, List, Dict, Tuple
 import numpy as np
 from matchms import calculate_scores
 from ms2deepscore.models import load_model as ms2deepscore_load_model
+
 from omigami.ms2deepscore.entities.embedding import Embedding
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -24,7 +25,7 @@ class MS2DeepScorePredictor(Predictor):
     def __init__(self, ion_mode: str = None, run_id: str = None):
         super().__init__(MS2DeepScoreRedisSpectrumDataGateway())
         self.ion_mode = ion_mode
-        self.run_id = run_id
+        self._run_id = run_id
         self.spectrum_processor = SpectrumProcessor()
         self.embedding_maker = EmbeddingMaker()
         self.model = None
@@ -39,7 +40,7 @@ class MS2DeepScorePredictor(Predictor):
             log.error(f"Could not find MS2DeepScore model in {model_path}")
 
     def set_run_id(self, run_id: str):
-        self.run_id = run_id
+        self._run_id = run_id
 
     def predict(
         self,
@@ -147,6 +148,6 @@ class MS2DeepScorePredictor(Predictor):
     def _load_embeddings(self, spectrum_ids: List[List[str]]) -> List[Embedding]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
         embeddings = self.dgw.read_embeddings(
-            self.ion_mode, self.run_id, list(unique_ids)
+            self.ion_mode, self._run_id, list(unique_ids)
         )
         return embeddings

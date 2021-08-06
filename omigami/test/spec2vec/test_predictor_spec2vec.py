@@ -4,11 +4,12 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from pytest_redis import factories
+
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.predictor import Spec2VecPredictor
 from omigami.test.conftest import ASSETS_DIR
-from pytest_redis import factories
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -117,7 +118,7 @@ def test_local_predictions(small_payload, big_payload, redis_full_setup):
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
 
-    local_model.run_id = "1"
+    local_model._run_id = "1"
 
     matches_big = local_model.predict(
         data_input_and_parameters=big_payload, mz_range=10, context=""
