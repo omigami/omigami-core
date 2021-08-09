@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import pytest
-
 from omigami.test.conftest import ASSETS_DIR
 
 
@@ -25,7 +24,6 @@ from omigami.test.conftest import ASSETS_DIR
 def test_predictions(
     ms2deepscore_payload,
     redis_full_setup,
-    positive_spectra_data,
     ms2deepscore_real_predictor,
 ):
     scores = ms2deepscore_real_predictor.predict(
@@ -35,7 +33,7 @@ def test_predictions(
     )
 
     assert isinstance(scores, dict)
-    scores_df = pd.DataFrame(scores["spectrum-1"]).T
+    scores_df = pd.DataFrame(scores["spectrum-0"]).T
     assert scores_df["score"].between(0, 1).all()
 
 
@@ -60,19 +58,15 @@ def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
     reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
     "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
 )
-def test_get_best_matches(
-    binned_spectra_from_real_predictor, ms2deepscore_real_predictor
-):
+def test_get_best_matches(embeddings_from_real_predictor, ms2deepscore_real_predictor):
     n_best_spectra = 2
     best_matches = ms2deepscore_real_predictor._calculate_best_matches(
-        binned_spectra_from_real_predictor,
-        binned_spectra_from_real_predictor,
+        embeddings_from_real_predictor,
+        embeddings_from_real_predictor,
         n_best_spectra=n_best_spectra,
     )
 
-    for query, best_match in zip(
-        binned_spectra_from_real_predictor, best_matches.values()
-    ):
+    for query, best_match in zip(embeddings_from_real_predictor, best_matches.values()):
         assert len(best_match) == n_best_spectra
-        assert query.get("spectrum_id") == list(best_match.keys())[0]
+        assert query.spectrum_id == list(best_match.keys())[0]
         assert "score" in pd.DataFrame(best_match).T.columns

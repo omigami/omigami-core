@@ -1,13 +1,13 @@
 from logging import getLogger
-from typing import Union, List, Dict, Any, Tuple
+from typing import Union, List, Dict, Tuple
 
 import numpy as np
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from matchms.filtering import normalize_intensities
 from matchms.importing.load_from_json import as_spectrum
-from omigami.predictor import Predictor, SpectrumMatches
 
+from omigami.predictor import Predictor, SpectrumMatches
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
@@ -23,17 +23,19 @@ class Spec2VecPredictor(Predictor):
     def __init__(
         self,
         model: Word2Vec,
+        ion_mode: str,
         n_decimals: int,
         intensity_weighting_power: Union[float, int],
         allowed_missing_percentage: Union[float, int],
         run_id: str = None,
     ):
         self.model = model
+        self.ion_mode = ion_mode
         self.n_decimals = n_decimals
         self.intensity_weighting_power = intensity_weighting_power
         self.allowed_missing_percentage = allowed_missing_percentage
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
-        self.run_id = run_id
+        self._run_id = run_id
         super().__init__(Spec2VecRedisSpectrumDataGateway())
 
     def predict(
@@ -82,7 +84,7 @@ class Spec2VecPredictor(Predictor):
         return best_matches
 
     def set_run_id(self, run_id: str):
-        self.run_id = run_id
+        self._run_id = run_id
 
     @staticmethod
     def _parse_input(
@@ -117,7 +119,7 @@ class Spec2VecPredictor(Predictor):
     ) -> Dict[str, Embedding]:
         unique_ref_ids = set(item for elem in spectrum_ids for item in elem)
         unique_ref_embeddings = self.dgw.read_embeddings(
-            self.run_id, list(unique_ref_ids)
+            self.ion_mode, self._run_id, list(unique_ref_ids)
         )
         return {emb.spectrum_id: emb for emb in unique_ref_embeddings}
 

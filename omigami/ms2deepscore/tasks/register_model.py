@@ -10,6 +10,8 @@ from omigami.model_register import MLFlowModelRegister
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
 from omigami.utils import merge_prefect_task_configs
+from pandas import Timestamp
+from prefect import Task
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 
@@ -118,6 +120,7 @@ class ModelRegister(MLFlowModelRegister):
             run_name=run_name, experiment_id=experiment_id, nested=True
         ) as run:
             run_id = run.info.run_id
+            model.set_run_id(run_id)
 
             if train_parameters:
                 mlflow.log_params(

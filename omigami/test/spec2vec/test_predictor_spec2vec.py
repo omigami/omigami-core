@@ -9,7 +9,6 @@ from pytest_redis import factories
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.predictor import Spec2VecPredictor
-from omigami.spec2vec.tasks.register_model import ModelRegister
 from omigami.test.conftest import ASSETS_DIR
 
 redis_db = factories.redisdb("redis_nooproc")
@@ -61,6 +60,7 @@ def big_payload():
 def model(word2vec_model):
     return Spec2VecPredictor(
         word2vec_model,
+        ion_mode="positive",
         n_decimals=1,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
@@ -118,7 +118,7 @@ def test_local_predictions(small_payload, big_payload, redis_full_setup):
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
 
-    local_model.run_id = "1"
+    local_model._run_id = "1"
 
     matches_big = local_model.predict(
         data_input_and_parameters=big_payload, mz_range=10, context=""

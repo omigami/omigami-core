@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Union, Dict, Set
 
 from gensim.models import Word2Vec
+from omigami.config import IonModes
 from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
     RedisSpectrumDataGateway,
@@ -14,6 +15,7 @@ from prefect import Task
 
 @dataclass
 class MakeEmbeddingsParameters:
+    ion_mode: IonModes
     n_decimals: int
     intensity_weighting_power: Union[float, int] = 0.5
     allowed_missing_percentage: Union[float, int] = 5.0
@@ -28,6 +30,7 @@ class MakeEmbeddings(Task):
     ):
         self._spectrum_dgw = spectrum_dgw
         self._embedding_maker = EmbeddingMaker(n_decimals=parameters.n_decimals)
+        self._ion_mode = parameters.ion_mode
         self._intensity_weighting_power = parameters.intensity_weighting_power
         self._allowed_missing_percentage = parameters.allowed_missing_percentage
 
@@ -66,6 +69,6 @@ class MakeEmbeddings(Task):
             f"Using Redis DB {REDIS_DB} and model id {model_registry['run_id']}."
         )
         self._spectrum_dgw.write_embeddings(
-            embeddings, model_registry["run_id"], self.logger
+            embeddings, self._ion_mode, model_registry["run_id"], self.logger
         )
         return spectrum_ids

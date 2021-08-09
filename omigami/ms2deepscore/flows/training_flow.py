@@ -1,10 +1,6 @@
 from datetime import timedelta, date, datetime
 from typing import Tuple
 
-from prefect import Flow
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
-
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import DataGateway
@@ -17,6 +13,10 @@ from omigami.ms2deepscore.tasks import (
     DeployModel,
     DeployModelParameters,
     RegisterModelParameters,
+    MakeEmbeddingsParameters,
+    MakeEmbeddings,
+    CreateSpectrumIDsChunks,
+    ChunkingIDsParameters,
 )
 from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScoreParameters,
@@ -32,6 +32,9 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
+from prefect import Flow, unmapped
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
 
 
 class TrainingFlowParameters:
@@ -64,6 +67,7 @@ class TrainingFlowParameters:
         train_ratio: float = 0.9,
         validation_ratio: float = 0.05,
         test_ratio: float = 0.05,
+        spectrum_ids_chunk_size: int = 10000,
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
@@ -125,6 +129,10 @@ class TrainingFlowParameters:
             project_name, mlflow_output_dir, mlflow_server, ion_mode
         )
 
+        self.spectrum_chunking = ChunkingIDsParameters(spectrum_ids_chunk_size)
+
+        self.embedding = MakeEmbeddingsParameters(ion_mode)
+
         self.deploying = DeployModelParameters(
             redis_db, ion_mode, overwrite_model, environment
         )
@@ -149,6 +157,8 @@ def build_training_flow(
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Dataclass containing all flow parameters
+    deploy_model:
+        If the model will be deployed or not
     -------
 
     """
@@ -189,6 +199,20 @@ def build_training_flow(
         model_registry = RegisterModel(
             flow_parameters.registering, training_parameters=flow_parameters.training
         )(train_model_output)
+
+        processed_chunks = CreateSpectrumIDsChunks(flow_parameters.spectrum_chunking)(
+            processed_ids
+        )
+
+        MakeEmbeddings(
+            flow_parameters.spectrum_dgw,
+            flow_parameters.data_gtw,
+            flow_parameters.embedding,
+        ).map(
+            unmapped(train_model_output),
+            unmapped(model_registry),
+            processed_chunks,
+        )
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)

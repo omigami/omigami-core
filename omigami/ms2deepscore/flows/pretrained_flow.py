@@ -85,7 +85,10 @@ def build_pretrained_flow(
         )()
 
         model_registry = RegisterModel(flow_parameters.registering)(
-            ms2deepscore_model_path
+            {
+                "ms2deepscore_model_path": ms2deepscore_model_path,
+                "validation_loss": None,
+            }
         )
 
         if deploy_model:

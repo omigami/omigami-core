@@ -3,12 +3,12 @@ from typing import Union, Dict
 
 import mlflow
 from gensim.models import Word2Vec
-from pandas import Timestamp
-from prefect import Task
-
+from omigami.config import IonModes
 from omigami.model_register import MLFlowModelRegister
 from omigami.spec2vec.predictor import Spec2VecPredictor
 from omigami.utils import merge_prefect_task_configs
+from pandas import Timestamp
+from prefect import Task
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 
@@ -19,6 +19,7 @@ class RegisterModelParameters:
     mlflow_output_path: str
     server_uri: str
     n_decimals: int
+    ion_mode: IonModes
     intensity_weighting_power: Union[float, int]
     allowed_missing_percentage: Union[float, int]
 
@@ -32,6 +33,7 @@ class RegisterModel(Task):
         self._experiment_name = parameters.experiment_name
         self._path = parameters.mlflow_output_path
         self._n_decimals = parameters.n_decimals
+        self._ion_mode = parameters.ion_mode
         self._intensity_weighting_power = parameters.intensity_weighting_power
         self._allowed_missing_percentage = parameters.allowed_missing_percentage
         self._server_uri = parameters.server_uri
@@ -47,6 +49,7 @@ class RegisterModel(Task):
         run_id = model_register.register_model(
             Spec2VecPredictor(
                 model,
+                self._ion_mode,
                 self._n_decimals,
                 self._intensity_weighting_power,
                 self._allowed_missing_percentage,

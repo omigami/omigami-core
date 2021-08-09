@@ -163,10 +163,12 @@ def documents_stored(redis_db, cleaned_data, documents_data):
 @pytest.fixture()
 def embeddings_stored(redis_db, cleaned_data, embeddings):
     run_id = "1"
+    project = "spec2vec"
+    ion_mode = "positive"
     pipe = redis_db.pipeline()
     for embedding in embeddings:
         pipe.hset(
-            f"{EMBEDDING_HASHES}_{run_id}",
+            f"{EMBEDDING_HASHES}_{project}_{ion_mode}_{run_id}",
             embedding.spectrum_id,
             pickle.dumps(embedding),
         )
@@ -194,8 +196,35 @@ def binned_spectra_stored(redis_db, binned_spectra):
 
 
 @pytest.fixture()
+def embeddings_from_real_predictor():
+    path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_embeddings.pickle")
+    with open(path, "rb") as handle:
+        embeddings = pickle.load(handle)
+    return embeddings
+
+
+@pytest.fixture()
+def ms2deepscore_embeddings_stored(redis_db, embeddings_from_real_predictor):
+    run_id = "2"
+    project = "ms2deepscore"
+    ion_mode = "positive"
+    pipe = redis_db.pipeline()
+    for embedding in embeddings_from_real_predictor:
+        pipe.hset(
+            f"{EMBEDDING_HASHES}_{project}_{ion_mode}_{run_id}",
+            embedding.spectrum_id,
+            pickle.dumps(embedding),
+        )
+    pipe.execute()
+
+
+@pytest.fixture()
 def redis_full_setup(
-    spectra_stored, documents_stored, embeddings_stored, binned_spectra_stored
+    spectra_stored,
+    documents_stored,
+    embeddings_stored,
+    binned_spectra_stored,
+    ms2deepscore_embeddings_stored,
 ):
     pass
 

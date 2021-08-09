@@ -1,31 +1,29 @@
 from typing import List
-from tqdm import tqdm
+
 import numpy as np
-
-from ms2deepscore import MS2DeepScore, BinnedSpectrum
+from ms2deepscore import MS2DeepScore
+from omigami.ms2deepscore.entities.embedding import Embedding
 from spec2vec.vector_operations import cosine_similarity, cosine_similarity_matrix
+from tqdm import tqdm
 
 
-class MS2DeepScoreBinnedSpectrum(MS2DeepScore):
+class MS2DeepScoreEmbedding(MS2DeepScore):
     """Calculate MS2DeepScore similarity scores between a reference and a query. The
-    only difference between MS2DeepScoreBinnedSpectrum and MS2DeepScore is that
-    MS2DeepScoreBinnedSpectrum methods take as input argument BinnedSpectrum instead
+    only difference between MS2DeepScoreEmbedding and MS2DeepScore is that
+    MS2DeepScoreEmbedding methods take as input argument Embedding instead
     of Spectrum.
     """
 
     def __init__(self, model, **kwargs):
         super().__init__(model, **kwargs)
 
-    def pair(self, reference: BinnedSpectrum, query: BinnedSpectrum) -> float:
-        reference_vector = self.model.base.predict(self._create_input_vector(reference))
-        query_vector = self.model.base.predict(self._create_input_vector(query))
-
-        return cosine_similarity(reference_vector[0, :], query_vector[0, :])
+    def pair(self, reference: Embedding, query: Embedding) -> float:
+        return cosine_similarity(reference.vector[0, :], query.vector[0, :])
 
     def matrix(
         self,
-        references: List[BinnedSpectrum],
-        queries: List[BinnedSpectrum],
+        references: List[Embedding],
+        queries: List[Embedding],
         is_symmetric: bool = False,
     ) -> np.ndarray:
 
@@ -41,7 +39,7 @@ class MS2DeepScoreBinnedSpectrum(MS2DeepScore):
         ms2ds_similarity = cosine_similarity_matrix(reference_vectors, query_vectors)
         return ms2ds_similarity
 
-    def calculate_vectors(self, spectrum_list: List[BinnedSpectrum]) -> np.ndarray:
+    def calculate_vectors(self, spectrum_list: List[Embedding]) -> np.ndarray:
         n_rows = len(spectrum_list)
         reference_vectors = np.empty((n_rows, self.output_vector_dim), dtype="float")
         for index_reference, reference in enumerate(
@@ -53,5 +51,5 @@ class MS2DeepScoreBinnedSpectrum(MS2DeepScore):
         ):
             reference_vectors[
                 index_reference, 0 : self.output_vector_dim
-            ] = self.model.base.predict(self._create_input_vector(reference))
+            ] = reference.vector
         return reference_vectors

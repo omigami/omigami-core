@@ -50,6 +50,8 @@ def test_training_flow(flow_config):
         "CalculateTanimotoScore",
         "TrainModel",
         "RegisterModel",
+        "CreateSpectrumIDsChunks",
+        "MakeEmbeddings",
     }
 
     flow_parameters = TrainingFlowParameters(
@@ -75,6 +77,7 @@ def test_training_flow(flow_config):
         train_ratio=0.6,
         validation_ratio=0.3,
         test_ratio=0.1,
+        spectrum_ids_chunk_size=10,
     )
 
     flow = build_training_flow(
@@ -95,6 +98,7 @@ def test_training_flow(flow_config):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
+@pytest.mark.slow
 def test_run_training_flow(
     tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
 ):
@@ -132,6 +136,7 @@ def test_run_training_flow(
         train_ratio=0.6,
         validation_ratio=0.3,
         test_ratio=0.1,
+        spectrum_ids_chunk_size=10,
     )
 
     flow = build_training_flow(

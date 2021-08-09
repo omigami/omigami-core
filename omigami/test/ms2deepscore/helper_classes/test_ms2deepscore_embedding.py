@@ -4,9 +4,8 @@ import numpy as np
 import pytest
 from matchms import calculate_scores
 from ms2deepscore import MS2DeepScore
-
-from omigami.ms2deepscore.helper_classes.ms2deepscore_binned_spectrum import (
-    MS2DeepScoreBinnedSpectrum,
+from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
+    MS2DeepScoreEmbedding,
 )
 from omigami.test.conftest import ASSETS_DIR
 
@@ -25,8 +24,8 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.fixture()
-def ms2deepscore_binned_spectrum_similarity(ms2deepscore_real_model):
-    return MS2DeepScoreBinnedSpectrum(ms2deepscore_real_model)
+def ms2deepscore_embedding_similarity(ms2deepscore_real_model):
+    return MS2DeepScoreEmbedding(ms2deepscore_real_model)
 
 
 @pytest.fixture()
@@ -36,9 +35,9 @@ def ms2deepscore_spectrum_similarity(ms2deepscore_real_model):
 
 def test_pair(
     positive_spectra,
-    binned_spectra_from_real_predictor,
+    embeddings_from_real_predictor,
     ms2deepscore_spectrum_similarity,
-    ms2deepscore_binned_spectrum_similarity,
+    ms2deepscore_embedding_similarity,
 ):
     spectrum_ids = ["CCMSLIB00000001577", "CCMSLIB00000001647"]
     spectra = [
@@ -46,56 +45,54 @@ def test_pair(
         for spectrum in positive_spectra
         if spectrum.metadata["spectrum_id"] in spectrum_ids
     ]
-    binned_spectra = [
+    embeddings = [
         binned_spectrum
-        for binned_spectrum in binned_spectra_from_real_predictor
-        if binned_spectrum.metadata["spectrum_id"] in spectrum_ids
+        for binned_spectrum in embeddings_from_real_predictor
+        if binned_spectrum.spectrum_id in spectrum_ids
     ]
 
     similarity_score_from_spectrum = ms2deepscore_spectrum_similarity.pair(*spectra)
-    similarity_score_from_binned_spectrum = (
-        ms2deepscore_binned_spectrum_similarity.pair(*binned_spectra)
+    similarity_score_from_embedding = ms2deepscore_embedding_similarity.pair(
+        *embeddings
     )
 
-    assert np.isclose(
-        similarity_score_from_spectrum, similarity_score_from_binned_spectrum
-    )
+    assert np.isclose(similarity_score_from_spectrum, similarity_score_from_embedding)
 
 
 def test_matrix(
     positive_spectra,
-    binned_spectra_from_real_predictor,
+    embeddings_from_real_predictor,
     ms2deepscore_spectrum_similarity,
-    ms2deepscore_binned_spectrum_similarity,
+    ms2deepscore_embedding_similarity,
 ):
 
     score_from_spectrum = ms2deepscore_spectrum_similarity.matrix(
         positive_spectra[:10], positive_spectra[10:12]
     )
-    score_from_binned_spectrum = ms2deepscore_binned_spectrum_similarity.matrix(
-        binned_spectra_from_real_predictor[:10],
-        binned_spectra_from_real_predictor[10:12],
+    score_from_embeddings = ms2deepscore_embedding_similarity.matrix(
+        embeddings_from_real_predictor[:10],
+        embeddings_from_real_predictor[10:12],
     )
-    assert np.all(score_from_spectrum == score_from_binned_spectrum)
+    assert np.all(score_from_spectrum == score_from_embeddings)
 
 
 def test_calculate_scores_with_ms2deepscore_binned_spectrum(
     positive_spectra,
-    binned_spectra_from_real_predictor,
+    embeddings_from_real_predictor,
     ms2deepscore_spectrum_similarity,
-    ms2deepscore_binned_spectrum_similarity,
+    ms2deepscore_embedding_similarity,
 ):
-    scores_from_embeddings = calculate_scores(
+    scores_from_spectra = calculate_scores(
         positive_spectra[:50],
         positive_spectra[50:],
         ms2deepscore_spectrum_similarity,
         is_symmetric=False,
     )
 
-    scores_from_documents = calculate_scores(
-        binned_spectra_from_real_predictor[:50],
-        binned_spectra_from_real_predictor[50:],
-        ms2deepscore_binned_spectrum_similarity,
+    scores_from_embeddings = calculate_scores(
+        embeddings_from_real_predictor[:50],
+        embeddings_from_real_predictor[50:],
+        ms2deepscore_embedding_similarity,
         is_symmetric=False,
     )
-    assert np.all(scores_from_embeddings.scores == scores_from_documents.scores)
+    assert np.all(scores_from_spectra.scores == scores_from_embeddings.scores)
