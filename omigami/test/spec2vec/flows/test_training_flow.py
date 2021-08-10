@@ -118,6 +118,7 @@ def test_run_training_flow(
         window=200,
         project_name="test",
         model_output_dir=f"{tmpdir}/model-output",
+        documents_output_dir=f"{tmpdir}/documents",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,

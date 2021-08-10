@@ -18,6 +18,7 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class ProcessSpectrumParameters:
     spectrum_dgw: Spec2VecRedisSpectrumDataGateway
+    spectrum_save_dir: str
     n_decimals: int = 2
     overwrite_all_spectra: bool = True
 
@@ -34,6 +35,7 @@ class ProcessSpectrum(Task):
         self._n_decimals = process_parameters.n_decimals
         self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
         self._processor = SpectrumProcessor()
+        self._spectrum_save_dir = process_parameters.spectrum_save_dir
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
@@ -48,7 +50,9 @@ class ProcessSpectrum(Task):
                     f"Finished processing {len(spectrum_documents)}. "
                     f"Saving into spectrum database."
                 )
-                self._spectrum_dgw.write_spectrum_documents(spectrum_documents)
+                self._spectrum_dgw.write_spectrum_documents(
+                    spectrum_documents, self._spectrum_save_dir
+                )
 
                 return {sp.spectrum_id for sp in spectrum_documents}
 

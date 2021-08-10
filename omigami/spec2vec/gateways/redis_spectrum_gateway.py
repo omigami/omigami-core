@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import pickle
 from typing import List
 
@@ -16,18 +17,18 @@ from spec2vec import SpectrumDocument
 
 class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
     """Data gateway for Redis storage."""
+
     project = "spec2vec"
 
-    def write_spectrum_documents(self, spectrum_data: List[SpectrumDocumentData]):
+    def write_spectrum_documents(
+        self, spectrum_data: List[SpectrumDocumentData], save_dir: str
+    ):
         """Write spectra data on the redis database. The spectra ids and precursor_MZ are required."""
-        self._init_client()
-        pipe = self.client.pipeline()
-        for spectrum in spectrum_data:
-            spectrum_info = spectrum.spectrum
-            document = spectrum.document
-            if document:
-                pipe.hset(DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(document))
-        pipe.execute()
+
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+        number = len(os.listdir(save_dir))
+        pickle.dump(spectrum_data, open(f"{save_dir}/documents{number}.pckl", "wb"))
 
     def list_missing_documents(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether document exist on Redis.
@@ -36,11 +37,10 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         self._init_client()
         return self._list_missing_spectrum_ids(DOCUMENT_HASHES, spectrum_ids)
 
-    def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
+    def read_documents(self, load_dir: str) -> List[SpectrumDocument]:
         """Read the document information from spectra IDs.
         Return a list of SpectrumDocument objects."""
-        self._init_client()
-        return self._read_hashes(DOCUMENT_HASHES, spectrum_ids)
+        return pickle.load(open(f"{load_dir}/documents.pckl", "rb"))
 
     def read_documents_iter(
         self, spectrum_ids: List[str] = None

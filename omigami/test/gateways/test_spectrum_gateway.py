@@ -58,18 +58,18 @@ def test_list_missing_documents(cleaned_data, documents_stored):
     assert len(documents) == 0
 
 
-def test_read_spectra(cleaned_data, spectra_stored):
+def test_read_spectra(cleaned_data, spectra_stored, tmpdir):
     dgw = Spec2VecRedisSpectrumDataGateway()
-    spectra = dgw.read_spectra()
+    spectra = dgw.read_spectra(f"{tmpdir}/documents")
     assert len(spectra) == len(cleaned_data)
     for spectrum in spectra:
         assert isinstance(spectrum, Spectrum)
         assert len(spectrum.peaks) > 0
 
 
-def test_read_documents(documents_data, documents_stored):
+def test_read_documents(documents_data, documents_stored, tmpdir):
     dgw = Spec2VecRedisSpectrumDataGateway()
-    documents = dgw.read_documents()
+    documents = dgw.read_documents(f"{tmpdir}/documents")
     assert len(documents) == len(documents_data)
     for document in documents:
         assert isinstance(document, SpectrumDocument)
@@ -125,7 +125,7 @@ def test_read_spectra_ids_within_range(spectra_stored):
         )
 
 
-def test_read_documents_iter(documents_stored):
+def test_read_documents_iter(documents_stored, tmpdir):
     dgw = Spec2VecRedisSpectrumDataGateway()
     doc_iter = dgw.read_documents_iter()
     assert isinstance(doc_iter, Iterable)
@@ -140,7 +140,7 @@ def test_read_documents_iter(documents_stored):
             assert word.startswith("peak@")
 
     all_words_no_iterator = 0
-    for spectrum in dgw.read_documents():
+    for spectrum in dgw.read_documents(f"{tmpdir}/documents"):
         all_words_no_iterator += len(spectrum)
     assert all_words == all_words_no_iterator
 

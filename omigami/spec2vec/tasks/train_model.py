@@ -27,6 +27,7 @@ class TrainModelParameters:
         Window size for context around the word
     """
 
+    documents_dir: str
     epochs: int = 25
     window: int = 500
 
@@ -41,6 +42,7 @@ class TrainModel(Task):
         self._spectrum_dgw = spectrum_dgw
         self._epochs = training_parameters.epochs
         self._window = training_parameters.window
+        self._documents_dir = training_parameters.documents_dir
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
@@ -50,7 +52,7 @@ class TrainModel(Task):
         self.logger.info(
             f"Connecting to the data. {len(flatten_ids)} documents will be used on training."
         )
-        documents = self._spectrum_dgw.read_documents_iter(flatten_ids)
+        documents = self._spectrum_dgw.read_documents_iter(self._documents_dir)
 
         self.logger.info("Started training the Word2Vec model.")
         callbacks, settings = self._create_spec2vec_settings(self._window, self._epochs)

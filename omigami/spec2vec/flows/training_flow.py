@@ -47,6 +47,7 @@ class TrainingFlowParameters:
         window: int,
         project_name: str,
         model_output_dir: str,
+        documents_output_dir: str,
         mlflow_server: str,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
@@ -73,10 +74,11 @@ class TrainingFlowParameters:
         )
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
+            documents_output_dir,
             n_decimals,
             overwrite_all_spectra,
         )
-        self.training = TrainModelParameters(iterations, window)
+        self.training = TrainModelParameters(documents_output_dir, iterations, window)
         self.registering = RegisterModelParameters(
             project_name,
             model_output_dir,
