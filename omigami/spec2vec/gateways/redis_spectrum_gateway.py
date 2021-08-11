@@ -27,8 +27,13 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
 
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
-        number = len(os.listdir(save_dir))
-        pickle.dump(spectrum_data, open(f"{save_dir}/documents{number}.pckl", "wb"))
+
+        save_file_dir = f"{save_dir}/documents.pckl"
+
+        if os.path.isfile(save_file_dir):
+            spectrum_data = self.read_documents(save_dir) + spectrum_data
+
+        pickle.dump(spectrum_data, open(save_file_dir, "wb"))
 
     def list_missing_documents(self, spectrum_ids: List[str]) -> List[str]:
         """Check whether document exist on Redis.
@@ -40,6 +45,7 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
     def read_documents(self, load_dir: str) -> List[SpectrumDocument]:
         """Read the document information from spectra IDs.
         Return a list of SpectrumDocument objects."""
+
         return pickle.load(open(f"{load_dir}/documents.pckl", "rb"))
 
     def read_documents_iter(

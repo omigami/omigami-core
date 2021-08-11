@@ -39,7 +39,7 @@ class ProcessSpectrum(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, spectrum_ids: Set[str] = None) -> Set[str]:
+    def run(self, spectrum_ids: Set[str] = None) -> str:
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
         spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
@@ -54,10 +54,10 @@ class ProcessSpectrum(Task):
                     spectrum_documents, self._spectrum_save_dir
                 )
 
-                return {sp.spectrum_id for sp in spectrum_documents}
+                return self._spectrum_save_dir
 
         self.logger.info("All spectra have already been processed.")
-        return spectrum_ids
+        return self._spectrum_save_dir
 
     def _get_spectrum_ids_to_add(self, spectrum_ids: List[str]) -> List[str]:
         self.logger.info(

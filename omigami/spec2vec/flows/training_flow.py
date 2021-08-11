@@ -78,7 +78,7 @@ class TrainingFlowParameters:
             n_decimals,
             overwrite_all_spectra,
         )
-        self.training = TrainModelParameters(documents_output_dir, iterations, window)
+        self.training = TrainModelParameters(iterations, window)
         self.registering = RegisterModelParameters(
             project_name,
             model_output_dir,
@@ -136,12 +136,12 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_ids = ProcessSpectrum(
+        processed_document_id = ProcessSpectrum(
             flow_parameters.data_gtw, flow_parameters.processing
         ).map(chunked_spectrum_ids)
 
         model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(
-            processed_ids
+            processed_document_id
         )
 
         model_registry = RegisterModel(flow_parameters.registering)(model)
