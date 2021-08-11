@@ -26,7 +26,9 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         """Write spectra data on the redis database. The spectra ids and precursor_MZ are required."""
 
         document_data = [doc.document for doc in spectrum_data]
-        pickle.dump(document_data, open(save_dir, "wb"))
+
+        with open(save_dir, "wb") as f:
+            pickle.dump(document_data, f)
 
     def list_missing_documents(
         self, spectrum_ids: List[str], documents_directory
