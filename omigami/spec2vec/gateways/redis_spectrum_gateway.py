@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import pickle
-from typing import List
+from typing import List, Dict
 
 from omigami.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
@@ -25,32 +25,33 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
     ):
         """Write spectra data on the redis database. The spectra ids and precursor_MZ are required."""
 
-        if not os.path.exists(save_dir):
-            os.mkdir(save_dir)
+        document_data = [doc.document for doc in spectrum_data]
+        pickle.dump(document_data, open(save_dir, "wb"))
 
-        save_file_dir = f"{save_dir}/documents.pckl"
-
-        if os.path.isfile(save_file_dir):
-            spectrum_data = self.read_documents(save_dir) + spectrum_data
-
-        pickle.dump(spectrum_data, open(save_file_dir, "wb"))
-
-    def list_missing_documents(self, spectrum_ids: List[str]) -> List[str]:
-        """Check whether document exist on Redis.
+    def list_missing_documents(
+        self, spectrum_ids: List[str], documents_directory
+    ) -> List[str]:
+        """Check whether document exist.
         Return a list of IDs that do not exist.
         """
-        self._init_client()
-        return self._list_missing_spectrum_ids(DOCUMENT_HASHES, spectrum_ids)
+        document_file_names = os.listdir(documents_directory)
+        documents = []
 
-    def read_documents(self, load_dir: str) -> List[SpectrumDocument]:
+        for document_file in document_file_names:
+
+            documents = documents + self.read_documents(
+                f"{documents_directory}/{document_file}"
+            )
+
+        stored_spectrum_ids = [
+            document.metadata["spectrum_id"] for document in documents
+        ]
+
+        new_spectra = set(spectrum_ids) - set(stored_spectrum_ids)
+        return new_spectra
+
+    def read_documents(self, load_dir: str) -> Dict[SpectrumDocument]:
         """Read the document information from spectra IDs.
         Return a list of SpectrumDocument objects."""
 
-        return pickle.load(open(f"{load_dir}/documents.pckl", "rb"))
-
-    def read_documents_iter(
-        self, spectrum_ids: List[str] = None
-    ) -> RedisHashesIterator:
-        """Returns an iterator that yields Redis object one by one"""
-        self._init_client()
-        return RedisHashesIterator(self, DOCUMENT_HASHES, spectrum_ids)
+        return pickle.load(open(load_dir, "rb"))

@@ -51,7 +51,9 @@ class MakeEmbeddings(Task):
         progress_logger = TaskProgressLogger(
             self.logger, len(documents), 25, "Make Embeddings task progress"
         )
-        for i, document in enumerate(documents):
+
+        i = 0
+        for document in documents:
             embeddings.append(
                 self._embedding_maker.make_embedding(
                     model,
@@ -61,6 +63,7 @@ class MakeEmbeddings(Task):
                 )
             )
             progress_logger.log(i)
+            i += 1
 
         self.logger.info(
             f"Finished creating embeddings. Saving {len(embeddings)} embeddings to database."

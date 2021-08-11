@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from typing import Set, List
 
@@ -43,6 +44,7 @@ class ProcessSpectrum(Task):
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
         spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
+
         if spectrum_ids_to_add:
             spectrum_documents = self._get_documents(spectrum_ids_to_add)
             if spectrum_documents:
@@ -50,11 +52,22 @@ class ProcessSpectrum(Task):
                     f"Finished processing {len(spectrum_documents)}. "
                     f"Saving into spectrum database."
                 )
-                self._spectrum_dgw.write_spectrum_documents(
-                    spectrum_documents, self._spectrum_save_dir
+
+                if not os.path.exists(self._spectrum_save_dir):
+                    os.mkdir(self._spectrum_save_dir)
+                    chunk_count = 0
+                else:
+                    chunk_count = len(os.listdir(self._spectrum_save_dir))
+
+                document_save_dir = (
+                    f"{self._spectrum_save_dir}/documents{chunk_count}.pckl"
                 )
 
-                return self._spectrum_save_dir
+                self._spectrum_dgw.write_spectrum_documents(
+                    spectrum_documents, document_save_dir
+                )
+
+                return document_save_dir
 
         self.logger.info("All spectra have already been processed.")
         return self._spectrum_save_dir
@@ -67,7 +80,7 @@ class ProcessSpectrum(Task):
             spectrum_ids_to_add = spectrum_ids
         else:
             spectrum_ids_to_add = self._spectrum_dgw.list_missing_documents(
-                spectrum_ids
+                spectrum_ids, self._spectrum_save_dir
             )
             self.logger.info(
                 f"{len(spectrum_ids_to_add)} out of {len(spectrum_ids)} spectra are "

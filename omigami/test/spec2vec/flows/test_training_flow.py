@@ -67,6 +67,7 @@ def test_training_flow(flow_config):
         window=500,
         project_name="test",
         model_output_dir="model-output",
+        documents_output_dir=f"documents",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,

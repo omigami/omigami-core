@@ -47,7 +47,9 @@ class TrainModel(Task):
 
     def run(self, documents_dir: str):
 
-        documents = self._spectrum_dgw.read_documents(documents_dir[0])
+        documents = []
+        for doc_dir in documents_dir:
+            documents = documents + self._spectrum_dgw.read_documents(doc_dir)
 
         self.logger.info(
             f"Connecting to the data. {len(documents)} documents will be used on training."

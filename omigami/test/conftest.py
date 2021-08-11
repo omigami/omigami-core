@@ -1,3 +1,4 @@
+import os
 import pickle
 from pathlib import Path
 
@@ -18,6 +19,9 @@ from omigami.spec2vec.config import (
     EMBEDDING_HASHES,
 )
 from pytest_redis import factories
+
+from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
+from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -227,6 +231,21 @@ def redis_full_setup(
     ms2deepscore_embeddings_stored,
 ):
     pass
+
+
+@pytest.fixture()
+def write_documents(tmpdir, cleaned_data):
+    spectrum_document_data = [
+        SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
+    ]
+
+    dgw = Spec2VecRedisSpectrumDataGateway()
+    doc_dir = f"{tmpdir}/documents"
+
+    if not os.path.exists(doc_dir):
+        os.mkdir(doc_dir)
+
+    dgw.write_spectrum_documents(spectrum_document_data, f"{doc_dir}/test.pckl")
 
 
 @pytest.fixture()

@@ -18,23 +18,26 @@ from spec2vec.SpectrumDocument import SpectrumDocument
 redis_db = factories.redisdb("redis_nooproc")
 
 
-pytestmark = pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
-
-
-def test_write_spectrum_documents(redis_db, cleaned_data):
+def test_write_spectrum_documents(tmpdir, cleaned_data):
     spectrum_document_data = [
         SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
     ]
 
     dgw = Spec2VecRedisSpectrumDataGateway()
-    dgw.write_spectrum_documents(spectrum_document_data)
+    doc_dir = f"{tmpdir}/documents"
 
-    assert redis_db.hlen(DOCUMENT_HASHES) == len(cleaned_data)
+    if not os.path.exists(doc_dir):
+        os.mkdir(doc_dir)
+
+    dgw.write_spectrum_documents(spectrum_document_data, f"{doc_dir}/test.pckl")
+
+    assert len(os.listdir(doc_dir)) == 1
 
 
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
 def test_list_spectrum_ids(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     dgw = Spec2VecRedisSpectrumDataGateway()
@@ -42,6 +45,10 @@ def test_list_spectrum_ids(cleaned_data, spectra_stored):
     assert len(ids) == len(spectrum_ids_stored)
 
 
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
 def test_list_missing_spectra(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     spectrum_ids_stored += ["batman", "ROBEN"]
@@ -51,25 +58,29 @@ def test_list_missing_spectra(cleaned_data, spectra_stored):
     assert set(spectra) == {"batman", "ROBEN"}
 
 
-def test_list_missing_documents(cleaned_data, documents_stored):
+def test_list_missing_documents(cleaned_data, tmpdir, write_documents):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     dgw = Spec2VecRedisSpectrumDataGateway()
-    documents = dgw.list_missing_documents(spectrum_ids_stored)
+    documents = dgw.list_missing_documents(spectrum_ids_stored, f"{tmpdir}/documents")
+
     assert len(documents) == 0
 
 
-def test_read_spectra(cleaned_data, spectra_stored, tmpdir):
+def test_read_spectra(cleaned_data, spectra_stored):
     dgw = Spec2VecRedisSpectrumDataGateway()
-    spectra = dgw.read_spectra(f"{tmpdir}/documents")
+    spectra = dgw.read_spectra()
     assert len(spectra) == len(cleaned_data)
     for spectrum in spectra:
         assert isinstance(spectrum, Spectrum)
         assert len(spectrum.peaks) > 0
 
 
-def test_read_documents(documents_data, documents_stored, tmpdir):
+def test_read_documents(documents_data, tmpdir, write_documents):
+    doc_dir = f"{tmpdir}/documents"
+
     dgw = Spec2VecRedisSpectrumDataGateway()
-    documents = dgw.read_documents(f"{tmpdir}/documents")
+    documents = dgw.read_documents(doc_dir + "/test.pckl")
+
     assert len(documents) == len(documents_data)
     for document in documents:
         assert isinstance(document, SpectrumDocument)
@@ -123,37 +134,6 @@ def test_read_spectra_ids_within_range(spectra_stored):
             <= dgw.client.zscore(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, spectrum_id)
             <= mz_max
         )
-
-
-def test_read_documents_iter(documents_stored, tmpdir):
-    dgw = Spec2VecRedisSpectrumDataGateway()
-    doc_iter = dgw.read_documents_iter()
-    assert isinstance(doc_iter, Iterable)
-
-    all_sentences = 0
-    all_words = 0
-    for sentence in doc_iter:
-        all_sentences += 1
-        assert isinstance(sentence, SpectrumDocument)
-        for word in sentence:
-            all_words += 1
-            assert word.startswith("peak@")
-
-    all_words_no_iterator = 0
-    for spectrum in dgw.read_documents(f"{tmpdir}/documents"):
-        all_words_no_iterator += len(spectrum)
-    assert all_words == all_words_no_iterator
-
-
-def test_iter_documents_from_ids(documents_stored, spectrum_ids):
-    dgw = Spec2VecRedisSpectrumDataGateway()
-    doc_iter = dgw.read_documents_iter(spectrum_ids[:15])
-
-    res = 0
-    for doc in doc_iter:
-        res += 1
-
-    assert res == 15
 
 
 def test_delete_spectrum_ids(spectra_stored):
