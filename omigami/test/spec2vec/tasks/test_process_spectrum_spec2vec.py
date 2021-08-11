@@ -16,11 +16,16 @@ from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
 )
 
 
-def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, write_documents):
+def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, tmpdir):
     spectrum_gtw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = common_cleaned_data
     data_gtw = FSDataGateway()
-    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, True)
+    parameters = ProcessSpectrumParameters(
+        spectrum_dgw=spectrum_gtw,
+        spectrum_save_dir=f"{tmpdir}/documents",
+        n_decimals=2,
+        overwrite_all_spectra=True,
+    )
 
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(data_gtw, parameters)(spectrum_ids)
@@ -29,7 +34,7 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, write_documen
     data = res.result[process_task].result
 
     assert res.is_successful()
-    assert set(data) == set(spectrum_ids)
+    assert data == f"{tmpdir}/documents/documents0.pckl"
     spectrum_gtw.list_existing_spectra.assert_not_called()
     spectrum_gtw.write_spectrum_documents.assert_called_once()
 
@@ -38,9 +43,14 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, write_documen
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_process_spectrum(spectrum_ids, spectra_stored, mock_default_config):
+def test_process_spectrum(spectrum_ids, spectra_stored, mock_default_config, tmpdir):
     spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
-    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
+    parameters = ProcessSpectrumParameters(
+        spectrum_dgw=spectrum_gtw,
+        spectrum_save_dir=f"{tmpdir}/documents",
+        n_decimals=2,
+        overwrite_all_spectra=False,
+    )
     data_gtw = FSDataGateway()
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(data_gtw, parameters)(spectrum_ids)
@@ -48,17 +58,24 @@ def test_process_spectrum(spectrum_ids, spectra_stored, mock_default_config):
     res = test_flow.run()
     data = res.result[process_task].result
 
-    assert set(data) == set(spectrum_ids)
+    assert data == f"{tmpdir}/documents/documents0.pckl"
 
 
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_process_spectrum_map(spectrum_ids, spectra_stored, mock_default_config):
+def test_process_spectrum_map(
+    spectrum_ids, spectra_stored, mock_default_config, tmpdir
+):
     spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
     data_gtw = FSDataGateway()
-    parameters = ProcessSpectrumParameters(spectrum_gtw, 2, False)
+    parameters = ProcessSpectrumParameters(
+        spectrum_dgw=spectrum_gtw,
+        spectrum_save_dir=f"{tmpdir}/documents",
+        n_decimals=2,
+        overwrite_all_spectra=False,
+    )
     chunked_paths = [
         spectrum_ids[:50],
         spectrum_ids[50:],
@@ -69,8 +86,7 @@ def test_process_spectrum_map(spectrum_ids, spectra_stored, mock_default_config)
     res = test_flow.run()
     data = res.result[process_task].result
 
-    assert set(data[0]) == set(spectrum_ids[:50])
-    assert set(data[1]) == set(spectrum_ids[50:])
+    assert len(data) == 2
     assert set(spectrum_gtw.list_spectrum_ids()) == set(spectrum_ids)
 
 

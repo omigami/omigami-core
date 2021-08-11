@@ -36,11 +36,13 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         """Check whether document exist.
         Return a list of IDs that do not exist.
         """
+
+        if not os.path.exists(documents_directory):
+            return spectrum_ids
         document_file_names = os.listdir(documents_directory)
         documents = []
 
         for document_file in document_file_names:
-
             documents = documents + self.read_documents(
                 f"{documents_directory}/{document_file}"
             )
