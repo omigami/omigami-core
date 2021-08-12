@@ -91,8 +91,9 @@ class MS2DeepScorePredictor(Predictor):
 
         log.info("Calculating best matches.")
         best_matches = self._calculate_best_matches(
-            reference_embeddings,
-            query_embeddings,
+            all_references=reference_embeddings,
+            queries=query_embeddings,
+            n_best_spectra=parameters["n_best_spectra"],
         )
 
         if parameters.get("include_metadata", None):
