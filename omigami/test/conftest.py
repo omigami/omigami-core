@@ -10,6 +10,8 @@ import pytest
 import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
+
+from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -21,7 +23,9 @@ from omigami.spec2vec.config import (
 from pytest_redis import factories
 
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
+from omigami.spec2vec.gateways.fs_document_gateway import (
+    Spec2VecFSDocumentDataGateway,
+)
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -239,13 +243,13 @@ def save_documents(documents_directory, cleaned_data):
         SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
     ]
 
-    dgw = Spec2VecRedisSpectrumDataGateway()
+    dgw = Spec2VecFSDocumentDataGateway()
 
     if not os.path.exists(documents_directory):
         os.mkdir(documents_directory)
 
-    dgw.write_spectrum_documents(
-        spectrum_document_data, f"{documents_directory}/test.pckl"
+    dgw.serialize_spectrum_documents(
+        f"{documents_directory}/test.pkl", spectrum_document_data
     )
 
 

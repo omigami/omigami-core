@@ -9,9 +9,8 @@ from spec2vec.model_building import (
     learning_rates_to_gensim_style,
 )
 
-from omigami.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-)
+from omigami.gateways import DataGateway
+
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
@@ -35,11 +34,11 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
-        spectrum_dgw: RedisSpectrumDataGateway,
+        data_dgw: DataGateway,
         training_parameters: TrainModelParameters,
         **kwargs,
     ):
-        self._spectrum_dgw = spectrum_dgw
+        self._data_dgw = data_dgw
         self._epochs = training_parameters.epochs
         self._window = training_parameters.window
 
@@ -49,9 +48,6 @@ class TrainModel(Task):
     def run(self, documents_directory: List[str]):
 
         documents = self._load_all_document_files(documents_directory)
-
-        for doc_dir in documents_directory:
-            documents = documents + self._spectrum_dgw.read_documents(doc_dir)
 
         self.logger.info(
             f"Connecting to the data. {len(documents)} documents will be used on training."
@@ -84,7 +80,7 @@ class TrainModel(Task):
 
         documents = []
         for doc_dir in documents_directory:
-            docs = self._spectrum_dgw.read_documents(doc_dir)
+            docs = self._data_dgw.read_from_file(doc_dir)
             documents = documents + docs
 
         return documents

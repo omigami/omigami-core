@@ -2,8 +2,9 @@ from typing import Union
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.gateways.data_gateway import DataGateway
-from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
+from omigami.gateways import RedisSpectrumDataGateway
+from omigami.spec2vec.gateways import Spec2VecFSDocumentDataGateway
+
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
@@ -33,8 +34,8 @@ from prefect import Flow, unmapped
 class TrainingFlowParameters:
     def __init__(
         self,
-        data_gtw: DataGateway,
-        spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
+        data_gtw: Spec2VecFSDocumentDataGateway,
+        spectrum_dgw: RedisSpectrumDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
@@ -140,7 +141,7 @@ def build_training_flow(
             flow_parameters.data_gtw, flow_parameters.processing
         ).map(chunked_spectrum_ids)
 
-        model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(
+        model = TrainModel(flow_parameters.data_gtw, flow_parameters.training)(
             processed_document_paths
         )
 
@@ -149,6 +150,7 @@ def build_training_flow(
         # TODO: this task prob doesnt need chunking or can be done in larger chunks
         _ = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
+            flow_parameters.data_gtw,
             flow_parameters.embedding,
         ).map(unmapped(model), unmapped(model_registry), processed_document_paths)
 

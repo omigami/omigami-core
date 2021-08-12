@@ -4,10 +4,10 @@ from typing import Set, List
 
 from prefect import Task
 
-from omigami.gateways.data_gateway import DataGateway
+from omigami.gateways import RedisSpectrumDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
+from omigami.spec2vec.gateways.fs_document_gateway import (
+    Spec2VecFSDocumentDataGateway,
 )
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
@@ -18,7 +18,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ProcessSpectrumParameters:
-    spectrum_dgw: Spec2VecRedisSpectrumDataGateway
+    spectrum_dgw: RedisSpectrumDataGateway
     documents_save_directory: str
     n_decimals: int = 2
     overwrite_all_spectra: bool = True
@@ -27,7 +27,7 @@ class ProcessSpectrumParameters:
 class ProcessSpectrum(Task):
     def __init__(
         self,
-        data_gtw: DataGateway,
+        data_gtw: Spec2VecFSDocumentDataGateway,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
@@ -53,16 +53,14 @@ class ProcessSpectrum(Task):
                     f"Saving into spectrum database."
                 )
 
-                chunk_count = self._get_chunk_count_safely(
-                    self._documents_save_directory
-                )
+                chunk_count = self._get_chunk_count(self._documents_save_directory)
 
                 document_save_directory = (
-                    f"{self._documents_save_directory}/documents{chunk_count}.pckl"
+                    f"{self._documents_save_directory}/documents{chunk_count}.pkl"
                 )
 
-                self._spectrum_dgw.write_spectrum_documents(
-                    spectrum_documents, document_save_directory
+                self._data_gtw.serialize_spectrum_documents(
+                    document_save_directory, spectrum_documents
                 )
 
                 return document_save_directory
@@ -77,7 +75,7 @@ class ProcessSpectrum(Task):
         if self._overwrite_all_spectra:
             spectrum_ids_to_add = spectrum_ids
         else:
-            spectrum_ids_to_add = self._spectrum_dgw.list_missing_documents(
+            spectrum_ids_to_add = self._data_gtw.list_missing_documents(
                 spectrum_ids, self._documents_save_directory
             )
             self.logger.info(
@@ -99,9 +97,7 @@ class ProcessSpectrum(Task):
             spectra, n_decimals=self._n_decimals, progress_logger=progress_logger
         )
 
-    # TODO: Would you consider this bad programming, as the function does two things a once.
-    # TODO: I tried to point that out by adding the word safely
-    def _get_chunk_count_safely(self, documents_save_directory) -> int:
+    def _get_chunk_count(self, documents_save_directory) -> int:
 
         if not os.path.exists(documents_save_directory):
             os.mkdir(documents_save_directory)

@@ -208,8 +208,8 @@ class FSDataGateway(DataGateway):
 
         return ids
 
-    # TODO: docstring and test
     def serialize_to_file(self, path: str, obj: Any) -> bool:
+        """Pickles a object to the given path on the selected filesystem"""
         path = DRPath(path)
         if self.fs is None:
             self.fs = get_fs(path)
@@ -219,6 +219,8 @@ class FSDataGateway(DataGateway):
 
         return True
 
+    # TODO: If the method for saving is called serialize, should we call this deserialize or should we choose
+    #  completely different names?
     def read_from_file(self, path: str) -> Any:
         path = DRPath(path)
         if self.fs is None:

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union, Dict, Set
+from typing import Union, Dict, Set, List
 
 from gensim.models import Word2Vec
 from omigami.config import IonModes
@@ -7,6 +7,7 @@ from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
     RedisSpectrumDataGateway,
 )
+from omigami.spec2vec.gateways import Spec2VecFSDocumentDataGateway
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
@@ -24,11 +25,13 @@ class MakeEmbeddingsParameters:
 class MakeEmbeddings(Task):
     def __init__(
         self,
-        spectrum_dgw: RedisSpectrumDataGateway,
+        redis_spectrum_dgw: RedisSpectrumDataGateway,
+        fs_document_dgw: Spec2VecFSDocumentDataGateway,
         parameters: MakeEmbeddingsParameters,
         **kwargs,
     ):
-        self._spectrum_dgw = spectrum_dgw
+        self._redis_spectrum_dgw = redis_spectrum_dgw
+        self._fs_document_dgw = fs_document_dgw
         self._embedding_maker = EmbeddingMaker(n_decimals=parameters.n_decimals)
         self._ion_mode = parameters.ion_mode
         self._intensity_weighting_power = parameters.intensity_weighting_power
@@ -41,10 +44,12 @@ class MakeEmbeddings(Task):
         self,
         model: Word2Vec = None,
         model_registry: Dict[str, str] = None,
-        spectrum_ids: Set[str] = None,
+        processed_document_paths: str = None,
     ) -> Set[str]:
-        self.logger.info(f"Creating {len(spectrum_ids)} embeddings.")
-        documents = self._spectrum_dgw.read_documents(spectrum_ids)
+
+        documents = self._fs_document_dgw.read_from_file(processed_document_paths)
+
+        self.logger.info(f"Creating {len(documents)} embeddings.")
         self.logger.info(f"Loaded {len(documents)} documents from the database.")
 
         embeddings = []
@@ -69,7 +74,7 @@ class MakeEmbeddings(Task):
         self.logger.debug(
             f"Using Redis DB {REDIS_DB} and model id {model_registry['run_id']}."
         )
-        self._spectrum_dgw.write_embeddings(
+        self._redis_spectrum_dgw.write_embeddings(
             embeddings, self._ion_mode, model_registry["run_id"], self.logger
         )
-        return spectrum_ids
+        return set(doc.metadata["spectrum_id"] for doc in documents)

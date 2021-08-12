@@ -34,11 +34,13 @@ def get_redis_client():
 class RedisSpectrumDataGateway:
     """Data gateway for Redis storage."""
 
-    project: str = None
-
-    def __init__(self):
+    # TODO: The Project var that I changed serves only the purpose of creating a key for the embeddings in the redis
+    #  DB. We should either consider making all the strings, besides the static once, an input parameter of init or
+    #  the read and write embeddings function. What do you think?
+    def __init__(self, project: str = None):
         # We initialize it with None so we can pickle this gateway when deploying the flow
         self.client = None
+        self.project = project
 
     def write_raw_spectra(self, spectra: List[Spectrum]):
         """Writes a list of raw spectra to the redis database unsing the spectrum_id as the key.
@@ -140,12 +142,12 @@ class RedisSpectrumDataGateway:
         if logger:
             logger.debug(
                 f"Saving {len(embeddings)} embeddings to the client {self.client}"
-                f" on hash '{EMBEDDING_HASHES}_{self.project}_{ion_mode}_{run_id}'."
+                f" on hash '{self._create_embeddings_key(ion_mode=ion_mode, run_id=run_id)}'."
             )
         pipe = self.client.pipeline()
         for embedding in embeddings:
             pipe.hset(
-                f"{EMBEDDING_HASHES}_{self.project}_{ion_mode}_{run_id}",
+                self._create_embeddings_key(ion_mode=ion_mode, run_id=run_id),
                 embedding.spectrum_id,
                 pickle.dumps(embedding),
             )
@@ -158,8 +160,11 @@ class RedisSpectrumDataGateway:
         Return a list of Embedding objects."""
         self._init_client()
         return self._read_hashes(
-            f"{EMBEDDING_HASHES}_{self.project}_{ion_mode}_{run_id}", spectrum_ids
+            self._create_embeddings_key(ion_mode=ion_mode, run_id=run_id), spectrum_ids
         )
+
+    def _create_embeddings_key(self, ion_mode: str, run_id: str):
+        return f"{EMBEDDING_HASHES}_{self.project}_{ion_mode}_{run_id}"
 
 
 class RedisHashesIterator:

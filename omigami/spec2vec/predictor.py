@@ -7,12 +7,12 @@ from matchms import calculate_scores
 from matchms.filtering import normalize_intensities
 from matchms.importing.load_from_json import as_spectrum
 
+from omigami.gateways import RedisSpectrumDataGateway
 from omigami.predictor import Predictor, SpectrumMatches
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
-)
+
+
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
 
@@ -36,7 +36,7 @@ class Spec2VecPredictor(Predictor):
         self.allowed_missing_percentage = allowed_missing_percentage
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self._run_id = run_id
-        super().__init__(Spec2VecRedisSpectrumDataGateway())
+        super().__init__(RedisSpectrumDataGateway("spec2vec"))
 
     def predict(
         self,
@@ -70,7 +70,6 @@ class Spec2VecPredictor(Predictor):
             spectrum_best_matches = self._calculate_best_matches(
                 references=input_spectrum_ref_emb,
                 query=input_spectrum,
-                n_best_spectra=parameters["n_best_spectra"],
             )
             best_matches[
                 input_spectrum.spectrum_id or f"spectrum-{i}"

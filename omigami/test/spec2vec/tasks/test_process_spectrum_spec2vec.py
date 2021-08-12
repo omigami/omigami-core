@@ -4,11 +4,14 @@ from unittest.mock import MagicMock
 import pytest
 from prefect import Flow
 
-from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.gateways import RedisSpectrumDataGateway
+
+
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
+from omigami.spec2vec.gateways.fs_document_gateway import (
+    Spec2VecFSDocumentDataGateway,
 )
+
 from omigami.spec2vec.tasks import ProcessSpectrumParameters
 from omigami.spec2vec.tasks.process_spectrum import ProcessSpectrum
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
@@ -17,9 +20,9 @@ from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
 
 
 def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, documents_directory):
-    spectrum_gtw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
+    spectrum_gtw = MagicMock(spec=RedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = common_cleaned_data
-    data_gtw = FSDataGateway()
+    data_gtw = MagicMock(spec=Spec2VecFSDocumentDataGateway)
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_gtw,
         documents_save_directory=documents_directory,
@@ -34,9 +37,9 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, documents_dir
     data = res.result[process_task].result
 
     assert res.is_successful()
-    assert data == f"{documents_directory}/documents0.pckl"
+    assert data == f"{documents_directory}/documents0.pkl"
     spectrum_gtw.list_existing_spectra.assert_not_called()
-    spectrum_gtw.write_spectrum_documents.assert_called_once()
+    data_gtw.serialize_spectrum_documents.assert_called_once()
 
 
 @pytest.mark.skipif(
@@ -46,7 +49,7 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, documents_dir
 def test_process_spectrum(
     spectrum_ids, spectra_stored, mock_default_config, documents_directory
 ):
-    spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
+    spectrum_gtw = RedisSpectrumDataGateway()
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_gtw,
         documents_save_directory=documents_directory,
@@ -55,14 +58,14 @@ def test_process_spectrum(
     )
 
     os.mkdir(documents_directory)
-    data_gtw = FSDataGateway()
+    data_gtw = Spec2VecFSDocumentDataGateway()
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(data_gtw, parameters)(spectrum_ids)
 
     res = test_flow.run()
     data = res.result[process_task].result
 
-    assert data == f"{documents_directory}/documents0.pckl"
+    assert data == f"{documents_directory}/documents0.pkl"
 
 
 @pytest.mark.skipif(
@@ -72,8 +75,8 @@ def test_process_spectrum(
 def test_process_spectrum_map(
     spectrum_ids, spectra_stored, mock_default_config, documents_directory
 ):
-    spectrum_gtw = Spec2VecRedisSpectrumDataGateway()
-    data_gtw = FSDataGateway()
+    spectrum_gtw = RedisSpectrumDataGateway()
+    data_gtw = Spec2VecFSDocumentDataGateway()
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_gtw,
         documents_save_directory=documents_directory,
@@ -108,15 +111,27 @@ def test_clean_data(common_cleaned_data):
 
 
 def test_get_chunk_count(save_documents, documents_directory):
-    data_gtw = Spec2VecRedisSpectrumDataGateway()
+    data_gtw = Spec2VecFSDocumentDataGateway()
+    redis_gateway = RedisSpectrumDataGateway()
     parameters = ProcessSpectrumParameters(
-        spectrum_dgw=data_gtw,
+        spectrum_dgw=redis_gateway,
         documents_save_directory=documents_directory,
         n_decimals=2,
         overwrite_all_spectra=False,
     )
 
     process_spectrum = ProcessSpectrum(data_gtw, parameters)
-    count = process_spectrum._get_chunk_count_safely(documents_directory)
+    count = process_spectrum._get_chunk_count(documents_directory)
 
     assert count == 1
+
+
+def test_list_missing_documents(cleaned_data, save_documents, documents_directory):
+    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
+    data_gtw = Spec2VecFSDocumentDataGateway()
+
+    documents = data_gtw.list_missing_documents(
+        spectrum_ids_stored, documents_directory
+    )
+
+    assert len(documents) == 0
