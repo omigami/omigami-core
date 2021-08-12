@@ -58,10 +58,10 @@ def test_list_missing_spectra(cleaned_data, spectra_stored):
     assert set(spectra) == {"batman", "ROBEN"}
 
 
-def test_list_missing_documents(cleaned_data, tmpdir, write_documents):
+def test_list_missing_documents(cleaned_data, save_documents, documents_directory):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     dgw = Spec2VecRedisSpectrumDataGateway()
-    documents = dgw.list_missing_documents(spectrum_ids_stored, f"{tmpdir}/documents")
+    documents = dgw.list_missing_documents(spectrum_ids_stored, documents_directory)
 
     assert len(documents) == 0
 
@@ -75,11 +75,10 @@ def test_read_spectra(cleaned_data, spectra_stored):
         assert len(spectrum.peaks) > 0
 
 
-def test_read_documents(documents_data, tmpdir, write_documents):
-    doc_dir = f"{tmpdir}/documents"
+def test_read_documents(documents_data, save_documents, documents_directory):
 
     dgw = Spec2VecRedisSpectrumDataGateway()
-    documents = dgw.read_documents(doc_dir + "/test.pckl")
+    documents = dgw.read_documents(documents_directory + "/test.pckl")
 
     assert len(documents) == len(documents_data)
     for document in documents:

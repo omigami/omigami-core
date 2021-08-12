@@ -234,18 +234,24 @@ def redis_full_setup(
 
 
 @pytest.fixture()
-def write_documents(tmpdir, cleaned_data):
+def save_documents(documents_directory, cleaned_data):
     spectrum_document_data = [
         SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
     ]
 
     dgw = Spec2VecRedisSpectrumDataGateway()
-    doc_dir = f"{tmpdir}/documents"
 
-    if not os.path.exists(doc_dir):
-        os.mkdir(doc_dir)
+    if not os.path.exists(documents_directory):
+        os.mkdir(documents_directory)
 
-    dgw.write_spectrum_documents(spectrum_document_data, f"{doc_dir}/test.pckl")
+    dgw.write_spectrum_documents(
+        spectrum_document_data, f"{documents_directory}/test.pckl"
+    )
+
+
+@pytest.fixture()
+def documents_directory(tmpdir):
+    return f"{tmpdir}/documents"
 
 
 @pytest.fixture()

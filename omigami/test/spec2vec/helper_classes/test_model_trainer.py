@@ -34,13 +34,25 @@ def test_spec2vec_settings():
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_word2vec_training_with_iterator(documents_stored, tmpdir, write_documents):
+def test_word2vec_training_with_iterator(save_documents, documents_directory):
     dgw = Spec2VecRedisSpectrumDataGateway()
     train_model_params = TrainModelParameters(2, 10)
     train_model = TrainModel(dgw, train_model_params)
     callbacks, settings = train_model._create_spec2vec_settings(epochs=2, window=10)
-    documents = dgw.read_documents(f"{tmpdir}/documents/test.pckl")
+    documents = dgw.read_documents(f"{documents_directory}/test.pckl")
 
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
 
     assert len(documents) == model.corpus_count
+
+
+def test_load_all_documents(save_documents, documents_directory):
+    gtw = Spec2VecRedisSpectrumDataGateway()
+    train_model_params = TrainModelParameters(epochs=50, window=10)
+    train_model = TrainModel(gtw, train_model_params)
+
+    documents = train_model._load_all_document_files(
+        [f"{documents_directory}/test.pckl"]
+    )
+
+    assert len(documents) == 100

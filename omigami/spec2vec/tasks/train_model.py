@@ -12,6 +12,7 @@ from spec2vec.model_building import (
 from omigami.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
 )
+from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
@@ -45,10 +46,11 @@ class TrainModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, documents_dir: str):
+    def run(self, documents_directory: List[str]):
 
-        documents = []
-        for doc_dir in documents_dir:
+        documents = self._load_all_document_files(documents_directory)
+
+        for doc_dir in documents_directory:
             documents = documents + self._spectrum_dgw.read_documents(doc_dir)
 
         self.logger.info(
@@ -75,3 +77,14 @@ class TrainModel(Task):
         callbacks.append(training_progress_logger)
 
         return callbacks, settings
+
+    def _load_all_document_files(
+        self, documents_directory: List[str]
+    ) -> List[SpectrumDocumentData]:
+
+        documents = []
+        for doc_dir in documents_directory:
+            docs = self._spectrum_dgw.read_documents(doc_dir)
+            documents = documents + docs
+
+        return documents
