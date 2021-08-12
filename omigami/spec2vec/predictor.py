@@ -73,8 +73,10 @@ class Spec2VecPredictor(Predictor):
                 "query": input_spectrum,
             }
 
-            if parameters.get("n_best"):
-                best_matches_parameters["n_best_spectra"] = parameters.get("n_best")
+            if parameters.get("n_best_spectra"):
+                best_matches_parameters["n_best_spectra"] = parameters.get(
+                    "n_best_spectra"
+                )
 
             spectrum_best_matches = self._calculate_best_matches(
                 **best_matches_parameters
