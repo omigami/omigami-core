@@ -63,7 +63,7 @@ class MS2DeepScorePredictor(Predictor):
                     "Precursor_MZ": float,
                 },
             ],
-            "parameters": {"n_best": int, "include_metadata": List[str]}
+            "parameters": {"n_best_spectra": int, "include_metadata": List[str]}
         }
 
         Returns
