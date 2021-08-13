@@ -82,7 +82,7 @@ def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
     assert len(data_input) == 2
     assert "peaks_json" in data_input[0]
     assert "Precursor_MZ" in data_input[0]
-    assert parameters["n_best"] == 2
+    assert parameters["n_best_spectra"] == 2
 
 
 @pytest.mark.skipif(
