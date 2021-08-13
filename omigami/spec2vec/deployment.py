@@ -9,6 +9,7 @@ from omigami.gateways import RedisSpectrumDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
     PROJECT_NAME,
+    DOCUMENT_DIRECTORIES,
 )
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
@@ -39,7 +40,7 @@ class Spec2VecDeployer(Deployer):
         self._project_name = project_name
 
         self._data_gtw = Spec2VecFSDocumentDataGateway()
-        self._spectrum_dgw = RedisSpectrumDataGateway(project="spec2vec")
+        self._spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
         self._spectrum_cleaner = SpectrumCleaner()
 
     def deploy_training_flow(
@@ -61,6 +62,7 @@ class Spec2VecDeployer(Deployer):
         client.create_project(self._project_name)
 
         model_output_dir = MODEL_DIRECTORIES[self._environment]
+        document_output_dir = DOCUMENT_DIRECTORIES[self._environment]
         dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(
             date=datetime.today()
         )
@@ -82,6 +84,7 @@ class Spec2VecDeployer(Deployer):
             window=self._window,
             overwrite_model=self._overwrite_model,
             project_name=self._project_name,
+            documents_output_dir=document_output_dir,
             intensity_weighting_power=self._intensity_weighting_power,
             allowed_missing_percentage=self._allowed_missing_percentage,
             model_output_dir=model_output_dir,

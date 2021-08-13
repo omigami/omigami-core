@@ -219,8 +219,6 @@ class FSDataGateway(DataGateway):
 
         return True
 
-    # TODO: If the method for saving is called serialize, should we call this deserialize or should we choose
-    #  completely different names?
     def read_from_file(self, path: str) -> Any:
         path = DRPath(path)
         if self.fs is None:

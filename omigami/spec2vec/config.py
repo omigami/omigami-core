@@ -9,7 +9,7 @@ class Configuration(confuse.Configuration):
 config = Configuration("omigami/spec2vec", __name__)
 
 MODEL_DIRECTORIES = config["storage"]["model_folder"].get(dict)
-DOCUMENT_FILES = config["storage"]["documents"].get(dict)
+DOCUMENT_DIRECTORIES = config["storage"]["documents"].get(dict)
 
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
     "spectrum_id_sorted_set"

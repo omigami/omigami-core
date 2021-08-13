@@ -123,15 +123,4 @@ def test_get_chunk_count(save_documents, documents_directory):
     process_spectrum = ProcessSpectrum(data_gtw, parameters)
     count = process_spectrum._get_chunk_count(documents_directory)
 
-    assert count == 1
-
-
-def test_list_missing_documents(cleaned_data, save_documents, documents_directory):
-    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    data_gtw = Spec2VecFSDocumentDataGateway()
-
-    documents = data_gtw.list_missing_documents(
-        spectrum_ids_stored, documents_directory
-    )
-
-    assert len(documents) == 0
+    assert count == 10

@@ -25,6 +25,24 @@ def test_list_missing_documents(cleaned_data, save_documents, documents_director
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     data_gtw = Spec2VecFSDocumentDataGateway()
 
+    document_file_names = os.listdir(documents_directory)
+
+    for file in document_file_names[:5]:
+        os.remove(f"{documents_directory}/{file}")
+
+    documents = data_gtw.list_missing_documents(
+        spectrum_ids_stored, documents_directory
+    )
+
+    assert len(documents) == 50
+
+
+def test_list_missing_documents_none_missing(
+    cleaned_data, save_documents, documents_directory
+):
+    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
+    data_gtw = Spec2VecFSDocumentDataGateway()
+
     documents = data_gtw.list_missing_documents(
         spectrum_ids_stored, documents_directory
     )

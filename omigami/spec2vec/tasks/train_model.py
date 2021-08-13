@@ -80,7 +80,6 @@ class TrainModel(Task):
 
         documents = []
         for doc_dir in documents_directory:
-            docs = self._data_dgw.read_from_file(doc_dir)
-            documents = documents + docs
+            documents += self._data_dgw.read_from_file(doc_dir)
 
         return documents

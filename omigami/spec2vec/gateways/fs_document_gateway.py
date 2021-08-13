@@ -11,8 +11,6 @@ from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 class Spec2VecFSDocumentDataGateway(FSDataGateway):
     """Data gateway for storage."""
 
-    project = "spec2vec"
-
     def serialize_spectrum_documents(
         self, save_directory: str, spectrum_data: List[SpectrumDocumentData]
     ):

@@ -239,18 +239,26 @@ def redis_full_setup(
 
 @pytest.fixture()
 def save_documents(documents_directory, cleaned_data):
+
     spectrum_document_data = [
         SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
     ]
 
+    chunk_size = 10
+
+    spectrum_document_data = [
+        spectrum_document_data[i : i + chunk_size]
+        for i in range(0, len(spectrum_document_data), chunk_size)
+    ]
     dgw = Spec2VecFSDocumentDataGateway()
 
     if not os.path.exists(documents_directory):
         os.mkdir(documents_directory)
 
-    dgw.serialize_spectrum_documents(
-        f"{documents_directory}/test.pkl", spectrum_document_data
-    )
+    for i, documents in enumerate(spectrum_document_data):
+        dgw.serialize_spectrum_documents(
+            f"{documents_directory}/test{i}.pkl", documents
+        )
 
 
 @pytest.fixture()

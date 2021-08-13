@@ -49,7 +49,6 @@ class MakeEmbeddings(Task):
 
         documents = self._fs_document_dgw.read_from_file(processed_document_paths)
 
-        self.logger.info(f"Creating {len(documents)} embeddings.")
         self.logger.info(f"Loaded {len(documents)} documents from the database.")
 
         embeddings = []
