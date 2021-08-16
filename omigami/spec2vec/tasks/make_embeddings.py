@@ -44,10 +44,10 @@ class MakeEmbeddings(Task):
         self,
         model: Word2Vec = None,
         model_registry: Dict[str, str] = None,
-        processed_document_paths: str = None,
+        processed_document_path: str = None,
     ) -> Set[str]:
 
-        documents = self._fs_document_dgw.read_from_file(processed_document_paths)
+        documents = self._fs_document_dgw.read_from_file(processed_document_path)
 
         self.logger.info(f"Loaded {len(documents)} documents from the database.")
 
