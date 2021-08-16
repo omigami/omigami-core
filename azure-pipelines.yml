@@ -28,7 +28,7 @@ steps:
 - task: Cache@2
   displayName: Use cached Anaconda environment
   inputs:
-    key: 'conda | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
+    key: 'version2 | conda | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
     restoreKeys: |
       python | "$(Agent.OS)"
       python
