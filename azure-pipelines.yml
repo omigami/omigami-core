@@ -28,10 +28,10 @@ steps:
 - task: Cache@2
   displayName: Use cached Anaconda environment
   inputs:
-    key: 'ccache | conda | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
+    key: 'conda | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml'
     restoreKeys: |
-      ccache | python | "$(Agent.OS)"
-      ccache | python
+      python | "$(Agent.OS)"
+      python
     path: $(CONDA_CACHE_DIR)
     cacheHitVar: CONDA_CACHE_RESTORED
 
@@ -39,7 +39,7 @@ steps:
     conda env create --quiet --file requirements/environment.frozen.yaml
     conda env update --quiet --file requirements/environment_test.yaml
   displayName: Create Anaconda environment
-  condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
+  #condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
 
 - bash: |
    source activate omigami
