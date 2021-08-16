@@ -10,7 +10,6 @@ from drfs.filesystems.local import LocalFileSystem
 from drfs.filesystems.s3 import S3FileSystem
 from ms2deepscore import SpectrumBinner
 from ms2deepscore.models import SiameseModel
-from tensorflow import keras
 from tensorflow.python.keras.saving import hdf5_format
 
 from omigami.gateways.fs_data_gateway import FSDataGateway
@@ -48,9 +47,5 @@ class MS2DeepScoreFSDataGateway(FSDataGateway):
             keras_model = hdf5_format.load_model_from_hdf5(f)
 
         spectrum_binner = SpectrumBinner.from_json(binner_json)
-
-        assert isinstance(
-            keras_model, keras.Model
-        ), f"Expected keras model as input, got {type(keras_model)}"
 
         return SiameseModel(spectrum_binner, keras_model=keras_model)
