@@ -68,19 +68,15 @@ class Spec2VecPredictor(Predictor):
                 reference_spectra_ids[i], reference_embeddings
             )
 
-            best_matches_parameters = {
+            best_matches_data = {
                 "references": input_spectrum_ref_emb,
                 "query": input_spectrum,
             }
 
             if parameters.get("n_best_spectra"):
-                best_matches_parameters["n_best_spectra"] = parameters.get(
-                    "n_best_spectra"
-                )
+                best_matches_data["n_best_spectra"] = parameters.get("n_best_spectra")
 
-            spectrum_best_matches = self._calculate_best_matches(
-                **best_matches_parameters
-            )
+            spectrum_best_matches = self._calculate_best_matches(**best_matches_data)
 
             best_matches[
                 input_spectrum.spectrum_id or f"spectrum-{i}"
