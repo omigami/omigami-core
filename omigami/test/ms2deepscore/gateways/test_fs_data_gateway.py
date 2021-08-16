@@ -1,5 +1,10 @@
+import logging
+
 from ms2deepscore.models import SiameseModel
+
 from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
+
+logger = logging.getLogger(__name__)
 
 
 def test_save_model_local(ms2deepscore_model, tmpdir):
@@ -20,7 +25,7 @@ def test_save_model_s3(ms2deepscore_model, s3_mock):
 
 def test_load_model_local(ms2deepscore_model_path):
     fs_gtw = MS2DeepScoreFSDataGateway()
-    model = fs_gtw.load_model(ms2deepscore_model_path)
+    model = fs_gtw.load_model(ms2deepscore_model_path, logger=logger)
 
     assert isinstance(model, SiameseModel)
 
@@ -30,6 +35,6 @@ def test_load_model_s3(ms2deepscore_model, s3_mock):
     fs_gtw = MS2DeepScoreFSDataGateway()
     fs_gtw.save(ms2deepscore_model.model, model_path)
 
-    model = fs_gtw.load_model(model_path)
+    model = fs_gtw.load_model(model_path, logger=logger)
 
     assert isinstance(model, SiameseModel)

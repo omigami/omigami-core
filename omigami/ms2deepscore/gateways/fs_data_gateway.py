@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 from typing import Optional
@@ -34,7 +35,11 @@ class MS2DeepScoreFSDataGateway(FSDataGateway):
             finally:
                 os.remove(tmp_path)
 
-    def load_model(self, model_path: str) -> SiameseModel:
+    def load_model(
+        self,
+        model_path: str,
+        logger: logging.Logger = None,
+    ) -> SiameseModel:
         path = DRPath(model_path)
         if self.fs is None:
             self.fs = get_fs(path)
@@ -44,4 +49,8 @@ class MS2DeepScoreFSDataGateway(FSDataGateway):
             keras_model = hdf5_format.load_model_from_hdf5(f)
 
         spectrum_binner = SpectrumBinner.from_json(binner_json)
+
+        if logger:
+            logger.info(f"Supposed keras model is actually of type {type(keras_model)}")
+
         return SiameseModel(spectrum_binner, keras_model=keras_model)
