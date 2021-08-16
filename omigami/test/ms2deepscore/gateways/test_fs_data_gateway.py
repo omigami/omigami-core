@@ -31,6 +31,6 @@ def test_load_model_s3(ms2deepscore_model, s3_mock):
     fs_gtw = MS2DeepScoreFSDataGateway()
     fs_gtw.save(ms2deepscore_model.model, model_path)
 
-    model = fs_gtw.(model_path)
+    model = fs_gtw.load_model(model_path)
 
     assert isinstance(model, SiameseModel)
