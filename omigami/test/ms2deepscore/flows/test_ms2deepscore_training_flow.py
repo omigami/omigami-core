@@ -25,8 +25,6 @@ from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
 
-pytestmark = pytest.mark.skip()
-
 
 @pytest.fixture
 def flow_config():
