@@ -9,13 +9,11 @@ from matchms.importing.load_from_json import as_spectrum
 
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.predictor import Predictor, SpectrumMatches
+from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-
-
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
-from omigami.spec2vec.config import PROJECT_NAME
 
 log = getLogger(__name__)
 
@@ -68,10 +66,17 @@ class Spec2VecPredictor(Predictor):
             input_spectrum_ref_emb = self._get_input_ref_embeddings(
                 reference_spectra_ids[i], reference_embeddings
             )
-            spectrum_best_matches = self._calculate_best_matches(
-                references=input_spectrum_ref_emb,
-                query=input_spectrum,
-            )
+
+            best_matches_data = {
+                "references": input_spectrum_ref_emb,
+                "query": input_spectrum,
+            }
+
+            if parameters.get("n_best_spectra"):
+                best_matches_data["n_best_spectra"] = parameters.get("n_best_spectra")
+
+            spectrum_best_matches = self._calculate_best_matches(**best_matches_data)
+
             best_matches[
                 input_spectrum.spectrum_id or f"spectrum-{i}"
             ] = spectrum_best_matches

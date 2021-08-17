@@ -5,6 +5,7 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore.models import load_model as ms2deepscore_load_model
 
+from omigami.ms2deepscore.config import PROJECT_NAME
 from omigami.ms2deepscore.entities.embedding import Embedding
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -17,7 +18,6 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
 from omigami.predictor import Predictor, SpectrumMatches
-from omigami.ms2deepscore.config import PROJECT_NAME
 
 log = getLogger(__name__)
 
@@ -64,7 +64,7 @@ class MS2DeepScorePredictor(Predictor):
                     "Precursor_MZ": float,
                 },
             ],
-            "parameters": {"n_best": int, "include_metadata": List[str]}
+            "parameters": {"n_best_spectra": int, "include_metadata": List[str]}
         }
 
         Returns
@@ -91,10 +91,16 @@ class MS2DeepScorePredictor(Predictor):
         ]
 
         log.info("Calculating best matches.")
-        best_matches = self._calculate_best_matches(
-            all_references=reference_embeddings,
-            queries=query_embeddings,
-        )
+
+        best_matches_data = {
+            "all_references": reference_embeddings,
+            "queries": query_embeddings,
+        }
+
+        if parameters.get("n_best_spectra"):
+            best_matches_data["n_best_spectra"] = parameters.get("n_best_spectra")
+
+        best_matches = self._calculate_best_matches(**best_matches_data)
 
         if parameters.get("include_metadata", None):
             best_matches = self._add_metadata(
