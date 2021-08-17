@@ -22,9 +22,10 @@ class SpectrumProcessor(SpectrumCleaner):
         for i, spectrum in enumerate(spectra):
             if spectrum is not None and len(spectrum.peaks.mz) > min_peaks:
                 processed_spectrum = normalize_intensities(spectrum)
-                doc = SpectrumDocumentData(processed_spectrum, n_decimals)
-                if doc.spectrum and doc.document:
-                    documents.append(doc)
+                document = SpectrumDocumentData(processed_spectrum, n_decimals)
+
+                if document.document:
+                    documents.append(document)
 
                 if progress_logger:
                     progress_logger.log(i)
