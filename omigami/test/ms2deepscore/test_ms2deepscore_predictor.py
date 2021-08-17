@@ -1,7 +1,9 @@
 import os
+from copy import deepcopy
 
 import pandas as pd
 import pytest
+
 from omigami.test.conftest import ASSETS_DIR
 
 
@@ -35,6 +37,43 @@ def test_predictions(
     assert isinstance(scores, dict)
     scores_df = pd.DataFrame(scores["spectrum-0"]).T
     assert scores_df["score"].between(0, 1).all()
+    assert all([len(value) == 2] for value in scores.values())
+
+
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+@pytest.mark.skipif(
+    not os.path.exists(
+        str(
+            ASSETS_DIR
+            / "ms2deepscore"
+            / "pretrained"
+            / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
+        )
+    ),
+    reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
+    "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
+)
+def test_predictions_1_best(
+    ms2deepscore_payload,
+    redis_full_setup,
+    ms2deepscore_real_predictor,
+):
+    ms2deepscore_payload_copy = deepcopy(ms2deepscore_payload)
+    ms2deepscore_payload_copy["parameters"]["n_best"] = 1
+
+    scores = ms2deepscore_real_predictor.predict(
+        data_input=ms2deepscore_payload,
+        context="",
+        mz_range=1,
+    )
+
+    assert isinstance(scores, dict)
+    scores_df = pd.DataFrame(scores["spectrum-0"]).T
+    assert scores_df["score"].between(0, 1).all()
+    assert all([len(value) == 1] for value in scores.values())
 
 
 def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
@@ -43,7 +82,7 @@ def test_parse_input(ms2deepscore_payload, ms2deepscore_predictor):
     assert len(data_input) == 2
     assert "peaks_json" in data_input[0]
     assert "Precursor_MZ" in data_input[0]
-    assert parameters["n_best"] == 2
+    assert parameters["n_best_spectra"] == 2
 
 
 @pytest.mark.skipif(
