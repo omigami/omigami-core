@@ -50,7 +50,7 @@ class ProcessSpectrum(Task):
             if spectrum_documents:
                 self.logger.info(
                     f"Finished processing {len(spectrum_documents)}. "
-                    f"Saving into spectrum Filesystem."
+                    f"Saving into spectrum filesystem."
                 )
 
                 chunk_count = self._get_chunk_count(self._documents_save_directory)
@@ -97,7 +97,6 @@ class ProcessSpectrum(Task):
 
     def _get_chunk_count(self, documents_save_directory) -> int:
 
-        if not os.path.exists(documents_save_directory):
-            os.mkdir(documents_save_directory)
+        os.mkdir(documents_save_directory, exist_ok=True)
 
         return len(os.listdir(self._documents_save_directory))

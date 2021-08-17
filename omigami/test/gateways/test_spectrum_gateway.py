@@ -11,6 +11,8 @@ from omigami.spec2vec.entities.embedding import Embedding
 
 from pytest_redis import factories
 
+from omigami.spec2vec.config import PROJECT_NAME
+
 redis_db = factories.redisdb("redis_nooproc")
 
 pytestmark = pytest.mark.skipif(
@@ -21,7 +23,7 @@ pytestmark = pytest.mark.skipif(
 
 def test_list_spectrum_ids(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    dgw = RedisSpectrumDataGateway("spec2vec")
+    dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     ids = dgw.list_spectrum_ids()
     assert len(ids) == len(spectrum_ids_stored)
 
@@ -46,7 +48,7 @@ def test_read_spectra(cleaned_data, spectra_stored):
 
 
 def test_read_embeddings(embeddings, embeddings_stored):
-    dgw = RedisSpectrumDataGateway(project="spec2vec")
+    dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     dgw._init_client()
     embeddings_read = dgw.read_embeddings("positive", "1")
     assert len(embeddings_read) == len(embeddings)
@@ -55,7 +57,7 @@ def test_read_embeddings(embeddings, embeddings_stored):
 
 
 def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_stored):
-    dgw = RedisSpectrumDataGateway(project="spec2vec")
+    dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     dgw._init_client()
     mz_min = 300
     mz_max = 600

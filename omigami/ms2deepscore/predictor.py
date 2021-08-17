@@ -17,14 +17,13 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
 from omigami.predictor import Predictor, SpectrumMatches
-from omigami.ms2deepscore.config import PROJECT_NAME
 
 log = getLogger(__name__)
 
 
 class MS2DeepScorePredictor(Predictor):
     def __init__(self, ion_mode: str = None, run_id: str = None):
-        super().__init__(MS2DeepScoreRedisSpectrumDataGateway(PROJECT_NAME))
+        super().__init__(MS2DeepScoreRedisSpectrumDataGateway())
         self.ion_mode = ion_mode
         self._run_id = run_id
         self.spectrum_processor = SpectrumProcessor()

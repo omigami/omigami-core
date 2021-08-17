@@ -36,9 +36,6 @@ def get_redis_client():
 class RedisSpectrumDataGateway:
     """Data gateway for Redis storage."""
 
-    # TODO: The Project var that I changed serves only the purpose of creating a key for the embeddings in the redis
-    #  DB. We should either consider making all the strings, besides the static once, an input parameter of init or
-    #  the read and write embeddings function. What do you think?
     def __init__(self, project: str = None):
         # We initialize it with None so we can pickle this gateway when deploying the flow
         self.client = None

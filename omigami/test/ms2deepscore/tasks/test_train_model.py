@@ -37,7 +37,7 @@ def test_train_model(
     with Flow("test") as flow:
         TrainModel(
             fs_gtw=MS2DeepScoreFSDataGateway(),
-            spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(PROJECT_NAME),
+            spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(),
             train_parameters=parameters,
         )([], tanimoto_scores_path)
 

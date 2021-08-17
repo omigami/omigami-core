@@ -11,9 +11,15 @@ from omigami.gateways.redis_spectrum_data_gateway import (
 )
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 
+from omigami.ms2deepscore.config import PROJECT_NAME
+
 
 class MS2DeepScoreRedisSpectrumDataGateway(RedisSpectrumDataGateway):
     """Data gateway for Redis storage."""
+
+    def __init__(self, project=PROJECT_NAME):
+
+        super().__init__(project)
 
     def list_missing_binned_spectra(
         self, spectrum_ids: List[str], ion_mode: IonModes
