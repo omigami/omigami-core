@@ -48,3 +48,18 @@ def test_list_missing_documents_none_missing(
     )
 
     assert len(documents) == 0
+
+
+def test_read_documents_iter(saved_documents, documents_directory):
+    document_file_names = os.listdir(documents_directory)
+    data_gtw = Spec2VecFSDataGateway()
+    document_counter = 0
+
+    document_paths = []
+    for file in document_file_names:
+        document_paths.append(f"{documents_directory}/{file}")
+
+    for doc in data_gtw.read_documents_iter(document_paths):
+        document_counter += 1
+
+    assert document_counter == len(document_file_names) * 10
