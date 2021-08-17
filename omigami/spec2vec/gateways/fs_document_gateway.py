@@ -32,3 +32,27 @@ class Spec2VecFSDataGateway(FSDataGateway):
 
         new_spectra = set(spectrum_ids) - set(stored_spectrum_ids)
         return list(new_spectra)
+
+    def read_documents_iter(self, document_paths):
+        return FileSystemDocumentIterator(self, document_paths)
+
+
+class FileSystemDocumentIterator:
+    """An iterator that yields Redis object one by one to the word2vec model for training.
+    Reading chunks is not supported by gensim word2vec at the moment.
+    """
+
+    def __init__(
+        self,
+        dgw: Spec2VecFSDataGateway,
+        document_paths: List[str] = None,
+    ):
+        self._dgw = dgw
+        self._document_paths = document_paths
+
+    def __iter__(self):
+
+        for doc_path in self._document_paths:
+            documents = self._dgw.read_from_file(doc_path)
+            for document in documents:
+                yield document

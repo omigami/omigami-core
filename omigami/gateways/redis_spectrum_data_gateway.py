@@ -18,6 +18,8 @@ from omigami.spec2vec.entities.embedding import Embedding as Spec2VecEmbedding
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
 # which was defined during deployment by the 'dataset_name' param
+from omigami.spec2vec.gateways import Spec2VecFSDataGateway
+
 REDIS_HOST = str(os.getenv("REDIS_HOST"))
 REDIS_DB = str(os.getenv("REDIS_DB"))
 
@@ -166,32 +168,3 @@ class RedisSpectrumDataGateway:
 
     def _create_embeddings_key(self, ion_mode: str, run_id: str):
         return f"{EMBEDDING_HASHES}_{self.project}_{ion_mode}_{run_id}"
-
-
-class RedisHashesIterator:
-    """An iterator that yields Redis object one by one to the word2vec model for training.
-    Reading chunks is not supported by gensim word2vec at the moment.
-    """
-
-    def __init__(
-        self,
-        dgw: RedisSpectrumDataGateway,
-        hash_name: str,
-        spectrum_ids: List[str] = None,
-    ):
-        self.dgw = dgw
-        self.hash_name = hash_name
-        self.spectrum_ids = (
-            [s.encode() for s in spectrum_ids]
-            if spectrum_ids
-            else dgw.client.hkeys(hash_name)
-        )
-
-    def __iter__(self):
-        for spectrum_id in self.spectrum_ids:
-            data = self.dgw.client.hget(self.hash_name, spectrum_id)
-            if not data:
-                raise RuntimeError(
-                    f"There is no document for spectrum id {spectrum_id}."
-                )
-            yield pickle.loads(data)

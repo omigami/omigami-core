@@ -12,6 +12,7 @@ from spec2vec.model_building import (
 from omigami.gateways import DataGateway
 
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
+from omigami.spec2vec.gateways import Spec2VecFSDataGateway
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
@@ -34,7 +35,7 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
-        data_dgw: DataGateway,
+        data_dgw: Spec2VecFSDataGateway,
         training_parameters: TrainModelParameters,
         **kwargs,
     ):
@@ -47,9 +48,8 @@ class TrainModel(Task):
 
     def run(self, documents_directory: List[str]):
 
-        documents = self._load_all_document_files(documents_directory)
+        documents = self._data_dgw.read_documents_iter(documents_directory)
 
-        self.logger.info(f"{len(documents)} documents will be used on training.")
         self.logger.info("Started training the Word2Vec model.")
         callbacks, settings = self._create_spec2vec_settings(self._window, self._epochs)
         model = gensim.models.Word2Vec(
@@ -71,13 +71,3 @@ class TrainModel(Task):
         callbacks.append(training_progress_logger)
 
         return callbacks, settings
-
-    def _load_all_document_files(
-        self, documents_directory: List[str]
-    ) -> List[SpectrumDocumentData]:
-
-        documents = []
-        for doc_dir in documents_directory:
-            documents += self._data_dgw.read_from_file(doc_dir)
-
-        return documents

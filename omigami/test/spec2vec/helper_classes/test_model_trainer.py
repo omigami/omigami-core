@@ -39,16 +39,3 @@ def test_word2vec_training_with_iterator(saved_documents, documents_directory):
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
 
     assert len(documents) == model.corpus_count
-
-
-def test_load_all_documents(saved_documents, documents_directory):
-    gtw = Spec2VecFSDataGateway()
-    train_model_params = TrainModelParameters(epochs=50, window=10)
-    train_model = TrainModel(gtw, train_model_params)
-
-    document_file_names = os.listdir(documents_directory)
-    documents_directory = [
-        f"{documents_directory}/{doc}" for doc in document_file_names
-    ]
-    documents = train_model._load_all_document_files(documents_directory)
-    assert len(documents) == len(list(itertools.chain.from_iterable(saved_documents)))
