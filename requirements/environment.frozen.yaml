@@ -19,6 +19,7 @@ dependencies:
   - s3fs=0.4.2
   - pyyaml=5.4.1
   - pip:
+      - tensorflow==2.5.0
       - matchms==0.8.2
       - ms2deepscore==0.2.1
       - redis==3.5.3
