@@ -12,6 +12,8 @@ from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
     SplitRatio,
 )
 
+from omigami.ms2deepscore.config import PROJECT_NAME
+
 
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
@@ -35,7 +37,7 @@ def test_train_model(
     with Flow("test") as flow:
         TrainModel(
             fs_gtw=MS2DeepScoreFSDataGateway(),
-            spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(),
+            spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(PROJECT_NAME),
             train_parameters=parameters,
         )([], tanimoto_scores_path)
 

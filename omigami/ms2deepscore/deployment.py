@@ -45,7 +45,7 @@ class MS2DeepScoreDeployer(Deployer):
         super().__init__(**kwargs)
         self._mlflow_server = mlflow_server
         self._data_gtw = MS2DeepScoreFSDataGateway()
-        self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+        self._spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway(project_name)
         self._project_name = project_name
         self._fingerprint_n_bits = fingerprint_n_bits
         self._scores_decimals = scores_decimals

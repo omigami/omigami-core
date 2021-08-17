@@ -137,12 +137,12 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_document_paths = ProcessSpectrum(
+        document_paths = ProcessSpectrum(
             flow_parameters.data_gtw, flow_parameters.processing
         ).map(chunked_spectrum_ids)
 
         model = TrainModel(flow_parameters.data_gtw, flow_parameters.training)(
-            processed_document_paths
+            document_paths
         )
 
         model_registry = RegisterModel(flow_parameters.registering)(model)
@@ -152,7 +152,7 @@ def build_training_flow(
             flow_parameters.spectrum_dgw,
             flow_parameters.data_gtw,
             flow_parameters.embedding,
-        ).map(unmapped(model), unmapped(model_registry), processed_document_paths)
+        ).map(unmapped(model), unmapped(model_registry), document_paths)
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)

@@ -26,12 +26,12 @@ class MakeEmbeddings(Task):
     def __init__(
         self,
         redis_spectrum_dgw: RedisSpectrumDataGateway,
-        fs_document_dgw: Spec2VecFSDocumentDataGateway,
+        _fs_gtw: Spec2VecFSDocumentDataGateway,
         parameters: MakeEmbeddingsParameters,
         **kwargs,
     ):
         self._redis_spectrum_dgw = redis_spectrum_dgw
-        self._fs_document_dgw = fs_document_dgw
+        self._fs_gtw = _fs_gtw
         self._embedding_maker = EmbeddingMaker(n_decimals=parameters.n_decimals)
         self._ion_mode = parameters.ion_mode
         self._intensity_weighting_power = parameters.intensity_weighting_power
@@ -44,12 +44,12 @@ class MakeEmbeddings(Task):
         self,
         model: Word2Vec = None,
         model_registry: Dict[str, str] = None,
-        processed_document_path: str = None,
+        document_path: str = None,
     ) -> Set[str]:
 
-        documents = self._fs_document_dgw.read_from_file(processed_document_path)
+        documents = self._fs_gtw.read_from_file(document_path)
 
-        self.logger.info(f"Loaded {len(documents)} documents from the database.")
+        self.logger.info(f"Loaded {len(documents)} documents from filesystem.")
 
         embeddings = []
         progress_logger = TaskProgressLogger(
@@ -76,4 +76,4 @@ class MakeEmbeddings(Task):
         self._redis_spectrum_dgw.write_embeddings(
             embeddings, self._ion_mode, model_registry["run_id"], self.logger
         )
-        return set(doc.metadata["spectrum_id"] for doc in documents)
+        return set(doc.get("spectrum_id") for doc in documents)

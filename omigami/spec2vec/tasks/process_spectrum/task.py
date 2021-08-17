@@ -50,7 +50,7 @@ class ProcessSpectrum(Task):
             if spectrum_documents:
                 self.logger.info(
                     f"Finished processing {len(spectrum_documents)}. "
-                    f"Saving into spectrum database."
+                    f"Saving into spectrum Filesystem."
                 )
 
                 chunk_count = self._get_chunk_count(self._documents_save_directory)
@@ -58,10 +58,8 @@ class ProcessSpectrum(Task):
                 document_save_directory = (
                     f"{self._documents_save_directory}/documents{chunk_count}.pkl"
                 )
-
-                self._data_gtw.serialize_spectrum_documents(
-                    document_save_directory, spectrum_documents
-                )
+                document_data = [doc.document for doc in spectrum_documents]
+                self._data_gtw.serialize_to_file(document_save_directory, document_data)
 
                 return document_save_directory
 

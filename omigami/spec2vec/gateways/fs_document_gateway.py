@@ -4,22 +4,13 @@ import os
 from typing import List
 
 from omigami.gateways.fs_data_gateway import FSDataGateway
-
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 
 
 class Spec2VecFSDocumentDataGateway(FSDataGateway):
     """Data gateway for storage."""
 
-    def serialize_spectrum_documents(
-        self, save_directory: str, spectrum_data: List[SpectrumDocumentData]
-    ):
-        """Write spectra data to a filesystem. Will overwrite a file with the same name. The spectra ids and
-        precursor_MZ are required."""
-
-        document_data = [doc.document for doc in spectrum_data]
-        self.serialize_to_file(save_directory, document_data)
-
+    # TODO: Add new Serialize function that automatically saves
     def list_missing_documents(
         self, spectrum_ids: List[str], documents_directory: str
     ) -> List[str]:

@@ -49,9 +49,7 @@ class TrainModel(Task):
 
         documents = self._load_all_document_files(documents_directory)
 
-        self.logger.info(
-            f"Connecting to the data. {len(documents)} documents will be used on training."
-        )
+        self.logger.info(f"{len(documents)} documents will be used on training.")
         self.logger.info("Started training the Word2Vec model.")
         callbacks, settings = self._create_spec2vec_settings(self._window, self._epochs)
         model = gensim.models.Word2Vec(

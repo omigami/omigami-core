@@ -139,4 +139,5 @@ dmypy.json
 **/chunks/
 *.orig
 **/spectrum_ids_500.pkl
-mlflow-server/*
+**/mlflow-server/*
+**/mlruns/*

@@ -238,11 +238,12 @@ def redis_full_setup(
 
 
 @pytest.fixture()
-def save_documents(documents_directory, cleaned_data):
+def saved_documents(documents_directory, cleaned_data):
 
-    spectrum_document_data = [
-        SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
-    ]
+    # spectrum_document_data = [
+    #    SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
+    # ]
+    spectrum_document_data = [doc.document for doc in cleaned_data]
 
     chunk_size = 10
 
@@ -259,6 +260,8 @@ def save_documents(documents_directory, cleaned_data):
         dgw.serialize_spectrum_documents(
             f"{documents_directory}/test{i}.pkl", documents
         )
+
+    return spectrum_document_data
 
 
 @pytest.fixture()
