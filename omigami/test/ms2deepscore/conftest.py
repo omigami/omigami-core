@@ -3,8 +3,6 @@ import pickle
 import pandas as pd
 import pytest
 from ms2deepscore.models import load_model
-from pytest_redis import factories
-
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
     MS2DeepScoreEmbedding,
@@ -14,6 +12,7 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
 )
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.test.conftest import ASSETS_DIR
+from pytest_redis import factories
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -46,7 +45,7 @@ def ms2deepscore_payload(loaded_data):
                 "Precursor_MZ": spectra[1]["Precursor_MZ"],
             },
         ],
-        "parameters": {"n_best_spectra": 2, "include_metadata": ["Compound_name"]},
+        "parameters": {"n_best": 2, "include_metadata": ["Compound_name"]},
     }
     return payload
 
