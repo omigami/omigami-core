@@ -19,6 +19,7 @@ dependencies:
   - s3fs=0.4.*
   - pyyaml=5.4.*
   - pip:
+      - tensorflow==2.5.0
       - matchms==0.8.*
       - ms2deepscore==0.2.*
       - redis==3.5.*
@@ -27,4 +28,3 @@ dependencies:
       - git+https://github.com/datarevenue-berlin/drfs
       - matchmsextras==0.2.*
       - pubchempy==1.0.*
-      - tensorflow==2.5.0
