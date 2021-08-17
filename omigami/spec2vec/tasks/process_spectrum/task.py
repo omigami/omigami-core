@@ -97,6 +97,6 @@ class ProcessSpectrum(Task):
 
     def _get_chunk_count(self, documents_save_directory) -> int:
 
-        os.mkdir(documents_save_directory, exist_ok=True)
+        os.makedirs(documents_save_directory, exist_ok=True)
 
         return len(os.listdir(self._documents_save_directory))
