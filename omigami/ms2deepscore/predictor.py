@@ -4,7 +4,6 @@ from typing import Union, List, Dict, Tuple
 import numpy as np
 from matchms import calculate_scores
 from ms2deepscore.models import load_model as ms2deepscore_load_model
-
 from omigami.ms2deepscore.entities.embedding import Embedding
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -90,10 +89,14 @@ class MS2DeepScorePredictor(Predictor):
         ]
 
         log.info("Calculating best matches.")
-        best_matches = self._calculate_best_matches(
-            reference_embeddings,
-            query_embeddings,
-        )
+        best_matches = {}
+        for i, query in enumerate(query_embeddings):
+            spectrum_best_matches = self._calculate_best_matches(
+                reference_spectra_ids[i],
+                reference_embeddings,
+                query,
+            )
+            best_matches[f"spectrum-{i}"] = spectrum_best_matches
 
         if parameters.get("include_metadata", None):
             best_matches = self._add_metadata(
@@ -117,33 +120,33 @@ class MS2DeepScorePredictor(Predictor):
 
     def _calculate_best_matches(
         self,
+        reference_ids: List[str],
         all_references: List[Embedding],
-        queries: List[Embedding],
+        queries: Embedding,
         n_best_spectra: int = 10,
     ) -> SpectrumMatches:
-
+        references = [
+            reference
+            for reference in all_references
+            if reference.spectrum_id in reference_ids
+        ]
         scores = calculate_scores(
-            all_references,
-            queries,
+            references,
+            [queries],
             self.model,
         )
-        best_matches = {}
-        for i, query in enumerate(queries):
-            all_scores = scores.scores_by_query(query, sort=True)
+        all_scores = scores.scores_by_query(queries, sort=True)
 
-            all_scores = [
-                (spectrum, score)
-                for spectrum, score in all_scores
-                if not np.isnan(score)
-            ]
-            spectrum_best_scores = all_scores[:n_best_spectra]
-            spectrum_best_matches = {}
-            for spectrum_match in spectrum_best_scores:
-                spectrum_best_matches[spectrum_match[0].spectrum_id] = {
-                    "score": spectrum_match[1]
-                }
-            best_matches[f"spectrum-{i}"] = spectrum_best_matches
-        return best_matches
+        all_scores = [
+            (spectrum, score) for spectrum, score in all_scores if not np.isnan(score)
+        ]
+        spectrum_best_scores = all_scores[:n_best_spectra]
+        spectrum_best_matches = {}
+        for spectrum_match in spectrum_best_scores:
+            spectrum_best_matches[spectrum_match[0].spectrum_id] = {
+                "score": spectrum_match[1]
+            }
+        return spectrum_best_matches
 
     def _load_embeddings(self, spectrum_ids: List[List[str]]) -> List[Embedding]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
