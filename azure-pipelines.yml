@@ -39,7 +39,7 @@ steps:
     conda env create --quiet --file requirements/environment.frozen.yaml
     conda env update --quiet --file requirements/environment_test.yaml
   displayName: Create Anaconda environment
-  #condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
+  condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
 
 - bash: |
    source activate omigami

@@ -25,6 +25,7 @@ def create_parameters(overwrite_all_spectra: bool = True):
     return parameters
 
 
+@pytest.fixture
 def empty_database(parameters: SaveRawSpectraParameters, local_gnps_small_json):
     spectra = parameters.data_gtw.load_spectrum(local_gnps_small_json)
     parameters.spectrum_dgw.delete_spectra(
