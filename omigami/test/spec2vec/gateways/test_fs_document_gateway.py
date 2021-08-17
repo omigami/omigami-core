@@ -55,9 +55,7 @@ def test_read_documents_iter(saved_documents, documents_directory):
     data_gtw = Spec2VecFSDataGateway()
     document_counter = 0
 
-    document_paths = []
-    for file in document_file_names:
-        document_paths.append(f"{documents_directory}/{file}")
+    document_paths = [f"{documents_directory}/{file}" for file in document_file_names]
 
     for doc in data_gtw.read_documents_iter(document_paths):
         document_counter += 1

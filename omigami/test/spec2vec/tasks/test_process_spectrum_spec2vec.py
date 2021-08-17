@@ -6,7 +6,6 @@ from prefect import Flow
 
 from omigami.gateways import RedisSpectrumDataGateway
 
-
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.fs_document_gateway import (
     Spec2VecFSDataGateway,
@@ -111,3 +110,13 @@ def test_get_chunk_count(saved_documents, documents_directory):
     count = process_spectrum._get_chunk_count(documents_directory)
 
     assert count == len(saved_documents[0])
+
+
+def test_clean_data(common_cleaned_data):
+    dc = SpectrumProcessor()
+
+    cleaned_data = dc.create_documents(common_cleaned_data)
+
+    assert isinstance(cleaned_data[0], SpectrumDocumentData)
+    assert cleaned_data[0].spectrum_id
+    assert cleaned_data[0].document

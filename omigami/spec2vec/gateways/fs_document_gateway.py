@@ -38,7 +38,7 @@ class Spec2VecFSDataGateway(FSDataGateway):
 
 
 class FileSystemDocumentIterator:
-    """An iterator that yields Redis object one by one to the word2vec model for training.
+    """An iterator that yields document objects of files one by one to the word2vec model for training.
     Reading chunks is not supported by gensim word2vec at the moment.
     """
 
