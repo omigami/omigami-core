@@ -1,4 +1,5 @@
 from ms2deepscore.models import SiameseModel
+
 from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 
 

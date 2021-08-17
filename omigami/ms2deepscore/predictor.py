@@ -63,7 +63,7 @@ class MS2DeepScorePredictor(Predictor):
                     "Precursor_MZ": float,
                 },
             ],
-            "parameters": {"n_best": int, "include_metadata": List[str]}
+            "parameters": {"n_best_spectra": int, "include_metadata": List[str]}
         }
 
         Returns
@@ -90,10 +90,16 @@ class MS2DeepScorePredictor(Predictor):
         ]
 
         log.info("Calculating best matches.")
-        best_matches = self._calculate_best_matches(
-            reference_embeddings,
-            query_embeddings,
-        )
+
+        best_matches_data = {
+            "all_references": reference_embeddings,
+            "queries": query_embeddings,
+        }
+
+        if parameters.get("n_best_spectra"):
+            best_matches_data["n_best_spectra"] = parameters.get("n_best_spectra")
+
+        best_matches = self._calculate_best_matches(**best_matches_data)
 
         if parameters.get("include_metadata", None):
             best_matches = self._add_metadata(
