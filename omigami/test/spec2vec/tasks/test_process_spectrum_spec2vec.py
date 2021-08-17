@@ -9,7 +9,7 @@ from omigami.gateways import RedisSpectrumDataGateway
 
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.fs_document_gateway import (
-    Spec2VecFSDocumentDataGateway,
+    Spec2VecFSDataGateway,
 )
 
 from omigami.spec2vec.tasks import ProcessSpectrumParameters
@@ -22,7 +22,7 @@ from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
 def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, documents_directory):
     spectrum_gtw = MagicMock(spec=RedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = common_cleaned_data
-    data_gtw = MagicMock(spec=Spec2VecFSDocumentDataGateway)
+    data_gtw = MagicMock(spec=Spec2VecFSDataGateway)
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_gtw,
         documents_save_directory=documents_directory,
@@ -39,7 +39,7 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, documents_dir
     assert res.is_successful()
     assert data == f"{documents_directory}/documents0.pkl"
     spectrum_gtw.list_existing_spectra.assert_not_called()
-    data_gtw.serialize_spectrum_documents.assert_called_once()
+    data_gtw.serialize_to_file.assert_called_once()
 
 
 @pytest.mark.skipif(
@@ -58,7 +58,7 @@ def test_process_spectrum(
     )
 
     os.mkdir(documents_directory)
-    data_gtw = Spec2VecFSDocumentDataGateway()
+    data_gtw = Spec2VecFSDataGateway()
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(data_gtw, parameters)(spectrum_ids)
 
@@ -76,7 +76,7 @@ def test_process_spectrum_map(
     spectrum_ids, spectra_stored, mock_default_config, documents_directory
 ):
     spectrum_gtw = RedisSpectrumDataGateway()
-    data_gtw = Spec2VecFSDocumentDataGateway()
+    data_gtw = Spec2VecFSDataGateway()
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_gtw,
         documents_save_directory=documents_directory,
@@ -110,8 +110,8 @@ def test_clean_data(common_cleaned_data):
     assert cleaned_data[0].spectrum.get("spectrum_id")
 
 
-def test_get_chunk_count(save_documents, documents_directory):
-    data_gtw = Spec2VecFSDocumentDataGateway()
+def test_get_chunk_count(saved_documents, documents_directory):
+    data_gtw = Spec2VecFSDataGateway()
     redis_gateway = RedisSpectrumDataGateway()
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=redis_gateway,

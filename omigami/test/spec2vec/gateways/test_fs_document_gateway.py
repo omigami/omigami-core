@@ -1,5 +1,5 @@
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways import Spec2VecFSDocumentDataGateway
+from omigami.spec2vec.gateways import Spec2VecFSDataGateway
 import os
 
 
@@ -8,7 +8,7 @@ def test_write_spectrum_documents(documents_directory, cleaned_data):
         SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
     ]
 
-    dgw = Spec2VecFSDocumentDataGateway()
+    dgw = Spec2VecFSDataGateway()
 
     if not os.path.exists(documents_directory):
         os.mkdir(documents_directory)
@@ -21,9 +21,9 @@ def test_write_spectrum_documents(documents_directory, cleaned_data):
     assert len(os.listdir(documents_directory)) == 1
 
 
-def test_list_missing_documents(cleaned_data, save_documents, documents_directory):
+def test_list_missing_documents(cleaned_data, saved_documents, documents_directory):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    data_gtw = Spec2VecFSDocumentDataGateway()
+    data_gtw = Spec2VecFSDataGateway()
 
     document_file_names = os.listdir(documents_directory)
 
@@ -38,10 +38,10 @@ def test_list_missing_documents(cleaned_data, save_documents, documents_director
 
 
 def test_list_missing_documents_none_missing(
-    cleaned_data, save_documents, documents_directory
+    cleaned_data, saved_documents, documents_directory
 ):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    data_gtw = Spec2VecFSDocumentDataGateway()
+    data_gtw = Spec2VecFSDataGateway()
 
     documents = data_gtw.list_missing_documents(
         spectrum_ids_stored, documents_directory

@@ -1,3 +1,4 @@
+import itertools
 import os
 from unittest.mock import Mock
 
@@ -5,8 +6,7 @@ import gensim
 from pytest_redis import factories
 
 from omigami.gateways import RedisSpectrumDataGateway
-from omigami.gateways.fs_data_gateway import FSDataGateway
-from omigami.spec2vec.gateways import Spec2VecFSDocumentDataGateway
+from omigami.spec2vec.gateways import Spec2VecFSDataGateway
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
@@ -29,8 +29,8 @@ def test_spec2vec_settings():
     assert settings["iter"] == epochs
 
 
-def test_word2vec_training_with_iterator(save_documents, documents_directory):
-    dgw = Spec2VecFSDocumentDataGateway()
+def test_word2vec_training_with_iterator(saved_documents, documents_directory):
+    dgw = Spec2VecFSDataGateway()
     train_model_params = TrainModelParameters(2, 10)
     train_model = TrainModel(dgw, train_model_params)
     callbacks, settings = train_model._create_spec2vec_settings(epochs=2, window=10)
@@ -41,8 +41,8 @@ def test_word2vec_training_with_iterator(save_documents, documents_directory):
     assert len(documents) == model.corpus_count
 
 
-def test_load_all_documents(save_documents, documents_directory):
-    gtw = Spec2VecFSDocumentDataGateway()
+def test_load_all_documents(saved_documents, documents_directory):
+    gtw = Spec2VecFSDataGateway()
     train_model_params = TrainModelParameters(epochs=50, window=10)
     train_model = TrainModel(gtw, train_model_params)
 
@@ -51,5 +51,4 @@ def test_load_all_documents(save_documents, documents_directory):
         f"{documents_directory}/{doc}" for doc in document_file_names
     ]
     documents = train_model._load_all_document_files(documents_directory)
-
-    assert len(documents) == 100
+    assert len(documents) == len(list(itertools.chain.from_iterable(saved_documents)))

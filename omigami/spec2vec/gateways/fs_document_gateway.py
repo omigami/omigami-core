@@ -7,10 +7,9 @@ from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 
 
-class Spec2VecFSDocumentDataGateway(FSDataGateway):
+class Spec2VecFSDataGateway(FSDataGateway):
     """Data gateway for storage."""
 
-    # TODO: Add new Serialize function that automatically saves
     def list_missing_documents(
         self, spectrum_ids: List[str], documents_directory: str
     ) -> List[str]:

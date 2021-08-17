@@ -3,7 +3,7 @@ from typing import Union
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways import RedisSpectrumDataGateway
-from omigami.spec2vec.gateways import Spec2VecFSDocumentDataGateway
+from omigami.spec2vec.gateways import Spec2VecFSDataGateway
 
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
@@ -34,7 +34,7 @@ from prefect import Flow, unmapped
 class TrainingFlowParameters:
     def __init__(
         self,
-        data_gtw: Spec2VecFSDocumentDataGateway,
+        data_gtw: Spec2VecFSDataGateway,
         spectrum_dgw: RedisSpectrumDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,

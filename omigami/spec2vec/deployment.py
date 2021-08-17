@@ -15,7 +15,7 @@ from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.spec2vec.gateways import Spec2VecFSDocumentDataGateway
+from omigami.spec2vec.gateways import Spec2VecFSDataGateway
 
 from omigami.spectrum_cleaner import SpectrumCleaner
 
@@ -39,7 +39,7 @@ class Spec2VecDeployer(Deployer):
         self._n_decimals = n_decimals
         self._project_name = project_name
 
-        self._data_gtw = Spec2VecFSDocumentDataGateway()
+        self._data_gtw = Spec2VecFSDataGateway()
         self._spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
         self._spectrum_cleaner = SpectrumCleaner()
 

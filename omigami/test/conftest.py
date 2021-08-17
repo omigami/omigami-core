@@ -24,7 +24,7 @@ from pytest_redis import factories
 
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.fs_document_gateway import (
-    Spec2VecFSDocumentDataGateway,
+    Spec2VecFSDataGateway,
 )
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
@@ -240,10 +240,10 @@ def redis_full_setup(
 @pytest.fixture()
 def saved_documents(documents_directory, cleaned_data):
 
-    # spectrum_document_data = [
-    #    SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
-    # ]
-    spectrum_document_data = [doc.document for doc in cleaned_data]
+    spectrum_document_data = [
+        SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
+    ]
+    spectrum_document_data = [doc.document for doc in spectrum_document_data]
 
     chunk_size = 10
 
@@ -251,15 +251,13 @@ def saved_documents(documents_directory, cleaned_data):
         spectrum_document_data[i : i + chunk_size]
         for i in range(0, len(spectrum_document_data), chunk_size)
     ]
-    dgw = Spec2VecFSDocumentDataGateway()
+    dgw = Spec2VecFSDataGateway()
 
     if not os.path.exists(documents_directory):
         os.mkdir(documents_directory)
 
     for i, documents in enumerate(spectrum_document_data):
-        dgw.serialize_spectrum_documents(
-            f"{documents_directory}/test{i}.pkl", documents
-        )
+        dgw.serialize_to_file(f"{documents_directory}/test{i}.pkl", documents)
 
     return spectrum_document_data
 

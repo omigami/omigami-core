@@ -7,7 +7,7 @@ from prefect import Task
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.fs_document_gateway import (
-    Spec2VecFSDocumentDataGateway,
+    Spec2VecFSDataGateway,
 )
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
@@ -27,7 +27,7 @@ class ProcessSpectrumParameters:
 class ProcessSpectrum(Task):
     def __init__(
         self,
-        data_gtw: Spec2VecFSDocumentDataGateway,
+        data_gtw: Spec2VecFSDataGateway,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):

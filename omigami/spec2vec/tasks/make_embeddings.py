@@ -7,7 +7,7 @@ from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
     RedisSpectrumDataGateway,
 )
-from omigami.spec2vec.gateways import Spec2VecFSDocumentDataGateway
+from omigami.spec2vec.gateways import Spec2VecFSDataGateway
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
@@ -26,7 +26,7 @@ class MakeEmbeddings(Task):
     def __init__(
         self,
         redis_spectrum_dgw: RedisSpectrumDataGateway,
-        _fs_gtw: Spec2VecFSDocumentDataGateway,
+        _fs_gtw: Spec2VecFSDataGateway,
         parameters: MakeEmbeddingsParameters,
         **kwargs,
     ):
