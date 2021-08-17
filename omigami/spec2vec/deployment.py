@@ -62,7 +62,7 @@ class Spec2VecDeployer(Deployer):
         client.create_project(self._project_name)
 
         model_output_dir = MODEL_DIRECTORIES[self._environment]
-        document_output_dir = DOCUMENT_DIRECTORIES[self._environment]
+        document_output_dir = DOCUMENT_DIRECTORIES[self._environment][self._ion_mode]
         dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(
             date=datetime.today()
         )
