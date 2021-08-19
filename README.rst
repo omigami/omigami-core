@@ -69,7 +69,20 @@ To register a flow manually to Prefect you need to follow these steps:
     export AWS_PROFILE=<your data revenue profile>
     export PYTHONPATH=$(pwd)
     prefect backend server
-    python omigami/<tool_name>/cli.py register-training-flow -i [image] [options]
+
+For Spec2Vec:
+::
+
+    pytest omigami/test/spec2vec/test_deployment.py
+
+For MS2DeepScore:
+::
+
+    pytest omigami/test/ms2deepscore/test_ms2deepscore_deployment.py
+
+If you want to run the deployment tests in PyCharm,
+make sure you have the `AWS_PROFILE` environment variable set in your test configuration
+and that you set the Prefect backend to server.
 
 If the Prefect Server requires authentication, you can use the arguments to set it up:
 ::
