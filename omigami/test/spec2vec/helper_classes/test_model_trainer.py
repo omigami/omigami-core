@@ -3,14 +3,17 @@ import os
 from unittest.mock import Mock
 
 import gensim
+from drfs.filesystems import get_fs
 from pytest_redis import factories
 
 from omigami.gateways import RedisSpectrumDataGateway
+from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.gateways import Spec2VecFSDataGateway
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
 from omigami.spec2vec.tasks.train_model import TrainModel, TrainModelParameters
+import pytest
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -29,12 +32,22 @@ def test_spec2vec_settings():
     assert settings["iter"] == epochs
 
 
-def test_word2vec_training_with_iterator(saved_documents, documents_directory):
-    dgw = Spec2VecFSDataGateway()
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_word2vec_training_with_iterator(saved_documents, documents_directory, s3_mock):
+    redis_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
+    dgw = Spec2VecFSDataGateway(redis_dgw)
+
+    fs = get_fs(documents_directory)
+    fs.makedirs(documents_directory)
+
     train_model_params = TrainModelParameters(2, 10)
     train_model = TrainModel(dgw, train_model_params)
     callbacks, settings = train_model._create_spec2vec_settings(epochs=2, window=10)
-    documents = dgw.read_from_file(f"{documents_directory}/test0.pkl")
+
+    documents = dgw.read_documents_iter(fs.ls(documents_directory))
 
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
 

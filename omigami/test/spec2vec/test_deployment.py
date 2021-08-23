@@ -23,7 +23,7 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     deployer = Spec2VecDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.5ba4952",
+        image="drtools/prefect:omigami-SNAPSHOT.57a155f",
         iterations=15,
         window=500,
         intensity_weighting_power=0.5,

@@ -21,6 +21,7 @@ from omigami.spec2vec.flows.training_flow import (
 from omigami.spec2vec.gateways import Spec2VecFSDataGateway
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
+from omigami.spec2vec.config import PROJECT_NAME
 
 os.chdir(Path(__file__).parents[4])
 
@@ -91,14 +92,21 @@ def test_training_flow(flow_config):
     reason="It can only be run if the Redis is up",
 )
 def test_run_training_flow(
-    tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
+    tmpdir,
+    flow_config,
+    mock_default_config,
+    clean_chunk_files,
+    redis_full_setup,
+    documents_directory,
+    s3_mock,
 ):
     # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
+    ion_mode = "positive"
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
-    data_gtw = Spec2VecFSDataGateway()
-    spectrum_dgw = RedisSpectrumDataGateway(project="spec2vec")
+    spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
+    data_gtw = Spec2VecFSDataGateway(spectrum_dgw)
     spectrum_cleaner = SpectrumCleaner()
     flow_params = TrainingFlowParameters(
         data_gtw=data_gtw,
@@ -109,7 +117,7 @@ def test_run_training_flow(
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
-        ion_mode="positive",
+        ion_mode=ion_mode,
         n_decimals=1,
         overwrite_model=True,
         overwrite_all_spectra=True,
@@ -117,7 +125,7 @@ def test_run_training_flow(
         window=200,
         project_name="test",
         model_output_dir=f"{tmpdir}/model-output",
-        documents_output_dir=f"{tmpdir}/documents",
+        documents_output_dir=documents_directory,
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,

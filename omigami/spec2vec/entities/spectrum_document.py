@@ -17,3 +17,15 @@ class SpectrumDocumentData:
     @property
     def document(self) -> Optional[SpectrumDocument]:
         return self._document
+
+    @property
+    def n_decimals(self):
+        return self._document.n_decimals
+
+    @property
+    def weights(self):
+        return self._document.weights
+
+    @property
+    def words(self):
+        return self._document.words

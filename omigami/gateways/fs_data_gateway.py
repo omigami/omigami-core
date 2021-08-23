@@ -237,3 +237,21 @@ class FSDataGateway(DataGateway):
 
     def save(self, obj, output_path: str):
         pass
+
+    def listdir(self, path):
+        if self.fs is None:
+            self.fs = get_fs(path)
+
+        return self.fs.ls(path)
+
+    def makedir(self, path):
+        if self.fs is None:
+            self.fs = get_fs(path)
+
+        self.fs.makedirs(path)
+
+    def exists(self, path) -> bool:
+        if self.fs is None:
+            self.fs = get_fs(path)
+
+        return self.fs.exists(path)

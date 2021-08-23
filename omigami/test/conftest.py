@@ -19,6 +19,7 @@ from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
+    PROJECT_NAME,
 )
 from pytest_redis import factories
 
@@ -96,6 +97,7 @@ def documents_data():
     path = str(ASSETS_DIR / "SMALL_GNPS_as_documents.pickle")
     with open(path, "rb") as handle:
         documents_data = pickle.load(handle)
+
     return documents_data
 
 
@@ -238,33 +240,35 @@ def redis_full_setup(
 
 
 @pytest.fixture()
-def saved_documents(documents_directory, cleaned_data):
+def saved_documents(documents_directory, cleaned_data, s3_mock):
 
     spectrum_document_data = [
         SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
     ]
     spectrum_document_data = [doc.document for doc in spectrum_document_data]
-
     chunk_size = 10
 
     spectrum_document_data = [
         spectrum_document_data[i : i + chunk_size]
         for i in range(0, len(spectrum_document_data), chunk_size)
     ]
-    dgw = Spec2VecFSDataGateway()
 
+    redis_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
+    dgw = Spec2VecFSDataGateway(redis_dgw)
+
+    fs = get_fs(documents_directory)
     if not os.path.exists(documents_directory):
-        os.mkdir(documents_directory)
+        fs.makedirs(documents_directory)
 
     for i, documents in enumerate(spectrum_document_data):
-        dgw.serialize_to_file(f"{documents_directory}/test{i}.pkl", documents)
+        dgw.serialize_documents(f"{documents_directory}/test{i}.pickle", documents)
 
     return spectrum_document_data
 
 
 @pytest.fixture()
 def documents_directory(tmpdir):
-    return f"{tmpdir}/documents"
+    return "s3://test-bucket/path-to-wtv/documents"
 
 
 @pytest.fixture()

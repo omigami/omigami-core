@@ -2,9 +2,11 @@ import os
 from unittest.mock import MagicMock
 
 import pytest
+from drfs.filesystems import get_fs
 from prefect import Flow
 
 from omigami.gateways import RedisSpectrumDataGateway
+from omigami.spec2vec.config import PROJECT_NAME
 
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.fs_document_gateway import (
@@ -36,9 +38,9 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, documents_dir
     data = res.result[process_task].result
 
     assert res.is_successful()
-    assert data == f"{documents_directory}/documents0.pkl"
+    assert data == f"{documents_directory}/documents0.pickle"
     spectrum_gtw.list_existing_spectra.assert_not_called()
-    data_gtw.serialize_to_file.assert_called_once()
+    data_gtw.serialize_documents.assert_called_once()
 
 
 @pytest.mark.skipif(
@@ -46,9 +48,21 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data, documents_dir
     reason="It can only be run if the Redis is up",
 )
 def test_process_spectrum(
-    spectrum_ids, spectra_stored, mock_default_config, documents_directory
+    spectrum_ids, spectra_stored, mock_default_config, documents_directory, s3_mock
 ):
-    spectrum_gtw = RedisSpectrumDataGateway()
+    spectrum_gtw = RedisSpectrumDataGateway(PROJECT_NAME)
+    data_gtw = Spec2VecFSDataGateway(spectrum_gtw)
+
+    spectrum_gtw.delete_spectra(spectrum_ids[50:])
+    spectrum_ids = spectrum_ids[:50]
+
+    documents_directory = f"{documents_directory}/process_spectrum"
+    fs = get_fs(documents_directory)
+    fs.makedirs(documents_directory)
+
+    for doc_id in spectrum_ids[:50]:
+        spectrum_gtw.remove_document_id(doc_id, data_gtw._ion_mode)
+
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_gtw,
         documents_save_directory=documents_directory,
@@ -56,15 +70,13 @@ def test_process_spectrum(
         overwrite_all_spectra=False,
     )
 
-    os.mkdir(documents_directory)
-    data_gtw = Spec2VecFSDataGateway()
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(data_gtw, parameters)(spectrum_ids)
 
     res = test_flow.run()
     data = res.result[process_task].result
 
-    assert data == f"{documents_directory}/documents0.pkl"
+    assert data == f"{documents_directory}/documents0.pickle"
 
 
 @pytest.mark.skipif(
@@ -74,8 +86,8 @@ def test_process_spectrum(
 def test_process_spectrum_map(
     spectrum_ids, spectra_stored, mock_default_config, documents_directory
 ):
-    spectrum_gtw = RedisSpectrumDataGateway()
-    data_gtw = Spec2VecFSDataGateway()
+    spectrum_gtw = RedisSpectrumDataGateway(PROJECT_NAME)
+    data_gtw = Spec2VecFSDataGateway(spectrum_gtw)
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_gtw,
         documents_save_directory=documents_directory,
@@ -97,8 +109,9 @@ def test_process_spectrum_map(
 
 
 def test_get_chunk_count(saved_documents, documents_directory):
-    data_gtw = Spec2VecFSDataGateway()
-    redis_gateway = RedisSpectrumDataGateway()
+
+    redis_gateway = RedisSpectrumDataGateway(PROJECT_NAME)
+    data_gtw = Spec2VecFSDataGateway(redis_gateway)
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=redis_gateway,
         documents_save_directory=documents_directory,

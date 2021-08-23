@@ -39,8 +39,10 @@ class Spec2VecDeployer(Deployer):
         self._n_decimals = n_decimals
         self._project_name = project_name
 
-        self._data_gtw = Spec2VecFSDataGateway()
         self._spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
+        self._data_gtw = Spec2VecFSDataGateway(
+            redis_dgw=self._spectrum_dgw, ion_mode=self._ion_mode
+        )
         self._spectrum_cleaner = SpectrumCleaner()
 
     def deploy_training_flow(

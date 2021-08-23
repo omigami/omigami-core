@@ -54,12 +54,15 @@ class ProcessSpectrum(Task):
                 )
 
                 chunk_count = self._get_chunk_count(self._documents_save_directory)
+                spectrum_documents = [doc.document for doc in spectrum_documents]
 
                 document_save_directory = (
-                    f"{self._documents_save_directory}/documents{chunk_count}.pkl"
+                    f"{self._documents_save_directory}/documents{chunk_count}.pickle"
                 )
-                document_data = [doc.document for doc in spectrum_documents]
-                self._data_gtw.serialize_to_file(document_save_directory, document_data)
+
+                self._data_gtw.serialize_documents(
+                    document_save_directory, spectrum_documents
+                )
 
                 return document_save_directory
 
@@ -73,9 +76,7 @@ class ProcessSpectrum(Task):
         if self._overwrite_all_spectra:
             spectrum_ids_to_add = spectrum_ids
         else:
-            spectrum_ids_to_add = self._data_gtw.list_missing_documents(
-                spectrum_ids, self._documents_save_directory
-            )
+            spectrum_ids_to_add = self._data_gtw.list_missing_documents(spectrum_ids)
             self.logger.info(
                 f"{len(spectrum_ids_to_add)} out of {len(spectrum_ids)} spectra are "
                 f"new and will be processed. "
@@ -97,6 +98,7 @@ class ProcessSpectrum(Task):
 
     def _get_chunk_count(self, documents_save_directory) -> int:
 
-        os.makedirs(documents_save_directory, exist_ok=True)
+        if not self._data_gtw.exists(documents_save_directory):
+            self._data_gtw.makedir(documents_save_directory)
 
-        return len(os.listdir(self._documents_save_directory))
+        return len(self._data_gtw.listdir(self._documents_save_directory))

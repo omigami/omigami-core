@@ -12,13 +12,13 @@ from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
+    DOCUMENT_HASHES,
 )
 from omigami.spec2vec.entities.embedding import Embedding as Spec2VecEmbedding
 
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
 # which was defined during deployment by the 'dataset_name' param
-from omigami.spec2vec.gateways import Spec2VecFSDataGateway
 
 REDIS_HOST = str(os.getenv("REDIS_HOST"))
 REDIS_DB = str(os.getenv("REDIS_DB"))
@@ -138,7 +138,9 @@ class RedisSpectrumDataGateway:
     ):
         """Write embeddings data on the redis database."""
         self._init_client()
-        embeddings_key = self._create_embeddings_key(ion_mode=ion_mode, run_id=run_id)
+        embeddings_key = self._format_redis_key(
+            hashes=EMBEDDING_HASHES, ion_mode=ion_mode, run_id=run_id
+        )
         if logger:
             logger.debug(
                 f"Saving {len(embeddings)} embeddings to the client {self.client}"
@@ -160,8 +162,40 @@ class RedisSpectrumDataGateway:
         Return a list of Embedding objects."""
         self._init_client()
         return self._read_hashes(
-            self._create_embeddings_key(ion_mode=ion_mode, run_id=run_id), spectrum_ids
+            self._format_redis_key(
+                hashes=EMBEDDING_HASHES, ion_mode=ion_mode, run_id=run_id
+            ),
+            spectrum_ids,
         )
 
-    def _create_embeddings_key(self, ion_mode: str, run_id: str):
-        return f"{EMBEDDING_HASHES}_{self.project}_{ion_mode}_{run_id}"
+    def list_document_ids(self, ion_mode: str):
+        self._init_client()
+
+        list_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
+
+        return self.client.smembers(name=list_name)
+
+    def write_document_id(self, document_id: str, ion_mode: str):
+        self._init_client()
+
+        list_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
+
+        self.client.sadd(
+            list_name,
+            document_id,
+        )
+
+    def remove_document_id(self, document_id, ion_mode: str):
+
+        self._init_client()
+
+        list_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
+
+        self.client.srem(list_name, document_id)
+
+    def _format_redis_key(self, hashes: str, ion_mode: str, run_id: str = None):
+
+        if not run_id:
+            return f"{hashes}_{self.project}_{ion_mode}"
+
+        return f"{hashes}_{self.project}_{ion_mode}_{run_id}"
