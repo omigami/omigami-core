@@ -48,13 +48,19 @@ class TrainModel(Task):
 
     def run(self, documents_directory: List[str]):
 
-        documents = self._data_dgw.read_documents_iter(documents_directory)
+        # TODO: Delete
+        self.logger.info(f"Loading examples from {documents_directory}")
+        self.logger.info(
+            f"File exists in train model flow {self._data_dgw.exists(documents_directory[0])}"
+        )
+        documents = Spec2VecFSDataGateway.read_documents_iter(documents_directory)
 
         self.logger.info("Started training the Word2Vec model.")
         callbacks, settings = self._create_spec2vec_settings(self._window, self._epochs)
         model = gensim.models.Word2Vec(
             sentences=documents, callbacks=callbacks, **settings
         )
+        self.logger.info(f"Trained model on {len(documents)} examples.")
         self.logger.info(f"Finished training the model.")
 
         return model

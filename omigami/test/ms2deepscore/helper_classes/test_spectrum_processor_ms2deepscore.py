@@ -50,6 +50,7 @@ def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processo
     assert filtered_spectrum is None
 
 
+@pytest.mark.skip("Uses internet connection.")
 def test_run_missing_smiles_inchi_against_pubchem(
     common_cleaned_data, spectrum_processor
 ):

@@ -2,8 +2,10 @@ from typing import Union
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.gateways import RedisSpectrumDataGateway
 from omigami.spec2vec.gateways import Spec2VecFSDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
@@ -34,8 +36,8 @@ from prefect import Flow, unmapped
 class TrainingFlowParameters:
     def __init__(
         self,
+        spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
         data_gtw: Spec2VecFSDataGateway,
-        spectrum_dgw: RedisSpectrumDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
@@ -48,7 +50,7 @@ class TrainingFlowParameters:
         window: int,
         project_name: str,
         model_output_dir: str,
-        documents_output_dir: str,
+        documents_save_directory: str,
         mlflow_server: str,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
@@ -60,7 +62,6 @@ class TrainingFlowParameters:
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
-
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
@@ -75,7 +76,8 @@ class TrainingFlowParameters:
         )
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
-            documents_output_dir,
+            documents_save_directory,
+            ion_mode,
             n_decimals,
             overwrite_all_spectra,
         )

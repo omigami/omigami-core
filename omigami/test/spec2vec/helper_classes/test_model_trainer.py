@@ -37,8 +37,7 @@ def test_spec2vec_settings():
     reason="It can only be run if the Redis is up",
 )
 def test_word2vec_training_with_iterator(saved_documents, documents_directory, s3_mock):
-    redis_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
-    dgw = Spec2VecFSDataGateway(redis_dgw)
+    dgw = Spec2VecFSDataGateway()
 
     fs = get_fs(documents_directory)
     fs.makedirs(documents_directory)

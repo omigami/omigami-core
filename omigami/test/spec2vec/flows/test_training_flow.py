@@ -19,6 +19,9 @@ from omigami.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
 )
 from omigami.spec2vec.gateways import Spec2VecFSDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
 from omigami.spec2vec.config import PROJECT_NAME
@@ -38,7 +41,7 @@ def flow_config():
 
 
 def test_training_flow(flow_config):
-    mock_spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
+    mock_spectrum_dgw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
     mock_data_gtw = MagicMock(spec=FSDataGateway)
     mock_cleaner = MagicMock(spec=SpectrumCleaner)
     expected_tasks = {
@@ -51,8 +54,8 @@ def test_training_flow(flow_config):
         "TrainModel",
     }
     flow_params = TrainingFlowParameters(
-        data_gtw=mock_data_gtw,
         spectrum_dgw=mock_spectrum_dgw,
+        data_gtw=mock_data_gtw,
         spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
         output_dir="datasets",
@@ -66,7 +69,7 @@ def test_training_flow(flow_config):
         window=500,
         project_name="test",
         model_output_dir="model-output",
-        documents_output_dir=f"documents",
+        documents_save_directory="documents",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
@@ -97,20 +100,18 @@ def test_run_training_flow(
     mock_default_config,
     clean_chunk_files,
     redis_full_setup,
-    documents_directory,
-    s3_mock,
 ):
     # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
     ion_mode = "positive"
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
-    spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
-    data_gtw = Spec2VecFSDataGateway(spectrum_dgw)
+    spectrum_dgw = Spec2VecRedisSpectrumDataGateway(project=PROJECT_NAME)
+    data_gtw = Spec2VecFSDataGateway()
     spectrum_cleaner = SpectrumCleaner()
     flow_params = TrainingFlowParameters(
-        data_gtw=data_gtw,
         spectrum_dgw=spectrum_dgw,
+        data_gtw=data_gtw,
         spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=ASSETS_DIR.parent,
@@ -125,7 +126,7 @@ def test_run_training_flow(
         window=200,
         project_name="test",
         model_output_dir=f"{tmpdir}/model-output",
-        documents_output_dir=documents_directory,
+        documents_save_directory=f"{tmpdir}/documents",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,

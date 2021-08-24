@@ -244,7 +244,7 @@ class FSDataGateway(DataGateway):
 
         return self.fs.ls(path)
 
-    def makedir(self, path):
+    def makedirs(self, path):
         if self.fs is None:
             self.fs = get_fs(path)
 

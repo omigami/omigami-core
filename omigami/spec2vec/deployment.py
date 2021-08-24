@@ -5,7 +5,6 @@ from omigami.config import (
     DATASET_IDS,
 )
 from omigami.deployment import Deployer
-from omigami.gateways import RedisSpectrumDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
     PROJECT_NAME,
@@ -16,6 +15,9 @@ from omigami.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
 )
 from omigami.spec2vec.gateways import Spec2VecFSDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 
 from omigami.spectrum_cleaner import SpectrumCleaner
 
@@ -39,10 +41,8 @@ class Spec2VecDeployer(Deployer):
         self._n_decimals = n_decimals
         self._project_name = project_name
 
-        self._spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
-        self._data_gtw = Spec2VecFSDataGateway(
-            redis_dgw=self._spectrum_dgw, ion_mode=self._ion_mode
-        )
+        self._spectrum_dgw = Spec2VecRedisSpectrumDataGateway(project=PROJECT_NAME)
+        self._data_gtw = Spec2VecFSDataGateway()
         self._spectrum_cleaner = SpectrumCleaner()
 
     def deploy_training_flow(
@@ -86,7 +86,7 @@ class Spec2VecDeployer(Deployer):
             window=self._window,
             overwrite_model=self._overwrite_model,
             project_name=self._project_name,
-            documents_output_dir=document_output_dir,
+            documents_save_directory=document_output_dir,
             intensity_weighting_power=self._intensity_weighting_power,
             allowed_missing_percentage=self._allowed_missing_percentage,
             model_output_dir=model_output_dir,

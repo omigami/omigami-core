@@ -5,9 +5,11 @@ from gensim.models import Word2Vec
 from omigami.config import IonModes
 from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
-    RedisSpectrumDataGateway,
 )
 from omigami.spec2vec.gateways import Spec2VecFSDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
@@ -25,13 +27,13 @@ class MakeEmbeddingsParameters:
 class MakeEmbeddings(Task):
     def __init__(
         self,
-        redis_spectrum_dgw: RedisSpectrumDataGateway,
-        _fs_gtw: Spec2VecFSDataGateway,
+        redis_spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
+        fs_gtw: Spec2VecFSDataGateway,
         parameters: MakeEmbeddingsParameters,
         **kwargs,
     ):
         self._redis_spectrum_dgw = redis_spectrum_dgw
-        self._fs_gtw = _fs_gtw
+        self._fs_gtw = fs_gtw
         self._embedding_maker = EmbeddingMaker(n_decimals=parameters.n_decimals)
         self._ion_mode = parameters.ion_mode
         self._intensity_weighting_power = parameters.intensity_weighting_power
@@ -47,6 +49,10 @@ class MakeEmbeddings(Task):
         document_path: str = None,
     ) -> Set[str]:
 
+        # TODO: Delete
+        self.logger.info(f"Documents located at {document_path}")
+        self.logger.info(f"File exists {self._fs_gtw.exists(document_path)}.")
+        self.logger.info(f"FS: {self._fs_gtw.fs}")
         documents = self._fs_gtw.read_from_file(document_path)
 
         self.logger.info(f"Loaded {len(documents)} documents from filesystem.")

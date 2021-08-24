@@ -38,6 +38,7 @@ class RedisSpectrumDataGateway:
 
     def __init__(self, project: str = None):
         # We initialize it with None so we can pickle this gateway when deploying the flow
+
         self.client = None
         self.project = project
 
@@ -167,31 +168,6 @@ class RedisSpectrumDataGateway:
             ),
             spectrum_ids,
         )
-
-    def list_document_ids(self, ion_mode: str):
-        self._init_client()
-
-        list_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
-
-        return self.client.smembers(name=list_name)
-
-    def write_document_id(self, document_id: str, ion_mode: str):
-        self._init_client()
-
-        list_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
-
-        self.client.sadd(
-            list_name,
-            document_id,
-        )
-
-    def remove_document_id(self, document_id, ion_mode: str):
-
-        self._init_client()
-
-        list_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
-
-        self.client.srem(list_name, document_id)
 
     def _format_redis_key(self, hashes: str, ion_mode: str, run_id: str = None):
 

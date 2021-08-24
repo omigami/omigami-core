@@ -27,6 +27,7 @@ from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.fs_document_gateway import (
     Spec2VecFSDataGateway,
 )
+from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -253,22 +254,21 @@ def saved_documents(documents_directory, cleaned_data, s3_mock):
         for i in range(0, len(spectrum_document_data), chunk_size)
     ]
 
-    redis_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
-    dgw = Spec2VecFSDataGateway(redis_dgw)
+    dgw = Spec2VecGatewayController(ion_mode="positive")
 
     fs = get_fs(documents_directory)
     if not os.path.exists(documents_directory):
         fs.makedirs(documents_directory)
 
     for i, documents in enumerate(spectrum_document_data):
-        dgw.serialize_documents(f"{documents_directory}/test{i}.pickle", documents)
+        dgw.write_documents(f"{documents_directory}/test{i}.pickle", documents)
 
     return spectrum_document_data
 
 
 @pytest.fixture()
-def documents_directory(tmpdir):
-    return "s3://test-bucket/path-to-wtv/documents"
+def documents_directory():
+    return "s3://test-bucket/documents"
 
 
 @pytest.fixture()
