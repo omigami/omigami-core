@@ -13,6 +13,7 @@ from omigami.gateways import DataGateway
 
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways import Spec2VecFSDataGateway
+from omigami.spec2vec.gateways.fs_document_gateway import FileSystemDocumentIterator
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
@@ -53,7 +54,9 @@ class TrainModel(Task):
         self.logger.info(
             f"File exists in train model flow {self._data_dgw.exists(documents_directory[0])}"
         )
-        documents = Spec2VecFSDataGateway.read_documents_iter(documents_directory)
+        documents = FileSystemDocumentIterator(
+            fs_dgw=self._data_dgw, document_paths=documents_directory
+        )
 
         self.logger.info("Started training the Word2Vec model.")
         callbacks, settings = self._create_spec2vec_settings(self._window, self._epochs)

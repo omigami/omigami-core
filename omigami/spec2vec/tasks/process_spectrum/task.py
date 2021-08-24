@@ -67,7 +67,9 @@ class ProcessSpectrum(Task):
 
                 self.logger.info(f"Saving documents to {document_save_directory}.")
 
-                dgw_controller = Spec2VecGatewayController(self._ion_mode)
+                dgw_controller = Spec2VecGatewayController(
+                    self._spectrum_dgw, self._data_gtw, self._ion_mode
+                )
                 dgw_controller.write_documents(
                     document_save_directory, spectrum_documents
                 )

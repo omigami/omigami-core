@@ -16,28 +16,21 @@ class Spec2VecFSDataGateway(FSDataGateway):
     ):
         super().__init__(fs)
 
-    @staticmethod
-    def read_documents_iter(document_paths):
-        return FileSystemDocumentIterator(document_paths=document_paths)
-
 
 class FileSystemDocumentIterator:
     """An iterator that yields document objects of files one by one to the Word2Vec model for training.
     Reading chunks is not supported by Gensim's Word2Vec model at the moment.
     """
 
-    def __init__(
-        self,
-        document_paths: List[str] = None,
-    ):
-        self._dgw = Spec2VecFSDataGateway()
+    def __init__(self, fs_dgw: FSDataGateway, document_paths: List[str]):
+        self._fs_dgw = fs_dgw
         self._document_paths = document_paths
         self._len = None
 
     def __iter__(self):
         self._len = 0
         for doc_path in self._document_paths:
-            documents = self._dgw.read_from_file(doc_path)
+            documents = self._fs_dgw.read_from_file(doc_path)
             for document in documents:
                 self._len += 1
                 yield document
@@ -48,7 +41,7 @@ class FileSystemDocumentIterator:
 
         if not self._len:
             for doc_path in self._document_paths:
-                documents = self._dgw.read_from_file(doc_path)
+                documents = self._fs_dgw.read_from_file(doc_path)
                 self._len += len(documents)
 
         return self._len

@@ -1,6 +1,7 @@
 from spec2vec import SpectrumDocument
 
 from omigami.gateways import RedisSpectrumDataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways import Spec2VecFSDataGateway
@@ -8,6 +9,7 @@ from drfs.filesystems import get_fs
 import pytest
 import os
 
+from omigami.spec2vec.gateways.fs_document_gateway import FileSystemDocumentIterator
 from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
@@ -23,7 +25,12 @@ def test_write_spectrum_documents(documents_directory, cleaned_data, s3_mock):
         SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
     ]
     spectrum_document_data = [doc.document for doc in spectrum_document_data]
-    dgw = Spec2VecGatewayController(ion_mode="positive")
+
+    dgw = Spec2VecGatewayController(
+        Spec2VecRedisSpectrumDataGateway(PROJECT_NAME),
+        FSDataGateway(),
+        ion_mode="positive",
+    )
 
     fs = get_fs(documents_directory)
     if not fs.exists(documents_directory):
@@ -83,7 +90,7 @@ def test_read_documents_iter(saved_documents, documents_directory, s3_mock):
 
     document_counter = 0
 
-    for doc in dgw.read_documents_iter(document_file_names):
+    for doc in FileSystemDocumentIterator(dgw, document_file_names):
         document_counter += 1
 
     assert document_counter == len(document_file_names) * 10

@@ -28,6 +28,9 @@ from omigami.spec2vec.gateways.fs_document_gateway import (
     Spec2VecFSDataGateway,
 )
 from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -254,7 +257,11 @@ def saved_documents(documents_directory, cleaned_data, s3_mock):
         for i in range(0, len(spectrum_document_data), chunk_size)
     ]
 
-    dgw = Spec2VecGatewayController(ion_mode="positive")
+    dgw = Spec2VecGatewayController(
+        Spec2VecRedisSpectrumDataGateway(PROJECT_NAME),
+        FSDataGateway(),
+        ion_mode="positive",
+    )
 
     fs = get_fs(documents_directory)
     if not os.path.exists(documents_directory):

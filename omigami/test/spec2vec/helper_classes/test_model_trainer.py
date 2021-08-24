@@ -9,6 +9,7 @@ from pytest_redis import factories
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.gateways import Spec2VecFSDataGateway
+from omigami.spec2vec.gateways.fs_document_gateway import FileSystemDocumentIterator
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
@@ -46,7 +47,7 @@ def test_word2vec_training_with_iterator(saved_documents, documents_directory, s
     train_model = TrainModel(dgw, train_model_params)
     callbacks, settings = train_model._create_spec2vec_settings(epochs=2, window=10)
 
-    documents = dgw.read_documents_iter(fs.ls(documents_directory))
+    documents = FileSystemDocumentIterator(dgw, fs.ls(documents_directory))
 
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
 

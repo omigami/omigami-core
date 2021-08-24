@@ -26,7 +26,7 @@ from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
 def test_process_spectrum_calls(
     spectrum_ids, common_cleaned_data, documents_directory, s3_mock
 ):
-    spectrum_gtw = MagicMock(spec=RedisSpectrumDataGateway)
+    spectrum_gtw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
     spectrum_gtw.read_spectra.return_value = common_cleaned_data
     data_gtw = MagicMock(spec=Spec2VecFSDataGateway)
     parameters = ProcessSpectrumParameters(

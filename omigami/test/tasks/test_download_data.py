@@ -57,7 +57,7 @@ def test_refresh_data(mock_default_config, tmpdir):
 
 
 def test_download_data(mock_default_config, tmpdir):
-    data_gtw = MagicMock(spec=DataGateway)
+    data_gtw = MagicMock(spec=FSDataGateway)
     data_gtw.download_gnps.return_value = "download"
     data_gtw.get_spectrum_ids.return_value = "spectrum_ids"
     download_params = DownloadParameters("input-uri", tmpdir, "file_name", "checkpoint")
