@@ -1,24 +1,10 @@
 from __future__ import annotations
-
-from typing import List, Optional
-
-from drfs.filesystems.base import FileSystemBase
-
+from typing import List
 from omigami.gateways.fs_data_gateway import FSDataGateway
 
 
-class Spec2VecFSDataGateway(FSDataGateway):
-    """Data gateway for storage."""
-
-    def __init__(
-        self,
-        fs: Optional[FileSystemBase] = None,
-    ):
-        super().__init__(fs)
-
-
 class FileSystemDocumentIterator:
-    """An iterator that yields document objects of files one by one to the Word2Vec model for training.
+    """An iterator that yields document objects from files one by one to the Word2Vec model for training.
     Reading chunks is not supported by Gensim's Word2Vec model at the moment.
     """
 

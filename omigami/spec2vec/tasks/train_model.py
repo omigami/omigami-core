@@ -9,11 +9,8 @@ from spec2vec.model_building import (
     learning_rates_to_gensim_style,
 )
 
-from omigami.gateways import DataGateway
-
-from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways import Spec2VecFSDataGateway
-from omigami.spec2vec.gateways.fs_document_gateway import FileSystemDocumentIterator
+from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.spec2vec.gateways.fs_document_iterator import FileSystemDocumentIterator
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
@@ -36,7 +33,7 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
-        data_dgw: Spec2VecFSDataGateway,
+        data_dgw: FSDataGateway,
         training_parameters: TrainModelParameters,
         **kwargs,
     ):

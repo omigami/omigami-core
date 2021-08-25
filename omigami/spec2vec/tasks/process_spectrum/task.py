@@ -3,10 +3,9 @@ from typing import Set, List
 
 from prefect import Task
 
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.fs_document_gateway import (
-    Spec2VecFSDataGateway,
-)
+
 from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
@@ -30,11 +29,13 @@ class ProcessSpectrumParameters:
 class ProcessSpectrum(Task):
     def __init__(
         self,
-        data_gtw: Spec2VecFSDataGateway,
+        data_gtw: FSDataGateway,
+        dgw_controller: Spec2VecGatewayController,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
         self._data_gtw = data_gtw
+        self._dgw_controller = dgw_controller
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._n_decimals = process_parameters.n_decimals
         self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
@@ -47,12 +48,8 @@ class ProcessSpectrum(Task):
     def run(self, spectrum_ids: Set[str] = None) -> str:
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
-        dgw_controller = Spec2VecGatewayController(
-            self._spectrum_dgw, self._data_gtw, self._ion_mode
-        )
-
         if self._overwrite_all_spectra:
-            self._remove_all_documents(dgw_controller)
+            self._remove_all_documents(self._dgw_controller)
 
         spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
 
@@ -73,7 +70,7 @@ class ProcessSpectrum(Task):
 
                 self.logger.info(f"Saving documents to {document_save_directory}.")
 
-                dgw_controller.write_documents(
+                self._dgw_controller.write_documents(
                     document_save_directory, spectrum_documents
                 )
 
@@ -126,4 +123,4 @@ class ProcessSpectrum(Task):
         self.logger.info(f"Removing {len(document_file_paths)} document files")
 
         for doc_path in document_file_paths:
-            gtw_controller.remove_documents(doc_path)
+            gtw_controller.remove_documents_file(doc_path)

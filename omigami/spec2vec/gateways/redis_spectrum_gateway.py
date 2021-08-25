@@ -36,7 +36,6 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
             )
 
     def remove_document_ids(self, document_ids: List[str], ion_mode: str):
-        """Only needed for testing. Removes a document_id from redis"""
         self._init_client()
 
         key_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)

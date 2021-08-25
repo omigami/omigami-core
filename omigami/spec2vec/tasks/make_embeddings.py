@@ -3,10 +3,11 @@ from typing import Union, Dict, Set, List
 
 from gensim.models import Word2Vec
 from omigami.config import IonModes
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
 )
-from omigami.spec2vec.gateways import Spec2VecFSDataGateway
+
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -28,7 +29,7 @@ class MakeEmbeddings(Task):
     def __init__(
         self,
         redis_spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
-        fs_gtw: Spec2VecFSDataGateway,
+        fs_gtw: FSDataGateway,
         parameters: MakeEmbeddingsParameters,
         **kwargs,
     ):

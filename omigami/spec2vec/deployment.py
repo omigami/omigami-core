@@ -5,6 +5,7 @@ from omigami.config import (
     DATASET_IDS,
 )
 from omigami.deployment import Deployer
+from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
     PROJECT_NAME,
@@ -14,7 +15,7 @@ from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.spec2vec.gateways import Spec2VecFSDataGateway
+from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -42,7 +43,7 @@ class Spec2VecDeployer(Deployer):
         self._project_name = project_name
 
         self._spectrum_dgw = Spec2VecRedisSpectrumDataGateway(project=PROJECT_NAME)
-        self._data_gtw = Spec2VecFSDataGateway()
+        self._data_gtw = FSDataGateway()
         self._spectrum_cleaner = SpectrumCleaner()
 
     def deploy_training_flow(
@@ -69,11 +70,16 @@ class Spec2VecDeployer(Deployer):
             date=datetime.today()
         )
 
+        dgw_controller = Spec2VecGatewayController(
+            redis_dgw=self._spectrum_dgw, fs_dgw=self._data_gtw, ion_mode=self._ion_mode
+        )
+
         output_dir = S3_BUCKETS[self._environment]
 
         flow_parameters = TrainingFlowParameters(
             data_gtw=self._data_gtw,
             spectrum_dgw=self._spectrum_dgw,
+            dgw_controller=dgw_controller,
             spectrum_cleaner=self._spectrum_cleaner,
             source_uri=self._source_uri,
             output_dir=output_dir,

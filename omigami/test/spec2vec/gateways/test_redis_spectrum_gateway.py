@@ -11,30 +11,27 @@ import os
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_list_document_ids(saved_documents):
+def test_list_document_ids(documents_stored):
     ion_mode = "positive"
     redis_dgw = Spec2VecRedisSpectrumDataGateway()
 
     stored_ids = redis_dgw.list_document_ids(ion_mode)
 
-    assert len(saved_documents) == len(stored_ids)
+    assert len(documents_stored) == len(stored_ids)
 
 
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_write_document_ids(cleaned_data):
+def test_write_document_ids(documents_data):
     ion_mode = "positive"
     redis_dgw = Spec2VecRedisSpectrumDataGateway()
-    spectrum_document_data = [
-        SpectrumDocument(spectrum, 2) for spectrum in cleaned_data
-    ]
 
-    redis_dgw.write_document_ids(spectrum_document_data, ion_mode)
+    redis_dgw.write_document_ids(documents_data, ion_mode)
 
     stored_ids = list(redis_dgw.list_document_ids(ion_mode))
-    ids = [doc.get("spectrum_id") for doc in spectrum_document_data]
+    ids = [doc.get("spectrum_id") for doc in documents_data]
     stored_ids.sort()
     ids.sort()
     assert stored_ids == ids
@@ -44,11 +41,11 @@ def test_write_document_ids(cleaned_data):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_remove_document_ids(saved_documents):
+def test_remove_document_ids(documents_stored):
     ion_mode = "positive"
     redis_dgw = Spec2VecRedisSpectrumDataGateway()
 
-    document_ids = [doc.get("spectrum_id") for doc in saved_documents]
+    document_ids = [doc.get("spectrum_id") for doc in documents_stored]
 
     redis_dgw.remove_document_ids(document_ids[:50], ion_mode)
 
@@ -64,9 +61,9 @@ def test_remove_document_ids(saved_documents):
     reason="It can only be run if the Redis is up",
 )
 def test_list_missing_documents_none_missing(
-    cleaned_data, saved_documents, documents_directory, s3_mock, spectra_stored
+    documents_data, documents_stored, spectra_stored
 ):
-    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
+    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in documents_data]
     redis_dgw = Spec2VecRedisSpectrumDataGateway()
     ion_mode = "positive"
 
@@ -81,15 +78,15 @@ def test_list_missing_documents_none_missing(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_list_missing_documents(cleaned_data, s3_mock, spectra_stored):
-    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
+def test_list_missing_documents(documents_data, s3_mock, spectra_stored):
+    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in documents_data]
 
     redis_dgw = Spec2VecRedisSpectrumDataGateway()
     ion_mode = "positive"
 
     redis_dgw.remove_document_ids(spectrum_ids_stored, ion_mode=ion_mode)
 
-    old_document_ids = [SpectrumDocument(sp) for sp in cleaned_data[:50]]
+    old_document_ids = [SpectrumDocument(sp) for sp in documents_data[:50]]
     redis_dgw.write_document_ids(old_document_ids, ion_mode=ion_mode)
 
     documents = redis_dgw.list_missing_documents(spectrum_ids_stored, ion_mode=ion_mode)

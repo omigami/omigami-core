@@ -1,3 +1,1 @@
-from omigami.spec2vec.gateways.fs_document_gateway import (
-    Spec2VecFSDataGateway,
-)
+from omigami.spec2vec.gateways.fs_document_iterator import FileSystemDocumentIterator

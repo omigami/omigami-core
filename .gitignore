@@ -141,5 +141,3 @@ dmypy.json
 **/spectrum_ids_500.pkl
 **/mlflow-server/*
 **/mlruns/*
-s3:/**
-requirements/omigami/**

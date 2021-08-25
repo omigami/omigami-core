@@ -1,4 +1,3 @@
-import itertools
 import os
 from unittest.mock import Mock
 
@@ -7,9 +6,8 @@ from drfs.filesystems import get_fs
 from pytest_redis import factories
 
 from omigami.gateways import RedisSpectrumDataGateway
-from omigami.spec2vec.config import PROJECT_NAME
-from omigami.spec2vec.gateways import Spec2VecFSDataGateway
-from omigami.spec2vec.gateways.fs_document_gateway import FileSystemDocumentIterator
+from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.spec2vec.gateways.fs_document_iterator import FileSystemDocumentIterator
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
@@ -37,17 +35,19 @@ def test_spec2vec_settings():
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_word2vec_training_with_iterator(saved_documents, documents_directory, s3_mock):
-    dgw = Spec2VecFSDataGateway()
+def test_word2vec_training_with_iterator(
+    documents_stored, s3_documents_directory, s3_mock
+):
+    dgw = FSDataGateway()
 
-    fs = get_fs(documents_directory)
-    fs.makedirs(documents_directory)
+    fs = get_fs(s3_documents_directory)
+    fs.makedirs(s3_documents_directory)
 
     train_model_params = TrainModelParameters(2, 10)
     train_model = TrainModel(dgw, train_model_params)
     callbacks, settings = train_model._create_spec2vec_settings(epochs=2, window=10)
 
-    documents = FileSystemDocumentIterator(dgw, fs.ls(documents_directory))
+    documents = FileSystemDocumentIterator(dgw, fs.ls(s3_documents_directory))
 
     model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
 
