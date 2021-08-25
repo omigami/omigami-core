@@ -16,8 +16,11 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         self._init_client()
 
         key_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
-
-        return self.client.smembers(name=key_name)
+        stored_document_ids = self.client.smembers(name=key_name)
+        stored_document_ids = [
+            document_id.decode("utf-8") for document_id in stored_document_ids
+        ]
+        return stored_document_ids
 
     def write_document_ids(
         self, document_ids: List[Optional[SpectrumDocument]], ion_mode: str
@@ -49,8 +52,6 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         """
 
         stored_document_ids = self.list_document_ids(ion_mode=ion_mode)
-        stored_document_ids = [
-            document_id.decode("utf-8") for document_id in stored_document_ids
-        ]
+
         new_spectra = set(document_ids) - set(stored_document_ids)
         return list(new_spectra)

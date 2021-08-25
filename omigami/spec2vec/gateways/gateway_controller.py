@@ -23,3 +23,10 @@ class Spec2VecGatewayController:
 
         self._redis_dgw.write_document_ids(documents, self._ion_mode)
         self._fs_dgw.serialize_to_file(path, documents)
+
+    def remove_documents(self, path: str):
+
+        documents = self._fs_dgw.read_from_file(path)
+        document_ids = [doc.get("spectrum_id") for doc in documents]
+        self._redis_dgw.remove_document_ids(document_ids, self._ion_mode)
+        self._fs_dgw.remove_file(path)

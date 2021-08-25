@@ -67,9 +67,6 @@ class SaveRawSpectra(Task):
         spectra_from_file = self._data_gtw.load_spectrum(gnps_path)
         spectrum_ids = [sp["spectrum_id"] for sp in spectra_from_file]
 
-        # TODO: Delete
-        self.logger.info(f"FS: {self._data_gtw.fs}")
-        self.logger.info(f"File exists: {self._data_gtw.exists(gnps_path)}")
         redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
 
         if self._overwrite_all_spectra:

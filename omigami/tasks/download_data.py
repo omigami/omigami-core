@@ -128,9 +128,4 @@ class DownloadData(Task):
         )
         self.logger.info(f"Saving spectrum ids to {self.checkpoint_path}")
 
-        # TODO: Delete
-        self.logger.info(
-            f"Downloaded file exists {self._data_gtw.exists(self.checkpoint_path)}"
-        )
-
         return spectrum_ids

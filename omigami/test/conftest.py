@@ -1,3 +1,4 @@
+import itertools
 import os
 import pickle
 from pathlib import Path
@@ -270,7 +271,7 @@ def saved_documents(documents_directory, cleaned_data, s3_mock):
     for i, documents in enumerate(spectrum_document_data):
         dgw.write_documents(f"{documents_directory}/test{i}.pickle", documents)
 
-    return spectrum_document_data
+    return list(itertools.chain.from_iterable(spectrum_document_data))
 
 
 @pytest.fixture()

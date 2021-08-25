@@ -49,11 +49,8 @@ class TrainModel(Task):
 
     def run(self, documents_directory: List[str]):
 
-        # TODO: Delete
         self.logger.info(f"Loading examples from {documents_directory}")
-        self.logger.info(
-            f"File exists in train model flow {self._data_dgw.exists(documents_directory[0])}"
-        )
+
         documents = FileSystemDocumentIterator(
             fs_dgw=self._data_dgw, document_paths=documents_directory
         )

@@ -46,7 +46,6 @@ def test_process_spectrum_calls(
     assert res.is_successful()
     assert data == f"{documents_directory}/documents0.pickle"
     spectrum_gtw.list_existing_spectra.assert_not_called()
-    data_gtw.listdir.assert_called_once()
 
 
 @pytest.mark.skipif(
@@ -133,7 +132,7 @@ def test_get_chunk_count(saved_documents, documents_directory):
     process_spectrum = ProcessSpectrum(data_gtw, parameters)
     count = process_spectrum._get_chunk_count(documents_directory)
 
-    assert count == len(saved_documents[0])
+    assert count == len(data_gtw.listdir(documents_directory))
 
 
 def test_clean_data(common_cleaned_data):

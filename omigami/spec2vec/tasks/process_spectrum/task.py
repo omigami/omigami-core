@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass
 from typing import Set, List
 
@@ -48,6 +47,13 @@ class ProcessSpectrum(Task):
     def run(self, spectrum_ids: Set[str] = None) -> str:
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
+        dgw_controller = Spec2VecGatewayController(
+            self._spectrum_dgw, self._data_gtw, self._ion_mode
+        )
+
+        if self._overwrite_all_spectra:
+            self._remove_all_documents(dgw_controller)
+
         spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
 
         if spectrum_ids_to_add:
@@ -67,24 +73,13 @@ class ProcessSpectrum(Task):
 
                 self.logger.info(f"Saving documents to {document_save_directory}.")
 
-                dgw_controller = Spec2VecGatewayController(
-                    self._spectrum_dgw, self._data_gtw, self._ion_mode
-                )
                 dgw_controller.write_documents(
                     document_save_directory, spectrum_documents
                 )
 
-                # TODO: Delete
-                self.logger.info(f"Returning in if {document_save_directory}.")
-                self.logger.info(
-                    f"File exists {self._data_gtw.exists(document_save_directory)}."
-                )
-                self.logger.info(f"FS: {self._data_gtw.fs}")
                 return document_save_directory
 
         self.logger.info("All spectra have already been processed.")
-        # TODO: Delete
-        self.logger.info(f"Returning not in if {self._documents_save_directory}.")
         return self._documents_save_directory
 
     def _get_spectrum_ids_to_add(self, spectrum_ids: List[str]) -> List[str]:
@@ -101,6 +96,7 @@ class ProcessSpectrum(Task):
                 f"{len(spectrum_ids_to_add)} out of {len(spectrum_ids)} spectra are "
                 f"new and will be processed. "
             )
+
         return spectrum_ids_to_add
 
     def _get_documents(self, spectrum_ids: List[str]) -> List[SpectrumDocumentData]:
@@ -121,9 +117,13 @@ class ProcessSpectrum(Task):
         if not self._data_gtw.exists(documents_save_directory):
             self._data_gtw.makedirs(documents_save_directory)
 
-        # TODO: Delete
-        self.logger.info(
-            f"Files found  {self._data_gtw.listdir(self._documents_save_directory)}."
-        )
-
         return len(self._data_gtw.listdir(self._documents_save_directory))
+
+    def _remove_all_documents(self, gtw_controller: Spec2VecGatewayController):
+
+        document_file_paths = self._data_gtw.listdir(self._documents_save_directory)
+
+        self.logger.info(f"Removing {len(document_file_paths)} document files")
+
+        for doc_path in document_file_paths:
+            gtw_controller.remove_documents(doc_path)

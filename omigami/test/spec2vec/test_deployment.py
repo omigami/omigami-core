@@ -8,9 +8,9 @@ from omigami.spec2vec.deployment import (
 )
 
 
-# @pytest.mark.skip(
-#    reason="This test uses internet connection and deploys a test flow to prefect."
-# )
+@pytest.mark.skip(
+    reason="This test uses internet connection and deploys a test flow to prefect."
+)
 def test_deploy_training_flow():
     """
     BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
@@ -23,7 +23,7 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     deployer = Spec2VecDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.6941d54",
+        image="drtools/prefect:omigami-SNAPSHOT.3b28bde",
         iterations=15,
         window=500,
         intensity_weighting_power=0.5,
@@ -42,6 +42,6 @@ def test_deploy_training_flow():
         auth=True,
         **login_config,
     )
-    flow_id = deployer.deploy_training_flow(flow_name="spec2vec/positive-s3")
+    flow_id = deployer.deploy_training_flow(flow_name="spec2vec/positive")
 
     assert flow_id

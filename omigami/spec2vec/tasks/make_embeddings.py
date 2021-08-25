@@ -49,10 +49,6 @@ class MakeEmbeddings(Task):
         document_path: str = None,
     ) -> Set[str]:
 
-        # TODO: Delete
-        self.logger.info(f"Documents located at {document_path}")
-        self.logger.info(f"File exists {self._fs_gtw.exists(document_path)}.")
-        self.logger.info(f"FS: {self._fs_gtw.fs}")
         documents = self._fs_gtw.read_from_file(document_path)
 
         self.logger.info(f"Loaded {len(documents)} documents from filesystem.")
