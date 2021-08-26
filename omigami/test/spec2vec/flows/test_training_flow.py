@@ -130,7 +130,7 @@ def test_run_training_flow(
         window=200,
         project_name="test",
         model_output_dir=f"{tmpdir}/model-output",
-        documents_save_directory=f"{tmpdir}/documents",
+        documents_save_directory=f"{tmpdir}/documents/{ion_mode}",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
