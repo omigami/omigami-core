@@ -30,12 +30,12 @@ class ProcessSpectrum(Task):
     def __init__(
         self,
         data_gtw: FSDataGateway,
-        dgw_controller: Spec2VecGatewayController,
+        document_dgw_controller: Spec2VecGatewayController,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
         self._data_gtw = data_gtw
-        self._dgw_controller = dgw_controller
+        self._document_dgw_controller = document_dgw_controller
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._n_decimals = process_parameters.n_decimals
         self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
@@ -49,7 +49,7 @@ class ProcessSpectrum(Task):
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
         if self._overwrite_all_spectra:
-            self._remove_all_documents(self._dgw_controller)
+            self._remove_all_documents(self._document_dgw_controller)
 
         spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
 
@@ -70,7 +70,7 @@ class ProcessSpectrum(Task):
 
                 self.logger.info(f"Saving documents to {document_save_directory}.")
 
-                self._dgw_controller.write_documents(
+                self._document_dgw_controller.write_documents(
                     document_save_directory, spectrum_documents
                 )
 

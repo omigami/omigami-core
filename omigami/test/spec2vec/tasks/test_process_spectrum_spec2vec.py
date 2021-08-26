@@ -28,7 +28,7 @@ def test_process_spectrum_calls(
 ):
     redis_gateway = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
     data_gtw = MagicMock(spec=FSDataGateway)
-    dgw_controller = MagicMock(spec=Spec2VecGatewayController)
+    document_dgw_controller = MagicMock(spec=Spec2VecGatewayController)
     redis_gateway.read_spectra.return_value = common_cleaned_data
 
     parameters = ProcessSpectrumParameters(
@@ -40,7 +40,7 @@ def test_process_spectrum_calls(
     )
 
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(data_gtw, dgw_controller, parameters)(
+        process_task = ProcessSpectrum(data_gtw, document_dgw_controller, parameters)(
             spectrum_ids
         )
 
@@ -61,16 +61,18 @@ def test_process_spectrum(
 ):
     ion_mode = "positive"
     redis_gateway = Spec2VecRedisSpectrumDataGateway(PROJECT_NAME)
-    data_gtw = FSDataGateway()
-    dgw_controller = Spec2VecGatewayController(redis_gateway, data_gtw, ion_mode)
-    redis_gateway.delete_spectra(spectrum_ids[50:])
-    spectrum_ids = spectrum_ids[:50]
+    document_dgw_controller = FSDataGateway()
+    dgw_controller: Spec2VecGatewayController = Spec2VecGatewayController(
+        redis_gateway, document_dgw_controller, ion_mode
+    )
+    # redis_gateway.delete_spectra(spectrum_ids[50:])
+    # spectrum_ids = spectrum_ids[:50]
 
     documents_directory = f"{s3_documents_directory}/process_spectrum"
     fs = get_fs(documents_directory)
     fs.makedirs(documents_directory)
 
-    redis_gateway.remove_document_ids(spectrum_ids[:50], ion_mode)
+    redis_gateway.remove_document_ids(spectrum_ids, ion_mode)
 
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=redis_gateway,
@@ -81,9 +83,9 @@ def test_process_spectrum(
     )
 
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(data_gtw, dgw_controller, parameters)(
-            spectrum_ids
-        )
+        process_task = ProcessSpectrum(
+            document_dgw_controller, dgw_controller, parameters
+        )(spectrum_ids)
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -101,7 +103,9 @@ def test_process_spectrum_map(
     ion_mode = "positive"
     redis_gateway = Spec2VecRedisSpectrumDataGateway(PROJECT_NAME)
     data_gtw = FSDataGateway()
-    dgw_controller = Spec2VecGatewayController(redis_gateway, data_gtw, ion_mode)
+    document_dgw_controller = Spec2VecGatewayController(
+        redis_gateway, data_gtw, ion_mode
+    )
 
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=redis_gateway,
@@ -115,9 +119,9 @@ def test_process_spectrum_map(
         spectrum_ids[50:],
     ]
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(data_gtw, dgw_controller, parameters).map(
-            chunked_paths
-        )
+        process_task = ProcessSpectrum(
+            data_gtw, document_dgw_controller, parameters
+        ).map(chunked_paths)
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -130,7 +134,9 @@ def test_get_chunk_count(documents_stored, s3_documents_directory):
     ion_mode = "positive"
     redis_gateway = Spec2VecRedisSpectrumDataGateway(PROJECT_NAME)
     data_gtw = FSDataGateway()
-    dgw_controller = Spec2VecGatewayController(redis_gateway, data_gtw, ion_mode)
+    document_dgw_controller = Spec2VecGatewayController(
+        redis_gateway, data_gtw, ion_mode
+    )
 
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=redis_gateway,
@@ -140,7 +146,7 @@ def test_get_chunk_count(documents_stored, s3_documents_directory):
         overwrite_all_spectra=False,
     )
 
-    process_spectrum = ProcessSpectrum(data_gtw, dgw_controller, parameters)
+    process_spectrum = ProcessSpectrum(data_gtw, document_dgw_controller, parameters)
     count = process_spectrum._get_chunk_count(s3_documents_directory)
 
     assert count == len(data_gtw.listdir(s3_documents_directory))

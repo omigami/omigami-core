@@ -40,7 +40,7 @@ class TrainingFlowParameters:
         self,
         spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
         data_gtw: FSDataGateway,
-        dgw_controller: Spec2VecGatewayController,
+        document_dgw_controller: Spec2VecGatewayController,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
@@ -65,7 +65,7 @@ class TrainingFlowParameters:
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
-        self.dgw_controller = dgw_controller
+        self.document_dgw_controller = document_dgw_controller
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
@@ -145,7 +145,7 @@ def build_training_flow(
 
         document_paths = ProcessSpectrum(
             flow_parameters.data_gtw,
-            flow_parameters.dgw_controller,
+            flow_parameters.document_dgw_controller,
             flow_parameters.processing,
         ).map(chunked_spectrum_ids)
 

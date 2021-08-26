@@ -70,7 +70,7 @@ class Spec2VecDeployer(Deployer):
             date=datetime.today()
         )
 
-        dgw_controller = Spec2VecGatewayController(
+        document_dgw_controller = Spec2VecGatewayController(
             redis_dgw=self._spectrum_dgw, fs_dgw=self._data_gtw, ion_mode=self._ion_mode
         )
 
@@ -79,7 +79,7 @@ class Spec2VecDeployer(Deployer):
         flow_parameters = TrainingFlowParameters(
             data_gtw=self._data_gtw,
             spectrum_dgw=self._spectrum_dgw,
-            dgw_controller=dgw_controller,
+            document_dgw_controller=document_dgw_controller,
             spectrum_cleaner=self._spectrum_cleaner,
             source_uri=self._source_uri,
             output_dir=output_dir,

@@ -240,7 +240,7 @@ class FSDataGateway(DataGateway):
     def save(self, obj, output_path: str):
         pass
 
-    def listdir(self, path):
+    def listdir(self, path) -> List[str]:
         self.init_fs(path)
 
         return self.fs.ls(path)

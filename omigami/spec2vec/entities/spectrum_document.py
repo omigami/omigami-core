@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from matchms import Spectrum
 from spec2vec import SpectrumDocument
@@ -19,13 +19,13 @@ class SpectrumDocumentData:
         return self._document
 
     @property
-    def n_decimals(self):
+    def n_decimals(self) -> int:
         return self._document.n_decimals
 
     @property
-    def weights(self):
+    def weights(self) -> List[float]:
         return self._document.weights
 
     @property
-    def words(self):
+    def words(self) -> List[str]:
         return self._document.words
