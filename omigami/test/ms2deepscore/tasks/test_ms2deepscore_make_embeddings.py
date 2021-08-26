@@ -1,6 +1,8 @@
 import os
 
 import pytest
+from prefect import Flow
+
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.tasks.make_embeddings import (
@@ -8,7 +10,6 @@ from omigami.ms2deepscore.tasks.make_embeddings import (
     MakeEmbeddingsParameters,
 )
 from omigami.test.conftest import ASSETS_DIR
-from prefect import Flow
 
 
 @pytest.mark.skipif(

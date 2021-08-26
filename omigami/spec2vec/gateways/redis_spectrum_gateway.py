@@ -4,7 +4,6 @@ from spec2vec import SpectrumDocument
 
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.spec2vec.config import PROJECT_NAME, DOCUMENT_HASHES
-from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 
 
 class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):

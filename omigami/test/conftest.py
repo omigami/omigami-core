@@ -5,26 +5,22 @@ from pathlib import Path
 
 import boto3
 import ijson
-import omigami
-import omigami.config
 import pytest
 import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
+from pytest_redis import factories
 
+import omigami
+import omigami.config
 from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
-    DOCUMENT_HASHES,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
     PROJECT_NAME,
 )
-from pytest_redis import factories
-
-from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-
 from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,

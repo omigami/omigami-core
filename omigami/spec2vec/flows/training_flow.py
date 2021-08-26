@@ -1,14 +1,14 @@
 from typing import Union
 
+from prefect import Flow, unmapped
+
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
-
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
-
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
@@ -32,7 +32,6 @@ from omigami.tasks import (
     SaveRawSpectra,
     SaveRawSpectraParameters,
 )
-from prefect import Flow, unmapped
 
 
 class TrainingFlowParameters:

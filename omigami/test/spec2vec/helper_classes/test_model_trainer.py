@@ -2,6 +2,7 @@ import os
 from unittest.mock import Mock
 
 import gensim
+import pytest
 from drfs.filesystems import get_fs
 from pytest_redis import factories
 
@@ -12,7 +13,6 @@ from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
 from omigami.spec2vec.tasks.train_model import TrainModel, TrainModelParameters
-import pytest
 
 redis_db = factories.redisdb("redis_nooproc")
 

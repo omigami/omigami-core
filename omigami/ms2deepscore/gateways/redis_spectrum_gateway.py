@@ -5,12 +5,12 @@ from logging import Logger
 from typing import List
 
 from ms2deepscore import BinnedSpectrum
+
 from omigami.config import IonModes
 from omigami.gateways.redis_spectrum_data_gateway import (
     RedisSpectrumDataGateway,
 )
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
-
 from omigami.ms2deepscore.config import PROJECT_NAME
 
 

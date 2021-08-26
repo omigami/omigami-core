@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from matchms import calculate_scores
 from ms2deepscore import MS2DeepScore
+
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
     MS2DeepScoreEmbedding,
 )

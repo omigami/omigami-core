@@ -1,5 +1,6 @@
-import pytest
 import os
+
+import pytest
 
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.config import PROJECT_NAME

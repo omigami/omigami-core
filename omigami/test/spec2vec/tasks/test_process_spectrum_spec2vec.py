@@ -5,17 +5,13 @@ import pytest
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import PROJECT_NAME
-
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
-
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
-
 from omigami.spec2vec.tasks import ProcessSpectrumParameters
 from omigami.spec2vec.tasks.process_spectrum import ProcessSpectrum
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (

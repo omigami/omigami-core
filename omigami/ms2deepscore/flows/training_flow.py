@@ -1,6 +1,10 @@
 from datetime import timedelta, date, datetime
 from typing import Tuple
 
+from prefect import Flow, unmapped
+from prefect.schedules import Schedule
+from prefect.schedules.clocks import IntervalClock
+
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import DataGateway
@@ -32,9 +36,6 @@ from omigami.tasks import (
     SaveRawSpectraParameters,
     SaveRawSpectra,
 )
-from prefect import Flow, unmapped
-from prefect.schedules import Schedule
-from prefect.schedules.clocks import IntervalClock
 
 
 class TrainingFlowParameters:

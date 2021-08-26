@@ -3,12 +3,13 @@ from typing import Union, Dict
 
 import mlflow
 from gensim.models import Word2Vec
+from pandas import Timestamp
+from prefect import Task
+
 from omigami.config import IonModes
 from omigami.model_register import MLFlowModelRegister
 from omigami.spec2vec.predictor import Spec2VecPredictor
 from omigami.utils import merge_prefect_task_configs
-from pandas import Timestamp
-from prefect import Task
 
 CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 

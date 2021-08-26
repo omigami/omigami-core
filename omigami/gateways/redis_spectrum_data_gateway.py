@@ -7,12 +7,12 @@ from typing import List, Iterable, Set, Union
 
 import redis
 from matchms import Spectrum
+
 from omigami.ms2deepscore.entities.embedding import Embedding as MS2DeepScoreEmbedding
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
-    DOCUMENT_HASHES,
 )
 from omigami.spec2vec.entities.embedding import Embedding as Spec2VecEmbedding
 

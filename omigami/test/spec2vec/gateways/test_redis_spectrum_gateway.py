@@ -1,10 +1,11 @@
+import os
+
+import pytest
 from spec2vec import SpectrumDocument
 
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
-import pytest
-import os
 
 
 @pytest.mark.skipif(

@@ -1,20 +1,20 @@
 from dataclasses import dataclass
-from typing import Union, Dict, Set, List
+from typing import Union, Dict, Set
 
 from gensim.models import Word2Vec
+from prefect import Task
+
 from omigami.config import IonModes
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
 )
-
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
-from prefect import Task
 
 
 @dataclass

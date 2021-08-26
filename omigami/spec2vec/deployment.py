@@ -19,7 +19,6 @@ from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayControll
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
-
 from omigami.spectrum_cleaner import SpectrumCleaner
 
 

@@ -2,6 +2,8 @@ import os
 
 import pytest
 from mock import MagicMock
+from prefect import Flow
+
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -11,7 +13,6 @@ from omigami.ms2deepscore.tasks.process_spectrum import (
     ProcessSpectrum,
 )
 from omigami.test.conftest import ASSETS_DIR
-from prefect import Flow
 
 
 def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):

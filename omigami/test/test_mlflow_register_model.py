@@ -4,6 +4,7 @@ from pathlib import Path
 import mlflow
 import pytest
 from mlflow.pyfunc import PythonModel
+
 from omigami.model_register import MLFlowModelRegister
 from omigami.spec2vec.predictor import Spec2VecPredictor
 

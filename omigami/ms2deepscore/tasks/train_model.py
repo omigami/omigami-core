@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Tuple, List, Dict
 
+from prefect import Task
+
 from omigami.config import IonModes
 from omigami.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
@@ -11,7 +13,6 @@ from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
     SplitRatio,
 )
 from omigami.utils import merge_prefect_task_configs
-from prefect import Task
 
 
 @dataclass

@@ -5,7 +5,6 @@ from prefect import Task
 
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-
 from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,

@@ -1,11 +1,12 @@
 import pytest
+from typing_extensions import Literal
+
 from omigami.config import (
     config,
     MLFLOW_SERVER,
     SOURCE_URI_COMPLETE_GNPS,
 )
 from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
-from typing_extensions import Literal
 
 
 @pytest.mark.skip(

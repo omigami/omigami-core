@@ -2,9 +2,10 @@ from typing import List
 
 import numpy as np
 from ms2deepscore import MS2DeepScore
-from omigami.ms2deepscore.entities.embedding import Embedding
 from spec2vec.vector_operations import cosine_similarity, cosine_similarity_matrix
 from tqdm import tqdm
+
+from omigami.ms2deepscore.entities.embedding import Embedding
 
 
 class MS2DeepScoreEmbedding(MS2DeepScore):

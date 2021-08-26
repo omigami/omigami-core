@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from drfs.filesystems import get_fs
+
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.flow_config import (
     make_flow_config,
@@ -11,18 +12,17 @@ from omigami.flow_config import (
     PrefectExecutorMethods,
 )
 from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
 from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
-
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
-from omigami.spec2vec.config import PROJECT_NAME
 
 os.chdir(Path(__file__).parents[4])
 
