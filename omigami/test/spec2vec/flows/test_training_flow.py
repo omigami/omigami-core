@@ -90,7 +90,6 @@ def test_training_flow(flow_config):
     assert task_names == expected_tasks
 
 
-# TODO: Testing the passing of this test in the CI
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
