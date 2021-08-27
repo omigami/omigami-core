@@ -1,9 +1,14 @@
 from typing import Union
 
+from prefect import Flow, unmapped
+
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.gateways.data_gateway import DataGateway
-from omigami.spec2vec.gateways import Spec2VecRedisSpectrumDataGateway
+from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
@@ -27,14 +32,14 @@ from omigami.tasks import (
     SaveRawSpectra,
     SaveRawSpectraParameters,
 )
-from prefect import Flow, unmapped
 
 
 class TrainingFlowParameters:
     def __init__(
         self,
-        data_gtw: DataGateway,
         spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
+        data_gtw: FSDataGateway,
+        document_dgw_controller: Spec2VecGatewayController,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
@@ -47,6 +52,7 @@ class TrainingFlowParameters:
         window: int,
         project_name: str,
         model_output_dir: str,
+        documents_save_directory: str,
         mlflow_server: str,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
@@ -58,7 +64,7 @@ class TrainingFlowParameters:
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
-
+        self.document_dgw_controller = document_dgw_controller
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
@@ -73,6 +79,8 @@ class TrainingFlowParameters:
         )
         self.processing = ProcessSpectrumParameters(
             spectrum_dgw,
+            documents_save_directory,
+            ion_mode,
             n_decimals,
             overwrite_all_spectra,
         )
@@ -134,12 +142,14 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_ids = ProcessSpectrum(
-            flow_parameters.data_gtw, flow_parameters.processing
+        document_paths = ProcessSpectrum(
+            flow_parameters.data_gtw,
+            flow_parameters.document_dgw_controller,
+            flow_parameters.processing,
         ).map(chunked_spectrum_ids)
 
-        model = TrainModel(flow_parameters.spectrum_dgw, flow_parameters.training)(
-            processed_ids
+        model = TrainModel(flow_parameters.data_gtw, flow_parameters.training)(
+            document_paths
         )
 
         model_registry = RegisterModel(flow_parameters.registering)(model)
@@ -147,8 +157,9 @@ def build_training_flow(
         # TODO: this task prob doesnt need chunking or can be done in larger chunks
         _ = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
+            flow_parameters.data_gtw,
             flow_parameters.embedding,
-        ).map(unmapped(model), unmapped(model_registry), chunked_spectrum_ids)
+        ).map(unmapped(model), unmapped(model_registry), document_paths)
 
         if deploy_model:
             DeployModel(flow_parameters.deploying)(model_registry)

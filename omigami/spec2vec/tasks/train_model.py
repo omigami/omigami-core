@@ -1,17 +1,17 @@
-from typing import List, Set
+from typing import List
 
 import gensim
 import prefect
 from attr import dataclass
+from gensim.models import Word2Vec
 from prefect import Task
 from spec2vec.model_building import (
     set_spec2vec_defaults,
     learning_rates_to_gensim_style,
 )
 
-from omigami.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-)
+from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.spec2vec.gateways.fs_document_iterator import FileSystemDocumentIterator
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
@@ -34,29 +34,31 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
-        spectrum_dgw: RedisSpectrumDataGateway,
+        data_dgw: FSDataGateway,
         training_parameters: TrainModelParameters,
         **kwargs,
     ):
-        self._spectrum_dgw = spectrum_dgw
+        self._data_dgw = data_dgw
         self._epochs = training_parameters.epochs
         self._window = training_parameters.window
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, spectrum_ids_chunks: List[Set[str]] = None):
-        flatten_ids = [item for elem in spectrum_ids_chunks for item in elem]
-        self.logger.info(
-            f"Connecting to the data. {len(flatten_ids)} documents will be used on training."
+    def run(self, documents_directory: List[str]) -> Word2Vec:
+
+        self.logger.info(f"Loading examples from {documents_directory}")
+
+        documents = FileSystemDocumentIterator(
+            fs_dgw=self._data_dgw, document_paths=documents_directory
         )
-        documents = self._spectrum_dgw.read_documents_iter(flatten_ids)
 
         self.logger.info("Started training the Word2Vec model.")
         callbacks, settings = self._create_spec2vec_settings(self._window, self._epochs)
         model = gensim.models.Word2Vec(
             sentences=documents, callbacks=callbacks, **settings
         )
+        self.logger.info(f"Trained model on {len(documents)} examples.")
         self.logger.info(f"Finished training the model.")
 
         return model

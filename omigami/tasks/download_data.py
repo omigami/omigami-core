@@ -122,8 +122,10 @@ class DownloadData(Task):
 
         spectrum_ids = self._data_gtw.get_spectrum_ids(self.download_path)
         self._data_gtw.serialize_to_file(self.checkpoint_path, spectrum_ids)
+
         self.logger.info(
             f"Downloaded {len(spectrum_ids)} spectra from {self.input_uri} to {self.download_path}."
         )
         self.logger.info(f"Saving spectrum ids to {self.checkpoint_path}")
+
         return spectrum_ids

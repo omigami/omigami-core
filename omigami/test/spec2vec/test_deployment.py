@@ -23,7 +23,7 @@ def test_deploy_training_flow():
     login_config.pop("token")
 
     deployer = Spec2VecDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.1180d27",
+        image="drtools/prefect:omigami-SNAPSHOT.d4413bf",
         iterations=15,
         window=500,
         intensity_weighting_power=0.5,
@@ -42,6 +42,8 @@ def test_deploy_training_flow():
         auth=True,
         **login_config,
     )
-    flow_id = deployer.deploy_training_flow(flow_name="spec2vec/positive")
+    flow_id = deployer.deploy_training_flow(
+        flow_name="spec2vec/positive-ultimate-deployment-s3"
+    )
 
     assert flow_id

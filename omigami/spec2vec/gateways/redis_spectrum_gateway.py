@@ -1,50 +1,55 @@
-from __future__ import annotations
+from typing import Set, List, Optional
 
-import pickle
-from typing import List
-
-from omigami.gateways.redis_spectrum_data_gateway import (
-    RedisSpectrumDataGateway,
-    RedisHashesIterator,
-)
-from omigami.spec2vec.config import (
-    DOCUMENT_HASHES,
-)
-from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from spec2vec import SpectrumDocument
+
+from omigami.gateways import RedisSpectrumDataGateway
+from omigami.spec2vec.config import PROJECT_NAME, DOCUMENT_HASHES
 
 
 class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
-    """Data gateway for Redis storage."""
-    project = "spec2vec"
+    def __init__(self, project=PROJECT_NAME):
 
-    def write_spectrum_documents(self, spectrum_data: List[SpectrumDocumentData]):
-        """Write spectra data on the redis database. The spectra ids and precursor_MZ are required."""
+        super().__init__(project)
+
+    def list_document_ids(self, ion_mode: str) -> Set[str]:
         self._init_client()
-        pipe = self.client.pipeline()
-        for spectrum in spectrum_data:
-            spectrum_info = spectrum.spectrum
-            document = spectrum.document
-            if document:
-                pipe.hset(DOCUMENT_HASHES, spectrum.spectrum_id, pickle.dumps(document))
-        pipe.execute()
 
-    def list_missing_documents(self, spectrum_ids: List[str]) -> List[str]:
-        """Check whether document exist on Redis.
+        key_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
+        stored_document_ids = self.client.smembers(name=key_name)
+        stored_document_ids = [
+            document_id.decode("utf-8") for document_id in stored_document_ids
+        ]
+        return stored_document_ids
+
+    def write_document_ids(
+        self, document_ids: List[Optional[SpectrumDocument]], ion_mode: str
+    ):
+        self._init_client()
+
+        key_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
+
+        for doc in document_ids:
+            self.client.sadd(
+                key_name,
+                doc.get("spectrum_id"),
+            )
+
+    def remove_document_ids(self, document_ids: List[str], ion_mode: str):
+        self._init_client()
+
+        key_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
+
+        for doc_id in document_ids:
+            self.client.srem(key_name, doc_id)
+
+    def list_missing_documents(
+        self, document_ids: List[str], ion_mode: str
+    ) -> List[str]:
+        """Check whether document ids exist in redis.
         Return a list of IDs that do not exist.
         """
-        self._init_client()
-        return self._list_missing_spectrum_ids(DOCUMENT_HASHES, spectrum_ids)
 
-    def read_documents(self, spectrum_ids: List[str] = None) -> List[SpectrumDocument]:
-        """Read the document information from spectra IDs.
-        Return a list of SpectrumDocument objects."""
-        self._init_client()
-        return self._read_hashes(DOCUMENT_HASHES, spectrum_ids)
+        stored_document_ids = self.list_document_ids(ion_mode=ion_mode)
 
-    def read_documents_iter(
-        self, spectrum_ids: List[str] = None
-    ) -> RedisHashesIterator:
-        """Returns an iterator that yields Redis object one by one"""
-        self._init_client()
-        return RedisHashesIterator(self, DOCUMENT_HASHES, spectrum_ids)
+        new_spectra = set(document_ids) - set(stored_document_ids)
+        return list(new_spectra)

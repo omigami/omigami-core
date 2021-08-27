@@ -1,22 +1,17 @@
 import os
-from typing import Iterable
 
 import pytest
 from matchms.Spectrum import Spectrum
+from pytest_redis import factories
+
+from omigami.gateways import RedisSpectrumDataGateway
+from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
-    DOCUMENT_HASHES,
 )
 from omigami.spec2vec.entities.embedding import Embedding
-from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
-)
-from pytest_redis import factories
-from spec2vec.SpectrumDocument import SpectrumDocument
 
 redis_db = factories.redisdb("redis_nooproc")
-
 
 pytestmark = pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
@@ -24,20 +19,9 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_write_spectrum_documents(redis_db, cleaned_data):
-    spectrum_document_data = [
-        SpectrumDocumentData(spectrum, 2) for spectrum in cleaned_data
-    ]
-
-    dgw = Spec2VecRedisSpectrumDataGateway()
-    dgw.write_spectrum_documents(spectrum_document_data)
-
-    assert redis_db.hlen(DOCUMENT_HASHES) == len(cleaned_data)
-
-
 def test_list_spectrum_ids(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    dgw = Spec2VecRedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     ids = dgw.list_spectrum_ids()
     assert len(ids) == len(spectrum_ids_stored)
 
@@ -46,20 +30,14 @@ def test_list_missing_spectra(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     spectrum_ids_stored += ["batman", "ROBEN"]
 
-    dgw = Spec2VecRedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway()
     spectra = dgw._list_missing_spectrum_ids("spectrum_data", spectrum_ids_stored)
     assert set(spectra) == {"batman", "ROBEN"}
 
 
-def test_list_missing_documents(cleaned_data, documents_stored):
-    spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    dgw = Spec2VecRedisSpectrumDataGateway()
-    documents = dgw.list_missing_documents(spectrum_ids_stored)
-    assert len(documents) == 0
-
-
 def test_read_spectra(cleaned_data, spectra_stored):
-    dgw = Spec2VecRedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway()
+    dgw._init_client()
     spectra = dgw.read_spectra()
     assert len(spectra) == len(cleaned_data)
     for spectrum in spectra:
@@ -67,18 +45,9 @@ def test_read_spectra(cleaned_data, spectra_stored):
         assert len(spectrum.peaks) > 0
 
 
-def test_read_documents(documents_data, documents_stored):
-    dgw = Spec2VecRedisSpectrumDataGateway()
-    documents = dgw.read_documents()
-    assert len(documents) == len(documents_data)
-    for document in documents:
-        assert isinstance(document, SpectrumDocument)
-        for word in document:
-            assert word.startswith("peak@")
-
-
 def test_read_embeddings(embeddings, embeddings_stored):
-    dgw = Spec2VecRedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
+    dgw._init_client()
     embeddings_read = dgw.read_embeddings("positive", "1")
     assert len(embeddings_read) == len(embeddings)
     for embedding in embeddings_read:
@@ -86,7 +55,7 @@ def test_read_embeddings(embeddings, embeddings_stored):
 
 
 def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_stored):
-    dgw = Spec2VecRedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     dgw._init_client()
     mz_min = 300
     mz_max = 600
@@ -108,7 +77,7 @@ def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_sto
 
 
 def test_read_spectra_ids_within_range(spectra_stored):
-    dgw = Spec2VecRedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway()
     dgw._init_client()
     mz_min = 300
     mz_max = 600
@@ -125,39 +94,8 @@ def test_read_spectra_ids_within_range(spectra_stored):
         )
 
 
-def test_read_documents_iter(documents_stored):
-    dgw = Spec2VecRedisSpectrumDataGateway()
-    doc_iter = dgw.read_documents_iter()
-    assert isinstance(doc_iter, Iterable)
-
-    all_sentences = 0
-    all_words = 0
-    for sentence in doc_iter:
-        all_sentences += 1
-        assert isinstance(sentence, SpectrumDocument)
-        for word in sentence:
-            all_words += 1
-            assert word.startswith("peak@")
-
-    all_words_no_iterator = 0
-    for spectrum in dgw.read_documents():
-        all_words_no_iterator += len(spectrum)
-    assert all_words == all_words_no_iterator
-
-
-def test_iter_documents_from_ids(documents_stored, spectrum_ids):
-    dgw = Spec2VecRedisSpectrumDataGateway()
-    doc_iter = dgw.read_documents_iter(spectrum_ids[:15])
-
-    res = 0
-    for doc in doc_iter:
-        res += 1
-
-    assert res == 15
-
-
 def test_delete_spectrum_ids(spectra_stored):
-    dgw = Spec2VecRedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway()
     stored_ids = dgw.list_spectrum_ids()
 
     dgw.delete_spectra([stored_ids[0]])

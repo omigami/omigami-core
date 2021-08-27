@@ -2,6 +2,7 @@ import os
 from unittest.mock import Mock
 
 import pytest
+
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
     SiameseModelTrainer,

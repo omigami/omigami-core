@@ -1,11 +1,12 @@
 import os
 
 import pytest
+from pytest_redis import factories
+
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from pytest_redis import factories
 
 redis_db = factories.redisdb("redis_nooproc")
 

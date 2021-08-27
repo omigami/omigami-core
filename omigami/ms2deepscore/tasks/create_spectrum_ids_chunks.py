@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import List, Set
 
-from omigami.utils import merge_prefect_task_configs
 from prefect import Task
+
+from omigami.utils import merge_prefect_task_configs
 
 
 @dataclass

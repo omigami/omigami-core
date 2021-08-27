@@ -1,3 +1,1 @@
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
-)
+from omigami.spec2vec.gateways.fs_document_iterator import FileSystemDocumentIterator

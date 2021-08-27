@@ -1,6 +1,13 @@
 prefect:
   project: "spec2vec"
 storage:
+  documents:
+    dev:
+      positive: "s3://omigami-dev/spec2vec/documents/positive"
+      negative: "s3://omigami-dev/spec2vec/documents/negative"
+    prod:
+      positive: "s3://omigami/spec2vec/documents/positive"
+      negative: "s3://omigami/spec2vec/documents/negative"
   model_folder:
     dev: "s3://omigami-dev/spec2vec/mlflow"
     prod: "s3://omigami/spec2vec/mlflow"

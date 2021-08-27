@@ -1,23 +1,30 @@
+import itertools
+import os
 import pickle
 from pathlib import Path
 
 import boto3
 import ijson
-import omigami
-import omigami.config
 import pytest
 import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
+from pytest_redis import factories
+
+import omigami
+import omigami.config
 from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
-    DOCUMENT_HASHES,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
+    PROJECT_NAME,
 )
-from pytest_redis import factories
+from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
+from omigami.spec2vec.gateways.redis_spectrum_gateway import (
+    Spec2VecRedisSpectrumDataGateway,
+)
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -84,14 +91,6 @@ def cleaned_data():
 
 
 @pytest.fixture(scope="module")
-def documents_data():
-    path = str(ASSETS_DIR / "SMALL_GNPS_as_documents.pickle")
-    with open(path, "rb") as handle:
-        documents_data = pickle.load(handle)
-    return documents_data
-
-
-@pytest.fixture(scope="module")
 def word2vec_model():
     path = str(ASSETS_DIR / "word2vec_model.pickle")
     with open(path, "rb") as handle:
@@ -144,18 +143,6 @@ def spectra_stored(redis_db, common_cleaned_data):
         )
         pipe.hset(
             SPECTRUM_HASHES, spectrum.metadata["spectrum_id"], pickle.dumps(spectrum)
-        )
-    pipe.execute()
-
-
-@pytest.fixture()
-def documents_stored(redis_db, cleaned_data, documents_data):
-    pipe = redis_db.pipeline()
-    for i, document in enumerate(documents_data):
-        pipe.hset(
-            DOCUMENT_HASHES,
-            cleaned_data[i].metadata["spectrum_id"],
-            pickle.dumps(document),
         )
     pipe.execute()
 
@@ -227,6 +214,45 @@ def redis_full_setup(
     ms2deepscore_embeddings_stored,
 ):
     pass
+
+
+@pytest.fixture(scope="module")
+def documents_data():
+    path = str(ASSETS_DIR / "SMALL_GNPS_as_documents.pickle")
+    with open(path, "rb") as handle:
+        documents_data = pickle.load(handle)
+
+    return documents_data
+
+
+@pytest.fixture()
+def documents_stored(s3_documents_directory, documents_data, s3_mock):
+    chunk_size = 10
+
+    documents_data = [
+        documents_data[i : i + chunk_size]
+        for i in range(0, len(documents_data), chunk_size)
+    ]
+
+    dgw = Spec2VecGatewayController(
+        Spec2VecRedisSpectrumDataGateway(PROJECT_NAME),
+        FSDataGateway(),
+        ion_mode="positive",
+    )
+
+    fs = get_fs(s3_documents_directory)
+    if not os.path.exists(s3_documents_directory):
+        fs.makedirs(s3_documents_directory)
+
+    for i, documents in enumerate(documents_data):
+        dgw.write_documents(f"{s3_documents_directory}/test{i}.pickle", documents)
+
+    return list(itertools.chain.from_iterable(documents_data))
+
+
+@pytest.fixture()
+def s3_documents_directory():
+    return "s3://test-bucket/documents"
 
 
 @pytest.fixture()

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, Set
 
+from prefect import Task
+
 from omigami.config import IonModes
 from omigami.gateways.redis_spectrum_data_gateway import (
     REDIS_DB,
@@ -12,7 +14,6 @@ from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
     MS2DeepScoreEmbedding,
 )
 from omigami.utils import merge_prefect_task_configs
-from prefect import Task
 
 
 @dataclass

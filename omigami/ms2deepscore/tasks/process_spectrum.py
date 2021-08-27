@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Set, List
 
 import prefect
+from prefect import Task
+
 from omigami.config import IonModes
 from omigami.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
@@ -15,7 +17,6 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
 )
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
-from prefect import Task
 
 
 @dataclass

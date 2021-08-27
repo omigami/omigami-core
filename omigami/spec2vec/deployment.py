@@ -9,11 +9,13 @@ from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
     PROJECT_NAME,
+    DOCUMENT_DIRECTORIES,
 )
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
+from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -39,8 +41,8 @@ class Spec2VecDeployer(Deployer):
         self._n_decimals = n_decimals
         self._project_name = project_name
 
+        self._spectrum_dgw = Spec2VecRedisSpectrumDataGateway(project=PROJECT_NAME)
         self._data_gtw = FSDataGateway()
-        self._spectrum_dgw = Spec2VecRedisSpectrumDataGateway()
         self._spectrum_cleaner = SpectrumCleaner()
 
     def deploy_training_flow(
@@ -62,8 +64,13 @@ class Spec2VecDeployer(Deployer):
         client.create_project(self._project_name)
 
         model_output_dir = MODEL_DIRECTORIES[self._environment]
+        document_output_dir = DOCUMENT_DIRECTORIES[self._environment][self._ion_mode]
         dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(
             date=datetime.today()
+        )
+
+        document_dgw_controller = Spec2VecGatewayController(
+            redis_dgw=self._spectrum_dgw, fs_dgw=self._data_gtw, ion_mode=self._ion_mode
         )
 
         output_dir = S3_BUCKETS[self._environment]
@@ -71,6 +78,7 @@ class Spec2VecDeployer(Deployer):
         flow_parameters = TrainingFlowParameters(
             data_gtw=self._data_gtw,
             spectrum_dgw=self._spectrum_dgw,
+            document_dgw_controller=document_dgw_controller,
             spectrum_cleaner=self._spectrum_cleaner,
             source_uri=self._source_uri,
             output_dir=output_dir,
@@ -83,6 +91,7 @@ class Spec2VecDeployer(Deployer):
             window=self._window,
             overwrite_model=self._overwrite_model,
             project_name=self._project_name,
+            documents_save_directory=document_output_dir,
             intensity_weighting_power=self._intensity_weighting_power,
             allowed_missing_percentage=self._allowed_missing_percentage,
             model_output_dir=model_output_dir,
