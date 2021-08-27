@@ -31,6 +31,14 @@ How to add or update a single package
 2. Check which version was installed and add major and minor version to environment.frozen.yaml
 3. Add the package with the most relaxed version restrictions possible to environment.yaml
 
+Special steps for M1 Users
+-------------------------------------
+
+1. Activate the conda env and uninstall tensorflow through `pip uninstall tensorflow`
+2. Go to https://drive.google.com/drive/folders/11cACNiynhi45br1aW3ub5oQ6SrDEQx4p (source: https://github.com/tensorflow/tensorflow/issues/46044#issuecomment-797151218) and download the `tensorflow-2.5.0-py3-none-any.whl` file.
+3. Now do `pip install <path_to_downloaded_file>`
+4. You might need to install manually one or two packages. Run the tests and if necessary (you are getting ModuleNotFound errors) install the missing packages.
+
 How to build a docker image
 -------------------------------------
 Whenever a Flow is registered in Prefect Server using Kubernetes, it needs to use a
