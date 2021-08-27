@@ -61,8 +61,6 @@ def test_process_spectrum(
     dgw_controller: Spec2VecGatewayController = Spec2VecGatewayController(
         redis_gateway, document_dgw_controller, ion_mode
     )
-    # redis_gateway.delete_spectra(spectrum_ids[50:])
-    # spectrum_ids = spectrum_ids[:50]
 
     documents_directory = f"{s3_documents_directory}/process_spectrum"
     fs = get_fs(documents_directory)

@@ -209,7 +209,7 @@ class FSDataGateway(DataGateway):
         return ids
 
     def serialize_to_file(self, path: str, obj: Any) -> bool:
-        """Pickles a object to the given path on the selected filesystem"""
+        """Pickles an object to the given path on the selected filesystem"""
         path = DRPath(path)
         self.init_fs(path)
 
@@ -227,7 +227,7 @@ class FSDataGateway(DataGateway):
 
         return obj
 
-    def remove_file(self, path):
+    def remove_file(self, path: str):
         path = DRPath(path)
         self.init_fs(path)
 
