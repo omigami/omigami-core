@@ -1,6 +1,6 @@
 prefect:
   api_server:
-    prod: "https://prefect.omigami.datarevenue.com/graphql"
+    prod: "https://app.omigami.com/prefect/graphql"
     dev: "https://prefect.mlops.datarevenue.com/graphql"
 
 mlflow: "http://mlflow.mlflow:5000"
