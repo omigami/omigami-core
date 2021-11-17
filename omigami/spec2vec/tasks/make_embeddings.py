@@ -49,6 +49,25 @@ class MakeEmbeddings(Task):
         model_registry: Dict[str, str] = None,
         document_path: str = None,
     ) -> Set[str]:
+        """
+        This task creates embeddings with Word2Vec model trained on spectrum documents
+        and saves them to REDIS DB. Each embedding is a vector calculated by
+            spectrum document
+            intensity_weighting_power
+            allowed_missing_percentage
+            n_decimals_for_documents
+
+        Parameters
+        ----------
+        model: Word2Vec model trained on spectrum documents
+        model_registry: dictionary containing registered model's `model_uri` and `run_id`
+        document_path: directory which documents are saved
+
+        Returns
+        -------
+        Set of spectrum_ids
+
+        """
 
         documents = self._fs_gtw.read_from_file(document_path)
 

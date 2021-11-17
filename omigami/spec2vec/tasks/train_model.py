@@ -46,6 +46,18 @@ class TrainModel(Task):
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
     def run(self, documents_directory: List[str]) -> Word2Vec:
+        """
+        This task trains a Word2Vec model with the spectrum documents.
+
+        Parameters
+        ----------
+        documents_directory: directory to read spectrum documents from
+
+        Returns
+        -------
+        trained Word2Vec model
+
+        """
 
         self.logger.info(f"Loading examples from {documents_directory}")
 
