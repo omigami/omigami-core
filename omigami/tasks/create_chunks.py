@@ -45,6 +45,19 @@ class CreateChunks(Task):
         )
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
+        """
+        This task splits GNPS data into chunks, and saves chunked data into S3 filesystem.
+        This is necessary to parallelize Prefect Task orchestration.
+
+        Parameters
+        ----------
+        spectrum_ids: List of spectrum_ids from GNPS data
+
+        Returns
+        -------
+        chunked_paths: paths of saved chunked data
+
+        """
         self.logger.info(f"Loading file {self._file_path} for chunking.")
         # maybe we should save which ids are on each chunk in the pickle file
         chunk_paths = self._data_gtw.chunk_gnps(
