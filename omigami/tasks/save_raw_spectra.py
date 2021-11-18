@@ -83,16 +83,10 @@ class SaveRawSpectra(Task):
                 f"Overwrite: {self._overwrite_all_spectra}"
             )
             new_spectra = [
-                sp
-                for sp in gnps_spectra
-                if sp["spectrum_id"] in new_spectrum_ids
+                sp for sp in gnps_spectra if sp["spectrum_id"] in new_spectrum_ids
             ]
             clean_spectra = self._spectrum_cleaner.clean(new_spectra)
             self._spectrum_dgw.write_raw_spectra(clean_spectra)
-            cleaned_spectrum_ids = [
-                sp.metadata["spectrum_id"] for sp in clean_spectra
-            ]
-            self.logger.info(
-                f"Added {len(cleaned_spectrum_ids)} spectra to the db"
-            )
+            cleaned_spectrum_ids = [sp.metadata["spectrum_id"] for sp in clean_spectra]
+            self.logger.info(f"Added {len(cleaned_spectrum_ids)} spectra to the db")
             return cleaned_spectrum_ids + existing_spectrum_ids
