@@ -12,7 +12,7 @@ from moto import mock_s3
 from pytest_redis import factories
 
 import omigami
-import omigami.config
+import omigami.utils
 from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -30,7 +30,7 @@ redis_db = factories.redisdb("redis_nooproc")
 
 @pytest.fixture
 def mock_default_config(monkeypatch):
-    monkeypatch.setattr(omigami.config, "DEFAULT_PREFECT_TASK_CONFIG", TEST_TASK_CONFIG)
+    monkeypatch.setattr(omigami.utils, "DEFAULT_PREFECT_TASK_CONFIG", TEST_TASK_CONFIG)
 
 
 def pytest_addoption(parser):

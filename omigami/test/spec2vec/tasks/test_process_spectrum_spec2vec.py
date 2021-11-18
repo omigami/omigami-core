@@ -84,7 +84,7 @@ def test_process_spectrum(
     reason="It can only be run if the Redis is up",
 )
 def test_process_spectrum_map(
-    spectrum_ids, spectra_stored, mock_default_config, s3_documents_directory
+    spectrum_ids, spectra_stored, mock_default_config, tmpdir
 ):
     ion_mode = "positive"
     spectrum_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
@@ -93,15 +93,12 @@ def test_process_spectrum_map(
 
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_dgw,
-        documents_save_directory=s3_documents_directory,
+        documents_save_directory=str(tmpdir),
         ion_mode=ion_mode,
         n_decimals=2,
         overwrite_all_spectra=False,
     )
-    chunked_paths = [
-        spectrum_ids[:50],
-        spectrum_ids[50:],
-    ]
+    chunked_paths = [spectrum_ids[:50], spectrum_ids[50:]]
     with Flow("test-flow") as test_flow:
         process_task = ProcessSpectrum(data_gtw, document_dgw, parameters).map(
             chunked_paths
@@ -111,6 +108,7 @@ def test_process_spectrum_map(
     data = res.result[process_task].result
 
     assert len(data) == 2
+    assert res.is_successful()
     assert set(spectrum_dgw.list_spectrum_ids()) == set(spectrum_ids)
 
 
