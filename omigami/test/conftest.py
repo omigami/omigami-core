@@ -21,7 +21,7 @@ from omigami.spec2vec.config import (
     EMBEDDING_HASHES,
     PROJECT_NAME,
 )
-from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
+from omigami.spec2vec.gateways.gateway_controller import DocumentDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -234,10 +234,10 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
         for i in range(0, len(documents_data), chunk_size)
     ]
 
-    dgw = Spec2VecGatewayController(
+    dgw = DocumentDataGateway(
+        "positive",
         Spec2VecRedisSpectrumDataGateway(PROJECT_NAME),
         FSDataGateway(),
-        ion_mode="positive",
     )
 
     fs = get_fs(s3_documents_directory)

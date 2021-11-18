@@ -8,7 +8,7 @@ from prefect import Flow
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
+from omigami.spec2vec.gateways.gateway_controller import DocumentDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -24,7 +24,7 @@ def test_process_spectrum_calls(
 ):
     redis_gateway = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
     data_gtw = MagicMock(spec=FSDataGateway)
-    document_dgw_controller = MagicMock(spec=Spec2VecGatewayController)
+    document_dgw = MagicMock(spec=DocumentDataGateway)
     redis_gateway.read_spectra.return_value = common_cleaned_data
 
     parameters = ProcessSpectrumParameters(
@@ -36,9 +36,7 @@ def test_process_spectrum_calls(
     )
 
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(data_gtw, document_dgw_controller, parameters)(
-            spectrum_ids
-        )
+        process_task = ProcessSpectrum(data_gtw, document_dgw, parameters)(spectrum_ids)
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -57,9 +55,9 @@ def test_process_spectrum(
 ):
     ion_mode = "positive"
     redis_gateway = Spec2VecRedisSpectrumDataGateway(PROJECT_NAME)
-    document_dgw_controller = FSDataGateway()
-    dgw_controller: Spec2VecGatewayController = Spec2VecGatewayController(
-        redis_gateway, document_dgw_controller, ion_mode
+    fs_dgw = FSDataGateway()
+    document_dgw: DocumentDataGateway = DocumentDataGateway(
+        ion_mode, redis_gateway, fs_dgw
     )
 
     documents_directory = f"{s3_documents_directory}/process_spectrum"
@@ -77,9 +75,7 @@ def test_process_spectrum(
     )
 
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(
-            document_dgw_controller, dgw_controller, parameters
-        )(spectrum_ids)
+        process_task = ProcessSpectrum(fs_dgw, document_dgw, parameters)(spectrum_ids)
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -97,9 +93,7 @@ def test_process_spectrum_map(
     ion_mode = "positive"
     redis_gateway = Spec2VecRedisSpectrumDataGateway(PROJECT_NAME)
     data_gtw = FSDataGateway()
-    document_dgw_controller = Spec2VecGatewayController(
-        redis_gateway, data_gtw, ion_mode
-    )
+    document_dgw = DocumentDataGateway(ion_mode, redis_gateway, data_gtw)
 
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=redis_gateway,
@@ -113,9 +107,9 @@ def test_process_spectrum_map(
         spectrum_ids[50:],
     ]
     with Flow("test-flow") as test_flow:
-        process_task = ProcessSpectrum(
-            data_gtw, document_dgw_controller, parameters
-        ).map(chunked_paths)
+        process_task = ProcessSpectrum(data_gtw, document_dgw, parameters).map(
+            chunked_paths
+        )
 
     res = test_flow.run()
     data = res.result[process_task].result
@@ -128,9 +122,7 @@ def test_get_chunk_count(documents_stored, s3_documents_directory):
     ion_mode = "positive"
     redis_gateway = Spec2VecRedisSpectrumDataGateway(PROJECT_NAME)
     data_gtw = FSDataGateway()
-    document_dgw_controller = Spec2VecGatewayController(
-        redis_gateway, data_gtw, ion_mode
-    )
+    document_dgw = DocumentDataGateway(ion_mode, redis_gateway, data_gtw)
 
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=redis_gateway,
@@ -140,7 +132,7 @@ def test_get_chunk_count(documents_stored, s3_documents_directory):
         overwrite_all_spectra=False,
     )
 
-    process_spectrum = ProcessSpectrum(data_gtw, document_dgw_controller, parameters)
+    process_spectrum = ProcessSpectrum(data_gtw, document_dgw, parameters)
     count = process_spectrum._get_chunk_count(s3_documents_directory)
 
     assert count == len(data_gtw.listdir(s3_documents_directory))

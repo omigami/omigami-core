@@ -17,6 +17,7 @@ from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
+    FlowConfig,
 )
 
 
@@ -71,7 +72,7 @@ class Deployer:
         self._redis_db = REDIS_DATABASES[environment][dataset_name]
         self._session_token = session_token
 
-    def _authenticate(self):
+    def _authenticate(self) -> Client:
         api_server = self._api_server or API_SERVER_URLS[self._environment]
         if self._auth:
             if not self._session_token:
@@ -86,7 +87,7 @@ class Deployer:
 
         return client
 
-    def _make_flow_config(self):
+    def _make_flow_config(self) -> FlowConfig:
         return make_flow_config(
             image=self._image,
             storage_type=PrefectStorageMethods.S3,

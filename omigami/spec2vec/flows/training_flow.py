@@ -5,7 +5,7 @@ from prefect import Flow, unmapped
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
 from omigami.gateways.fs_data_gateway import FSDataGateway
-from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
+from omigami.spec2vec.gateways.gateway_controller import DocumentDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -39,7 +39,7 @@ class TrainingFlowParameters:
         self,
         spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
         data_gtw: FSDataGateway,
-        document_dgw_controller: Spec2VecGatewayController,
+        document_dgw: DocumentDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,
@@ -64,7 +64,7 @@ class TrainingFlowParameters:
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
-        self.document_dgw_controller = document_dgw_controller
+        self.document_dgw = document_dgw
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
@@ -144,7 +144,7 @@ def build_training_flow(
 
         document_paths = ProcessSpectrum(
             flow_parameters.data_gtw,
-            flow_parameters.document_dgw_controller,
+            flow_parameters.document_dgw,
             flow_parameters.processing,
         ).map(chunked_spectrum_ids)
 

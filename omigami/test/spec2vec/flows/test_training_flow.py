@@ -17,7 +17,7 @@ from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
+from omigami.spec2vec.gateways.gateway_controller import DocumentDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -41,7 +41,7 @@ def flow_config():
 def test_training_flow(flow_config):
     mock_spectrum_dgw = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
     mock_data_gtw = MagicMock(spec=FSDataGateway)
-    mock_document_dgw_controller = MagicMock(spec=Spec2VecGatewayController)
+    mock_document_dgw = MagicMock(spec=DocumentDataGateway)
     mock_cleaner = MagicMock(spec=SpectrumCleaner)
     expected_tasks = {
         "DownloadData",
@@ -55,7 +55,7 @@ def test_training_flow(flow_config):
     flow_params = TrainingFlowParameters(
         spectrum_dgw=mock_spectrum_dgw,
         data_gtw=mock_data_gtw,
-        document_dgw_controller=mock_document_dgw_controller,
+        document_dgw=mock_document_dgw,
         spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
         output_dir="datasets",
@@ -108,14 +108,12 @@ def test_run_training_flow(
 
     spectrum_dgw = Spec2VecRedisSpectrumDataGateway(project=PROJECT_NAME)
     data_gtw = FSDataGateway()
-    document_dgw_controller = Spec2VecGatewayController(
-        spectrum_dgw, data_gtw, ion_mode
-    )
+    document_dgw = DocumentDataGateway(ion_mode, spectrum_dgw, data_gtw)
     spectrum_cleaner = SpectrumCleaner()
     flow_params = TrainingFlowParameters(
         spectrum_dgw=spectrum_dgw,
         data_gtw=data_gtw,
-        document_dgw_controller=document_dgw_controller,
+        document_dgw=document_dgw,
         spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         output_dir=ASSETS_DIR.parent,

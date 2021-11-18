@@ -5,7 +5,7 @@ from prefect import Task
 
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
+from omigami.spec2vec.gateways.gateway_controller import DocumentDataGateway
 from omigami.spec2vec.gateways.redis_spectrum_gateway import (
     Spec2VecRedisSpectrumDataGateway,
 )
@@ -29,12 +29,12 @@ class ProcessSpectrum(Task):
     def __init__(
         self,
         data_gtw: FSDataGateway,
-        document_dgw_controller: Spec2VecGatewayController,
+        document_dgw: DocumentDataGateway,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
         self._data_gtw = data_gtw
-        self._document_dgw_controller = document_dgw_controller
+        self._document_dgw = document_dgw
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._n_decimals = process_parameters.n_decimals
         self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
@@ -48,7 +48,7 @@ class ProcessSpectrum(Task):
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
         if self._overwrite_all_spectra:
-            self._remove_all_documents(self._document_dgw_controller)
+            self._remove_all_documents(self._document_dgw)
 
         spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
 
@@ -69,7 +69,7 @@ class ProcessSpectrum(Task):
 
                 self.logger.info(f"Saving documents to {document_save_directory}.")
 
-                self._document_dgw_controller.write_documents(
+                self._document_dgw.write_documents(
                     document_save_directory, spectrum_documents
                 )
 
@@ -115,11 +115,11 @@ class ProcessSpectrum(Task):
 
         return len(self._data_gtw.listdir(self._documents_save_directory))
 
-    def _remove_all_documents(self, gtw_controller: Spec2VecGatewayController):
+    def _remove_all_documents(self, document_dgw: DocumentDataGateway):
 
         document_file_paths = self._data_gtw.listdir(self._documents_save_directory)
 
         self.logger.info(f"Removing {len(document_file_paths)} document files")
 
         for doc_path in document_file_paths:
-            gtw_controller.remove_documents_file(doc_path)
+            document_dgw.remove_documents_file(doc_path)
