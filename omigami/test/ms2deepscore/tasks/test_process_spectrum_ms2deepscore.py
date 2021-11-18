@@ -1,7 +1,7 @@
 import os
+from unittest.mock import MagicMock
 
 import pytest
-from mock import MagicMock
 from prefect import Flow
 
 from omigami.gateways.fs_data_gateway import FSDataGateway
