@@ -21,3 +21,5 @@ PROJECT_NAME = config["prefect"]["project"].get(str)
 
 REDIS_HOST = config["storage"]["redis"]["env_vars"]["redis_host"].get(str)
 REDIS_DB = config["storage"]["redis"]["env_vars"]["redis_db"].get(str)
+
+CHUNK_SIZE = int(1e8)  # maybe move this to config but looks like we rarely change it
