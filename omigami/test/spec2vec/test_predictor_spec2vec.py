@@ -108,12 +108,8 @@ def test_get_best_matches(model, embeddings):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-@pytest.mark.skipif(
-    not os.path.exists(str(ASSETS_DIR / "test_model.pkl")),
-    reason="test_model.pkl is git ignored",
-)
-def test_local_predictions(small_payload, big_payload, redis_full_setup):
-    path = str(ASSETS_DIR / "test_model.pkl")
+def test_local_predictions(big_payload, redis_full_setup):
+    path = str(ASSETS_DIR / "python_model.pkl")
 
     with open(path, "rb") as input_file:
         local_model = pickle.load(input_file)
@@ -123,11 +119,7 @@ def test_local_predictions(small_payload, big_payload, redis_full_setup):
     matches_big = local_model.predict(
         data_input_and_parameters=big_payload, mz_range=10, context=""
     )
-    matches_small = local_model.predict(
-        data_input_and_parameters=small_payload, mz_range=10, context=""
-    )
 
-    assert len(matches_small["spectrum-0"]) == 2
     assert len(matches_big) == 2
     assert len(matches_big["spectrum-0"]) == 2
 

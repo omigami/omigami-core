@@ -231,9 +231,7 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
         for i in range(0, len(documents_data), chunk_size)
     ]
 
-    dgw = SpectrumDocumentDataGateway(
-        "positive", FSDataGateway(), project_name=PROJECT_NAME
-    )
+    dgw = SpectrumDocumentDataGateway("positive", FSDataGateway(), project=PROJECT_NAME)
 
     fs = get_fs(s3_documents_directory)
     if not os.path.exists(s3_documents_directory):
