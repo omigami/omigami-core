@@ -61,7 +61,7 @@ class MakeEmbeddings(Task):
         Returns
         -------
         spectrum_ids : Set[str]
-            spectrum ids that embeddings are made from
+            spectrum_ids that embeddings are made from
 
         """
         model_path = train_model_output["ms2deepscore_model_path"]

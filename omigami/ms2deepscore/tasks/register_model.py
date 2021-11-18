@@ -46,7 +46,15 @@ class RegisterModel(Task):
         train_model_output: dict = None,
     ) -> Dict[str, str]:
         """
-        This task registers ms2deepscore model to MLflow Model Registry.
+        This task registers ms2deepscore model to MLflow Model Registry. It also saves
+        model parameters:
+            epochs
+            learning_rate
+            layer_base_dims
+            embedding_dim
+            dropout_rate
+            split_ratio
+            validation_loss
 
         Parameters
         ----------

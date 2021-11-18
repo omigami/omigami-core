@@ -64,7 +64,7 @@ class TrainModel(Task):
         spectrum_ids: List[str]
             spectrum_ids to train model on
         scores_output_path: str
-            output path to save resulting similarity scores
+            Output path to save resulting similarity scores
 
         Returns
         -------

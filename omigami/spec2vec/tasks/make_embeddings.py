@@ -60,7 +60,7 @@ class MakeEmbeddings(Task):
         Parameters
         ----------
         model: Word2Vec
-            model trained on spectrum documents
+            Model trained on spectrum documents
         model_registry: Dict[str, str]
             Dictionary containing registered model's `model_uri` and `run_id`
         document_path: str
