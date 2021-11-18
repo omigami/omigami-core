@@ -9,7 +9,6 @@ from omigami.spec2vec.gateways.redis_spectrum_document import (
 
 
 class SpectrumDocumentDataGateway(RedisDocumentDataGateway):
-    # TODO: see TODO on redis_spectrum_gateway.py
     def __init__(
         self,
         ion_mode: str,
