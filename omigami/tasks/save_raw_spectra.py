@@ -67,14 +67,12 @@ class SaveRawSpectra(Task):
         gnps_spectra = self._data_gtw.load_spectrum(gnps_path)
         gnps_spectrum_ids = [sp["spectrum_id"] for sp in gnps_spectra]
 
-        existing_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
-
         if self._overwrite_all_spectra:
             new_spectrum_ids = gnps_spectrum_ids
+            existing_spectrum_ids = []
         else:
+            existing_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
             new_spectrum_ids = set(gnps_spectrum_ids) - set(existing_spectrum_ids)
-
-        spectrum_ids_already_added = list(set(gnps_spectrum_ids) - set(new_spectrum_ids))
 
         self.logger.info(f"Need to add new IDs: {len(new_spectrum_ids) > 0}")
         if len(new_spectrum_ids) > 0:
@@ -101,6 +99,6 @@ class SaveRawSpectra(Task):
                 f"Adding {len(cleaned_spectrum_ids)} spectra to the db"
             )
 
-            return cleaned_spectrum_ids + spectrum_ids_already_added
+            return cleaned_spectrum_ids + existing_spectrum_ids
 
         return gnps_spectrum_ids
