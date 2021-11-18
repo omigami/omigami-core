@@ -51,11 +51,12 @@ class TrainModel(Task):
 
         Parameters
         ----------
-        documents_directory: directory to read spectrum documents from
+        documents_directory: List[str]
+            Directory to read spectrum documents from
 
         Returns
         -------
-        trained Word2Vec model
+        model: Word2Vec
 
         """
 

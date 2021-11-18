@@ -117,12 +117,13 @@ class DownloadData(Task):
 
     def run(self) -> List[str]:
         """
-        This task downloads GNPS data into S3 filesystem, if only data is not up-to-date
+        This task downloads GNPS data into S3 filesystem, if only data is NOT up-to-date
         with the current GNPS data.
 
         Returns
         -------
-        spectrum ids: List of spectrum_ids saved to filesystem
+        spectrum ids: List[str]
+            spectrum_ids saved to filesystem
 
         """
 

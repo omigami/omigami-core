@@ -53,11 +53,12 @@ class ProcessSpectrum(Task):
 
         Parameters
         ----------
-        spectrum_ids: spectrum_ids of new spectrum
+        spectrum_ids: Set[str]
+            spectrum_ids of new spectra
 
         Returns
         -------
-        directory which documents are saved
+        Directory which documents are saved
 
         """
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")

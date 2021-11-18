@@ -54,11 +54,12 @@ class RegisterModel(Task):
 
         Parameters
         ----------
-        model: Word2Vec model trained on spectrum documents
+        model: Word2Vec
+            Model trained on spectrum documents
 
         Returns
         -------
-        dictionary containing registered model's `model_uri` and `run_id`
+        Dictionary containing registered model's `model_uri` and `run_id`
 
         """
         self.logger.info(

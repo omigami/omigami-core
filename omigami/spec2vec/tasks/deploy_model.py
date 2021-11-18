@@ -37,11 +37,8 @@ class DeployModel(Task):
 
         Parameters
         ----------
-        registered_model: dictionary containing registered model's `model_uri` and `run_id`
-
-        Returns
-        -------
-        Tuple containing deployment status
+        registered_model: Dict[str, str]
+            Dictionary containing registered model's `model_uri` and `run_id`
 
         """
         sd = SeldonDeployment(
