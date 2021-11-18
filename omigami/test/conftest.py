@@ -21,10 +21,7 @@ from omigami.spec2vec.config import (
     EMBEDDING_HASHES,
     PROJECT_NAME,
 )
-from omigami.spec2vec.gateways.gateway_controller import DocumentDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
-)
+from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -234,10 +231,8 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
         for i in range(0, len(documents_data), chunk_size)
     ]
 
-    dgw = DocumentDataGateway(
-        "positive",
-        Spec2VecRedisSpectrumDataGateway(PROJECT_NAME),
-        FSDataGateway(),
+    dgw = SpectrumDocumentDataGateway(
+        "positive", FSDataGateway(), project_name=PROJECT_NAME
     )
 
     fs = get_fs(s3_documents_directory)

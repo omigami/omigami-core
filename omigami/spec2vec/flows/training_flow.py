@@ -4,11 +4,9 @@ from prefect import Flow, unmapped
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
+from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
-from omigami.spec2vec.gateways.gateway_controller import DocumentDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
-)
+from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
     DeployModel,
@@ -37,9 +35,9 @@ from omigami.tasks import (
 class TrainingFlowParameters:
     def __init__(
         self,
-        spectrum_dgw: Spec2VecRedisSpectrumDataGateway,
+        spectrum_dgw: RedisSpectrumDataGateway,
         data_gtw: FSDataGateway,
-        document_dgw: DocumentDataGateway,
+        document_dgw: SpectrumDocumentDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         output_dir: str,

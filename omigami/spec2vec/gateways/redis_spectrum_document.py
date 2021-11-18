@@ -2,15 +2,12 @@ from typing import List, Optional
 
 from spec2vec import SpectrumDocument
 
-from omigami.gateways import RedisSpectrumDataGateway
+from omigami.gateways.redis import RedisDataGateway
 from omigami.spec2vec.config import PROJECT_NAME, DOCUMENT_HASHES
 
 
-class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
-    # TODO: refactor this inheritance. It doesn't make sense given what the two classes
-    # TODO: are doing at the moment. Add new documents data gateway and maybe unify with
-    # TODO: the other document dgw on gateway_controller.py
-    def __init__(self, project=PROJECT_NAME):
+class RedisDocumentDataGateway(RedisDataGateway):
+    def __init__(self, project: str = PROJECT_NAME):
         super().__init__(project)
 
     def list_document_ids(self, ion_mode: str) -> List[str]:

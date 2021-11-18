@@ -5,13 +5,11 @@ import pytest
 from drfs.filesystems import get_fs
 from prefect import Flow
 
+from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.gateway_controller import DocumentDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
-)
+from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 from omigami.spec2vec.tasks import ProcessSpectrumParameters
 from omigami.spec2vec.tasks.process_spectrum import ProcessSpectrum
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
@@ -22,13 +20,13 @@ from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
 def test_process_spectrum_calls(
     spectrum_ids, common_cleaned_data, s3_documents_directory, s3_mock
 ):
-    redis_gateway = MagicMock(spec=Spec2VecRedisSpectrumDataGateway)
+    spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
     data_gtw = MagicMock(spec=FSDataGateway)
-    document_dgw = MagicMock(spec=DocumentDataGateway)
-    redis_gateway.read_spectra.return_value = common_cleaned_data
+    document_dgw = MagicMock(spec=SpectrumDocumentDataGateway)
+    spectrum_dgw.read_spectra.return_value = common_cleaned_data
 
     parameters = ProcessSpectrumParameters(
-        spectrum_dgw=redis_gateway,
+        spectrum_dgw=spectrum_dgw,
         documents_save_directory=s3_documents_directory,
         ion_mode="positive",
         n_decimals=2,
@@ -43,7 +41,7 @@ def test_process_spectrum_calls(
 
     assert res.is_successful()
     assert data == f"{s3_documents_directory}/documents0.pickle"
-    redis_gateway.list_existing_spectra.assert_not_called()
+    spectrum_dgw.list_existing_spectra.assert_not_called()
 
 
 @pytest.mark.skipif(
@@ -54,20 +52,18 @@ def test_process_spectrum(
     spectrum_ids, spectra_stored, mock_default_config, s3_documents_directory, s3_mock
 ):
     ion_mode = "positive"
-    redis_gateway = Spec2VecRedisSpectrumDataGateway(PROJECT_NAME)
+    spectrum_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
     fs_dgw = FSDataGateway()
-    document_dgw: DocumentDataGateway = DocumentDataGateway(
-        ion_mode, redis_gateway, fs_dgw
-    )
+    document_dgw = SpectrumDocumentDataGateway(ion_mode, fs_dgw)
 
     documents_directory = f"{s3_documents_directory}/process_spectrum"
     fs = get_fs(documents_directory)
     fs.makedirs(documents_directory)
 
-    redis_gateway.remove_document_ids(spectrum_ids, ion_mode)
+    document_dgw.remove_document_ids(spectrum_ids, ion_mode)
 
     parameters = ProcessSpectrumParameters(
-        spectrum_dgw=redis_gateway,
+        spectrum_dgw=spectrum_dgw,
         documents_save_directory=documents_directory,
         ion_mode=ion_mode,
         n_decimals=2,
@@ -91,12 +87,12 @@ def test_process_spectrum_map(
     spectrum_ids, spectra_stored, mock_default_config, s3_documents_directory
 ):
     ion_mode = "positive"
-    redis_gateway = Spec2VecRedisSpectrumDataGateway(PROJECT_NAME)
+    spectrum_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
     data_gtw = FSDataGateway()
-    document_dgw = DocumentDataGateway(ion_mode, redis_gateway, data_gtw)
+    document_dgw = SpectrumDocumentDataGateway(ion_mode, data_gtw)
 
     parameters = ProcessSpectrumParameters(
-        spectrum_dgw=redis_gateway,
+        spectrum_dgw=spectrum_dgw,
         documents_save_directory=s3_documents_directory,
         ion_mode=ion_mode,
         n_decimals=2,
@@ -115,17 +111,17 @@ def test_process_spectrum_map(
     data = res.result[process_task].result
 
     assert len(data) == 2
-    assert set(redis_gateway.list_spectrum_ids()) == set(spectrum_ids)
+    assert set(spectrum_dgw.list_spectrum_ids()) == set(spectrum_ids)
 
 
 def test_get_chunk_count(documents_stored, s3_documents_directory):
     ion_mode = "positive"
-    redis_gateway = Spec2VecRedisSpectrumDataGateway(PROJECT_NAME)
+    spectrum_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
     data_gtw = FSDataGateway()
-    document_dgw = DocumentDataGateway(ion_mode, redis_gateway, data_gtw)
+    document_dgw = SpectrumDocumentDataGateway(ion_mode, data_gtw)
 
     parameters = ProcessSpectrumParameters(
-        spectrum_dgw=redis_gateway,
+        spectrum_dgw=spectrum_dgw,
         documents_save_directory=s3_documents_directory,
         ion_mode=ion_mode,
         n_decimals=2,

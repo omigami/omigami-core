@@ -3,12 +3,10 @@ from typing import Set, List
 
 from prefect import Task
 
+from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
-from omigami.spec2vec.gateways.gateway_controller import DocumentDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
-)
+from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.spec2vec.tasks.process_spectrum.spectrum_processor import (
     SpectrumProcessor,
@@ -18,7 +16,7 @@ from omigami.utils import merge_prefect_task_configs
 
 @dataclass
 class ProcessSpectrumParameters:
-    spectrum_dgw: Spec2VecRedisSpectrumDataGateway
+    spectrum_dgw: RedisSpectrumDataGateway
     documents_save_directory: str
     ion_mode: str
     n_decimals: int = 2
@@ -29,7 +27,7 @@ class ProcessSpectrum(Task):
     def __init__(
         self,
         data_gtw: FSDataGateway,
-        document_dgw: DocumentDataGateway,
+        document_dgw: SpectrumDocumentDataGateway,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
@@ -85,7 +83,7 @@ class ProcessSpectrum(Task):
         if self._overwrite_all_spectra:
             spectrum_ids_to_add = spectrum_ids
         else:
-            spectrum_ids_to_add = self._spectrum_dgw.list_missing_documents(
+            spectrum_ids_to_add = self._document_dgw.list_missing_documents(
                 spectrum_ids, self._ion_mode
             )
             self.logger.info(
@@ -115,7 +113,7 @@ class ProcessSpectrum(Task):
 
         return len(self._data_gtw.listdir(self._documents_save_directory))
 
-    def _remove_all_documents(self, document_dgw: DocumentDataGateway):
+    def _remove_all_documents(self, document_dgw: SpectrumDocumentDataGateway):
 
         document_file_paths = self._data_gtw.listdir(self._documents_save_directory)
 

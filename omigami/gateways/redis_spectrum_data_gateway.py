@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import os
 import pickle
 from logging import Logger
 from typing import List, Iterable, Set, Union
 
-import redis
 from matchms import Spectrum
 
+from omigami.gateways.redis import RedisDataGateway
 from omigami.ms2deepscore.entities.embedding import Embedding as MS2DeepScoreEmbedding
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
@@ -16,31 +15,14 @@ from omigami.spec2vec.config import (
 )
 from omigami.spec2vec.entities.embedding import Embedding as Spec2VecEmbedding
 
+
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
 # which was defined during deployment by the 'dataset_name' param
 
-REDIS_HOST = str(os.getenv("REDIS_HOST"))
-REDIS_DB = str(os.getenv("REDIS_DB"))
 
-client = None
-
-
-def get_redis_client():
-    global client
-    if client is None:
-        client = redis.StrictRedis(host=REDIS_HOST, db=REDIS_DB)
-    return client
-
-
-class RedisSpectrumDataGateway:
+class RedisSpectrumDataGateway(RedisDataGateway):
     """Data gateway for Redis storage."""
-
-    def __init__(self, project: str = None):
-        # We initialize it with None so we can pickle this gateway when deploying the flow
-
-        self.client = None
-        self.project = project
 
     def write_raw_spectra(self, spectra: List[Spectrum]):
         """Writes a list of raw spectra to the redis database unsing the spectrum_id as the key.
@@ -62,10 +44,6 @@ class RedisSpectrumDataGateway:
                 spectrum.metadata["spectrum_id"],
                 pickle.dumps(spectrum),
             )
-
-    def _init_client(self):
-        if self.client is None:
-            self.client = get_redis_client()
 
     def list_spectrum_ids(self) -> List[str]:
         """List the spectrum ids of all spectra on the redis database."""
@@ -168,10 +146,3 @@ class RedisSpectrumDataGateway:
             ),
             spectrum_ids,
         )
-
-    def _format_redis_key(self, hashes: str, ion_mode: str, run_id: str = None):
-
-        if not run_id:
-            return f"{hashes}_{self.project}_{ion_mode}"
-
-        return f"{hashes}_{self.project}_{ion_mode}_{run_id}"
