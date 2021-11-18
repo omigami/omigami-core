@@ -64,43 +64,43 @@ class SaveRawSpectra(Task):
             passed the cleaning process.
         """
         self.logger.info(f"Loading spectra from {gnps_path}")
-        spectra_from_file = self._data_gtw.load_spectrum(gnps_path)
-        spectrum_ids = [sp["spectrum_id"] for sp in spectra_from_file]
+        gnps_spectra = self._data_gtw.load_spectrum(gnps_path)
+        gnps_spectrum_ids = [sp["spectrum_id"] for sp in gnps_spectra]
 
-        redis_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
+        existing_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
 
         if self._overwrite_all_spectra:
-            spectrum_ids_to_add = spectrum_ids
+            new_spectrum_ids = gnps_spectrum_ids
         else:
-            spectrum_ids_to_add = set(spectrum_ids) - set(redis_spectrum_ids)
+            new_spectrum_ids = set(gnps_spectrum_ids) - set(existing_spectrum_ids)
 
-        spectrum_ids_already_added = list(set(spectrum_ids) - set(spectrum_ids_to_add))
+        spectrum_ids_already_added = list(set(gnps_spectrum_ids) - set(new_spectrum_ids))
 
-        self.logger.info(f"Need to add new IDs: {len(spectrum_ids_to_add) > 0}")
-        if len(spectrum_ids_to_add) > 0:
+        self.logger.info(f"Need to add new IDs: {len(new_spectrum_ids) > 0}")
+        if len(new_spectrum_ids) > 0:
             self.logger.info(
-                f"Cleaning {len(spectrum_ids_to_add)} spectra before adding to db\n"
+                f"Cleaning {len(new_spectrum_ids)} spectra before adding to db\n"
                 f"Overwrite: {self._overwrite_all_spectra}"
             )
 
-            spectra_to_add = [
+            new_spectra = [
                 sp
-                for sp in spectra_from_file
-                if sp["spectrum_id"] in spectrum_ids_to_add
+                for sp in gnps_spectra
+                if sp["spectrum_id"] in new_spectrum_ids
             ]
 
-            spectra_to_add = self._spectrum_cleaner.clean(spectra_to_add)
+            clean_spectra = self._spectrum_cleaner.clean(new_spectra)
 
-            self._spectrum_dgw.write_raw_spectra(spectra_to_add)
+            self._spectrum_dgw.write_raw_spectra(clean_spectra)
 
-            cleaned_spectrum_ids_to_add = [
-                sp.metadata["spectrum_id"] for sp in spectra_to_add
+            cleaned_spectrum_ids = [
+                sp.metadata["spectrum_id"] for sp in clean_spectra
             ]
 
             self.logger.info(
-                f"Adding {len(cleaned_spectrum_ids_to_add)} spectra to the db"
+                f"Adding {len(cleaned_spectrum_ids)} spectra to the db"
             )
 
-            return cleaned_spectrum_ids_to_add + spectrum_ids_already_added
+            return cleaned_spectrum_ids + spectrum_ids_already_added
 
-        return spectrum_ids
+        return gnps_spectrum_ids
