@@ -52,7 +52,7 @@ class SaveRawSpectra(Task):
 
     def run(self, gnps_path: str = None) -> List[str]:
         """The run method of a Prefect task takes a path to raw gnps json data and
-        saves it as object of the class matchms.Spectrum to a database.
+        saves it as object of the class matchms. Spectrum to a database.
 
         Parameters:
         ----------

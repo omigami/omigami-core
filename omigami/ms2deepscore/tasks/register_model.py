@@ -45,6 +45,19 @@ class RegisterModel(Task):
         self,
         train_model_output: dict = None,
     ) -> Dict[str, str]:
+        """
+        This task registers ms2deepscore model to MLflow Model Registry.
+
+        Parameters
+        ----------
+        train_model_output: Dict[str, str]
+            Dictionary containing `ms2deepscore_model_path` and `validation_loss`
+
+        Returns
+        -------
+        Dictionary containing registered `model_uri` and `run_id`
+
+        """
         model_path = train_model_output["ms2deepscore_model_path"]
         validation_loss = train_model_output["validation_loss"]
 

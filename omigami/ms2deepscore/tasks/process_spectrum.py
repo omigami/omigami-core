@@ -49,6 +49,21 @@ class ProcessSpectrum(Task):
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
     def run(self, spectrum_ids_chunks: List[Set[str]] = None) -> Set[str]:
+        """
+        This task cleans spectra and creates binned spectra from them. Then, it saves
+        binned spectra to REDIS DB and S3 filesystem.
+
+        Parameters
+        ----------
+        spectrum_ids_chunks: List[Set[str]]
+            spectrum_ids defined in the set of chunks. If it is not passed, then method
+            cleans and creates binned spectra for the existing ones in DB.
+
+        Returns
+        -------
+        Set of binned and saved spectrum_ids
+
+        """
         if spectrum_ids_chunks:
             spectrum_ids = [item for elem in spectrum_ids_chunks for item in elem]
         else:
