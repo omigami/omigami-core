@@ -87,6 +87,6 @@ class SaveRawSpectra(Task):
             ]
             clean_spectra = self._spectrum_cleaner.clean(new_spectra)
             self._spectrum_dgw.write_raw_spectra(clean_spectra)
-            cleaned_spectrum_ids = [sp.metadata["spectrum_id"] for sp in clean_spectra]
-            self.logger.info(f"Added {len(cleaned_spectrum_ids)} spectra to the db")
-            return cleaned_spectrum_ids + existing_spectrum_ids
+            clean_spectrum_ids = [sp.metadata["spectrum_id"] for sp in clean_spectra]
+            self.logger.info(f"Added {len(clean_spectrum_ids)} spectra to the db")
+            return clean_spectrum_ids + existing_spectrum_ids
