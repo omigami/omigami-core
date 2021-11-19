@@ -47,7 +47,7 @@ class ProcessSpectrum(Task):
     def run(self, spectrum_ids: Set[str] = None) -> str:
         """
         Prefect task to create spectrum documents from input spectra. Spectrum documents
-        are saved to REDIS DB as well as S3 filesystem. Following options are allowed:
+        are saved to REDIS DB as well as filesystem. Following options are allowed:
             - overwrite existing documents in DB with the newly created documents
             - save only new documents, by comparing new ones to existing documents in DB
 

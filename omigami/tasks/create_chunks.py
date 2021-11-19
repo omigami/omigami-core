@@ -47,8 +47,8 @@ class CreateChunks(Task):
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
         """
         Prefect task to split GNPS data into chunks. First, GNPS data file is read from
-        S3. Then the file is split, and smaller files are created in `chunk_size`.
-        Finally, chunked files are saved to S3 filesystem. This is necessary to
+        filesystem. Then the file is split, and smaller files are created in `chunk_size`.
+        Finally, chunked files are saved to filesystem. This is necessary to
         parallelize task orchestration.
 
         Parameters

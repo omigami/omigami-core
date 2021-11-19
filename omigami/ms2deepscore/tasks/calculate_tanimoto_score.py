@@ -39,7 +39,7 @@ class CalculateTanimotoScore(Task):
     def run(self, spectrum_ids: Set[str] = None) -> str:
         """
         Prefect task to calculate the Tanimoto Scores for all pairs of binned spectra.
-        Calculated scores are saved to S3 filesystem.
+        Calculated scores are saved to filesystem.
 
         Parameters
         ----------

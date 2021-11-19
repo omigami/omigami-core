@@ -51,7 +51,7 @@ class ProcessSpectrum(Task):
     def run(self, spectrum_ids_chunks: List[Set[str]] = None) -> Set[str]:
         """
         Prefect task to clean spectra and create binned spectra from cleaned spectra.
-        Binned spectra are saved to REDIS DB and S3 filesystem.
+        Binned spectra are saved to REDIS DB and filesystem.
 
         Parameters
         ----------

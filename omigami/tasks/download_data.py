@@ -104,7 +104,7 @@ class DownloadData(Task):
 
     def run(self) -> List[str]:
         """
-        Prefect task to download and save GNPS data into S3 filesystem, only if data is
+        Prefect task to download and save GNPS data into filesystem, only if data is
         NOT up-to-date with the current GNPS data.
 
         Returns
