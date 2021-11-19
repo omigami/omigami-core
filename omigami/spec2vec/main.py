@@ -25,10 +25,26 @@ def run_training_flow(
     overwrite_model: bool,
     overwrite_all_spectra: bool,
     schedule: Optional[pd.Timedelta] = None,
+    auth: bool = True,
 ):
+    """
+    Authenticates, creates a prefect client, builds and deploys a flow, and trigger a run
+    of this flow.
+
+    Parameters
+    ----------
+    For information on parameters please check spec2vec/cli.py
+
+    Returns
+    -------
+
+    """
     api_server = API_SERVER_URLS[environment]
-    login_config = config["login"][environment].get(dict)
-    login_config.pop("token")
+    if auth is True:
+        login_config = config["login"][environment].get(dict)
+        login_config.pop("token")
+    else:
+        login_config = {"token": ""}
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     client = prefect_factory.get_client()
 

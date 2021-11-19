@@ -162,3 +162,18 @@ version provided in the environment and the following command:
 ::
 
     black --target-version py37 omigami
+
+
+Running Prefect Locally
+------------------------------------
+
+Run the docker command
+::
+    docker-compose -f local-prefect/docker-compose.yml up -d
+
+When it is the first time running it locally, create a tenant:
+::
+    prefect server create-tenant -n default
+
+
+To access the dashboard, go to http://localhost:8080/

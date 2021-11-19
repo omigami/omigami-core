@@ -61,7 +61,18 @@ class Spec2VecFlowFactory:
         deploy_model: bool = False,
         chunk_size: int = CHUNK_SIZE,
     ) -> Flow:
-        """TODO"""
+        """Creates all objects necessary to build a training flow, and then builds it.
+
+        Parameters
+        ----------
+        For information on parameters please check spec2vec/cli.py
+
+        Returns
+        -------
+        Flow:
+            A prefect training flow with the given parameters
+
+        """
         flow_config = make_flow_config(
             image=image,
             storage_type=PrefectStorageMethods.S3,
