@@ -48,7 +48,7 @@ def test_write_raw_spectra(redis_db, loaded_data):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_save_raw_spectum_flow(create_parameters, local_gnps_small_json):
+def test_save_raw_spectrum_flow(create_parameters, local_gnps_small_json):
     """Tests if the task if flow ready"""
     # Setup Test
     empty_database(create_parameters, local_gnps_small_json)
