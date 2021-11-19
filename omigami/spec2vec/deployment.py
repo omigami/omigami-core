@@ -16,7 +16,9 @@ from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_document import (
+    RedisSpectrumDocumentDataGateway,
+)
 from omigami.spectrum_cleaner import SpectrumCleaner
 
 
@@ -67,16 +69,14 @@ class Spec2VecDeployer(Deployer):
             date=datetime.today()
         )
 
-        document_dgw_controller = SpectrumDocumentDataGateway(
-            redis_dgw=self._spectrum_dgw, fs_dgw=self._data_gtw, ion_mode=self._ion_mode
-        )
+        document_dgw = RedisSpectrumDocumentDataGateway()
 
         output_dir = S3_BUCKETS[self._environment]
 
         flow_parameters = TrainingFlowParameters(
             data_gtw=self._data_gtw,
             spectrum_dgw=self._spectrum_dgw,
-            document_dgw=document_dgw_controller,
+            document_dgw=document_dgw,
             spectrum_cleaner=self._spectrum_cleaner,
             source_uri=self._source_uri,
             output_dir=output_dir,

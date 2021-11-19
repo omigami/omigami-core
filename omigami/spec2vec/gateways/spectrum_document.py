@@ -1,31 +1,71 @@
+from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from spec2vec import SpectrumDocument
 
-from omigami.gateways.fs_data_gateway import FSDataGateway
-from omigami.spec2vec.gateways.redis_spectrum_document import (
-    RedisDocumentDataGateway,
-)
 
+class SpectrumDocumentDataGateway(ABC):
+    @abstractmethod
+    def list_document_ids(self, ion_mode: str) -> List[str]:
+        """List documents IDs for a given ion mode
 
-class SpectrumDocumentDataGateway(RedisDocumentDataGateway):
-    def __init__(
-        self,
-        ion_mode: str,
-        fs_dgw: FSDataGateway = None,
-        *args,
-        **kwargs,
+        Parameters
+        ----------
+        ion_mode:
+            Document ion mode.
+
+        Returns
+        -------
+        List of IDs available
+        """
+        pass
+
+    @abstractmethod
+    def write_documents(
+        self, documents: List[Optional[SpectrumDocument]], ion_mode: str
     ):
-        super().__init__(*args, **kwargs)
-        self._ion_mode = ion_mode
-        self._fs_dgw = fs_dgw or FSDataGateway()
+        """Saves the documents to the storage system
 
-    def write_documents(self, path: str, documents: List[Optional[SpectrumDocument]]):
-        self.write_document_ids(documents, self._ion_mode)
-        self._fs_dgw.serialize_to_file(path, documents)
+        Parameters
+        ----------
+        documents:
+            Documents to be saved
+        ion_mode:
+            Document ion mode.
 
-    def remove_documents_file(self, path: str):
-        documents = self._fs_dgw.read_from_file(path)
-        document_ids = [doc.get("spectrum_id") for doc in documents]
-        self.remove_document_ids(document_ids, self._ion_mode)
-        self._fs_dgw.remove_file(path)
+        """
+        pass
+
+    @abstractmethod
+    def remove_documents(self, document_ids: List[str], ion_mode: str):
+        """Deletes documents from the storage using their IDs
+
+        Parameters
+        ----------
+        document_ids:
+            List of document IDs to be deleted
+        ion_mode:
+            Documents ion mode
+
+        """
+        pass
+
+    @abstractmethod
+    def list_missing_documents(
+        self, document_ids: List[str], ion_mode: str
+    ) -> List[str]:
+        """Given a list of document IDs, return the ones that don't exist in the
+        database.
+
+        Parameters
+        ----------
+        document_ids:
+            List of IDs to check
+        ion_mode:
+            Documents ion mode
+
+        Returns
+        -------
+        List of IDs that are not present in the storage system
+        """
+        pass

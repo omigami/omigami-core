@@ -9,6 +9,9 @@ from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
+from omigami.spec2vec.gateways.redis_spectrum_document import (
+    RedisSpectrumDocumentDataGateway,
+)
 from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 from omigami.spec2vec.tasks import ProcessSpectrumParameters
 from omigami.spec2vec.tasks.process_spectrum import ProcessSpectrum
@@ -54,13 +57,13 @@ def test_process_spectrum(
     ion_mode = "positive"
     spectrum_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
     fs_dgw = FSDataGateway()
-    document_dgw = SpectrumDocumentDataGateway(ion_mode, fs_dgw)
+    document_dgw = RedisSpectrumDocumentDataGateway()
 
     documents_directory = f"{s3_documents_directory}/process_spectrum"
     fs = get_fs(documents_directory)
     fs.makedirs(documents_directory)
 
-    document_dgw.remove_document_ids(spectrum_ids, ion_mode)
+    document_dgw.remove_documents(spectrum_ids, ion_mode)
 
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_dgw,
@@ -89,7 +92,7 @@ def test_process_spectrum_map(
     ion_mode = "positive"
     spectrum_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
     data_gtw = FSDataGateway()
-    document_dgw = SpectrumDocumentDataGateway(ion_mode, data_gtw)
+    document_dgw = RedisSpectrumDocumentDataGateway()
 
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_dgw,
@@ -116,7 +119,7 @@ def test_get_chunk_count(documents_stored, s3_documents_directory):
     ion_mode = "positive"
     spectrum_dgw = RedisSpectrumDataGateway(PROJECT_NAME)
     data_gtw = FSDataGateway()
-    document_dgw = SpectrumDocumentDataGateway(ion_mode, data_gtw)
+    document_dgw = RedisSpectrumDocumentDataGateway()
 
     parameters = ProcessSpectrumParameters(
         spectrum_dgw=spectrum_dgw,

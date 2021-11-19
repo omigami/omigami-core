@@ -21,7 +21,9 @@ from omigami.spec2vec.config import (
     EMBEDDING_HASHES,
     PROJECT_NAME,
 )
-from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_document import (
+    RedisSpectrumDocumentDataGateway,
+)
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
@@ -231,14 +233,17 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
         for i in range(0, len(documents_data), chunk_size)
     ]
 
-    dgw = SpectrumDocumentDataGateway("positive", FSDataGateway(), project=PROJECT_NAME)
+    dgw = RedisSpectrumDocumentDataGateway(project=PROJECT_NAME)
+    fs_dgw = FSDataGateway()
 
     fs = get_fs(s3_documents_directory)
     if not os.path.exists(s3_documents_directory):
         fs.makedirs(s3_documents_directory)
 
     for i, documents in enumerate(documents_data):
-        dgw.write_documents(f"{s3_documents_directory}/test{i}.pickle", documents)
+        doc_path = f"{s3_documents_directory}/test{i}.pickle"
+        dgw.write_documents(documents, "positive")
+        fs_dgw.serialize_to_file(doc_path, documents)
 
     return list(itertools.chain.from_iterable(documents_data))
 
