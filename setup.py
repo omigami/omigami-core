@@ -1,5 +1,4 @@
 # coding=utf-8
-import os
 from setuptools import setup, find_packages
 
 import versioneer
@@ -19,6 +18,7 @@ setup(
     zip_safe=False,
     entry_points="""
         [console_scripts]
+        omigami=omigami.cli:cli
     """,
 )
 
