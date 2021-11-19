@@ -25,8 +25,8 @@ class CreateSpectrumIDsChunks(Task):
 
     def run(self, spectrum_ids: Set[str] = None) -> List[List[str]]:
         """
-        This task splits spectrum_ids into chunks. This is necessary to parallelize
-        Prefect Task orchestration.
+        Prefect task to split spectrum_ids into chunks. This is necessary to parallelize
+        task orchestration.
 
         Parameters
         ----------

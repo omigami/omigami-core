@@ -50,12 +50,13 @@ class MakeEmbeddings(Task):
         document_path: str = None,
     ) -> Set[str]:
         """
-        This task creates embeddings with Word2Vec model trained on spectrum documents
-        and saves them to REDIS DB. Each embedding is a vector calculated by
-            spectrum document
-            intensity_weighting_power
-            allowed_missing_percentage
-            n_decimals_for_documents
+        Prefect task to create embeddings with Word2Vec model trained on spectrum
+        documents. Then they are saved to REDIS DB. Each embedding is a vector
+        calculated by
+            - spectrum document
+            - intensity_weighting_power
+            - allowed_missing_percentage
+            - n_decimals_for_documents
 
         Parameters
         ----------
@@ -68,7 +69,7 @@ class MakeEmbeddings(Task):
 
         Returns
         -------
-        Set of spectrum_ids that embeddings are made from
+        Set of spectrum_ids
 
         """
 

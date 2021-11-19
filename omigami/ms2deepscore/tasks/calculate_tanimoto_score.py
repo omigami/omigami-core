@@ -22,10 +22,6 @@ class CalculateTanimotoScoreParameters:
 
 
 class CalculateTanimotoScore(Task):
-    """
-    Prefect task to calculate the Tanimoto Scores for all pairs of binned spectra
-    """
-
     def __init__(
         self,
         spectrum_gtw: MS2DeepScoreRedisSpectrumDataGateway,
@@ -41,6 +37,21 @@ class CalculateTanimotoScore(Task):
         super().__init__(**config)
 
     def run(self, spectrum_ids: Set[str] = None) -> str:
+        """
+        Prefect task to calculate the Tanimoto Scores for all pairs of binned spectra.
+        Calculated scores are saved to S3 filesystem.
+
+        Parameters
+        ----------
+        spectrum_ids: Set[str]
+            Set of spectrum_ids to calculate Tanitamo Scores
+
+        Returns
+        -------
+        path: str
+            path where scores are saved
+
+        """
         self.logger.info(f"Calculating the Tanimoto Scores")
         calculator = TanimotoScoreCalculator(
             spectrum_dgw=self._spectrum_gtw,

@@ -43,14 +43,13 @@ class RegisterModel(Task):
 
     def run(self, model: Word2Vec = None) -> Dict[str, str]:
         """
-        This task registers the model to MLflow Model Registry. It also saves model metrics:
-            alpha
-        and model parameters:
-            n_decimals_for_documents
-            intensity_weighting_power
-            allowed_missing_percentage
-            iter
-            window
+        Prefect task to register the model to MLflow Model Registry. `alpha` is saved as
+        model metric. Following are saved as model parameters:
+            - `n_decimals_for_documents`
+            - `intensity_weighting_power`
+            - `allowed_missing_percentage`
+            - `iter`
+            - `window`
 
         Parameters
         ----------

@@ -46,10 +46,10 @@ class ProcessSpectrum(Task):
 
     def run(self, spectrum_ids: Set[str] = None) -> str:
         """
-        This task creates spectrum documents from input spectra, and saves it to REDIS
-        DB as well as S3 filesystem. It allows to
-            overwrite existing documents in DB with the newly created documents
-            save only new documents, by comparing new ones to existing documents in DB
+        Prefect task to create spectrum documents from input spectra. Spectrum documents
+        are saved to REDIS DB as well as S3 filesystem. Following options are allowed:
+            - overwrite existing documents in DB with the newly created documents
+            - save only new documents, by comparing new ones to existing documents in DB
 
         Parameters
         ----------

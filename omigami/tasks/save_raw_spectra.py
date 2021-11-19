@@ -51,8 +51,14 @@ class SaveRawSpectra(Task):
         )
 
     def run(self, gnps_path: str = None) -> List[str]:
-        """The run method of a Prefect task takes a path to raw gnps json data and
-        saves it as object of the class matchms. Spectrum to a database.
+        """
+        Prefect task to clean and save `Spectrum` (matchms object) to REDIS DB. Data
+        from `gnps_path` is read, cleaned and then saved to REDIS DB as raw spectra.
+
+        If `_overwrite_all_spectra` is True, then DB is overwritten with data from
+        `gnps_path`.
+
+        If `_overwrite_all_spectra` is False, then only new spectra is saved to DB.
 
         Parameters:
         ----------
@@ -62,6 +68,7 @@ class SaveRawSpectra(Task):
         Returns:
             A list of all the spectrum_ids contained in the files data that
             passed the cleaning process.
+
         """
         self.logger.info(f"Loading spectra from {gnps_path}")
         spectra_from_file = self._data_gtw.load_spectrum(gnps_path)

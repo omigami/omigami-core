@@ -44,9 +44,9 @@ class MakeEmbeddings(Task):
         spectrum_ids: Set[str] = None,
     ) -> Set[str]:
         """
-        This task creates embeddings from SiameseModel. First, it reads binned spectra
-        from DB for given spectrum_ids. Then, for each binned spectra, it creates
-        embeddings using SiameseModel and saves them to REDIS DB. Resulting object is
+        Prefect task to create embeddings from SiameseModel. First, binned spectra are
+        read from DB for given spectrum_ids. Then, for each binned spectra, embeddings
+        are created using SiameseModel and saved to REDIS DB. Resulting object is
         an `Embedding` object holding an embedding vector.
 
         Parameters

@@ -17,10 +17,6 @@ class DeployModelParameters:
 
 
 class DeployModel(Task):
-    """
-    Prefect task to deploy model to Kubernetes Cluster
-    """
-
     def __init__(
         self,
         deploy_parameters: DeployModelParameters,
@@ -41,8 +37,7 @@ class DeployModel(Task):
 
     def run(self, registered_model: dict = None) -> None:
         """
-        This task creates a Seldon deployment in the respective environment and deploys a
-        model.
+        Prefect task to deploy model to Kubernetes Cluster
 
         Parameters
         ----------

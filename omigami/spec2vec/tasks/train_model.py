@@ -47,7 +47,7 @@ class TrainModel(Task):
 
     def run(self, document_paths: List[str]) -> Word2Vec:
         """
-        This task trains a Word2Vec model with the spectrum documents.
+        Prefect task to train a Word2Vec model with the spectrum documents.
 
         Parameters
         ----------

@@ -57,7 +57,7 @@ class TrainModel(Task):
         scores_output_path: str = None,
     ) -> Dict:
         """
-        This task trains a SiameseModel on given spectra.
+        Prefect task to train SiameseModel on given spectra.
 
         Parameters
         ----------
