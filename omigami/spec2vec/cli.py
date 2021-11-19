@@ -75,4 +75,4 @@ def deploy_training_flow_cli(
         deploy_model=deploy_model,
     )
     deployer = Spec2VecDeployer(client=client)
-    deployer.deploy_flow(flow=flow)
+    deployer.deploy_flow(flow=flow, project_name=project_name)
