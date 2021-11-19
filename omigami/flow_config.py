@@ -2,13 +2,13 @@ from datetime import timedelta
 from enum import Enum
 
 from attr import dataclass
-from drfs import DRPath
 from prefect.executors import Executor, LocalDaskExecutor
-from prefect.run_configs import RunConfig, KubernetesRun
+from prefect.run_configs import RunConfig, KubernetesRun, LocalRun
 from prefect.schedules import IntervalSchedule
-from prefect.storage import Storage, S3
+from prefect.storage import Storage, S3, Local
+from typing_extensions import Literal
 
-from omigami.config import ROOT_DIR, S3_BUCKETS
+from omigami.config import ROOT_DIR, STORAGE_ROOT, ENV
 
 """
     Implemented Prefect flow configurations:
@@ -17,6 +17,7 @@ from omigami.config import ROOT_DIR, S3_BUCKETS
 
 class PrefectStorageMethods(Enum):
     S3 = 0
+    Local = 1
 
 
 class PrefectExecutorMethods(Enum):
@@ -42,12 +43,12 @@ class FlowConfig:
 
 
 def make_flow_config(
-    image: str,
     storage_type: PrefectStorageMethods,
     executor_type: PrefectExecutorMethods,
+    image: str = None,
     redis_db: str = "",
-    environment: str = "dev",
     schedule: timedelta = None,
+    run_env: Literal["k8s", "local"] = "local",
 ) -> FlowConfig:
     """
     This will coordinate the creation of a flow config either with provided params or using the default values
@@ -55,18 +56,28 @@ def make_flow_config(
     """
 
     # run_config
-    run_config = KubernetesRun(
-        image=image,
-        job_template_path=str(ROOT_DIR / "job_spec.yaml"),
-        labels=["dev"],
-        service_account_name="prefect-server-serviceaccount",
-        env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
-        memory_request="12Gi",
-    )
+    env_variables = {
+        "REDIS_HOST": "redis-master.redis",
+        "REDIS_DB": redis_db,
+        "OMIGAMI_ENV": ENV
+    }
+    if run_env == "k8s":
+        run_config = KubernetesRun(
+            image=image,
+            job_template_path=str(ROOT_DIR / "job_spec.yaml"),
+            labels=["dev"],
+            service_account_name="prefect-server-serviceaccount",
+            env=env_variables,
+            memory_request="12Gi",
+        )
+    elif run_env == "local":
+        run_config = LocalRun(env=env_variables)
 
     # storage_type
     if storage_type == PrefectStorageMethods.S3:
-        storage = S3(DRPath(S3_BUCKETS[environment]).netloc)
+        storage = S3(STORAGE_ROOT.netloc)
+    elif storage_type == PrefectStorageMethods.Local:
+        storage = Local(STORAGE_ROOT)
     else:
         raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
 

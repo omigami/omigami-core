@@ -40,11 +40,9 @@ def run_training_flow(
 
     """
     api_server = API_SERVER_URLS[environment]
-    if auth is True:
-        login_config = config["login"][environment].get(dict)
+    login_config = config["login"][environment].get(dict)
+    if auth:
         login_config.pop("token")
-    else:
-        login_config = {"token": ""}
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     client = prefect_factory.get_client()
 

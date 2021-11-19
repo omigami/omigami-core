@@ -16,7 +16,7 @@ def test_mock_prefect_get_client(monkeypatch):
         omigami.authentication.prefect_factory, "Client", mock_prefect_client
     )
     factory = PrefectClientFactory(
-        "auth-url", "api-server", session_token="token", authenticator=auth
+        "auth-url", "api-server", token="token", authenticator=auth
     )
 
     client = factory.get_client()
@@ -36,15 +36,15 @@ def test_mock_prefect_get_client(monkeypatch):
     auth.authenticate.assert_called_once()
 
 
-@pytest.mark.skip("Uses internet connection. Authenticates to dev Prefect.")
+@pytest.mark.integration
 def test_prefect_get_client():
-    # TODO: couldn't test this yet due to problems in dev deployment
-    api_server = API_SERVER_URLS["dev"]
-    login_config = config["login"]["dev"].get(dict)
-    login_config.pop("token")
+    api_server = API_SERVER_URLS["local"]
+    login_config = config["login"]["local"].get(dict)
 
     factory = PrefectClientFactory(api_server=api_server, **login_config)
 
     client = factory.get_client()
 
     assert isinstance(client, Client)
+    assert client.api_server == api_server
+    assert client.active_tenant_id is not None

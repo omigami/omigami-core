@@ -1,10 +1,13 @@
 import datetime
+import os
 from pathlib import Path
 
 import confuse
+from drfs import DRPath
 from typing_extensions import Literal
 
 config = confuse.Configuration("omigami", __name__)
+ENV = os.getenv("OMIGAMI_ENV", "local")
 
 ROOT_DIR = Path(__file__).parents[0]
 
@@ -15,12 +18,16 @@ MLFLOW_SERVER = config["mlflow"].get(str)
 SELDON_PARAMS = config["seldon"].get(dict)
 
 # Storage
-S3_BUCKETS = config["storage"]["s3_bucket"].get(dict)
+if ENV == "local":
+    STORAGE_ROOT = Path(__file__).parent.parent / "local-prefect"
+else:
+    STORAGE_ROOT = DRPath(config["storage"]["root"][ENV])
 
-REDIS_DATABASES = {
+REDIS_DATABASES = {  # I think we don't need env differentiation here
+    "local": {"small": "2", "10k": "1", "complete": "0"},
     "dev": {"small": "2", "10k": "1", "complete": "0"},
     "prod": {"small": "2", "complete": "0"},
-}
+}[ENV]
 
 SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)

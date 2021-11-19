@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Dict
 
 import pandas as pd
 from prefect import Flow
@@ -7,8 +8,8 @@ from omigami.config import (
     REDIS_DATABASES,
     IonModes,
     DATASET_IDS,
-    S3_BUCKETS,
     MLFLOW_SERVER,
+    STORAGE_ROOT,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -19,7 +20,7 @@ from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import (
     PROJECT_NAME,
-    MODEL_DIRECTORIES,
+    MODEL_FOLDER,
     DOCUMENT_DIRECTORIES,
     CHUNK_SIZE,
 )
@@ -34,13 +35,25 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 class Spec2VecFlowFactory:
-    def __init__(self, environment: str):
-        self._redis_dbs = REDIS_DATABASES[environment]
+    def __init__(
+        self,
+        environment: str,
+        output_dir: str = None,
+        documents_dir: Dict[str, str] = None,
+        models_dir: str = None,
+    ):
         self._env = environment
-        self._output_dir = S3_BUCKETS[self._env]
-        self._model_output_dir = MODEL_DIRECTORIES[self._env]
-        self._document_dirs = DOCUMENT_DIRECTORIES[self._env]
+        self._redis_dbs = REDIS_DATABASES
+        self._output_dir = output_dir or str(STORAGE_ROOT)
+        self._model_output_dir = models_dir or str(MODEL_FOLDER)
+        self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
+        self._dataset_ids = DATASET_IDS
         self._mlflow_server = MLFLOW_SERVER
+        self._storage_type = (
+            PrefectStorageMethods.S3
+            if "s3" in str(STORAGE_ROOT)
+            else PrefectStorageMethods.Local
+        )
 
     def build_training_flow(
         self,
@@ -75,7 +88,7 @@ class Spec2VecFlowFactory:
         """
         flow_config = make_flow_config(
             image=image,
-            storage_type=PrefectStorageMethods.S3,
+            storage_type=self._storage_type,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=self._redis_dbs[dataset_name],
             environment=self._env,
@@ -87,15 +100,13 @@ class Spec2VecFlowFactory:
         spectrum_cleaner = SpectrumCleaner()
         document_dgw = RedisSpectrumDocumentDataGateway()
 
-        dataset_id = DATASET_IDS[self._env][dataset_name].format(date=datetime.today())
-
         flow_parameters = TrainingFlowParameters(
             project_name=project_name,
             data_gtw=data_gtw,
             spectrum_dgw=spectrum_dgw,
             document_dgw=document_dgw,
             spectrum_cleaner=spectrum_cleaner,
-            dataset_id=dataset_id,
+            dataset_id=self._dataset_ids[dataset_name].format(date=datetime.today()),
             ion_mode=ion_mode,
             n_decimals=n_decimals,
             iterations=iterations,
@@ -106,7 +117,7 @@ class Spec2VecFlowFactory:
             source_uri=source_uri,
             overwrite_model=overwrite_model,
             overwrite_all_spectra=overwrite_all_spectra,
-            documents_save_directory=self._document_dirs[ion_mode],
+            documents_save_directory=str(STORAGE_ROOT / self._document_dirs[ion_mode]),
             output_dir=self._output_dir,
             model_output_dir=self._model_output_dir,
             mlflow_server=self._mlflow_server,

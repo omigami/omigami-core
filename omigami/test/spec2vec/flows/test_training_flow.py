@@ -32,7 +32,7 @@ os.chdir(Path(__file__).parents[4])
 def flow_config():
     flow_config = make_flow_config(
         image="image-ref-name-test-harry-potter-XXII",
-        storage_type=PrefectStorageMethods.S3,
+        storage_type=PrefectStorageMethods.Local,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db="0",
     )

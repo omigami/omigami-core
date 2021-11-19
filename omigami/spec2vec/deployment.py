@@ -8,7 +8,17 @@ class Spec2VecDeployer:
         self._client = client
 
     def deploy_flow(self, flow: Flow, project_name: str) -> str:
-        """TODO"""
+        """Deploys and runs a prefect flow to
+
+        Parameters
+        ----------
+        flow
+        project_name
+
+        Returns
+        -------
+
+        """
 
         self._client.create_project(project_name)
         training_flow_id = self._client.register(flow, project_name=project_name)
