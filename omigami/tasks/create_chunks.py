@@ -58,7 +58,7 @@ class CreateChunks(Task):
         Returns
         -------
         chunked_paths: List[str]
-            Paths of saved chunked files
+            Paths of chunked files
 
         """
         self.logger.info(f"Loading file {self._file_path} for chunking.")

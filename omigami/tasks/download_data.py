@@ -89,6 +89,7 @@ class DownloadData(Task):
             Threshold that determines when the data should be downloaded again.
 
         Returns: True or False depending of the files present and the time threshold.
+
         """
         downloaded_files = pathlib.Path(download_path)
 
@@ -110,7 +111,7 @@ class DownloadData(Task):
         Returns
         -------
         spectrum ids: List[str]
-            spectrum_ids saved to filesystem
+            List of spectrum_ids
 
         """
 
