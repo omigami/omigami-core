@@ -41,7 +41,7 @@ class DeployModel(Task):
 
     def run(self, registered_model: dict = None) -> None:
         """
-        This task creates a Seldon deployment in the respective environment and deploys
+        This task creates a Seldon deployment in the respective environment and deploys a
         model.
 
         Parameters

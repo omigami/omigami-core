@@ -45,14 +45,14 @@ class TrainModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, documents_directory: List[str]) -> Word2Vec:
+    def run(self, document_paths: List[str]) -> Word2Vec:
         """
         This task trains a Word2Vec model with the spectrum documents.
 
         Parameters
         ----------
-        documents_directory: List[str]
-            Directory to read spectrum documents from
+        document_paths: List[str]
+            Path to read spectrum documents from
 
         Returns
         -------
@@ -60,10 +60,10 @@ class TrainModel(Task):
 
         """
 
-        self.logger.info(f"Loading examples from {documents_directory}")
+        self.logger.info(f"Loading examples from {document_paths}")
 
         documents = FileSystemDocumentIterator(
-            fs_dgw=self._data_dgw, document_paths=documents_directory
+            fs_dgw=self._data_dgw, document_paths=document_paths
         )
 
         self.logger.info("Started training the Word2Vec model.")

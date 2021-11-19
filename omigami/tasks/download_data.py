@@ -117,7 +117,7 @@ class DownloadData(Task):
 
     def run(self) -> List[str]:
         """
-        This task downloads GNPS data into S3 filesystem, if only data is NOT up-to-date
+        This task downloads GNPS data into S3 filesystem, only if data is NOT up-to-date
         with the current GNPS data.
 
         Returns
