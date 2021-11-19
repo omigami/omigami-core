@@ -59,7 +59,7 @@ def make_flow_config(
     env_variables = {
         "REDIS_HOST": "redis-master.redis",
         "REDIS_DB": redis_db,
-        "OMIGAMI_ENV": ENV
+        "OMIGAMI_ENV": ENV,
     }
     if run_env == "k8s":
         run_config = KubernetesRun(
