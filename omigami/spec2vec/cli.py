@@ -3,7 +3,7 @@ from typing import Optional
 import click
 import pandas as pd
 
-from omigami.authentication.prefect_auth import PrefectAuthenticator
+from omigami.authentication.prefect_factory import PrefectClientFactory
 from omigami.cli import cli as omigami_cli
 from omigami.config import (
     API_SERVER_URLS,
@@ -36,7 +36,6 @@ def spec2vec_cli():
 @click.option("--intensity-weighting-power", type=float, default=0.5)
 @click.option("--allowed-missing-percentage", type=float, default=5.0)
 @click.option("--deploy-model", type=bool, default=False)
-@click.option("--auth", default=False, help="Enable authentication")
 def deploy_training_flow_cli(
     project_name: str,
     flow_name: str,
@@ -51,16 +50,13 @@ def deploy_training_flow_cli(
     schedule: Optional[pd.Timedelta],
     ion_mode: IonModes,
     source_uri: str,
-    auth: bool,
     deploy_model: bool,
 ):
     api_server = API_SERVER_URLS[environment]
     login_config = config["login"][environment].get(dict)
     login_config.pop("token")
-    authenticator = PrefectAuthenticator(
-        auth=auth, api_server=api_server, **login_config
-    )
-    client = authenticator.get_client()
+    prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
+    client = prefect_factory.get_client()
 
     factory = Spec2VecFlowFactory(environment=environment)
     flow = factory.build_training_flow(

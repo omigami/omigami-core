@@ -27,7 +27,9 @@ from omigami.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
     build_training_flow,
 )
-from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
+from omigami.spec2vec.gateways.redis_spectrum_document import (
+    RedisSpectrumDocumentDataGateway,
+)
 from omigami.spectrum_cleaner import SpectrumCleaner
 
 
@@ -72,9 +74,7 @@ class Spec2VecFlowFactory:
         spectrum_dgw = RedisSpectrumDataGateway(project=project_name)
         data_gtw = FSDataGateway()
         spectrum_cleaner = SpectrumCleaner()
-        document_dgw = SpectrumDocumentDataGateway(
-            ion_mode=ion_mode, document_dgw=spectrum_dgw, fs_dgw=data_gtw
-        )
+        document_dgw = RedisSpectrumDocumentDataGateway()
 
         dataset_id = DATASET_IDS[self._env][dataset_name].format(date=datetime.today())
 
