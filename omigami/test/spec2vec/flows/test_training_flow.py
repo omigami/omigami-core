@@ -18,6 +18,9 @@ from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
+from omigami.spec2vec.gateways.redis_spectrum_document import (
+    RedisSpectrumDocumentDataGateway,
+)
 from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
@@ -106,7 +109,7 @@ def test_run_training_flow(
 
     spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     data_gtw = FSDataGateway()
-    document_dgw = SpectrumDocumentDataGateway(ion_mode, data_gtw)
+    document_dgw = RedisSpectrumDocumentDataGateway()
     spectrum_cleaner = SpectrumCleaner()
     flow_params = TrainingFlowParameters(
         spectrum_dgw=spectrum_dgw,

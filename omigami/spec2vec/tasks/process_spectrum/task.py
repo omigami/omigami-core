@@ -26,12 +26,12 @@ class ProcessSpectrumParameters:
 class ProcessSpectrum(Task):
     def __init__(
         self,
-        data_gtw: FSDataGateway,
+        fs_dgw: FSDataGateway,
         document_dgw: SpectrumDocumentDataGateway,
         process_parameters: ProcessSpectrumParameters,
         **kwargs,
     ):
-        self._data_gtw = data_gtw
+        self._fs_dgw = fs_dgw
         self._document_dgw = document_dgw
         self._spectrum_dgw = process_parameters.spectrum_dgw
         self._n_decimals = process_parameters.n_decimals
@@ -67,7 +67,8 @@ class ProcessSpectrum(Task):
 
                 self.logger.info(f"Saving documents to {document_save_directory}.")
 
-                self._document_dgw.write_documents(
+                self._document_dgw.write_documents(spectrum_documents, self._ion_mode)
+                self._fs_dgw.serialize_to_file(
                     document_save_directory, spectrum_documents
                 )
 
@@ -108,16 +109,19 @@ class ProcessSpectrum(Task):
 
     def _get_chunk_count(self, documents_save_directory) -> int:
 
-        if not self._data_gtw.exists(documents_save_directory):
-            self._data_gtw.makedirs(documents_save_directory)
+        if not self._fs_dgw.exists(documents_save_directory):
+            self._fs_dgw.makedirs(documents_save_directory)
 
-        return len(self._data_gtw.listdir(self._documents_save_directory))
+        return len(self._fs_dgw.listdir(self._documents_save_directory))
 
     def _remove_all_documents(self, document_dgw: SpectrumDocumentDataGateway):
 
-        document_file_paths = self._data_gtw.listdir(self._documents_save_directory)
+        document_file_paths = self._fs_dgw.listdir(self._documents_save_directory)
 
         self.logger.info(f"Removing {len(document_file_paths)} document files")
 
         for doc_path in document_file_paths:
-            document_dgw.remove_documents_file(doc_path)
+            documents = self._fs_dgw.read_from_file(doc_path)
+            document_ids = [doc.get("spectrum_id") for doc in documents]
+            self._document_dgw.remove_documents(document_ids, self._ion_mode)
+            self._fs_dgw.remove_file(doc_path)
