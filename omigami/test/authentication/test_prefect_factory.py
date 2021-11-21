@@ -36,7 +36,10 @@ def test_mock_prefect_get_client(monkeypatch):
     auth.authenticate.assert_called_once()
 
 
-@pytest.mark.integration
+@pytest.mark.skip(
+    "Requires local prefect server and mlflow. Make sure they are running to run this"
+    "test. To run them, check README instructions."
+)
 def test_prefect_get_client():
     api_server = API_SERVER_URLS["local"]
     login_config = config["login"]["local"].get(dict)

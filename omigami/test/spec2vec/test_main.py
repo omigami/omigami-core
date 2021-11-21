@@ -39,10 +39,10 @@ def backend_services():
     return {"prefect": prefect_client, "mlflow": mlflow_client}
 
 
-# @pytest.mark.skip(
-#     "Requires local prefect server and mlflow. Make sure they are running to run this
-#     test. To run them, check README instructions."
-# )
+@pytest.mark.skip(
+    "Requires local prefect server and mlflow. Make sure they are running to run this"
+    "test. To run them, check README instructions."
+)
 def test_run_training_flow(backend_services):
     client = backend_services["prefect"]
 
