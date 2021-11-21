@@ -75,6 +75,10 @@ class ProcessSpectrum(Task):
                 return document_save_directory
 
         self.logger.info("All spectra have already been processed.")
+        # TODO: this looks like a bug. This object returned is a directory. The other
+        # TODO: return statement (few lines above) is a path to a file. Apparently the
+        # TODO: flow only works with a file, not a directory being returned.
+        # TODO: This means the task only works when passing overwrite_all_spectra=True
         return self._documents_save_directory
 
     def _get_spectrum_ids_to_add(self, spectrum_ids: List[str]) -> List[str]:
