@@ -18,7 +18,6 @@ storage:
     10k: "datasets/10k"
     complete: "datasets/complete/{date:%Y-%m}"
   root:
-    local: "../local-prefect"
     dev: "s3://omigami-dev"
     prod: "s3://omigami"
 

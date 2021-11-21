@@ -92,6 +92,7 @@ class Spec2VecFlowFactory:
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=self._redis_dbs[dataset_name],
             schedule=schedule,
+            environment=self._env,
             storage_root=self._output_dir,
         )
 

@@ -6,7 +6,6 @@ from prefect.executors import Executor, LocalDaskExecutor
 from prefect.run_configs import RunConfig, KubernetesRun, LocalRun
 from prefect.schedules import IntervalSchedule
 from prefect.storage import Storage, S3, Local
-from typing_extensions import Literal
 
 from omigami.config import ROOT_DIR, STORAGE_ROOT, ENV, MLFLOW_SERVER, REDIS_HOST
 
@@ -48,7 +47,7 @@ def make_flow_config(
     image: str = None,
     redis_db: str = "",
     schedule: timedelta = None,
-    run_env: Literal["k8s", "local"] = "local",
+    environment: str = "local",
     storage_root: str = None,
 ) -> FlowConfig:
     """TODO: redo this docstring which was old and incomplete"""
@@ -61,7 +60,7 @@ def make_flow_config(
         "MLFLOW_SERVER": MLFLOW_SERVER,
     }
 
-    if run_env != "local":
+    if environment in ("dev", "prod"):
         run_config = KubernetesRun(
             image=image,
             job_template_path=str(ROOT_DIR / "job_spec.yaml"),
