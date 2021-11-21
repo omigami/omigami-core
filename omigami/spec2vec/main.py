@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 import pandas as pd
 
@@ -26,7 +26,7 @@ def run_training_flow(
     overwrite_all_spectra: bool,
     schedule: Optional[pd.Timedelta] = None,
     auth: bool = True,
-):
+) -> Tuple[str, str]:
     """
     Authenticates, creates a prefect client, builds and deploys a flow, and trigger a run
     of this flow.
@@ -37,6 +37,8 @@ def run_training_flow(
 
     Returns
     -------
+    flow_id, flow_run_id:
+        Identifiers for the registered flow and for the run triggered with the flow
 
     """
     api_server = API_SERVER_URLS[environment]
@@ -65,4 +67,6 @@ def run_training_flow(
         schedule=schedule,
     )
     deployer = Spec2VecDeployer(client=client)
-    deployer.deploy_flow(flow=flow, project_name=project_name)
+    flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
+
+    return flow_id, flow_run_id

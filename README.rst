@@ -65,7 +65,7 @@ Start a Redis container and set these environment variables before running the t
 To run tests one by one via PyCharm, you can add this to your pytest Environment Variables (Run > Edit Configurations...)
 ::
 
-    SKIP_REDIS_TEST=False;PREFECT__FLOWS__CHECKPOINTING=True;REDIS_HOST=localhost;REDIS_DB=0
+    SKIP_REDIS_TEST=False;PREFECT__FLOWS__CHECKPOINTING=True;REDIS_HOST=localhost;REDIS_DB=0;MLFLOW_SERVER=mysql+pymysql://root:password123@127.0.0.1:3306/mlflow
 
 How to register the training flow manually
 ------------------------------------------
@@ -173,7 +173,26 @@ Run the docker command
 
 When it is the first time running it locally, create a tenant:
 ::
+    prefect backend server
     prefect server create-tenant -n default
 
 
 To access the dashboard, go to http://localhost:8080/
+
+In a terminal, start an agent that will execute the flows:
+::
+    prefect agent start -l "dev" --show-flow-logs
+
+
+To shut down prefect:
+::
+    docker-compose -f local-prefect/docker-compose.yml down
+
+
+Running MLFlow Locally
+-----------------------
+
+To run mlflow locally we need a MySQL database running either locally or in a container.
+On MySQL, create a database named `mlflow`:
+::
+    CREATE DATABASE mlflow;

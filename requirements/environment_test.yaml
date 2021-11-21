@@ -5,6 +5,7 @@ channels:
   - nlesc
 dependencies:
   - black=20.8b1
+  - pymysql
   - pip
   - pip:
       - pytest-pycharm

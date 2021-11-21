@@ -91,8 +91,8 @@ class Spec2VecFlowFactory:
             storage_type=self._storage_type,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=self._redis_dbs[dataset_name],
-            environment=self._env,
             schedule=schedule,
+            storage_root=self._output_dir,
         )
 
         spectrum_dgw = RedisSpectrumDataGateway(project=project_name)

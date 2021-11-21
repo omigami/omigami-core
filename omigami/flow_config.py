@@ -8,7 +8,7 @@ from prefect.schedules import IntervalSchedule
 from prefect.storage import Storage, S3, Local
 from typing_extensions import Literal
 
-from omigami.config import ROOT_DIR, STORAGE_ROOT, ENV
+from omigami.config import ROOT_DIR, STORAGE_ROOT, ENV, MLFLOW_SERVER, REDIS_HOST
 
 """
     Implemented Prefect flow configurations:
@@ -49,19 +49,19 @@ def make_flow_config(
     redis_db: str = "",
     schedule: timedelta = None,
     run_env: Literal["k8s", "local"] = "local",
+    storage_root: str = None,
 ) -> FlowConfig:
-    """
-    This will coordinate the creation of a flow config either with provided params or using the default values
-    from default_config.yaml
-    """
+    """TODO: redo this docstring which was old and incomplete"""
 
     # run_config
     env_variables = {
-        "REDIS_HOST": "redis-master.redis",
         "REDIS_DB": redis_db,
+        "REDIS_HOST": REDIS_HOST,
         "OMIGAMI_ENV": ENV,
+        "MLFLOW_SERVER": MLFLOW_SERVER,
     }
-    if run_env == "k8s":
+
+    if run_env != "local":
         run_config = KubernetesRun(
             image=image,
             job_template_path=str(ROOT_DIR / "job_spec.yaml"),
@@ -70,14 +70,14 @@ def make_flow_config(
             env=env_variables,
             memory_request="12Gi",
         )
-    elif run_env == "local":
-        run_config = LocalRun(env=env_variables)
+    else:
+        run_config = LocalRun(env=env_variables, labels=["dev"])
 
     # storage_type
     if storage_type == PrefectStorageMethods.S3:
         storage = S3(STORAGE_ROOT.netloc)
     elif storage_type == PrefectStorageMethods.Local:
-        storage = Local(STORAGE_ROOT)
+        storage = Local(storage_root)
     else:
         raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
 

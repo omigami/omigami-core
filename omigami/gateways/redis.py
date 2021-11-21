@@ -2,7 +2,8 @@ import os
 
 import redis
 
-REDIS_HOST = str(os.getenv("REDIS_HOST"))
+from omigami.config import REDIS_HOST
+
 REDIS_DB = str(os.getenv("REDIS_DB"))
 client = None
 

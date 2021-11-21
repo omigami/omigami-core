@@ -14,7 +14,7 @@ ROOT_DIR = Path(__file__).parents[0]
 # Prefect
 API_SERVER_URLS = config["prefect"]["api_server"].get(dict)
 
-MLFLOW_SERVER = config["mlflow"].get(str)
+MLFLOW_SERVER = os.getenv("MLFLOW_SERVER", config["mlflow"].get(str))
 SELDON_PARAMS = config["seldon"].get(dict)
 
 # Storage
@@ -28,6 +28,7 @@ REDIS_DATABASES = {  # I think we don't need env differentiation here
     "dev": {"small": "2", "10k": "1", "complete": "0"},
     "prod": {"small": "2", "complete": "0"},
 }[ENV]
+REDIS_HOST = str(os.getenv("REDIS_HOST"))
 
 SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
