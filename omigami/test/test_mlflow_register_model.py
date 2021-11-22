@@ -47,7 +47,7 @@ def test_save_model(word2vec_model, tmpdir):
             intensity_weighting_power=0.5,
             allowed_missing_percentage=5.0,
         ),
-        experiment_name="experiment",
+        model_name="experiment",
         output_path=path,
         code_path=["omigami"],
     )
@@ -74,7 +74,7 @@ def test_log_model(word2vec_model, tmpdir):
                 intensity_weighting_power=0.5,
                 allowed_missing_percentage=5.0,
             ),
-            experiment_name="experiment",
+            model_name="experiment",
             code_path=["omigami"],
         )
 

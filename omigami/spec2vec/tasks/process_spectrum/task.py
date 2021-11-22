@@ -46,7 +46,7 @@ class ProcessSpectrum(Task):
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")
 
         if self._overwrite_all_spectra:
-            self._remove_all_documents(self._document_dgw)
+            self._remove_all_documents()
 
         spectrum_ids_to_add = self._get_spectrum_ids_to_add(list(spectrum_ids))
 
@@ -118,14 +118,15 @@ class ProcessSpectrum(Task):
 
         return len(self._fs_dgw.listdir(self._documents_save_directory))
 
-    def _remove_all_documents(self, document_dgw: SpectrumDocumentDataGateway):
+    def _remove_all_documents(self):
 
         document_file_paths = self._fs_dgw.listdir(self._documents_save_directory)
 
         self.logger.info(f"Removing {len(document_file_paths)} document files")
 
         for doc_path in document_file_paths:
-            documents = self._fs_dgw.read_from_file(doc_path)
+            documents = self._fs_dgw.read_from_file(str(doc_path))
             document_ids = [doc.get("spectrum_id") for doc in documents]
             self._document_dgw.remove_documents(document_ids, self._ion_mode)
-            self._fs_dgw.remove_file(doc_path)
+            if doc_path.exists():
+                self._fs_dgw.remove_file(str(doc_path))

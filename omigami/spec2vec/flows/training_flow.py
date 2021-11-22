@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from prefect import Flow, unmapped
 
@@ -59,6 +59,7 @@ class TrainingFlowParameters:
         redis_db: str = "0",
         overwrite_model: bool = False,
         environment: str = "dev",
+        model_name: Optional[str] = "spec2vec-model",
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
@@ -91,6 +92,7 @@ class TrainingFlowParameters:
             ion_mode,
             intensity_weighting_power,
             allowed_missing_percentage,
+            model_name=model_name,
         )
         self.embedding = MakeEmbeddingsParameters(
             ion_mode, n_decimals, intensity_weighting_power, allowed_missing_percentage
