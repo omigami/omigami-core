@@ -54,9 +54,9 @@ class MakeEmbeddings(Task):
         documents. Then they are saved to REDIS DB. Each embedding is a vector
         calculated by
             - spectrum document
-            - intensity_weighting_power
-            - allowed_missing_percentage
-            - n_decimals_for_documents
+            - `intensity_weighting_power`
+            - `allowed_missing_percentage`
+            - `n_decimals_for_documents`
 
         Parameters
         ----------
