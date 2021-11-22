@@ -17,10 +17,6 @@ class DeployModelParameters:
 
 
 class DeployModel(Task):
-    """
-    Prefect task to deploy model to kubernetes
-    """
-
     def __init__(
         self,
         deploy_parameters: DeployModelParameters,
@@ -40,6 +36,15 @@ class DeployModel(Task):
         super().__init__(**config)
 
     def run(self, registered_model: dict = None) -> None:
+        """
+        Prefect task to deploy model to Kubernetes Cluster
+
+        Parameters
+        ----------
+        registered_model: Dict[str, str]
+            Dictionary containing registered `model_uri` and `run_id`
+
+        """
         sd = SeldonDeployment(
             context=CLUSTERS[self._environment],
         )
