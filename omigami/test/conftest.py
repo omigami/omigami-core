@@ -242,11 +242,7 @@ def word2vec_model(documents_data):
 
     """
 
-    model = train_new_word2vec_model(
-        documents_data,
-        size=300,
-        iterations=3
-    )
+    model = train_new_word2vec_model(documents_data, size=300, iterations=3)
     return model
 
 
