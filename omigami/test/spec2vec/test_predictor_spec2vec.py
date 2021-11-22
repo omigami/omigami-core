@@ -1,5 +1,4 @@
 import os
-import pickle
 from pathlib import Path
 
 import pandas as pd
@@ -9,7 +8,6 @@ from pytest_redis import factories
 from omigami.spec2vec.entities.embedding import Embedding
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.predictor import Spec2VecPredictor
-from omigami.test.conftest import ASSETS_DIR
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -57,7 +55,7 @@ def big_payload():
 
 
 @pytest.fixture()
-def model(word2vec_model):
+def spec2vec_predictor(word2vec_model):
     return Spec2VecPredictor(
         word2vec_model,
         ion_mode="positive",
@@ -73,9 +71,11 @@ def predict_parameters():
     return {"n_best_spectra": 5}
 
 
-def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
+def test_pre_process_data(
+    word2vec_model, loaded_data, spec2vec_predictor, documents_data
+):
     data = [d for d in loaded_data if d["SpectrumID"] == "CCMSLIB00000072099"]
-    embeddings_from_model = model._pre_process_data(data)
+    embeddings_from_model = spec2vec_predictor._pre_process_data(data)
 
     em = EmbeddingMaker(n_decimals=1)
     embedding_from_flow = em.make_embedding(
@@ -87,11 +87,11 @@ def test_pre_process_data(word2vec_model, loaded_data, model, documents_data):
     assert all(embedding_from_flow.vector == embeddings_from_model[0].vector)
 
 
-def test_get_best_matches(model, embeddings):
+def test_get_best_matches(spec2vec_predictor, embeddings):
     n_best_spectra = 2
     best_matches = {}
     for query in embeddings[:2]:
-        input_best_matches = model._calculate_best_matches(
+        input_best_matches = spec2vec_predictor._calculate_best_matches(
             embeddings,
             query,
             n_best_spectra=n_best_spectra,
@@ -108,15 +108,10 @@ def test_get_best_matches(model, embeddings):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_local_predictions(big_payload, redis_full_setup):
-    path = str(ASSETS_DIR / "python_model.pkl")
+def test_local_predictions(big_payload, redis_full_setup, spec2vec_predictor):
+    spec2vec_predictor._run_id = "1"
 
-    with open(path, "rb") as input_file:
-        local_model = pickle.load(input_file)
-
-    local_model._run_id = "1"
-
-    matches_big = local_model.predict(
+    matches_big = spec2vec_predictor.predict(
         data_input_and_parameters=big_payload, mz_range=10, context=""
     )
 
@@ -124,8 +119,8 @@ def test_local_predictions(big_payload, redis_full_setup):
     assert len(matches_big["spectrum-0"]) == 2
 
 
-def test_parse_input(small_payload, model):
-    data_input, parameters = model._parse_input(small_payload)
+def test_parse_input(small_payload, spec2vec_predictor):
+    data_input, parameters = spec2vec_predictor._parse_input(small_payload)
 
     assert parameters["n_best_spectra"] == small_payload["parameters"]["n_best_spectra"]
     assert "peaks_json" and "Precursor_MZ" in data_input[0]
@@ -135,9 +130,11 @@ def test_parse_input(small_payload, model):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_get_ref_ids_from_data_input(small_payload, model, redis_full_setup):
+def test_get_ref_ids_from_data_input(
+    small_payload, spec2vec_predictor, redis_full_setup
+):
     data_input = small_payload.get("data")
-    spectrum_ids = model._get_ref_ids_from_data_input(data_input)
+    spectrum_ids = spec2vec_predictor._get_ref_ids_from_data_input(data_input)
 
     assert spectrum_ids
     assert isinstance(spectrum_ids[0][0], str)
@@ -147,10 +144,10 @@ def test_get_ref_ids_from_data_input(small_payload, model, redis_full_setup):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_load_unique_ref_embeddings(model, redis_full_setup):
+def test_load_unique_ref_embeddings(spec2vec_predictor, redis_full_setup):
     spectrum_ids = [["CCMSLIB00000006878", "CCMSLIB00000007092"]]
 
-    ref_embeddings = model._load_unique_ref_embeddings(spectrum_ids)
+    ref_embeddings = spec2vec_predictor._load_unique_ref_embeddings(spectrum_ids)
 
     assert ref_embeddings
     assert isinstance(ref_embeddings["CCMSLIB00000006878"], Embedding)
@@ -160,7 +157,7 @@ def test_load_unique_ref_embeddings(model, redis_full_setup):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_get_input_ref_embeddings(model, redis_full_setup):
+def test_get_input_ref_embeddings(spec2vec_predictor, redis_full_setup):
     input_ref_spectrum_ids = ["CCMSLIB00000006878", "CCMSLIB00000007092"]
     all_ref_spectrum_ids = [
         [
@@ -170,9 +167,11 @@ def test_get_input_ref_embeddings(model, redis_full_setup):
             "CCMSLIB00000070272",
         ]
     ]
-    ref_embeddings = model._load_unique_ref_embeddings(all_ref_spectrum_ids)
+    ref_embeddings = spec2vec_predictor._load_unique_ref_embeddings(
+        all_ref_spectrum_ids
+    )
 
-    ref_emb_for_input = model._get_input_ref_embeddings(
+    ref_emb_for_input = spec2vec_predictor._get_input_ref_embeddings(
         input_ref_spectrum_ids, ref_embeddings
     )
 
@@ -185,18 +184,18 @@ def test_get_input_ref_embeddings(model, redis_full_setup):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_add_metadata(model, embeddings, redis_full_setup):
+def test_add_metadata(spec2vec_predictor, embeddings, redis_full_setup):
     n_best_spectra = 3
     best_matches = {}
     for i, query in enumerate(embeddings):
-        input_best_matches = model._calculate_best_matches(
+        input_best_matches = spec2vec_predictor._calculate_best_matches(
             embeddings,
             query,
             n_best_spectra=n_best_spectra,
         )
         best_matches[query.spectrum_id] = input_best_matches
 
-    best_matches = model._add_metadata(
+    best_matches = spec2vec_predictor._add_metadata(
         best_matches, metadata_keys=["Smiles", "Compound_Name"]
     )
 
