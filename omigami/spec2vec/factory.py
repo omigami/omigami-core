@@ -102,7 +102,6 @@ class Spec2VecFlowFactory:
         document_dgw = RedisSpectrumDocumentDataGateway()
 
         flow_parameters = TrainingFlowParameters(
-            project_name=project_name,
             data_gtw=data_gtw,
             spectrum_dgw=spectrum_dgw,
             document_dgw=document_dgw,
@@ -124,6 +123,7 @@ class Spec2VecFlowFactory:
             output_dir=str(self._output_dir),
             model_output_dir=self._model_output_dir,
             mlflow_server=self._mlflow_server,
+            experiment_name=project_name,
         )
 
         spec2vec_flow = build_training_flow(

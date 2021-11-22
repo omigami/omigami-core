@@ -48,7 +48,6 @@ class TrainingFlowParameters:
         overwrite_all_spectra: bool,
         iterations: int,
         window: int,
-        project_name: str,
         model_output_dir: str,
         documents_save_directory: str,
         mlflow_server: str,
@@ -60,6 +59,7 @@ class TrainingFlowParameters:
         overwrite_model: bool = False,
         environment: str = "dev",
         model_name: Optional[str] = "spec2vec-model",
+        experiment_name: str = "default",
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
@@ -85,13 +85,13 @@ class TrainingFlowParameters:
         )
         self.training = TrainModelParameters(iterations, window)
         self.registering = RegisterModelParameters(
-            project_name,
-            model_output_dir,
-            mlflow_server,
-            n_decimals,
-            ion_mode,
-            intensity_weighting_power,
-            allowed_missing_percentage,
+            experiment_name=experiment_name,
+            mlflow_output_path=model_output_dir,
+            server_uri=mlflow_server,
+            n_decimals=n_decimals,
+            ion_mode=ion_mode,
+            intensity_weighting_power=intensity_weighting_power,
+            allowed_missing_percentage=allowed_missing_percentage,
             model_name=model_name,
         )
         self.embedding = MakeEmbeddingsParameters(

@@ -57,10 +57,10 @@ class RegisterModel(Task):
                 self._intensity_weighting_power,
                 self._allowed_missing_percentage,
             ),
-            self._experiment_name,
-            self._path,
-            CONDA_ENV_PATH,
-            run_name,
+            experiment_name=self._experiment_name,
+            output_path=self._path,
+            conda_env_path=CONDA_ENV_PATH,
+            run_name=run_name,
             model_name=self._model_name,
         )
         run = mlflow.get_run(run_id)
