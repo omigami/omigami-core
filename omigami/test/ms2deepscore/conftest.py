@@ -63,16 +63,9 @@ def ms2deepscore_embedding(ms2deepscore_model_path):
 
 
 @pytest.fixture()
-def ms2deepscore_spectrum_similarity(ms2deepscore_model_path):
-    model = load_model(ms2deepscore_model_path)
-    return MS2DeepScoreEmbedding(model)
-
-
-@pytest.fixture()
 def ms2deepscore_predictor(ms2deepscore_embedding):
     predictor = MS2DeepScorePredictor(ion_mode="positive", run_id="2")
     predictor.model = ms2deepscore_embedding
-
     return predictor
 
 
