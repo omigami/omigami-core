@@ -56,19 +56,6 @@ class DownloadParameters:
 
 
 class DownloadData(Task):
-    """
-    Prefect Task for downloading and saving a Dataset.
-
-    Parameters:
-    ----------
-    data_gtw: InputDataGateway
-        Class that holds the functions and requirments to download the dataset in need
-    download_parameters: DownloadParameters
-        Dataclass holding variables for the downloading process
-    ----------
-
-    """
-
     def __init__(
         self,
         data_gtw: DataGateway,
@@ -102,6 +89,7 @@ class DownloadData(Task):
             Threshold that determines when the data should be downloaded again.
 
         Returns: True or False depending of the files present and the time threshold.
+
         """
         downloaded_files = pathlib.Path(download_path)
 
@@ -116,6 +104,16 @@ class DownloadData(Task):
         return False
 
     def run(self) -> List[str]:
+        """
+        Prefect task to download and save GNPS data into filesystem, only if data is
+        NOT up-to-date with the current GNPS data.
+
+        Returns
+        -------
+        spectrum ids: List[str]
+            List of spectrum_ids
+
+        """
 
         if self.refresh_download(self.download_path):
             self._data_gtw.download_gnps(self.input_uri, self.download_path)

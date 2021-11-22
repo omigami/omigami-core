@@ -45,6 +45,22 @@ class CreateChunks(Task):
         )
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
+        """
+        Prefect task to split GNPS data into chunks. First, GNPS data file is read from
+        filesystem. Then the file is split, and smaller files are created in `chunk_size`.
+        Finally, chunked files are saved to filesystem. This is necessary to
+        parallelize task orchestration.
+
+        Parameters
+        ----------
+        spectrum_ids: List[str]
+
+        Returns
+        -------
+        chunked_paths: List[str]
+            Paths of chunked files
+
+        """
         self.logger.info(f"Loading file {self._file_path} for chunking.")
         # maybe we should save which ids are on each chunk in the pickle file
         chunk_paths = self._data_gtw.chunk_gnps(

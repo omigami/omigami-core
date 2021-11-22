@@ -77,6 +77,9 @@ def build_pretrained_flow(
 
     """
     with Flow(flow_name, **flow_config.kwargs) as training_flow:
+        # tasks return objects, so that we could connect tasks using returned objects.
+        # if you update one return type of a task please mind the later tasks too
+
         ms2deepscore_model_path = flow_parameters.model_uri
 
         ProcessSpectrum(
