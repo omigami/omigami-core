@@ -99,14 +99,6 @@ def embeddings():
     return embeddings
 
 
-@pytest.fixture(scope="module")
-def embeddings_2k():
-    path = str(ASSETS_DIR / "embeddings_2k.pickle")
-    with open(path, "rb") as handle:
-        embeddings = pickle.load(handle)
-    return embeddings
-
-
 @pytest.fixture()
 def s3_mock():
     mock = mock_s3()
