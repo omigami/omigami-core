@@ -58,8 +58,12 @@ def test_train_model(
     binned_spectra_to_train,
 ):
     layer_base_dims = (600, 500, 400)
+    split_ratio = SplitRatio(0.6, 0.2, 0.2)
     trainer = SiameseModelTrainer(
-        MS2DeepScoreRedisSpectrumDataGateway(), "positive", epochs=5
+        MS2DeepScoreRedisSpectrumDataGateway(),
+        "positive",
+        epochs=5,
+        split_ratio=split_ratio,
     )
     model = trainer.train([], tanimoto_scores_path, fitted_spectrum_binner)
 

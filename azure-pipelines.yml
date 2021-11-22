@@ -36,8 +36,8 @@ steps:
     cacheHitVar: CONDA_CACHE_RESTORED
 
 - script: |
-    conda env create --quiet --file requirements/environment.frozen.yaml
-    conda env update --quiet --file requirements/environment_test.yaml
+    conda env create --file requirements/environment.frozen.yaml
+    conda env update --file requirements/environment_test.yaml
   displayName: Create Anaconda environment
   condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
 
