@@ -221,7 +221,8 @@ def documents_data():
 def word2vec_model(documents_data):
     """
     This fixture will only work with `SpectrumDocument`s where `n_decimals` equal to 1,
-    because it is trained on this data.
+    because it is trained on this data. If model doesn't exist then it will be trained
+    and saved to ASSET_DIR. If exists it will be read from ASSET_DIR.
 
     Parameters
     ----------
@@ -232,8 +233,14 @@ def word2vec_model(documents_data):
     Word2Vec model
 
     """
-
-    model = train_new_word2vec_model(documents_data, size=300, iterations=3)
+    model_path = Path(ASSETS_DIR / "word2vec_model.pkl")
+    if model_path.exists():
+        with open(model_path, "rb") as f:
+            model = pickle.load(f)
+    else:
+        model = train_new_word2vec_model(documents_data, size=300, iterations=3)
+        with open(model_path, "wb") as f:
+            pickle.dump(model, f)
     return model
 
 
