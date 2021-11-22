@@ -25,7 +25,7 @@ from omigami.tasks import DownloadData, DownloadParameters
 
 @pytest.fixture()
 def backend_services():
-    mlflow.set_tracking_uri("mysql+pymysql://root:password123@127.0.0.1:3306/mlflow")
+    mlflow.set_tracking_uri("http://localhost:5000")
     mlflow_client = mlflow.tracking.MlflowClient()
 
     login_config = config["login"]["local"].get(dict)
@@ -79,6 +79,8 @@ def test_run_training_flow(backend_services):
     "Requires local prefect server and mlflow. Check readme to start them."
 )
 def test_single_task_local_integration(backend_services):
+    """This is covered by the integration test above but was used for development
+    and it is useful for debugging"""
     client = backend_services["prefect"]
     params = DownloadParameters(
         SOURCE_URI_PARTIAL_GNPS, str(STORAGE_ROOT), DATASET_IDS["small"]

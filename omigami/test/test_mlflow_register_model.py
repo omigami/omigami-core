@@ -58,7 +58,7 @@ def test_save_model(word2vec_model, tmpdir):
 
 @pytest.mark.skip(
     "Requires MLFlow Server running locally."
-    "mlflow server --backend-store-uri sqlite:///mydb.sqlite --default-artifact-root /tmp/mlflow"
+    "mlflow server --backend-store-uri sqlite:///mydb.sqlite --default-artifact-root /local-deployment/mlflow"
 )
 def test_log_model(word2vec_model, tmpdir):
 
