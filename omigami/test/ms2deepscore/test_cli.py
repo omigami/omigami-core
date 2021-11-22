@@ -1,6 +1,7 @@
+from unittest.mock import patch
+
 import pytest
 from click.testing import CliRunner
-from mock import patch
 
 from omigami.config import API_SERVER_URLS, MLFLOW_SERVER
 from omigami.ms2deepscore.cli import cli

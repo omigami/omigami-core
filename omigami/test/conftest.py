@@ -13,7 +13,7 @@ from pytest_redis import factories
 from spec2vec.model_building import train_new_word2vec_model
 
 import omigami
-import omigami.config
+import omigami.utils
 from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -22,9 +22,8 @@ from omigami.spec2vec.config import (
     EMBEDDING_HASHES,
     PROJECT_NAME,
 )
-from omigami.spec2vec.gateways.gateway_controller import Spec2VecGatewayController
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
+from omigami.spec2vec.gateways.redis_spectrum_document import (
+    RedisSpectrumDocumentDataGateway,
 )
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
@@ -34,7 +33,7 @@ redis_db = factories.redisdb("redis_nooproc")
 
 @pytest.fixture
 def mock_default_config(monkeypatch):
-    monkeypatch.setattr(omigami.config, "DEFAULT_PREFECT_TASK_CONFIG", TEST_TASK_CONFIG)
+    monkeypatch.setattr(omigami.utils, "DEFAULT_PREFECT_TASK_CONFIG", TEST_TASK_CONFIG)
 
 
 def pytest_addoption(parser):
@@ -247,18 +246,17 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
         for i in range(0, len(documents_data), chunk_size)
     ]
 
-    dgw = Spec2VecGatewayController(
-        Spec2VecRedisSpectrumDataGateway(PROJECT_NAME),
-        FSDataGateway(),
-        ion_mode="positive",
-    )
+    dgw = RedisSpectrumDocumentDataGateway(project=PROJECT_NAME)
+    fs_dgw = FSDataGateway()
 
     fs = get_fs(s3_documents_directory)
     if not os.path.exists(s3_documents_directory):
         fs.makedirs(s3_documents_directory)
 
     for i, documents in enumerate(documents_data):
-        dgw.write_documents(f"{s3_documents_directory}/test{i}.pickle", documents)
+        doc_path = f"{s3_documents_directory}/test{i}.pickle"
+        dgw.write_documents(documents, "positive")
+        fs_dgw.serialize_to_file(doc_path, documents)
 
     return list(itertools.chain.from_iterable(documents_data))
 

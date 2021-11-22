@@ -1,17 +1,17 @@
-from typing import Set, List, Optional
+from typing import List, Optional
 
 from spec2vec import SpectrumDocument
 
-from omigami.gateways import RedisSpectrumDataGateway
+from omigami.gateways.redis import RedisDataGateway
 from omigami.spec2vec.config import PROJECT_NAME, DOCUMENT_HASHES
+from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 
 
-class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
-    def __init__(self, project=PROJECT_NAME):
-
+class RedisSpectrumDocumentDataGateway(RedisDataGateway, SpectrumDocumentDataGateway):
+    def __init__(self, project: str = PROJECT_NAME):
         super().__init__(project)
 
-    def list_document_ids(self, ion_mode: str) -> Set[str]:
+    def list_document_ids(self, ion_mode: str) -> List[str]:
         self._init_client()
 
         key_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
@@ -21,20 +21,20 @@ class Spec2VecRedisSpectrumDataGateway(RedisSpectrumDataGateway):
         ]
         return stored_document_ids
 
-    def write_document_ids(
-        self, document_ids: List[Optional[SpectrumDocument]], ion_mode: str
+    def write_documents(
+        self, documents: List[Optional[SpectrumDocument]], ion_mode: str
     ):
         self._init_client()
 
         key_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)
 
-        for doc in document_ids:
+        for doc in documents:
             self.client.sadd(
                 key_name,
                 doc.get("spectrum_id"),
             )
 
-    def remove_document_ids(self, document_ids: List[str], ion_mode: str):
+    def remove_documents(self, document_ids: List[str], ion_mode: str):
         self._init_client()
 
         key_name = self._format_redis_key(hashes=DOCUMENT_HASHES, ion_mode=ion_mode)

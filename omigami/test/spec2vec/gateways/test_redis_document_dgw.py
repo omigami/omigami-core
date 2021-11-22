@@ -3,8 +3,8 @@ import os
 import pytest
 from spec2vec import SpectrumDocument
 
-from omigami.spec2vec.gateways.redis_spectrum_gateway import (
-    Spec2VecRedisSpectrumDataGateway,
+from omigami.spec2vec.gateways.redis_spectrum_document import (
+    RedisSpectrumDocumentDataGateway,
 )
 
 
@@ -14,7 +14,7 @@ from omigami.spec2vec.gateways.redis_spectrum_gateway import (
 )
 def test_list_document_ids(documents_stored):
     ion_mode = "positive"
-    redis_dgw = Spec2VecRedisSpectrumDataGateway()
+    redis_dgw = RedisSpectrumDocumentDataGateway()
 
     stored_ids = redis_dgw.list_document_ids(ion_mode)
 
@@ -27,9 +27,9 @@ def test_list_document_ids(documents_stored):
 )
 def test_write_document_ids(documents_data):
     ion_mode = "positive"
-    redis_dgw = Spec2VecRedisSpectrumDataGateway()
+    redis_dgw = RedisSpectrumDocumentDataGateway()
 
-    redis_dgw.write_document_ids(documents_data, ion_mode)
+    redis_dgw.write_documents(documents_data, ion_mode)
 
     stored_ids = list(redis_dgw.list_document_ids(ion_mode))
     ids = [doc.get("spectrum_id") for doc in documents_data]
@@ -44,11 +44,11 @@ def test_write_document_ids(documents_data):
 )
 def test_remove_document_ids(documents_stored):
     ion_mode = "positive"
-    redis_dgw = Spec2VecRedisSpectrumDataGateway()
+    redis_dgw = RedisSpectrumDocumentDataGateway()
 
     document_ids = [doc.get("spectrum_id") for doc in documents_stored]
 
-    redis_dgw.remove_document_ids(document_ids[:50], ion_mode)
+    redis_dgw.remove_documents(document_ids[:50], ion_mode)
 
     leftover_ids = list(redis_dgw.list_document_ids(ion_mode))
     document_ids = document_ids[50:]
@@ -65,7 +65,7 @@ def test_list_missing_documents_none_missing(
     documents_data, documents_stored, spectra_stored
 ):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in documents_data]
-    redis_dgw = Spec2VecRedisSpectrumDataGateway()
+    redis_dgw = RedisSpectrumDocumentDataGateway()
     ion_mode = "positive"
 
     documents = redis_dgw.list_missing_documents(
@@ -82,13 +82,13 @@ def test_list_missing_documents_none_missing(
 def test_list_missing_documents(documents_data, s3_mock, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in documents_data]
 
-    redis_dgw = Spec2VecRedisSpectrumDataGateway()
+    redis_dgw = RedisSpectrumDocumentDataGateway()
     ion_mode = "positive"
 
-    redis_dgw.remove_document_ids(spectrum_ids_stored, ion_mode=ion_mode)
+    redis_dgw.remove_documents(spectrum_ids_stored, ion_mode=ion_mode)
 
     old_document_ids = [SpectrumDocument(sp) for sp in documents_data[:50]]
-    redis_dgw.write_document_ids(old_document_ids, ion_mode=ion_mode)
+    redis_dgw.write_documents(old_document_ids, ion_mode=ion_mode)
 
     documents = redis_dgw.list_missing_documents(spectrum_ids_stored, ion_mode=ion_mode)
 
