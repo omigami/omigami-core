@@ -23,8 +23,8 @@ if ENV == "local":
 else:
     STORAGE_ROOT = DRPath(config["storage"]["root"][ENV])
 
-REDIS_DATABASES = {  # I think we don't need env differentiation here
-    "local": {"small": "2", "10k": "1", "complete": "0"},
+REDIS_DATABASES = {
+    "local": {"small": "0"},
     "dev": {"small": "2", "10k": "1", "complete": "0"},
     "prod": {"small": "2", "complete": "0"},
 }[ENV]
