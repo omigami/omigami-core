@@ -50,5 +50,5 @@ def run_training_flow(
         overwrite_all_spectra=overwrite_all_spectra,
         schedule=schedule,
     )
-    deployer = Spec2VecDeployer(client=client)
+    deployer = Spec2VecDeployer(prefect_client=client)
     deployer.deploy_flow(flow=flow, project_name=project_name)
