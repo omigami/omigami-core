@@ -6,11 +6,14 @@ from kubernetes import config, client
 from kubernetes.config import ConfigException
 
 from omigami.config import SELDON_PARAMS
-from omigami.spec2vec.helper_classes.exception import SeldonDeploymentError
 
 DEPLOYMENT_SPEC_PATH = Path(__file__).parent / "seldon_deployment.yaml"
 
 log = getLogger(__name__)
+
+
+class SeldonDeploymentError(Exception):
+    pass
 
 
 class SeldonDeployment:

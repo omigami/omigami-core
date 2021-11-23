@@ -5,10 +5,6 @@ class EmbeddingMakerError(Exception):
     pass
 
 
-class SeldonDeploymentError(Exception):
-    pass
-
-
 class InvalidInputException(SeldonMicroserviceException):
     def __init__(self, message, status_code=400, payload=None, reason=""):
         super().__init__(message, status_code, payload, reason)
