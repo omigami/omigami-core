@@ -95,13 +95,13 @@ def spec2vec_cli():
     is_flag=True,
     type=bool,
     default=False,
-    help="Flag to whether deploy the model to seldon or not",
+    help="Flag to whether deploy the model as a seldon deployment or not",
     show_default=True,
 )
 @click.option(
     "--overwrite-model",
     is_flag=True,
-    help="Flag to overwrite existing deployed model.",
+    help="Flag to overwrite existing deployed model. Only works with --deploy-model flag",
     show_default=True,
     default=False,
 )
