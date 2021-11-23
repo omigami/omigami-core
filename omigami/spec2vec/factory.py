@@ -38,14 +38,12 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 class Spec2VecFlowFactory:
     def __init__(
         self,
-        environment: str,
-        output_dir: str = None,
+        dataset_directory: str = None,
         documents_dir: Dict[str, str] = None,
         models_dir: str = None,
     ):
-        self._env = environment
         self._redis_dbs = REDIS_DATABASES
-        self._storage_root = output_dir or STORAGE_ROOT
+        self._dataset_directory = dataset_directory or STORAGE_ROOT / "datasets"
         self._spec2vec_root = SPEC2VEC_ROOT
         self._model_output_dir = models_dir or str(MODEL_FOLDER)
         self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
@@ -95,8 +93,7 @@ class Spec2VecFlowFactory:
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=self._redis_dbs[dataset_name],
             schedule=schedule,
-            environment=self._env,
-            storage_root=self._storage_root,
+            storage_root=STORAGE_ROOT,
         )
 
         spectrum_dgw = RedisSpectrumDataGateway(project=project_name)
@@ -123,7 +120,7 @@ class Spec2VecFlowFactory:
             documents_save_directory=str(
                 self._spec2vec_root / self._document_dirs[ion_mode]
             ),
-            output_dir=str(self._storage_root),
+            dataset_directory=str(self._dataset_directory),
             model_output_dir=self._model_output_dir,
             mlflow_server=self._mlflow_server,
             experiment_name=project_name,

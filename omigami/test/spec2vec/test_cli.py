@@ -16,7 +16,6 @@ def mock_cli(
     window: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    environment: str,
     deploy_model: bool,
     overwrite_model: bool,
     overwrite_all_spectra: bool,
@@ -33,7 +32,6 @@ def mock_cli(
     assert window == 500
     assert intensity_weighting_power == 0.5
     assert allowed_missing_percentage == 5.0
-    assert environment == "dev"
     assert deploy_model is True
     assert overwrite_model is False
     assert overwrite_all_spectra is False
@@ -62,8 +60,6 @@ def test_spec2vec_cli(monkeypatch):
         "5",
         "--window",
         "500",
-        "-e",
-        "dev",
         "--deploy-model",
     ]
     runner = CliRunner()

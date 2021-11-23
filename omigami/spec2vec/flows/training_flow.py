@@ -40,7 +40,7 @@ class TrainingFlowParameters:
         document_dgw: SpectrumDocumentDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
-        output_dir: str,
+        dataset_directory: str,
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
@@ -57,7 +57,6 @@ class TrainingFlowParameters:
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
         overwrite_model: bool = False,
-        environment: str = "dev",
         model_name: Optional[str] = "spec2vec-model",
         experiment_name: str = "default",
     ):
@@ -68,7 +67,11 @@ class TrainingFlowParameters:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         self.downloading = DownloadParameters(
-            source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
+            source_uri,
+            dataset_directory,
+            dataset_id,
+            dataset_name,
+            dataset_checkpoint_name,
         )
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
@@ -97,9 +100,7 @@ class TrainingFlowParameters:
         self.embedding = MakeEmbeddingsParameters(
             ion_mode, n_decimals, intensity_weighting_power, allowed_missing_percentage
         )
-        self.deploying = DeployModelParameters(
-            redis_db, ion_mode, overwrite_model, environment
-        )
+        self.deploying = DeployModelParameters(redis_db, ion_mode, overwrite_model)
 
 
 def build_training_flow(

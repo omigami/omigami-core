@@ -83,14 +83,6 @@ def spec2vec_cli():
     help="Missing percentage of ions allowed",
 )
 @click.option(
-    "--environment",
-    "-e",
-    type=click.Choice(["dev", "prod"]),
-    default="dev",
-    help="Which environment to run the flow on.",
-    show_default=True,
-)
-@click.option(
     "--deploy-model",
     is_flag=True,
     type=bool,
