@@ -68,7 +68,7 @@ Running Prefect Locally
 
 Start up prefect server.
 ::
-    prefect server start
+    prefect server start -d
 
 
 If you are in a M1 machine you might (probably) need to increase docker memory resources to 7 GB.
@@ -88,9 +88,10 @@ In a terminal, start an agent that will execute the flows:
     prefect agent start -l "dev" --show-flow-logs
 
 
-To shut down prefect started from docker-compose:
+To shut down prefect:
 ::
-    docker-compose -f local-deployment/docker-compose.yml down
+    prefect server stop
+    docker-compose -f local-deployment/docker-compose.yml down  # if you used docker-compose
 
 
 Running MLFlow Locally
