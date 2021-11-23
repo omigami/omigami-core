@@ -7,8 +7,8 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.gateways import RedisSpectrumDataGateway
-from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import PROJECT_NAME, SPEC2VEC_ROOT
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,

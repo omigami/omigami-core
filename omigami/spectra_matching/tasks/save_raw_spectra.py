@@ -3,7 +3,7 @@ from typing import List
 
 from prefect import Task
 
-from omigami.base.gateways import RedisSpectrumDataGateway, DataGateway
+from omigami.spectra_matching.gateways import RedisSpectrumDataGateway, DataGateway
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.utils import merge_prefect_task_configs
 

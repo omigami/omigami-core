@@ -12,7 +12,7 @@ from ms2deepscore import SpectrumBinner
 from ms2deepscore.models import SiameseModel
 from tensorflow.python.keras.saving import hdf5_format
 
-from omigami.base.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
 
 
 class MS2DeepScoreFSDataGateway(FSDataGateway):

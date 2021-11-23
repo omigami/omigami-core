@@ -5,7 +5,7 @@ from typing import List
 
 from prefect import Task
 
-from omigami.base.gateways.data_gateway import DataGateway
+from omigami.spectra_matching.gateways.data_gateway import DataGateway
 from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
 

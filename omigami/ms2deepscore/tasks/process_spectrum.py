@@ -5,7 +5,7 @@ import prefect
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.base.gateways import DataGateway
+from omigami.spectra_matching.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )

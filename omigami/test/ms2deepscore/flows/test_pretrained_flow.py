@@ -6,8 +6,8 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import MLFLOW_SERVER
-from omigami.gateways.data_gateway import DataGateway
-from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.gateways.data_gateway import DataGateway
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.flows.pretrained_flow import (
     build_pretrained_flow,
     PretrainedFlowParameters,

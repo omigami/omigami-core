@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Any
 
-from omigami.base.entities.data_models import SpectrumInputData
+from omigami.spectra_matching.entities.data_models import SpectrumInputData
 
 
 class DataGateway(ABC):
