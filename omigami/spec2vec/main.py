@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 
 import pandas as pd
 
@@ -8,7 +8,7 @@ from omigami.spec2vec.deployment import Spec2VecDeployer
 from omigami.spec2vec.factory import Spec2VecFlowFactory
 
 
-def run_training_flow(
+def deploy_training_flow(
     image: str,
     project_name: str,
     flow_name: str,
@@ -41,9 +41,7 @@ def run_training_flow(
 
     """
     api_server = API_SERVER_URLS[environment]
-    login_config = config["login"][environment].get(dict)
-    if auth:
-        login_config.pop("token")
+    login_config = _get_login_config(auth, environment)
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     client = prefect_factory.get_client()
 
@@ -69,3 +67,12 @@ def run_training_flow(
     flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
 
     return flow_id, flow_run_id
+
+
+def _get_login_config(auth: bool, environment: str) -> Dict[str, str]:
+    if auth:
+        login_config = config["login"][environment].get(dict)
+        login_config.pop("token")
+    else:
+        login_config = {"user": None, "password": None, "session_token": "token"}
+    return login_config

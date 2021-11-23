@@ -10,13 +10,13 @@ class PrefectClientFactory:
         self,
         auth_url: Optional[str],
         api_server: Optional[str],
-        token: Optional[str] = None,
+        session_token: Optional[str] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
         authenticator: Authenticator = None,
     ):
         self._api_server = api_server
-        self._session_token = token
+        self._session_token = session_token
         self._authenticator = authenticator or KratosAuthenticator(
             auth_url, username, password
         )

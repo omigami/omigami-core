@@ -16,7 +16,7 @@ def test_mock_prefect_get_client(monkeypatch):
         omigami.authentication.prefect_factory, "Client", mock_prefect_client
     )
     factory = PrefectClientFactory(
-        "auth-url", "api-server", token="token", authenticator=auth
+        "auth-url", "api-server", session_token="token", authenticator=auth
     )
 
     client = factory.get_client()

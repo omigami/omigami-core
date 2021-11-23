@@ -30,17 +30,12 @@ login:
     auth_url: "url"
     username: "user"
     password: "pw"
-    token: "token"
+    session_token: "token"
   dev:
     auth_url: "url"
     username: "user"
     password: "pw"
-    token: "token"
-  local:
-    auth_url: "url"
-    username: "user"
-    password: "pw"
-    token: ""
+    session_token: "token"
 
 gnps_uri:
   complete: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"

@@ -19,7 +19,7 @@ from omigami.config import (
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.deployment import Spec2VecDeployer
 from omigami.spec2vec.factory import Spec2VecFlowFactory
-from omigami.spec2vec.main import run_training_flow
+from omigami.spec2vec.main import deploy_training_flow
 from omigami.tasks import DownloadData, DownloadParameters
 
 
@@ -43,10 +43,10 @@ def backend_services():
     "Requires local prefect server and mlflow. Make sure they are running to run this"
     "test. To run them, check README instructions."
 )
-def test_run_training_flow(backend_services):
+def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
 
-    flow_id, flow_run_id = run_training_flow(
+    flow_id, flow_run_id = deploy_training_flow(
         image="",
         project_name="local-integration-test",
         flow_name="Robert DeFlow",
@@ -108,7 +108,7 @@ def test_single_task_local_integration(backend_services):
     assert client.get_flow_run_state(flow_run_id).is_successful()
 
 
-def test_mocked_run_training_flow(monkeypatch):
+def test_mocked_deploy_training_flow(monkeypatch):
     mock_client_factory = Mock()
     client_factory_instance = mock_client_factory.return_value
     client_factory_instance.get_client = Mock(return_value="client")
@@ -128,7 +128,7 @@ def test_mocked_run_training_flow(monkeypatch):
     deployer_instance.deploy_flow = Mock(return_value=("id", "run_id"))
     monkeypatch.setattr(omigami.spec2vec.main, "Spec2VecDeployer", mock_deployer)
 
-    flow_id, flow_run_id = run_training_flow(
+    flow_id, flow_run_id = deploy_training_flow(
         image="",
         project_name="default",
         flow_name="Robert DeFlow",

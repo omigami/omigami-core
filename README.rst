@@ -62,6 +62,48 @@ Start a Redis container and set these environment variables before running the t
     docker run -d --rm --name redis -p 6379:6379 redis:5-alpine
     export SKIP_REDIS_TEST=False
 
+
+Running Prefect Locally
+------------------------------------
+
+Start up prefect server.
+::
+    prefect server start
+
+
+If you are in a M1 machine you might (probably) need to increase docker memory resources to 7 GB.
+Alternatively, you can run it through docker-compose (requires less memory):
+::
+        docker-compose -f local-deployment/docker-compose.yml up -d
+
+To access the dashboard, go to http://localhost:8080/. If you see a blank screen,
+you will need to create a tenant:
+::
+    prefect backend server
+    prefect server create-tenant -n default
+
+
+In a terminal, start an agent that will execute the flows:
+::
+    prefect agent start -l "dev" --show-flow-logs
+
+
+To shut down prefect started from docker-compose:
+::
+    docker-compose -f local-deployment/docker-compose.yml down
+
+
+Running MLFlow Locally
+-----------------------
+
+To run mlflow locally run the following command:
+::
+    mlflow server --backend-store-uri sqlite:///mlflow.sqlite --default-artifact-root /local-deployment/mlflow
+
+
+To access it: http://localhost:5000/
+
+
 To run tests one by one via PyCharm, you can add this to your pytest Environment Variables (Run > Edit Configurations...)
 ::
 
@@ -162,44 +204,3 @@ version provided in the environment and the following command:
 ::
 
     black --target-version py37 omigami
-
-
-Running Prefect Locally
-------------------------------------
-
-Start up prefect server.
-::
-    prefect server start
-
-
-If you are in a M1 machine you might (probably) need to increase docker memory resources to 7 GB.
-Alternatively, you can run it through docker-compose (requires less memory):
-::
-        docker-compose -f local-deployment/docker-compose.yml up -d
-
-To access the dashboard, go to http://localhost:8080/. If you see a blank screen,
-you will need to create a tenant:
-::
-    prefect backend server
-    prefect server create-tenant -n default
-
-
-In a terminal, start an agent that will execute the flows:
-::
-    prefect agent start -l "dev" --show-flow-logs
-
-
-To shut down prefect started from docker-compose:
-::
-    docker-compose -f local-deployment/docker-compose.yml down
-
-
-Running MLFlow Locally
------------------------
-
-To run mlflow locally run the following command:
-::
-    mlflow server --backend-store-uri sqlite:///mlflow.sqlite --default-artifact-root /local-deployment/mlflow
-
-
-To access it: http://localhost:5000/
