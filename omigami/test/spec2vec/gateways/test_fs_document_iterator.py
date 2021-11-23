@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from omigami.base.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.gateways.fs_document_iterator import FileSystemDocumentIterator
 
 

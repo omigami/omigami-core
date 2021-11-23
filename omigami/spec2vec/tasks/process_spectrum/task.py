@@ -3,8 +3,8 @@ from typing import Set, List
 
 from prefect import Task
 
-from omigami.base.gateways import RedisSpectrumDataGateway
-from omigami.base.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger

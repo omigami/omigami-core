@@ -6,8 +6,8 @@ import pytest
 from drfs.filesystems import get_fs
 from pytest_redis import factories
 
-from omigami.base.gateways import RedisSpectrumDataGateway
-from omigami.base.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.gateways.fs_document_iterator import FileSystemDocumentIterator
 from omigami.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,

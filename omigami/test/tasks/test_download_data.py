@@ -9,9 +9,9 @@ from drfs.filesystems import get_fs
 from prefect import Flow
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.base.gateways.data_gateway import DataGateway
-from omigami.base.gateways.fs_data_gateway import FSDataGateway
-from omigami.base.tasks import DownloadParameters, DownloadData
+from omigami.spectra_matching.gateways.data_gateway import DataGateway
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.tasks import DownloadParameters, DownloadData
 from omigami.test.conftest import ASSETS_DIR
 from omigami.utils import create_prefect_result_from_path
 

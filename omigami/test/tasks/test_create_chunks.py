@@ -2,8 +2,8 @@ import pytest
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.base.gateways.fs_data_gateway import FSDataGateway
-from omigami.base.tasks import CreateChunks, ChunkingParameters
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.tasks import CreateChunks, ChunkingParameters
 from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 
 
