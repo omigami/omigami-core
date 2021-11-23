@@ -48,7 +48,7 @@ def test_run_training_flow(backend_services):
 
     flow_id, flow_run_id = run_training_flow(
         image="",
-        project_name="test",
+        project_name="local-integration-test",
         flow_name="Robert DeFlow",
         dataset_name="small",
         source_uri=SOURCE_URI_PARTIAL_GNPS,

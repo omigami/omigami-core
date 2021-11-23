@@ -28,8 +28,7 @@ def run_training_flow(
     auth: bool = True,
 ) -> Tuple[str, str]:
     """
-    Authenticates, creates a prefect client, builds and deploys a flow, and trigger a run
-    of this flow.
+    Builds, deploys, and runs a Spec2Vec model training flow.
 
     Parameters
     ----------

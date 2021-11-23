@@ -199,7 +199,7 @@ Running MLFlow Locally
 
 To run mlflow locally run the following command:
 ::
-    mlflow server --backend-store-uri sqlite:///mydb.sqlite --default-artifact-root /local-deployment/mlflow
+    mlflow server --backend-store-uri sqlite:///mlflow.sqlite --default-artifact-root /local-deployment/mlflow
 
 
 To access it: http://localhost:5000/

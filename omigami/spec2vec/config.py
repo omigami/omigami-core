@@ -12,7 +12,7 @@ config = Configuration("omigami/spec2vec", __name__)
 PROJECT_NAME = config["prefect"]["project"].get(str)
 SPEC2VEC_ROOT = STORAGE_ROOT / PROJECT_NAME
 
-MODEL_FOLDER = SPEC2VEC_ROOT / config["storage"]["model_folder"].get(str)
+MODEL_FOLDER = STORAGE_ROOT / config["storage"]["model_folder"].get(str)
 DOCUMENT_DIRECTORIES = config["storage"]["documents"].get(dict)
 
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][

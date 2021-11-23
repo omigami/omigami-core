@@ -9,6 +9,7 @@ from omigami.config import (
     IonModes,
     DATASET_IDS,
     MLFLOW_SERVER,
+    STORAGE_ROOT,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -44,7 +45,8 @@ class Spec2VecFlowFactory:
     ):
         self._env = environment
         self._redis_dbs = REDIS_DATABASES
-        self._output_dir = output_dir or SPEC2VEC_ROOT
+        self._storage_root = output_dir or STORAGE_ROOT
+        self._spec2vec_root = SPEC2VEC_ROOT
         self._model_output_dir = models_dir or str(MODEL_FOLDER)
         self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
         self._dataset_ids = DATASET_IDS
@@ -74,11 +76,12 @@ class Spec2VecFlowFactory:
         deploy_model: bool = False,
         chunk_size: int = CHUNK_SIZE,
     ) -> Flow:
-        """Creates all objects necessary to build a training flow, and then builds it.
+        """Creates all configuration/gateways objects used by the training flow, and builds
+        the training flow with them.
 
         Parameters
         ----------
-        For information on parameters please check spec2vec/cli.py
+        For information on parameters please check omigami/spec2vec/cli.py
 
         Returns
         -------
@@ -93,7 +96,7 @@ class Spec2VecFlowFactory:
             redis_db=self._redis_dbs[dataset_name],
             schedule=schedule,
             environment=self._env,
-            storage_root=self._output_dir,
+            storage_root=self._storage_root,
         )
 
         spectrum_dgw = RedisSpectrumDataGateway(project=project_name)
@@ -118,9 +121,9 @@ class Spec2VecFlowFactory:
             overwrite_model=overwrite_model,
             overwrite_all_spectra=overwrite_all_spectra,
             documents_save_directory=str(
-                self._output_dir / self._document_dirs[ion_mode]
+                self._spec2vec_root / self._document_dirs[ion_mode]
             ),
-            output_dir=str(self._output_dir),
+            output_dir=str(self._storage_root),
             model_output_dir=self._model_output_dir,
             mlflow_server=self._mlflow_server,
             experiment_name=project_name,
