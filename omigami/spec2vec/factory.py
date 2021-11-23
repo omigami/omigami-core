@@ -124,6 +124,7 @@ class Spec2VecFlowFactory:
             model_output_dir=self._model_output_dir,
             mlflow_server=self._mlflow_server,
             experiment_name=project_name,
+            redis_db=self._redis_dbs[dataset_name],
         )
 
         spec2vec_flow = build_training_flow(
