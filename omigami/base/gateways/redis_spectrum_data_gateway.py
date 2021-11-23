@@ -6,7 +6,7 @@ from typing import List, Iterable, Set, Union
 
 from matchms import Spectrum
 
-from omigami.gateways.redis import RedisDataGateway
+from omigami.base.gateways.redis import RedisDataGateway
 from omigami.ms2deepscore.entities.embedding import Embedding as MS2DeepScoreEmbedding
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,

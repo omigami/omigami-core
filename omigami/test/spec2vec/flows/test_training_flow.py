@@ -11,8 +11,8 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.gateways import RedisSpectrumDataGateway
-from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.base.gateways import RedisSpectrumDataGateway
+from omigami.base.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,

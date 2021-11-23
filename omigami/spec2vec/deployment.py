@@ -5,8 +5,8 @@ from omigami.config import (
     DATASET_IDS,
 )
 from omigami.deployer import Deployer
-from omigami.gateways import RedisSpectrumDataGateway
-from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.base.gateways import RedisSpectrumDataGateway
+from omigami.base.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import (
     MODEL_DIRECTORIES,
     PROJECT_NAME,

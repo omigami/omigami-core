@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.base.gateways.fs_data_gateway import FSDataGateway
 
 
 class FileSystemDocumentIterator:

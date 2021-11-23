@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from prefect import Flow
 
-from omigami.gateways.fs_data_gateway import FSDataGateway
+from omigami.base.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )

@@ -4,7 +4,7 @@ from typing import Tuple, List, Dict
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.gateways import DataGateway
+from omigami.base.gateways import DataGateway
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )

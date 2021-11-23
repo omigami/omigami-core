@@ -13,7 +13,7 @@ from pytest_redis import factories
 
 import omigami
 import omigami.utils
-from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
+from omigami.base.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,

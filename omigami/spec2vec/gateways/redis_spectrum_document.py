@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from spec2vec import SpectrumDocument
 
-from omigami.gateways.redis import RedisDataGateway
+from omigami.base.gateways.redis import RedisDataGateway
 from omigami.spec2vec.config import PROJECT_NAME, DOCUMENT_HASHES
 from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 
