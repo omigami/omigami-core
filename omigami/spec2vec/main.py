@@ -74,5 +74,10 @@ def _get_login_config(auth: bool, environment: str) -> Dict[str, str]:
         login_config = config["login"][environment].get(dict)
         login_config.pop("token")
     else:
-        login_config = {"user": None, "password": None, "session_token": "token"}
+        login_config = {
+            "username": None,
+            "password": None,
+            "auth_url": "url",
+            "session_token": "token",
+        }
     return login_config

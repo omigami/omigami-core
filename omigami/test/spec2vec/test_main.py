@@ -13,7 +13,6 @@ from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     STORAGE_ROOT,
     DATASET_IDS,
-    config,
     API_SERVER_URLS,
 )
 from omigami.gateways.fs_data_gateway import FSDataGateway
@@ -28,7 +27,12 @@ def backend_services():
     mlflow.set_tracking_uri("http://localhost:5000")
     mlflow_client = mlflow.tracking.MlflowClient()
 
-    login_config = config["login"]["local"].get(dict)
+    login_config = {
+        "username": None,
+        "password": None,
+        "auth_url": "url",
+        "session_token": "token",
+    }
     api_server = API_SERVER_URLS["local"]
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()
@@ -39,10 +43,10 @@ def backend_services():
     return {"prefect": prefect_client, "mlflow": mlflow_client}
 
 
-@pytest.mark.skip(
-    "Requires local prefect server and mlflow. Make sure they are running to run this"
-    "test. To run them, check README instructions."
-)
+# @pytest.mark.skip(
+#     "Requires local prefect server and mlflow. Make sure they are running to run this"
+#     "test. To run them, check README instructions."
+# )
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
 
