@@ -23,7 +23,7 @@ class PrefectClientFactory:
 
     def get_client(self) -> Client:
         """Instantiates a Prefect Client using provided credentials"""
-        if not self._session_token:
+        if self._session_token is None:
             self._session_token = self._authenticator.authenticate()
 
         client = Client(api_server=self._api_server, api_token=self._session_token)

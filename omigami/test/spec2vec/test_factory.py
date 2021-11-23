@@ -33,7 +33,7 @@ def test_build_training_flow():
     assert chunk_task._chunk_size == int(1e8)
 
 
-@pytest.mark.xfail("Not implemented atm.")  # TODO
+@pytest.mark.xfail(reason="Not implemented atm.")  # TODO
 def test_build_model_deployment_flow():
     factory = Spec2VecFlowFactory("dev")
     assert factory.build_model_deployment_flow()

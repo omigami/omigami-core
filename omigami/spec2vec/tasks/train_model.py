@@ -45,7 +45,7 @@ class TrainModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, documents_directory: List[str]) -> Word2Vec:
+    def run(self, documents_directory: List[str] = None) -> Word2Vec:
 
         self.logger.info(f"Loading examples from {documents_directory}")
 

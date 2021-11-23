@@ -141,3 +141,7 @@ dmypy.json
 **/spectrum_ids_500.pkl
 **/mlflow-server/*
 **/mlruns/*
+
+.DS_Store
+/local-deployment/spec2vec
+mlflow.sqlite

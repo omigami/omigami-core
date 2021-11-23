@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -13,7 +14,7 @@ from omigami.flow_config import (
 )
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
-from omigami.spec2vec.config import PROJECT_NAME
+from omigami.spec2vec.config import PROJECT_NAME, SPEC2VEC_ROOT
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
@@ -32,7 +33,7 @@ os.chdir(Path(__file__).parents[4])
 def flow_config():
     flow_config = make_flow_config(
         image="image-ref-name-test-harry-potter-XXII",
-        storage_type=PrefectStorageMethods.S3,
+        storage_type=PrefectStorageMethods.Local,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db="0",
     )
@@ -103,9 +104,11 @@ def test_run_training_flow(
     redis_full_setup,
 ):
     # remove mlflow models from previous runs
-    fs = get_fs(ASSETS_DIR)
+    mlflow_root = SPEC2VEC_ROOT / "test-mlflow"
+    if mlflow_root.exists():
+        shutil.rmtree(mlflow_root)
+    fs = get_fs(mlflow_root)
     ion_mode = "positive"
-    _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
     spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     data_gtw = FSDataGateway()
@@ -128,11 +131,12 @@ def test_run_training_flow(
         iterations=3,
         window=200,
         project_name="test",
-        model_output_dir=f"{tmpdir}/model-output",
-        documents_save_directory=f"{tmpdir}/documents/{ion_mode}",
-        mlflow_server="mlflow-server",
+        model_output_dir=str(mlflow_root),
+        documents_save_directory=tmpdir / f"documents/{ion_mode}",
+        mlflow_server=str(mlflow_root),
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
+        model_name=None,
     )
 
     flow = build_training_flow(
@@ -143,10 +147,12 @@ def test_run_training_flow(
     )
 
     results = flow.run()
-    (d,) = flow.get_tasks("DownloadData")
+    d = flow.get_tasks("DownloadData")[0]
+    r = flow.get_tasks("RegisterModel")[0]
 
     assert results.is_successful()
     results.result[d].is_cached()
-    assert "model" in os.listdir(tmpdir / "model-output")
+    model_uri = results.result[r].result["model_uri"]
+    assert Path(model_uri).exists()
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
