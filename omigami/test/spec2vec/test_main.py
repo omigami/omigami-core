@@ -15,8 +15,8 @@ from omigami.config import (
     DATASET_IDS,
     API_SERVER_URLS,
 )
+from omigami.deployer import FlowDeployer
 from omigami.gateways.fs_data_gateway import FSDataGateway
-from omigami.spec2vec.deployment import Spec2VecDeployer
 from omigami.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spec2vec.main import deploy_training_flow
 from omigami.tasks import DownloadData, DownloadParameters
@@ -127,7 +127,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
     factory_instance.build_training_flow = Mock(return_value="flow")
     monkeypatch.setattr(omigami.spec2vec.main, "Spec2VecFlowFactory", mock_flow_factory)
 
-    mock_deployer = Mock(spec=Spec2VecDeployer)
+    mock_deployer = Mock(spec=FlowDeployer)
     deployer_instance = mock_deployer.return_value
     deployer_instance.deploy_flow = Mock(return_value=("id", "run_id"))
     monkeypatch.setattr(omigami.spec2vec.main, "Spec2VecDeployer", mock_deployer)

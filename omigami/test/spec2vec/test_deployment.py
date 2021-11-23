@@ -3,9 +3,7 @@ from typing_extensions import Literal
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.config import config, MLFLOW_SERVER
-from omigami.spec2vec.deployment import (
-    Spec2VecDeployer,
-)
+from omigami.deployer import FlowDeployer
 
 
 @pytest.mark.skip(
@@ -22,7 +20,7 @@ def test_deploy_training_flow():
     login_config = config["login"][env].get(dict)
     login_config.pop("token")
 
-    deployer = Spec2VecDeployer(
+    deployer = FlowDeployer(
         image="drtools/prefect:omigami-SNAPSHOT.d4413bf",
         iterations=15,
         window=500,
