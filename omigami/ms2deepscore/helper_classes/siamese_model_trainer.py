@@ -77,7 +77,7 @@ class SiameseModelTrainer:
             dropout_rate=self._dropout_rate,
         )
         model.compile(
-            loss="mse", optimizer=keras.optimizers.Adam(lr=self._learning_rate)
+            loss="mse", optimizer=keras.optimizers.Adam(learning_rate=self._learning_rate)
         )
         model.fit(
             data_generators["training"],

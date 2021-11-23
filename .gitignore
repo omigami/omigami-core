@@ -141,3 +141,6 @@ dmypy.json
 **/spectrum_ids_500.pkl
 **/mlflow-server/*
 **/mlruns/*
+
+# large test assets
+**/assets/*model.pkl
