@@ -43,7 +43,7 @@ def deploy_training_flow(
     api_server = API_SERVER_URLS[environment]
     login_config = _get_login_config(auth, environment)
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
-    client = prefect_factory.get_client()
+    prefect_client = prefect_factory.get_client()
 
     factory = Spec2VecFlowFactory(environment=environment)
     flow = factory.build_training_flow(
@@ -63,7 +63,7 @@ def deploy_training_flow(
         overwrite_all_spectra=overwrite_all_spectra,
         schedule=schedule,
     )
-    deployer = Spec2VecDeployer(client=client)
+    deployer = Spec2VecDeployer(prefect_client=prefect_client)
     flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
 
     return flow_id, flow_run_id
