@@ -26,7 +26,7 @@ from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
 )
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters, TrainModel
 from omigami.spectrum_cleaner import SpectrumCleaner
-from omigami.tasks import (
+from omigami.base.tasks import (
     DownloadParameters,
     DownloadData,
     ChunkingParameters,
