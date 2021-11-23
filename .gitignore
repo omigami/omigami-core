@@ -143,4 +143,4 @@ dmypy.json
 **/mlruns/*
 
 # large test assets
-omigami/test/assets/word2vec_model.pkl
+**/assets/*model.pkl
