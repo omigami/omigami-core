@@ -7,7 +7,7 @@ from prefect import Task
 from omigami.config import IonModes
 from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
 from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
-from omigami.spectra_matching.gateways.redis import REDIS_DB
+from omigami.spectra_matching.storage import REDIS_DB
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs
