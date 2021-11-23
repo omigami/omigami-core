@@ -5,7 +5,8 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
+import omigami.ms2deepscore.helper_classes.siamese_model_trainer
+from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -30,11 +31,28 @@ os.chdir(Path(__file__).parents[4])
 def flow_config():
     flow_config = make_flow_config(
         image="image-ref-name-test-harry-potter-XXII",
-        storage_type=PrefectStorageMethods.S3,
+        storage_type=PrefectStorageMethods.Local,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db="0",
     )
     return flow_config
+
+
+@pytest.fixture()
+def small_model_params(monkeypatch):
+    smaller_params = {
+        "batch_size": 2,
+        "learning_rate": 0.001,
+        "layer_base_dims": (300, 200, 100),
+        "embedding_dim": 100,
+        "dropout_rate": 0.2,
+    }
+
+    monkeypatch.setattr(
+        omigami.ms2deepscore.helper_classes.siamese_model_trainer,
+        "SIAMESE_MODEL_PARAMS",
+        smaller_params,
+    )
 
 
 def test_training_flow(flow_config):
@@ -98,9 +116,13 @@ def test_training_flow(flow_config):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-@pytest.mark.slow
 def test_run_training_flow(
-    tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
+    tmpdir,
+    flow_config,
+    mock_default_config,
+    clean_chunk_files,
+    redis_full_setup,
+    small_model_params,
 ):
     # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
@@ -114,10 +136,10 @@ def test_run_training_flow(
         data_gtw=data_gtw,
         spectrum_dgw=spectrum_dgw,
         spectrum_cleaner=spectrum_cleaner,
-        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
+        source_uri=SOURCE_URI_PARTIAL_GNPS,
         dataset_directory=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
-        dataset_name="SMALL_GNPS_500_spectra.json",
+        dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
         ion_mode="positive",
         overwrite_model=True,
@@ -129,14 +151,14 @@ def test_run_training_flow(
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
         model_output_path=str(tmpdir / "model.hdf5"),
         dataset_checkpoint_name="spectrum_ids_500.pkl",
-        epochs=10,
+        epochs=1,
         project_name="test",
         mlflow_output_dir=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
-        train_ratio=0.6,
-        validation_ratio=0.3,
-        test_ratio=0.1,
-        spectrum_ids_chunk_size=10,
+        train_ratio=0.8,
+        validation_ratio=0.2,
+        test_ratio=0.2,
+        spectrum_ids_chunk_size=100,
     )
 
     flow = build_training_flow(
@@ -150,7 +172,7 @@ def test_run_training_flow(
 
     assert results.is_successful()
     results.result[d].is_cached()
-    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 18
+    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")

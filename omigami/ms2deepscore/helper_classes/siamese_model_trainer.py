@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from logging import Logger
-from typing import List, Tuple, Dict
+from typing import List, Dict
 
 import numpy as np
 import pandas as pd
@@ -11,6 +11,14 @@ from tensorflow import keras
 
 from omigami.config import IonModes
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
+
+SIAMESE_MODEL_PARAMS = {
+    "batch_size": 32,
+    "learning_rate": 0.001,
+    "layer_base_dims": (600, 500, 400),
+    "embedding_dim": 400,
+    "dropout_rate": 0.2,
+}
 
 
 @dataclass
@@ -26,20 +34,17 @@ class SiameseModelTrainer:
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         ion_mode: IonModes,
         epochs: int = 50,
-        learning_rate: float = 0.001,
-        layer_base_dims: Tuple[int] = (600, 500, 400),
-        embedding_dim: int = 400,
-        dropout_rate: float = 0.2,
         split_ratio: SplitRatio = SplitRatio(),
     ):
         self._spectrum_gtw = spectrum_dgw
         self._ion_mode = ion_mode
         self._epochs = epochs
-        self._learning_rate = learning_rate
-        self._layer_base_dims = layer_base_dims
-        self._embedding_dim = embedding_dim
-        self._dropout_rate = dropout_rate
         self._split_ratio = split_ratio
+        self._learning_rate = SIAMESE_MODEL_PARAMS["learning_rate"]
+        self._layer_base_dims = SIAMESE_MODEL_PARAMS["layer_base_dims"]
+        self._embedding_dim = SIAMESE_MODEL_PARAMS["embedding_dim"]
+        self._dropout_rate = SIAMESE_MODEL_PARAMS["dropout_rate"]
+        self._batch_size = SIAMESE_MODEL_PARAMS["batch_size"]
 
     def train(
         self,
@@ -54,7 +59,10 @@ class SiameseModelTrainer:
         tanimoto_scores = pd.read_pickle(scores_output_path, compression="gzip")
 
         data_generators = self._train_validation_test_split(
-            binned_spectra, tanimoto_scores, len(spectrum_binner.known_bins)
+            binned_spectra,
+            tanimoto_scores,
+            len(spectrum_binner.known_bins),
+            batch_size=self._batch_size,
         )
         if logger:
             logger.info(
@@ -92,6 +100,7 @@ class SiameseModelTrainer:
         binned_spectra: List[BinnedSpectrum],
         tanimoto_scores: pd.DataFrame,
         input_vector_dimension: int,
+        **kwargs,
     ) -> Dict[str, DataGeneratorAllSpectrums]:
 
         np.random.seed(100)
@@ -125,6 +134,7 @@ class SiameseModelTrainer:
                 binned_spectrums=spectra_group,
                 reference_scores_df=tanimoto_scores,
                 dim=input_vector_dimension,
+                **kwargs,
             )
             for key, spectra_group in spectra.items()
         }

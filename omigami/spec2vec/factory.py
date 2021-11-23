@@ -10,6 +10,7 @@ from omigami.config import (
     DATASET_IDS,
     MLFLOW_SERVER,
     STORAGE_ROOT,
+    CHUNK_SIZE,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -22,7 +23,6 @@ from omigami.spec2vec.config import (
     PROJECT_NAME,
     MODEL_FOLDER,
     DOCUMENT_DIRECTORIES,
-    CHUNK_SIZE,
     SPEC2VEC_ROOT,
 )
 from omigami.spec2vec.flows.training_flow import (
@@ -64,10 +64,10 @@ class Spec2VecFlowFactory:
         intensity_weighting_power: float,
         allowed_missing_percentage: float,
         dataset_name: str,
+        source_uri: str,
         n_decimals: int = 2,
         schedule: pd.Timedelta = None,
         ion_mode: IonModes = "positive",
-        source_uri=None,
         overwrite_all_spectra: bool = False,
         overwrite_model: bool = False,
         project_name: str = PROJECT_NAME,

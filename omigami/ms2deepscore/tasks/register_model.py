@@ -7,6 +7,9 @@ from prefect import Task
 
 from omigami.config import IonModes
 from omigami.model_register import MLFlowModelRegister
+from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
+    SIAMESE_MODEL_PARAMS,
+)
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
 from omigami.utils import merge_prefect_task_configs
@@ -147,10 +150,10 @@ class ModelRegister(MLFlowModelRegister):
 
         train_params = {
             "epochs": train_parameters.epochs,
-            "learning_rate": train_parameters.learning_rate,
-            "layer_base_dims": train_parameters.layer_base_dims,
-            "embedding_dim": train_parameters.embedding_dim,
-            "dropout_rate": train_parameters.dropout_rate,
+            "learning_rate": SIAMESE_MODEL_PARAMS["learning_rate"],
+            "layer_base_dims": SIAMESE_MODEL_PARAMS["layer_base_dims"],
+            "embedding_dim": SIAMESE_MODEL_PARAMS["embedding_dim"],
+            "dropout_rate": SIAMESE_MODEL_PARAMS["dropout_rate"],
             "split_ratio": train_parameters.split_ratio,
             "validation_loss": validation_loss,
         }

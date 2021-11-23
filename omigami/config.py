@@ -59,3 +59,6 @@ def get_login_config(auth: bool) -> Dict[str, str]:
             "session_token": "token",
         }
     return login_config
+
+
+CHUNK_SIZE = int(1e8)

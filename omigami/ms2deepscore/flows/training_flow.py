@@ -1,5 +1,4 @@
 from datetime import timedelta, date, datetime
-from typing import Tuple
 
 from prefect import Flow, unmapped
 from prefect.schedules import Schedule
@@ -61,10 +60,6 @@ class TrainingFlowParameters:
         mlflow_output_dir: str,
         mlflow_server: str,
         epochs: int = 50,
-        learning_rate: float = 0.001,
-        layer_base_dims: Tuple[int] = (600, 500, 400),
-        embedding_dim: int = 400,
-        dropout_rate: float = 0.2,
         train_ratio: float = 0.9,
         validation_ratio: float = 0.05,
         test_ratio: float = 0.05,
@@ -72,7 +67,6 @@ class TrainingFlowParameters:
         schedule_task_days: int = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
-        environment: str = "dev",
         redis_db: str = "0",
     ):
         self.data_gtw = data_gtw
@@ -123,10 +117,6 @@ class TrainingFlowParameters:
             ion_mode,
             spectrum_binner_output_path,
             epochs,
-            learning_rate,
-            layer_base_dims,
-            embedding_dim,
-            dropout_rate,
             SplitRatio(train_ratio, validation_ratio, test_ratio),
         )
 
