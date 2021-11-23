@@ -66,8 +66,8 @@ def test_run_training_flow(backend_services):
         auth=False,
     )
 
-    while (
-        not client.get_flow_run_state(flow_run_id).is_successful()
+    while not (
+        client.get_flow_run_state(flow_run_id).is_successful()
         or client.get_flow_run_state(flow_run_id).is_failed()
     ):
         sleep(0.5)

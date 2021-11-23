@@ -5,6 +5,7 @@ from pathlib import Path
 
 import boto3
 import ijson
+import pandas as pd
 import pytest
 import s3fs
 from drfs.filesystems import get_fs
@@ -26,7 +27,7 @@ from omigami.spec2vec.gateways.redis_spectrum_document import (
 )
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
-TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=0)
+TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=pd.Timedelta(seconds=0.1))
 redis_db = factories.redisdb("redis_nooproc")
 
 

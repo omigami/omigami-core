@@ -10,7 +10,20 @@ class Spec2VecDeployer:
         self._client = client
 
     def deploy_flow(self, flow: Flow, project_name: str) -> Tuple[str, str]:
-        """TODO"""
+        """Creates a Prefect project if it doesn't exist. Registers the flow to this
+        project, and triggers a run of the flow.
+
+        Parameters
+        ----------
+        flow:
+            Prefect flow to be deployed
+        project_name:
+            Name of the prefect project.
+
+        Returns
+        -------
+        Flow ID and Flow Run ID
+        """
 
         self._client.create_project(project_name)
         flow_id = self._client.register(flow, project_name=project_name)
