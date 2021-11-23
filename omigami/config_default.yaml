@@ -22,6 +22,7 @@ storage:
     prod: "s3://omigami"
 
 clusters:
+  local: ""
   dev: "dev"
   prod: "prod"
 

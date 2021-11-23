@@ -62,7 +62,6 @@ def test_deploy_training_flow(backend_services):
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=15,
-        environment="local",
         deploy_model=False,
         overwrite_model=False,
         overwrite_all_spectra=True,
@@ -130,7 +129,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
     mock_deployer = Mock(spec=FlowDeployer)
     deployer_instance = mock_deployer.return_value
     deployer_instance.deploy_flow = Mock(return_value=("id", "run_id"))
-    monkeypatch.setattr(omigami.spec2vec.main, "Spec2VecDeployer", mock_deployer)
+    monkeypatch.setattr(omigami.spec2vec.main, "FlowDeployer", mock_deployer)
 
     flow_id, flow_run_id = deploy_training_flow(
         image="",
@@ -144,7 +143,6 @@ def test_mocked_deploy_training_flow(monkeypatch):
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=15,
-        environment="local",
         deploy_model=False,
         overwrite_model=False,
         overwrite_all_spectra=True,
@@ -155,7 +153,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_client_factory.assert_called_once()
     client_factory_instance.get_client.assert_called_once()
-    mock_flow_factory.assert_called_once_with(environment="local")
+    mock_flow_factory.assert_called_once()
     factory_instance.build_training_flow.assert_called_once_with(
         image="",
         project_name="default",
@@ -173,7 +171,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
         overwrite_all_spectra=True,
         schedule=None,
     )
-    mock_deployer.assert_called_once_with(client="client")
+    mock_deployer.assert_called_once_with(prefect_client="client")
     deployer_instance.deploy_flow.assert_called_once_with(
         flow="flow", project_name="default"
     )
