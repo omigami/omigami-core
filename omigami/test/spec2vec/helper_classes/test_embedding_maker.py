@@ -1,8 +1,10 @@
 import numpy as np
 import pytest
 
-from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
-from omigami.spec2vec.helper_classes.exception import EmbeddingMakerError
+from omigami.spec2vec.helper_classes.embedding_maker import (
+    EmbeddingMaker,
+    EmbeddingMakerError,
+)
 
 
 def test_check_n_decimals_success(documents_data):

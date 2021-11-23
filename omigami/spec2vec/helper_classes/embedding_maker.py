@@ -5,7 +5,10 @@ from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 
 from omigami.spec2vec.entities.embedding import Embedding
-from omigami.spec2vec.helper_classes.exception import EmbeddingMakerError
+
+
+class EmbeddingMakerError(Exception):
+    pass
 
 
 class EmbeddingMaker:
