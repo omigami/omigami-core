@@ -4,7 +4,7 @@ from typing import Dict, Set
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.spectra_matching.gateways.redis import REDIS_DB
+from omigami.spectra_matching.storage import REDIS_DB
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
