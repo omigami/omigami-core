@@ -100,7 +100,9 @@ class TrainingFlowParameters:
         self.embedding = MakeEmbeddingsParameters(
             ion_mode, n_decimals, intensity_weighting_power, allowed_missing_percentage
         )
-        self.deploying = DeployModelParameters(redis_db, ion_mode, overwrite_model)
+        self.deploying = DeployModelParameters(
+            redis_db, overwrite_model, model_name=f"spec2vec-{ion_mode}"
+        )
 
 
 def build_training_flow(

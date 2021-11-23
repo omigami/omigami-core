@@ -10,8 +10,8 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class DeployModelParameters:
     redis_db: str
-    ion_mode: str
     overwrite_model: bool
+    model_name: str
 
 
 class DeployModel(Task):
@@ -22,8 +22,7 @@ class DeployModel(Task):
     ):
         self._redis_db = deploy_parameters.redis_db
         self._overwrite_model = deploy_parameters.overwrite_model
-        self._ion_mode = deploy_parameters.ion_mode
-        self._model_name = f"spec2vec-{self._ion_mode}"
+        self._model_name = deploy_parameters.model_name
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
