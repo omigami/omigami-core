@@ -2,7 +2,7 @@ import pytest
 from prefect import Flow
 from prefect.storage import S3
 
-from omigami.spec2vec.tasks import DeployModel, DeployModelParameters
+from omigami.tasks.deploy_model import DeployModelParameters, DeployModel
 
 
 @pytest.mark.skip(

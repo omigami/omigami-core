@@ -1,4 +1,3 @@
-from omigami.spec2vec.tasks.deploy_model import DeployModel, DeployModelParameters
 from omigami.spec2vec.tasks.make_embeddings import (
     MakeEmbeddings,
     MakeEmbeddingsParameters,

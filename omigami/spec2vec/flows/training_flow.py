@@ -9,8 +9,6 @@ from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
-    DeployModel,
-    DeployModelParameters,
     ProcessSpectrum,
     TrainModel,
     TrainModelParameters,
@@ -29,6 +27,8 @@ from omigami.tasks import (
     CreateChunks,
     SaveRawSpectra,
     SaveRawSpectraParameters,
+    DeployModelParameters,
+    DeployModel,
 )
 
 

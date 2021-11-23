@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from prefect import Task
 
-from omigami.config import SELDON_PARAMS, CLUSTER
+from omigami.config import CLUSTER, SELDON_PARAMS
 from omigami.seldon.seldon_deployment import SeldonDeployment
 from omigami.utils import merge_prefect_task_configs
 
