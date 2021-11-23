@@ -14,8 +14,6 @@ from omigami.ms2deepscore.tasks import (
     ProcessSpectrumParameters,
     ProcessSpectrum,
     RegisterModel,
-    DeployModel,
-    DeployModelParameters,
     RegisterModelParameters,
     MakeEmbeddingsParameters,
     MakeEmbeddings,
@@ -29,12 +27,14 @@ from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters, TrainModel
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
-    DownloadData,
     DownloadParameters,
+    DownloadData,
     ChunkingParameters,
     CreateChunks,
     SaveRawSpectraParameters,
     SaveRawSpectra,
+    DeployModelParameters,
+    DeployModel,
 )
 
 
@@ -45,7 +45,7 @@ class TrainingFlowParameters:
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
-        output_dir: str,
+        dataset_directory: str,
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
@@ -94,7 +94,11 @@ class TrainingFlowParameters:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         self.downloading = DownloadParameters(
-            source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
+            source_uri,
+            dataset_directory,
+            dataset_id,
+            dataset_name,
+            dataset_checkpoint_name,
         )
 
         self.chunking = ChunkingParameters(
@@ -135,7 +139,7 @@ class TrainingFlowParameters:
         self.embedding = MakeEmbeddingsParameters(ion_mode)
 
         self.deploying = DeployModelParameters(
-            redis_db, ion_mode, overwrite_model, environment
+            redis_db, overwrite_model, f"spec2vec-{ion_mode}"
         )
 
 
