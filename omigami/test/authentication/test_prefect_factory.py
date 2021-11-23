@@ -9,30 +9,39 @@ from omigami.authentication.prefect_factory import PrefectClientFactory
 from omigami.config import API_SERVER_URLS, config
 
 
-def test_mock_prefect_get_client(monkeypatch):
-    auth = Mock(spec=KratosAuthenticator)
-    mock_prefect_client = Mock()
+@pytest.fixture()
+def mock_prefect_client(monkeypatch):
+    MockPrefectClient = Mock()
     monkeypatch.setattr(
-        omigami.authentication.prefect_factory, "Client", mock_prefect_client
+        omigami.authentication.prefect_factory, "Client", MockPrefectClient
     )
+
+    return MockPrefectClient()
+
+
+def test_mock_prefect_get_client_with_token(mock_prefect_client):
+    auth = Mock(spec=KratosAuthenticator)
+
     factory = PrefectClientFactory(
         "auth-url", "api-server", session_token="token", authenticator=auth
     )
 
     client = factory.get_client()
 
-    mock_prefect_client.assert_called_once_with(
-        api_server="api-server", api_token="token"
-    )
-    assert client == mock_prefect_client()
+    assert client == mock_prefect_client
     auth.authenticate.assert_not_called()
+
+
+def test_mock_prefect_get_client_without_token(mock_prefect_client):
+    auth = Mock(spec=KratosAuthenticator)
 
     factory_no_token = PrefectClientFactory(
         "auth-url", "api-server", authenticator=auth
     )
 
-    client_no_token = factory_no_token.get_client()
-    assert client_no_token == mock_prefect_client()
+    client = factory_no_token.get_client()
+
+    assert client == mock_prefect_client
     auth.authenticate.assert_called_once()
 
 
