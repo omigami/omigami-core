@@ -22,7 +22,7 @@ from omigami.spec2vec.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
 from omigami.spectrum_cleaner import SpectrumCleaner
-from omigami.tasks import (
+from omigami.base.tasks import (
     DownloadData,
     DownloadParameters,
     ChunkingParameters,
