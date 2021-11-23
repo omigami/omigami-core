@@ -9,7 +9,6 @@ from omigami.config import (
     IonModes,
     DATASET_IDS,
     MLFLOW_SERVER,
-    STORAGE_ROOT,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -23,6 +22,7 @@ from omigami.spec2vec.config import (
     MODEL_FOLDER,
     DOCUMENT_DIRECTORIES,
     CHUNK_SIZE,
+    SPEC2VEC_ROOT,
 )
 from omigami.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
@@ -44,14 +44,14 @@ class Spec2VecFlowFactory:
     ):
         self._env = environment
         self._redis_dbs = REDIS_DATABASES
-        self._output_dir = output_dir or str(STORAGE_ROOT)
+        self._output_dir = output_dir or SPEC2VEC_ROOT
         self._model_output_dir = models_dir or str(MODEL_FOLDER)
         self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
         self._dataset_ids = DATASET_IDS
         self._mlflow_server = MLFLOW_SERVER
         self._storage_type = (
             PrefectStorageMethods.S3
-            if "s3" in str(STORAGE_ROOT)
+            if "s3" in str(SPEC2VEC_ROOT)
             else PrefectStorageMethods.Local
         )
 
@@ -102,7 +102,6 @@ class Spec2VecFlowFactory:
         document_dgw = RedisSpectrumDocumentDataGateway()
 
         flow_parameters = TrainingFlowParameters(
-            project_name=project_name,
             data_gtw=data_gtw,
             spectrum_dgw=spectrum_dgw,
             document_dgw=document_dgw,
@@ -118,10 +117,13 @@ class Spec2VecFlowFactory:
             source_uri=source_uri,
             overwrite_model=overwrite_model,
             overwrite_all_spectra=overwrite_all_spectra,
-            documents_save_directory=str(STORAGE_ROOT / self._document_dirs[ion_mode]),
-            output_dir=self._output_dir,
+            documents_save_directory=str(
+                self._output_dir / self._document_dirs[ion_mode]
+            ),
+            output_dir=str(self._output_dir),
             model_output_dir=self._model_output_dir,
             mlflow_server=self._mlflow_server,
+            experiment_name=project_name,
         )
 
         spec2vec_flow = build_training_flow(

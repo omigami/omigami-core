@@ -2,6 +2,7 @@ import json
 import logging
 import pickle
 import sys
+from pathlib import Path
 from typing import List, Optional, Any
 
 import ijson
@@ -241,7 +242,7 @@ class FSDataGateway(DataGateway):
     def save(self, obj, output_path: str):
         pass
 
-    def listdir(self, path) -> List[str]:
+    def listdir(self, path) -> List[Path]:
         self.init_fs(path)
 
         return self.fs.ls(path)

@@ -21,7 +21,7 @@ class MLFlowModelRegister(ABC):
     @staticmethod
     def log_model(
         model: PythonModel,
-        experiment_name: str,
+        model_name: str,
         code_path: List[str],
         conda_env_path: str = None,
         output_path: str = None,
@@ -31,7 +31,7 @@ class MLFlowModelRegister(ABC):
             mlflow.pyfunc.log_model(
                 "model",
                 python_model=model,
-                registered_model_name=experiment_name,
+                registered_model_name=model_name,
                 conda_env=conda_env_path,
                 code_path=code_path,
                 **kwargs,

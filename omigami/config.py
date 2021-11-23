@@ -19,7 +19,7 @@ SELDON_PARAMS = config["seldon"].get(dict)
 
 # Storage
 if ENV == "local":
-    STORAGE_ROOT = Path(__file__).parent.parent / "local-prefect"
+    STORAGE_ROOT = Path(__file__).parent.parent / "local-deployment"
 else:
     STORAGE_ROOT = DRPath(config["storage"]["root"][ENV])
 

@@ -167,32 +167,39 @@ version provided in the environment and the following command:
 Running Prefect Locally
 ------------------------------------
 
-Run the docker command
+Start up prefect server.
 ::
-    docker-compose -f local-prefect/docker-compose.yml up -d
+    prefect server start
 
-When it is the first time running it locally, create a tenant:
+
+If you are in a M1 machine you might (probably) need to increase docker memory resources to 7 GB.
+Alternatively, you can run it through docker-compose (requires less memory):
+::
+        docker-compose -f local-deployment/docker-compose.yml up -d
+
+To access the dashboard, go to http://localhost:8080/. If you see a blank screen,
+you will need to create a tenant:
 ::
     prefect backend server
     prefect server create-tenant -n default
 
-
-To access the dashboard, go to http://localhost:8080/
 
 In a terminal, start an agent that will execute the flows:
 ::
     prefect agent start -l "dev" --show-flow-logs
 
 
-To shut down prefect:
+To shut down prefect started from docker-compose:
 ::
-    docker-compose -f local-prefect/docker-compose.yml down
+    docker-compose -f local-deployment/docker-compose.yml down
 
 
 Running MLFlow Locally
 -----------------------
 
-To run mlflow locally we need a MySQL database running either locally or in a container.
-On MySQL, create a database named `mlflow`:
+To run mlflow locally run the following command:
 ::
-    CREATE DATABASE mlflow;
+    mlflow server --backend-store-uri sqlite:///mydb.sqlite --default-artifact-root /local-deployment/mlflow
+
+
+To access it: http://localhost:5000/

@@ -46,13 +46,37 @@ def make_flow_config(
     executor_type: PrefectExecutorMethods,
     image: str = None,
     redis_db: str = "",
-    schedule: timedelta = None,
     environment: str = "local",
     storage_root: str = None,
+    schedule: timedelta = None,
 ) -> FlowConfig:
-    """TODO: redo this docstring which was old and incomplete"""
+    """
+    Creates the configuration necessary to run an Omigami prefect flow.
 
-    # run_config
+    Parameters
+    ----------
+    storage_type:
+        Type of storage. Available options are Local and S3
+    executor_type:
+        Dask executor. Only local is implemented
+    image:
+        Image to run the flow on. Used by k8s flows. Unused by local flows
+    redis_db:
+        Redis database where the data is
+    environment:
+        Environment to run the flow on ["local", "dev", "prod"]
+    storage_root:
+        Root directory of flow persistence
+    schedule:
+        Optional parameter for running a flow periodically
+
+    Returns
+    -------
+    FlowConfig:
+        A class containing flow configuration parameters
+
+    """
+
     env_variables = {
         "REDIS_DB": redis_db,
         "REDIS_HOST": REDIS_HOST,
@@ -72,7 +96,6 @@ def make_flow_config(
     else:
         run_config = LocalRun(env=env_variables, labels=["dev"])
 
-    # storage_type
     if storage_type == PrefectStorageMethods.S3:
         storage = S3(STORAGE_ROOT.netloc)
     elif storage_type == PrefectStorageMethods.Local:
@@ -80,7 +103,6 @@ def make_flow_config(
     else:
         raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
 
-    # executor
     if executor_type == PrefectExecutorMethods.DASK:
         raise NotImplementedError(
             "DASK as a prefect executor is not supported at the moment."
