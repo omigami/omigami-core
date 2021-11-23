@@ -5,9 +5,9 @@ from gensim.models import Word2Vec
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.gateways import RedisSpectrumDataGateway
-from omigami.gateways.fs_data_gateway import FSDataGateway
-from omigami.gateways.redis import REDIS_DB
+from omigami.base.gateways import RedisSpectrumDataGateway
+from omigami.base.gateways.fs_data_gateway import FSDataGateway
+from omigami.base.gateways.redis import REDIS_DB
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.helper_classes.progress_logger import TaskProgressLogger
 from omigami.utils import merge_prefect_task_configs

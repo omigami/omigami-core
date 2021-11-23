@@ -10,7 +10,7 @@ from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     SOURCE_URI_COMPLETE_GNPS,
 )
-from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
+from omigami.base.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.test.conftest import ASSETS_DIR
 
 
