@@ -4,7 +4,7 @@ from typing import Optional
 from prefect import Client
 from typing_extensions import Literal
 
-from omigami.authentication.authenticator import KratosAuthenticator
+from omigami.base.authentication.authenticator import KratosAuthenticator
 from omigami.config import (
     API_SERVER_URLS,
     MLFLOW_SERVER,
