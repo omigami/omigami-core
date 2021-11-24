@@ -5,6 +5,7 @@ variables:
   PREFECT__FLOWS__CHECKPOINTING: True
   REDIS_HOST: localhost
   REDIS_DB: 0
+  MLFLOW_SERVER: http://localhost:5000
 
 trigger:
   - master
@@ -40,6 +41,11 @@ steps:
     conda env update --file requirements/environment_test.yaml
   displayName: Create Anaconda environment
   condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
+
+- bash: |
+    source activate omigami
+    mlflow server --backend-store-uri sqlite:///mlflow.sqlite --default-artifact-root /local-deployment/mlflow
+  displayName: Start MLFlow Server
 
 - bash: |
    source activate omigami
