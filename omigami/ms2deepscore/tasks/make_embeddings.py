@@ -41,6 +41,27 @@ class MakeEmbeddings(Task):
         model_registry: Dict[str, str] = None,
         spectrum_ids: Set[str] = None,
     ) -> Set[str]:
+        """
+        Prefect task to create embeddings from SiameseModel. First, binned spectra are
+        read from DB for given spectrum_ids. Then, for each binned spectra, embeddings
+        are created using SiameseModel and saved to REDIS DB. Resulting object is
+        an `Embedding` object holding an embedding vector.
+
+        Parameters
+        ----------
+        train_model_output: Dict[str, str]
+            Dictionary containing `ms2deepscore_model_path` and `validation_loss`
+        model_registry: Dict[str, str]
+            Dictionary containing registered `model_uri` and `run_id`
+        spectrum_ids: Set[str]
+            Set of spectrum_ids to make embedding from
+
+        Returns
+        -------
+        spectrum_ids : Set[str]
+            Set of spectrum_ids
+
+        """
         model_path = train_model_output["ms2deepscore_model_path"]
         self.logger.info(f"Creating {len(spectrum_ids)} embeddings.")
         binned_spectra = self._spectrum_dgw.read_binned_spectra(
