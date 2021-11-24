@@ -44,6 +44,25 @@ class RegisterModel(Task):
         super().__init__(**config)
 
     def run(self, model: Word2Vec = None) -> Dict[str, str]:
+        """
+        Prefect task to register the model to MLflow Model Registry. `alpha` is saved as
+        model metric. Following are saved as model parameters:
+            - `n_decimals_for_documents`
+            - `intensity_weighting_power`
+            - `allowed_missing_percentage`
+            - `iter`
+            - `window`
+
+        Parameters
+        ----------
+        model: Word2Vec
+            Model trained on spectrum documents
+
+        Returns
+        -------
+        Dictionary containing registered model's `model_uri` and `run_id`
+
+        """
         self.logger.info(
             f"Registering model to {self._server_uri} on URI: {self._path}."
         )

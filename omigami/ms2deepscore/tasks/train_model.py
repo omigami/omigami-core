@@ -48,6 +48,21 @@ class TrainModel(Task):
         spectrum_ids: List[str] = None,
         scores_output_path: str = None,
     ) -> Dict:
+        """
+        Prefect task to train SiameseModel on given spectra.
+
+        Parameters
+        ----------
+        spectrum_ids: List[str]
+            spectrum_ids to train model on
+        scores_output_path: str
+            Output path to save resulting similarity scores
+
+        Returns
+        -------
+        Dictionary containing `ms2deepscore_model_path` and `validation_loss`
+
+        """
         spectrum_binner = self._fs_gtw.read_from_file(self._spectrum_binner_output_path)
 
         trainer = SiameseModelTrainer(

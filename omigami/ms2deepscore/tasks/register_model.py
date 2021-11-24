@@ -26,10 +26,6 @@ class RegisterModelParameters:
 
 
 class RegisterModel(Task):
-    """
-    Prefect task to register a model to MLFlow
-    """
-
     def __init__(
         self,
         parameters: RegisterModelParameters,
@@ -48,6 +44,27 @@ class RegisterModel(Task):
         self,
         train_model_output: dict = None,
     ) -> Dict[str, str]:
+        """
+        Prefect task to register an ms2deepscore model to MLflow Model Registry. Model
+        parameters saved during registration:
+            - `epochs`
+            - `learning_rate`
+            - `layer_base_dims`
+            - `embedding_dim`
+            - `dropout_rate`
+            - `split_ratio`
+            - `validation_loss`
+
+        Parameters
+        ----------
+        train_model_output: Dict[str, str]
+            Dictionary containing `ms2deepscore_model_path` and `validation_loss`
+
+        Returns
+        -------
+        Dictionary containing registered `model_uri` and `run_id`
+
+        """
         model_path = train_model_output["ms2deepscore_model_path"]
         validation_loss = train_model_output["validation_loss"]
 

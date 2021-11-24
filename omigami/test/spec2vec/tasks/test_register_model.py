@@ -14,7 +14,7 @@ def test_register_model(word2vec_model, tmpdir):
         model=Spec2VecPredictor(
             word2vec_model,
             "positive",
-            n_decimals=2,
+            n_decimals=1,
             intensity_weighting_power=0.5,
             allowed_missing_percentage=5.0,
         ),
