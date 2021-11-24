@@ -52,7 +52,7 @@ def test_deploy_training_flow(backend_services):
 
     flow_id, flow_run_id = deploy_training_flow(
         image="",
-        project_name="local-integration-test",
+        project_name="local-integration-test-s2v",
         flow_name="Robert DeFlow",
         dataset_id="small",
         source_uri=SOURCE_URI_PARTIAL_GNPS,

@@ -9,6 +9,7 @@ from omigami.config import (
     IonModes,
     DATASET_IDS,
     MLFLOW_SERVER,
+    MLFLOW_DIRECTORY,
     STORAGE_ROOT,
     CHUNK_SIZE,
 )
@@ -21,7 +22,6 @@ from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import (
     PROJECT_NAME,
-    MODEL_FOLDER,
     DOCUMENT_DIRECTORIES,
     SPEC2VEC_ROOT,
 )
@@ -40,12 +40,12 @@ class Spec2VecFlowFactory:
         self,
         dataset_directory: str = None,
         documents_dir: Dict[str, str] = None,
-        models_dir: str = None,
+        mlflow_output_directory: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
-        self._dataset_directory = dataset_directory or STORAGE_ROOT / "datasets"
+        self._dataset_directory = dataset_directory or str(STORAGE_ROOT / "datasets")
         self._spec2vec_root = SPEC2VEC_ROOT
-        self._model_output_dir = models_dir or str(MODEL_FOLDER)
+        self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
         self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
         self._dataset_ids = DATASET_IDS
         self._mlflow_server = MLFLOW_SERVER
@@ -120,8 +120,8 @@ class Spec2VecFlowFactory:
             documents_save_directory=str(
                 self._spec2vec_root / self._document_dirs[ion_mode]
             ),
-            dataset_directory=str(self._dataset_directory),
-            model_output_dir=self._model_output_dir,
+            dataset_directory=self._dataset_directory,
+            mlflow_output_directory=self._mlflow_output_directory,
             mlflow_server=self._mlflow_server,
             experiment_name=project_name,
             redis_db=self._redis_dbs[dataset_id],

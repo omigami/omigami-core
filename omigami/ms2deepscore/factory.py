@@ -10,13 +10,13 @@ from omigami.config import (
     MLFLOW_SERVER,
     STORAGE_ROOT,
     CHUNK_SIZE,
+    MLFLOW_DIRECTORY,
 )
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.config import (
     DIRECTORIES,
     PROJECT_NAME,
@@ -28,6 +28,7 @@ from omigami.ms2deepscore.flows.training_flow import (
     build_training_flow,
 )
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
+from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.spectrum_cleaner import SpectrumCleaner
 
 
@@ -35,6 +36,7 @@ class MS2DeepScoreFlowFactory:
     def __init__(
         self,
         dataset_directory: str = None,
+        mlflow_output_directory: str = None,
         directories: Dict[str, str] = None,
     ):
         self._redis_dbs = REDIS_DATABASES
@@ -43,6 +45,7 @@ class MS2DeepScoreFlowFactory:
         self._directories = directories or DIRECTORIES
         self._dataset_ids = DATASET_IDS
         self._mlflow_server = MLFLOW_SERVER
+        self._mlflow_output_directory = mlflow_output_directory or MLFLOW_DIRECTORY
         self._storage_type = (
             PrefectStorageMethods.S3
             if "s3" in str(MS2DEEPSCORE_ROOT)
@@ -94,14 +97,13 @@ class MS2DeepScoreFlowFactory:
         )
 
         spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway(project=project_name)
-        data_gtw = FSDataGateway()
+        data_gtw = MS2DeepScoreFSDataGateway()
         spectrum_cleaner = SpectrumCleaner()
 
         spectrum_binner_output_path = (
             self._ms2deepscore_root / self._directories["spectrum_binner"]
         )
-        model_output_path = self._ms2deepscore_root / self._directories["model"]
-        mlflow_dir = self._ms2deepscore_root / self._directories["mlflow"]
+        model_output_path = str(self._ms2deepscore_root / self._directories["model"])
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
 
         flow_parameters = TrainingFlowParameters(
@@ -122,7 +124,7 @@ class MS2DeepScoreFlowFactory:
             overwrite_model=overwrite_model,
             model_output_path=model_output_path,
             project_name=project_name,
-            mlflow_output_dir=mlflow_dir,
+            mlflow_output_directory=str(self._mlflow_output_directory),
             mlflow_server=self._mlflow_server,
             epochs=epochs,
             train_ratio=train_ratio,

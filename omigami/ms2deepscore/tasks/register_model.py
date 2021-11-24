@@ -96,6 +96,7 @@ class ModelRegister(MLFlowModelRegister):
     Class that implements MLFLowModelRegister to register ms2deepscore model to MLFlow
     """
 
+    # TODO: should be refactored together with spec2vec's implementation of this code
     def register_model(
         self,
         model: MS2DeepScorePredictor,
@@ -106,7 +107,6 @@ class ModelRegister(MLFlowModelRegister):
         conda_env_path: str = None,
         artifacts: Dict = None,
         run_name: str = "ms2deepscore",
-        **kwargs,
     ):
         """
         Method to register the MS2DeepScore to MLFlow.
@@ -145,16 +145,13 @@ class ModelRegister(MLFlowModelRegister):
                     self._convert_train_parameters(train_parameters, validation_loss)
                 )
 
-            self.log_model(
-                model,
-                experiment_name,
-                output_path=output_path,
-                code_path=[
-                    "omigami",
-                ],
-                conda_env_path=conda_env_path,
+            mlflow.pyfunc.log_model(
+                "model",
+                python_model=model,
+                registered_model_name="ms2deepscore",
+                code_path=["omigami"],
+                conda_env=conda_env_path,
                 artifacts=artifacts,
-                **kwargs,
             )
 
             return run_id

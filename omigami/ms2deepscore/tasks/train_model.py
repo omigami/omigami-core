@@ -32,7 +32,7 @@ class TrainModel(Task):
         train_parameters: TrainModelParameters,
         **kwargs,
     ):
-        self._fs_gtw = fs_gtw
+        self._fs_dgw = fs_gtw
         self._spectrum_gtw = spectrum_dgw
         self._ion_mode = train_parameters.ion_mode
         self._spectrum_binner_output_path = train_parameters.spectrum_binner_output_path
@@ -63,7 +63,7 @@ class TrainModel(Task):
         Dictionary containing `ms2deepscore_model_path` and `validation_loss`
 
         """
-        spectrum_binner = self._fs_gtw.read_from_file(self._spectrum_binner_output_path)
+        spectrum_binner = self._fs_dgw.read_from_file(self._spectrum_binner_output_path)
 
         trainer = SiameseModelTrainer(
             self._spectrum_gtw,
@@ -74,7 +74,8 @@ class TrainModel(Task):
         model = trainer.train(
             spectrum_ids, scores_output_path, spectrum_binner, self.logger
         )
-        self._fs_gtw.save(model, self._output_path)
+        self.logger.info(f"Saving trained model to {self._output_path}.")
+        self._fs_dgw.save(model, self._output_path)
 
         return {
             "ms2deepscore_model_path": self._output_path,

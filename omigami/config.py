@@ -24,6 +24,8 @@ if OMIGAMI_ENV == "local":
 else:
     STORAGE_ROOT = DRPath(config["storage"]["root"][OMIGAMI_ENV])
 
+MLFLOW_DIRECTORY = STORAGE_ROOT / "mlflow"
+
 REDIS_DATABASES = {
     "local": {"small": "0"},
     "dev": {"small": "2", "10k": "1", "complete": "0"},
