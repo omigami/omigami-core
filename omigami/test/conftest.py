@@ -5,6 +5,7 @@ from pathlib import Path
 
 import boto3
 import ijson
+import mlflow
 import pandas as pd
 import pytest
 import s3fs
@@ -15,6 +16,8 @@ from spec2vec.model_building import train_new_word2vec_model
 
 import omigami
 import omigami.utils
+from omigami.authentication.prefect_factory import PrefectClientFactory
+from omigami.config import API_SERVER_URLS, get_login_config
 from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -291,3 +294,19 @@ def fitted_spectrum_binner(fitted_spectrum_binner_path):
     with open(fitted_spectrum_binner_path, "rb") as f:
         spectrum_binner = pickle.load(f)
     return spectrum_binner
+
+
+@pytest.fixture()
+def backend_services():
+    mlflow.set_tracking_uri("http://localhost:5000")
+    mlflow_client = mlflow.tracking.MlflowClient()
+
+    login_config = get_login_config(auth=False)
+    api_server = API_SERVER_URLS["local"]
+    prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
+    prefect_client = prefect_factory.get_client()
+
+    if not prefect_client.active_tenant_id:
+        prefect_client.create_tenant("default")
+
+    return {"prefect": prefect_client, "mlflow": mlflow_client}

@@ -1,40 +1,16 @@
 from time import sleep
 from unittest.mock import Mock
 
-import mlflow
 import pytest
 
 import omigami.spec2vec.main
-from omigami.authentication.prefect_factory import PrefectClientFactory
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
-    API_SERVER_URLS,
     STORAGE_ROOT,
 )
 from omigami.deployer import FlowDeployer
 from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
 from omigami.ms2deepscore.main import deploy_training_flow
-
-
-@pytest.fixture()
-def backend_services():
-    mlflow.set_tracking_uri("http://localhost:5000")
-    mlflow_client = mlflow.tracking.MlflowClient()
-
-    login_config = {
-        "username": None,
-        "password": None,
-        "auth_url": "url",
-        "session_token": "token",
-    }
-    api_server = API_SERVER_URLS["local"]
-    prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
-    prefect_client = prefect_factory.get_client()
-
-    if not prefect_client.active_tenant_id:
-        prefect_client.create_tenant("default")
-
-    return {"prefect": prefect_client, "mlflow": mlflow_client}
 
 
 @pytest.mark.skip(

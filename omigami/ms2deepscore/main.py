@@ -42,7 +42,7 @@ def deploy_training_flow(
 
     Parameters
     ----------
-    For information on parameters please check spec2vec/cli.py
+    For information on parameters please check ms2deepscore/cli.py
 
     Returns
     -------
