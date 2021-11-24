@@ -1,7 +1,7 @@
 import pytest
 from prefect import Flow
 
-from omigami.config import STORAGE_ROOT
+from omigami.config import STORAGE_ROOT, MLFLOW_SERVER
 from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
 
@@ -34,7 +34,7 @@ def test_build_ms2deep_training_flow():
         "REDIS_DB": "0",
         "REDIS_HOST": "localhost",
         "OMIGAMI_ENV": "local",
-        "MLFLOW_SERVER": "http://localhost:5000",
+        "MLFLOW_SERVER": MLFLOW_SERVER,
     }
 
 
