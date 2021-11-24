@@ -5,7 +5,6 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore.models import load_model as ms2deepscore_load_model
 
-from omigami.ms2deepscore.entities.embedding import Embedding
 from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -17,6 +16,7 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
 from omigami.predictor import Predictor, SpectrumMatches
+from omigami.spectra_matching.entities.embedding import Embedding
 
 log = getLogger(__name__)
 

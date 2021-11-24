@@ -2,19 +2,17 @@ from __future__ import annotations
 
 import pickle
 from logging import Logger
-from typing import List, Iterable, Set, Union
+from typing import List, Iterable, Set
 
 from matchms import Spectrum
 
+from omigami.spectra_matching.entities.embedding import Embedding
 from omigami.spectra_matching.storage import RedisDataGateway
-from omigami.ms2deepscore.entities.embedding import Embedding as MS2DeepScoreEmbedding
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
 )
-from omigami.spec2vec.entities.embedding import Embedding as Spec2VecEmbedding
-
 
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,
@@ -110,7 +108,7 @@ class RedisSpectrumDataGateway(RedisDataGateway):
 
     def write_embeddings(
         self,
-        embeddings: List[Union[Spec2VecEmbedding, MS2DeepScoreEmbedding]],
+        embeddings: List[Embedding],
         ion_mode: str,
         run_id: str,
         logger: Logger = None,
@@ -136,7 +134,7 @@ class RedisSpectrumDataGateway(RedisDataGateway):
 
     def read_embeddings(
         self, ion_mode: str, run_id: str, spectrum_ids: List[str] = None
-    ) -> List[Union[Spec2VecEmbedding, MS2DeepScoreEmbedding]]:
+    ) -> List[Embedding]:
         """Read the embeddings from spectra IDs.
         Return a list of Embedding objects."""
         self._init_client()

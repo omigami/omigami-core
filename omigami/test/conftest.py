@@ -14,6 +14,7 @@ from drfs.filesystems import get_fs
 from moto import mock_s3
 from prefect import Client
 from pytest_redis import factories
+from spec2vec import calc_vector
 from spec2vec.model_building import train_new_word2vec_model
 
 import omigami
@@ -25,6 +26,7 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
+from omigami.spectra_matching.entities.embedding import Embedding
 from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -99,14 +101,6 @@ def cleaned_data():
     with open(path, "rb") as handle:
         cleaned_data = pickle.load(handle)
     return cleaned_data
-
-
-@pytest.fixture(scope="module")
-def embeddings():
-    path = str(ASSETS_DIR / "SMALL_GNPS_as_embeddings.pickle")
-    with open(path, "rb") as handle:
-        embeddings = pickle.load(handle)
-    return embeddings
 
 
 @pytest.fixture()
@@ -253,6 +247,48 @@ def word2vec_model(documents_data):
         with open(model_path, "wb") as f:
             pickle.dump(model, f)
     return model
+
+
+@pytest.fixture(scope="module")
+def embeddings(documents_data, word2vec_model):
+    """
+    This fixture will take `documents_data` where `n_decimals` equal to 1, and
+    `word2vec_model` and creates Embedding objects out of them. Then Embedding objects
+    are saved to ASSET_DIR. If exists it will be read from ASSET_DIR.
+
+    Parameters
+    ----------
+    documents_data: List[SpectrumDocument]
+    word2vec_model: Word2Vec
+
+    Returns
+    -------
+    List[Embedding]
+
+    """
+    embeddings_path = Path(ASSETS_DIR / "SMALL_GNPS_as_embeddings.pkl")
+    if embeddings_path.exists():
+        with open(embeddings_path, "rb") as handle:
+            embeddings = pickle.load(handle)
+    else:
+        embeddings = []
+        for document in documents_data:
+            vector = calc_vector(
+                model=word2vec_model,
+                document=document,
+                intensity_weighting_power=0.5,
+                allowed_missing_percentage=5.0,
+            )
+            embeddings.append(
+                Embedding(
+                    vector=vector,
+                    spectrum_id=document.get("spectrum_id"),
+                    n_decimals=1,
+                )
+            )
+        with open(embeddings_path, "wb") as f:
+            pickle.dump(embeddings, f)
+    return embeddings
 
 
 @pytest.fixture()

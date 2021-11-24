@@ -5,7 +5,7 @@ from ms2deepscore import MS2DeepScore
 from spec2vec.vector_operations import cosine_similarity, cosine_similarity_matrix
 from tqdm import tqdm
 
-from omigami.ms2deepscore.entities.embedding import Embedding
+from omigami.spectra_matching.entities.embedding import Embedding
 
 
 class MS2DeepScoreEmbedding(MS2DeepScore):

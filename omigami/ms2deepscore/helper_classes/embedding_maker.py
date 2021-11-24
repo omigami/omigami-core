@@ -1,10 +1,10 @@
 import numpy as np
 from ms2deepscore import BinnedSpectrum
 
-from omigami.ms2deepscore.entities.embedding import Embedding
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
     MS2DeepScoreEmbedding,
 )
+from omigami.spectra_matching.entities.embedding import Embedding
 
 
 class EmbeddingMaker:
@@ -18,9 +18,9 @@ class EmbeddingMaker:
         )
 
         return Embedding(
-            vector,
-            binned_spectrum.metadata.get("spectrum_id"),
-            binned_spectrum.get("inchikey"),
+            vector=vector,
+            spectrum_id=binned_spectrum.metadata.get("spectrum_id"),
+            inchikey=binned_spectrum.get("inchikey"),
         )
 
     @staticmethod
