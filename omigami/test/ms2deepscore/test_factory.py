@@ -1,6 +1,7 @@
 import pytest
 from prefect import Flow
 
+from omigami.config import STORAGE_ROOT
 from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
 
@@ -28,6 +29,13 @@ def test_build_ms2deep_training_flow():
     assert len(ms2deep_training_flow.tasks) == 9
     tanimoto_task = ms2deep_training_flow.get_tasks("CalculateTanimotoScore")[0]
     assert tanimoto_task._decimals == 5
+    assert ms2deep_training_flow.storage.directory == str(STORAGE_ROOT)
+    assert ms2deep_training_flow.run_config.env == {
+        "REDIS_DB": "0",
+        "REDIS_HOST": "localhost",
+        "OMIGAMI_ENV": "local",
+        "MLFLOW_SERVER": "http://localhost:5000",
+    }
 
 
 @pytest.mark.xfail(reason="Not implemented atm.")  # TODO
