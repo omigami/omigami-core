@@ -4,7 +4,7 @@ from gensim.models import Word2Vec
 from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 
-from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spectra_matching.entities.embedding import Embedding
 
 
 class EmbeddingMakerError(Exception):
@@ -29,7 +29,11 @@ class EmbeddingMaker:
             intensity_weighting_power=intensity_weighting_power,
             allowed_missing_percentage=allowed_missing_percentage,
         )
-        return Embedding(vector, document.get("spectrum_id"), self.n_decimals)
+        return Embedding(
+            vector=vector,
+            spectrum_id=document.get("spectrum_id"),
+            n_decimals=self.n_decimals,
+        )
 
     def _check_n_decimals(
         self,

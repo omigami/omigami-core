@@ -3,8 +3,8 @@ import os
 import numpy as np
 import pytest
 
-from omigami.ms2deepscore.entities.embedding import Embedding
 from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
+from omigami.spectra_matching.entities.embedding import Embedding
 from omigami.test.conftest import ASSETS_DIR
 
 

@@ -4,12 +4,12 @@ import pytest
 from matchms.Spectrum import Spectrum
 from pytest_redis import factories
 
+from omigami.spectra_matching.entities.embedding import Embedding
 from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
 )
-from omigami.spec2vec.entities.embedding import Embedding
 
 redis_db = factories.redisdb("redis_nooproc")
 
