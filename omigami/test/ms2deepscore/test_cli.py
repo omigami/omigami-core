@@ -1,82 +1,87 @@
-from unittest.mock import patch
-
-import pytest
 from click.testing import CliRunner
 
-from omigami.config import API_SERVER_URLS, MLFLOW_SERVER
-from omigami.ms2deepscore.cli import cli
-from omigami.ms2deepscore.config import PROJECT_NAME
+import omigami.ms2deepscore.cli
+from omigami.config import IonModes, STORAGE_ROOT
+from omigami.ms2deepscore.cli import ms2deepscore_cli
 
 
-@pytest.fixture
-def cli_parameters():
-    parameters = dict(
-        project_name=PROJECT_NAME,
-        mlflow_server=MLFLOW_SERVER,
-        flow_name="ms2deepscore-pretrained-flow",
-        dataset_name="small",
-        environment="dev",
-        deploy_model=False,
-        overwrite_model=False,
-        overwrite_all_spectra=False,
-        auth=False,
-        auth_url=None,
-        username=None,
-        password=None,
-        api_server=API_SERVER_URLS["dev"],
-    )
-    return parameters
+def mock_cli(
+    image: str,
+    project_name: str,
+    flow_name: str,
+    dataset_id: str,
+    source_uri: str,
+    ion_mode: IonModes,
+    fingerprint_n_bits: int,
+    scores_decimals: int,
+    spectrum_binner_n_bins: int,
+    deploy_model: bool,
+    overwrite_model: bool,
+    overwrite_all_spectra: bool,
+    spectrum_ids_chunk_size: int,
+    train_ratio: float,
+    validation_ratio: float,
+    test_ratio: float,
+    epochs: int,
+    chunk_size: int = 10,
+    schedule=None,
+    authenticate: bool = True,
+    dataset_directory: str = None,
+):
+    assert image == "image"
+    assert project_name == "project name"
+    assert flow_name == "flow name"
+    assert dataset_id == "10k"
+    assert source_uri == "uri"
+    assert ion_mode == "positive"
+    assert fingerprint_n_bits == 2048
+    assert scores_decimals == 5
+    assert spectrum_binner_n_bins == 20000
+    assert train_ratio == 0.7
+    assert validation_ratio == 0.05
+    assert test_ratio == 0.05
+    assert epochs == 5
+    assert chunk_size == 10
+    assert spectrum_ids_chunk_size == 10000
+    assert authenticate is True
+    assert deploy_model is False
+    assert overwrite_model is False
+    assert overwrite_all_spectra is False
+    assert schedule is None
+    assert dataset_directory == str(STORAGE_ROOT / "datasets")
 
 
-def test_deploy_default_training_flow(monkeypatch, cli_parameters):
+def test_spec2vec_cli(monkeypatch):
+    monkeypatch.setattr(omigami.ms2deepscore.cli, "deploy_training_flow", mock_cli)
+    cli_command = [
+        "train",
+        "--image",
+        "image",
+        "--project-name",
+        "project name",
+        "--flow-name",
+        "flow name",
+        "--dataset-id",
+        "10k",
+        "--source-uri",
+        "uri",
+        "--ion-mode",
+        "positive",
+        "--fingerprint-n-bits",
+        "2048",
+        "--spectrum-binner-n-bins",
+        "20000",
+        "--train-ratio",
+        "0.7",
+        "--authenticate",
+    ]
+    runner = CliRunner()
 
-    func = "omigami.ms2deepscore.cli.MS2DeepScoreDeployer"
+    result = runner.invoke(ms2deepscore_cli, args=cli_command)
 
-    with patch(func, spec=True, return_value=True) as patch_func:
-        runner = CliRunner()
-        result = runner.invoke(
-            cli,
-            [
-                "register-training-flow",
-                "--image",
-                "my-image",
-                "--dataset-name",
-                "small",
-            ],
-        )
-
-    assert result.exit_code == 0
-
-    cli_parameters.pop("flow_name")
-    patch_func.assert_called_once_with(image="my-image", **cli_parameters)
-
-
-def test_deploy_custom_training_flow(monkeypatch, cli_parameters):
-    cli_parameters["mlflow_server"] = "custom-url"
-    cli_parameters["environment"] = "prod"
-    cli_parameters["deploy_model"] = True
-
-    func = "omigami.ms2deepscore.cli.MS2DeepScoreDeployer"
-
-    with patch(func, spec=True, return_value=True) as patch_func:
-        runner = CliRunner()
-        result = runner.invoke(
-            cli,
-            [
-                "register-training-flow",
-                "--image",
-                "my-image",
-                "--dataset-name",
-                "small",
-                "--mlflow-server",
-                "custom-url",
-                "--env",
-                "prod",
-                "--deploy-model",
-            ],
-        )
-
-    assert result.exit_code == 0
-
-    cli_parameters.pop("flow_name")
-    patch_func.assert_called_once_with(image="my-image", **cli_parameters)
+    if result.exit_code == 0:
+        pass
+    elif result.exit_code == 1:
+        raise result.exception
+    elif result.exit_code == 2:
+        raise ValueError(result.output)

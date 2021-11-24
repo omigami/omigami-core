@@ -24,7 +24,7 @@ def deploy_training_flow(
     overwrite_model: bool,
     overwrite_all_spectra: bool,
     schedule: Optional[pd.Timedelta] = None,
-    auth: bool = True,
+    authenticate: bool = True,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a Spec2Vec model training flow.
@@ -40,7 +40,7 @@ def deploy_training_flow(
 
     """
     api_server = API_SERVER_URLS[OMIGAMI_ENV]
-    login_config = get_login_config(auth)
+    login_config = get_login_config(authenticate)
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()
 

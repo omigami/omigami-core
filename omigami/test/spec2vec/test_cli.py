@@ -8,7 +8,7 @@ def mock_cli(
     image: str,
     project_name: str,
     flow_name: str,
-    dataset_name: str,
+    dataset_id: str,
     source_uri: str,
     ion_mode: str,
     iterations: int,
@@ -19,12 +19,14 @@ def mock_cli(
     deploy_model: bool,
     overwrite_model: bool,
     overwrite_all_spectra: bool,
+    authenticate: bool,
+    dataset_directory: str,
     schedule=None,
 ):
     assert image == "image"
     assert project_name == "project name"
     assert flow_name == "flow name"
-    assert dataset_name == "10k"
+    assert dataset_id == "10k"
     assert source_uri == "uri"
     assert ion_mode == "positive"
     assert iterations == 25
@@ -36,6 +38,8 @@ def mock_cli(
     assert overwrite_model is False
     assert overwrite_all_spectra is False
     assert schedule is None
+    assert authenticate is False
+    assert dataset_directory == "dir"
 
 
 def test_spec2vec_cli(monkeypatch):
@@ -48,7 +52,7 @@ def test_spec2vec_cli(monkeypatch):
         "project name",
         "--flow-name",
         "flow name",
-        "--dataset-name",
+        "--dataset-id",
         "10k",
         "--source-uri",
         "uri",
@@ -61,6 +65,8 @@ def test_spec2vec_cli(monkeypatch):
         "--window",
         "500",
         "--deploy-model",
+        "--dataset-directory",
+        "dir",
     ]
     runner = CliRunner()
 

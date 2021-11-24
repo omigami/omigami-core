@@ -42,7 +42,7 @@ def test_deploy_training_flow(backend_services):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        auth=False,
+        authenticate=False,
     )
 
     while not (
@@ -123,7 +123,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        auth=False,
+        authenticate=False,
     )
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
