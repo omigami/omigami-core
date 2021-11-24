@@ -42,14 +42,14 @@ def test_register_model(ms2deepscore_model_path, tmpdir, train_parameters):
     )
 
     output_dir = mlflow.get_run(run_id).info.artifact_uri
-    assert os.listdir(f"{output_dir}/model") == [
+    assert set(os.listdir(f"{output_dir}/model")) == {
         "artifacts",
         "MLmodel",
         "code",
         "python_model.pkl",
         "conda.yaml",
-    ]
-    assert os.listdir(f"{output_dir}/model/artifacts") == ["ms2deepscore_model.hdf5"]
+    }
+    assert (os.listdir(f"{output_dir}/model/artifacts")) == ["ms2deepscore_model.hdf5"]
 
 
 def test_load_registered_model(ms2deepscore_model_path, tmpdir, train_parameters):
