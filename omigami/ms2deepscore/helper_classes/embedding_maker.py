@@ -4,7 +4,7 @@ from ms2deepscore import BinnedSpectrum
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
     MS2DeepScoreEmbedding,
 )
-from omigami.spectra_matching.entities.embedding import Embedding
+from omigami.ms2deepscore.entities.embedding import Embedding
 
 
 class EmbeddingMaker:

@@ -4,7 +4,7 @@ from gensim.models import Word2Vec
 from spec2vec import SpectrumDocument
 from spec2vec.vector_operations import calc_vector
 
-from omigami.spectra_matching.entities.embedding import Embedding
+from omigami.spec2vec.entities.embedding import Embedding
 
 
 class EmbeddingMakerError(Exception):

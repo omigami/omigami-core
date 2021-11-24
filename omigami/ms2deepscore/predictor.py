@@ -16,7 +16,7 @@ from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
 from omigami.predictor import Predictor, SpectrumMatches
-from omigami.spectra_matching.entities.embedding import Embedding
+from omigami.ms2deepscore.entities.embedding import Embedding
 
 log = getLogger(__name__)
 

@@ -26,7 +26,7 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.spectra_matching.entities.embedding import Embedding
+from omigami.spec2vec.entities.embedding import Embedding as Spec2VecEmbedding
 from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -280,7 +280,7 @@ def embeddings(documents_data, word2vec_model):
                 allowed_missing_percentage=5.0,
             )
             embeddings.append(
-                Embedding(
+                Spec2VecEmbedding(
                     vector=vector,
                     spectrum_id=document.get("spectrum_id"),
                     n_decimals=1,

@@ -7,5 +7,3 @@ import numpy as np
 class Embedding:
     vector: np.ndarray
     spectrum_id: str
-    inchikey: str = None
-    n_decimals: int = None

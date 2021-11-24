@@ -4,7 +4,7 @@ import numpy as np
 from spec2vec import Spec2Vec
 from spec2vec.vector_operations import cosine_similarity, cosine_similarity_matrix
 
-from omigami.spectra_matching.entities.embedding import Embedding
+from omigami.spec2vec.entities.embedding import Embedding
 
 
 class Spec2VecEmbeddings(Spec2Vec):
