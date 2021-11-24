@@ -142,6 +142,9 @@ dmypy.json
 **/mlflow-server/*
 **/mlruns/*
 
+# large test assets
+**/assets/*model.pkl
+
 .DS_Store
 /local-deployment/spec2vec
 mlflow.sqlite

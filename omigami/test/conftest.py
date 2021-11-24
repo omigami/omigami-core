@@ -11,6 +11,7 @@ import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
 from pytest_redis import factories
+from spec2vec.model_building import train_new_word2vec_model
 
 import omigami
 import omigami.utils
@@ -91,24 +92,8 @@ def cleaned_data():
 
 
 @pytest.fixture(scope="module")
-def word2vec_model():
-    path = str(ASSETS_DIR / "word2vec_model.pickle")
-    with open(path, "rb") as handle:
-        model = pickle.load(handle)
-    return model
-
-
-@pytest.fixture(scope="module")
 def embeddings():
     path = str(ASSETS_DIR / "SMALL_GNPS_as_embeddings.pickle")
-    with open(path, "rb") as handle:
-        embeddings = pickle.load(handle)
-    return embeddings
-
-
-@pytest.fixture(scope="module")
-def embeddings_2k():
-    path = str(ASSETS_DIR / "embeddings_2k.pickle")
     with open(path, "rb") as handle:
         embeddings = pickle.load(handle)
     return embeddings
@@ -218,11 +203,46 @@ def redis_full_setup(
 
 @pytest.fixture(scope="module")
 def documents_data():
+    """
+    Fixture containing `SpectrumDocument` objects whose `n_decimals` is 1.
+
+    Returns
+    -------
+    List of `SpectrumDocument`s
+
+    """
     path = str(ASSETS_DIR / "SMALL_GNPS_as_documents.pickle")
     with open(path, "rb") as handle:
         documents_data = pickle.load(handle)
 
     return documents_data
+
+
+@pytest.fixture(scope="module")
+def word2vec_model(documents_data):
+    """
+    This fixture will only work with `SpectrumDocument`s where `n_decimals` equal to 1,
+    because it is trained on this data. If model doesn't exist then it will be trained
+    and saved to ASSET_DIR. If exists it will be read from ASSET_DIR.
+
+    Parameters
+    ----------
+    documents_data: List of `SpectrumDocument` with `n_decimals` set to 1.
+
+    Returns
+    -------
+    Word2Vec model
+
+    """
+    model_path = Path(ASSETS_DIR / "word2vec_model.pkl")
+    if model_path.exists():
+        with open(model_path, "rb") as f:
+            model = pickle.load(f)
+    else:
+        model = train_new_word2vec_model(documents_data, size=300, iterations=3)
+        with open(model_path, "wb") as f:
+            pickle.dump(model, f)
+    return model
 
 
 @pytest.fixture()

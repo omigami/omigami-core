@@ -159,6 +159,8 @@ def build_training_flow(
     """
 
     with Flow(name=flow_name, **flow_config.kwargs) as training_flow:
+        # tasks return objects, so that we could connect tasks using returned objects.
+        # if you update one return type of a task please mind the later tasks too
 
         spectrum_ids = DownloadData(
             flow_parameters.data_gtw,
