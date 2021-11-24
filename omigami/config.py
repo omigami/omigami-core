@@ -44,7 +44,7 @@ DEFAULT_PREFECT_TASK_CONFIG = dict(
     max_retries=3, retry_delay=datetime.timedelta(seconds=10)
 )
 
-DATASET_IDS = config["storage"]["dataset_dir"].get(dict)
+DATASET_IDS = config["storage"]["dataset_id"].get(dict)
 
 
 def get_login_config(auth: bool) -> Dict[str, str]:
