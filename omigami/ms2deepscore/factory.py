@@ -38,7 +38,7 @@ class MS2DeepScoreFlowFactory:
         directories: Dict[str, str] = None,
     ):
         self._redis_dbs = REDIS_DATABASES
-        self._dataset_directory = dataset_directory or STORAGE_ROOT / "datasets"
+        self._dataset_directory = dataset_directory or str(STORAGE_ROOT / "datasets")
         self._ms2deepscore_root = MS2DEEPSCORE_ROOT
         self._directories = directories or DIRECTORIES
         self._dataset_ids = DATASET_IDS
@@ -53,7 +53,7 @@ class MS2DeepScoreFlowFactory:
         self,
         flow_name: str,
         image: str,
-        dataset_name: str,
+        dataset_id: str,
         fingerprint_n_bits: int,
         scores_decimals: int,
         source_uri: str,
@@ -88,7 +88,7 @@ class MS2DeepScoreFlowFactory:
             image=image,
             storage_type=self._storage_type,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
-            redis_db=self._redis_dbs[dataset_name],
+            redis_db=self._redis_dbs[dataset_id],
             schedule=schedule,
             storage_root=STORAGE_ROOT,
         )
@@ -110,10 +110,10 @@ class MS2DeepScoreFlowFactory:
             spectrum_cleaner=spectrum_cleaner,
             source_uri=source_uri,
             dataset_directory=self._dataset_directory,
-            dataset_id=self._dataset_ids[dataset_name].format(date=datetime.today()),
+            dataset_id=self._dataset_ids[dataset_id].format(date=datetime.today()),
             chunk_size=chunk_size,
             ion_mode=ion_mode,
-            scores_output_path=scores_output_path,
+            scores_output_path=str(scores_output_path),
             fingerprint_n_bits=fingerprint_n_bits,
             scores_decimals=scores_decimals,
             overwrite_all_spectra=overwrite_all_spectra,
@@ -129,7 +129,7 @@ class MS2DeepScoreFlowFactory:
             validation_ratio=validation_ratio,
             test_ratio=test_ratio,
             spectrum_ids_chunk_size=spectrum_ids_chunk_size,
-            redis_db=self._redis_dbs[dataset_name],
+            redis_db=self._redis_dbs[dataset_id],
             schedule_task_days=schedule,
         )
 

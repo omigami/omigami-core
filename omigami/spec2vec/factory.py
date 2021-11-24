@@ -63,7 +63,7 @@ class Spec2VecFlowFactory:
         window: int,
         intensity_weighting_power: float,
         allowed_missing_percentage: float,
-        dataset_name: str,
+        dataset_id: str,
         source_uri: str,
         n_decimals: int = 2,
         schedule: pd.Timedelta = None,
@@ -91,7 +91,7 @@ class Spec2VecFlowFactory:
             image=image,
             storage_type=self._storage_type,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
-            redis_db=self._redis_dbs[dataset_name],
+            redis_db=self._redis_dbs[dataset_id],
             schedule=schedule,
             storage_root=STORAGE_ROOT,
         )
@@ -106,7 +106,7 @@ class Spec2VecFlowFactory:
             spectrum_dgw=spectrum_dgw,
             document_dgw=document_dgw,
             spectrum_cleaner=spectrum_cleaner,
-            dataset_id=self._dataset_ids[dataset_name].format(date=datetime.today()),
+            dataset_id=self._dataset_ids[dataset_id].format(date=datetime.today()),
             ion_mode=ion_mode,
             n_decimals=n_decimals,
             iterations=iterations,
@@ -124,7 +124,7 @@ class Spec2VecFlowFactory:
             model_output_dir=self._model_output_dir,
             mlflow_server=self._mlflow_server,
             experiment_name=project_name,
-            redis_db=self._redis_dbs[dataset_name],
+            redis_db=self._redis_dbs[dataset_id],
         )
 
         spec2vec_flow = build_training_flow(

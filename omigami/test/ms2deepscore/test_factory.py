@@ -10,7 +10,7 @@ def test_build_ms2deep_training_flow():
     ms2deep_training_flow = factory.build_training_flow(
         flow_name="MS2DeepScore Training Flow",
         image="image",
-        dataset_name="small",
+        dataset_id="small",
         schedule=None,
         ion_mode="positive",
         source_uri="URI",
