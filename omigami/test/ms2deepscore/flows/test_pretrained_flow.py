@@ -5,11 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
+from omigami.config import MLFLOW_SERVER
 from omigami.gateways.data_gateway import DataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.flows.pretrained_flow import (
@@ -22,17 +18,6 @@ from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
-
-
-@pytest.fixture
-def flow_config():
-    flow_config = make_flow_config(
-        image="image-ref-name-test-hermione-XXII",
-        storage_type=PrefectStorageMethods.S3,
-        executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db="0",
-    )
-    return flow_config
 
 
 def test_pretrained_flow(flow_config, spectra_stored):
@@ -50,7 +35,7 @@ def test_pretrained_flow(flow_config, spectra_stored):
         spectrum_binner_output_path="some path",
         project_name="test",
         mlflow_output_dir="model-output",
-        mlflow_server="mlflow-server",
+        mlflow_server=MLFLOW_SERVER,
     )
 
     flow = build_pretrained_flow(

@@ -7,11 +7,6 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import PROJECT_NAME, SPEC2VEC_ROOT
@@ -27,17 +22,6 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
-
-
-@pytest.fixture
-def flow_config():
-    flow_config = make_flow_config(
-        image="image-ref-name-test-harry-potter-XXII",
-        storage_type=PrefectStorageMethods.Local,
-        executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db="0",
-    )
-    return flow_config
 
 
 def test_training_flow(flow_config):

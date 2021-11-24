@@ -6,6 +6,7 @@ import pytest
 from mlflow.pyfunc import PyFuncModel
 from prefect import Flow
 
+from omigami.config import MLFLOW_SERVER
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.ms2deepscore.tasks import (
@@ -22,58 +23,58 @@ os.chdir(Path(__file__).parents[4])
 def train_parameters(ms2deepscore_model_path):
     return TrainModelParameters(
         output_path=ms2deepscore_model_path,
-        ion_mode="Test/Path/SpectrumBinner",
-        spectrum_binner_output_path=500,
-        epochs=0.3,
-        learning_rate=30,
-        layer_base_dims=60,
-        embedding_dim=5,
-        dropout_rate=0.5,
+        ion_mode="positive",
+        spectrum_binner_output_path="500",
+        epochs=50,
         split_ratio=SplitRatio(0.8, 0.1, 0.1),
     )
 
 
 def test_register_model(ms2deepscore_model_path, tmpdir, train_parameters):
-    path = f"{tmpdir}/mlflow/"
-    model_register = ModelRegister(path)
+    model_register = ModelRegister(MLFLOW_SERVER)
 
-    _ = model_register.register_model(
+    run_id = model_register.register_model(
         model=MS2DeepScorePredictor("positive"),
         experiment_name="experiment",
-        output_path=path,
+        output_path=str(tmpdir),
         train_parameters=train_parameters,
         artifacts={"ms2deepscore_model_path": ms2deepscore_model_path},
     )
 
-    assert os.path.exists(f"{path}/model/python_model.pkl")
-    assert os.path.exists(f"{path}/model/conda.yaml")
-    assert "ms2deepscore" in os.listdir(f"{path}/model/code/omigami")
-    assert "ms2deepscore_model.hdf5" in os.listdir(f"{path}/model/artifacts")
+    output_dir = mlflow.get_run(run_id).info.artifact_uri
+    assert os.listdir(f"{output_dir}/model") == [
+        "artifacts",
+        "MLmodel",
+        "code",
+        "python_model.pkl",
+        "conda.yaml",
+    ]
+    assert os.listdir(f"{output_dir}/model/artifacts") == ["ms2deepscore_model.hdf5"]
 
 
 def test_load_registered_model(ms2deepscore_model_path, tmpdir, train_parameters):
-    path = f"{tmpdir}/mlflow/"
-    model_register = ModelRegister(path)
+    model_register = ModelRegister(MLFLOW_SERVER)
 
-    model_register.register_model(
+    run_id = model_register.register_model(
         model=MS2DeepScorePredictor("positive"),
         experiment_name="experiment",
-        output_path=path,
+        output_path=str(tmpdir),
         train_parameters=train_parameters,
         artifacts={"ms2deepscore_model_path": ms2deepscore_model_path},
     )
+    output_dir = mlflow.get_run(run_id).info.artifact_uri
 
-    loaded_model = mlflow.pyfunc.load_model(f"{path}/model")
+    loaded_model = mlflow.pyfunc.load_model(f"{output_dir}/model")
     assert isinstance(loaded_model, PyFuncModel)
 
 
-def test_model_register_task(ms2deepscore_model_path, tmpdir, train_parameters):
-    path = f"{tmpdir}/mlflow/"
-
+def test_model_register_task(
+    ms2deepscore_model_path, tmpdir, train_parameters, mock_default_config
+):
     parameters = RegisterModelParameters(
         experiment_name="experiment",
-        mlflow_output_path=path,
-        server_uri=path,
+        mlflow_output_path=tmpdir,
+        server_uri=MLFLOW_SERVER,
         ion_mode="positive",
     )
 
@@ -94,7 +95,7 @@ def test_model_register_task(ms2deepscore_model_path, tmpdir, train_parameters):
 
 
 def test_convert_train_parameters(ms2deepscore_model_path, tmpdir, train_parameters):
-    model_register = ModelRegister("")
+    model_register = ModelRegister(MLFLOW_SERVER)
     parameters = model_register._convert_train_parameters(
         train_parameters=train_parameters, validation_loss=0.4
     )
