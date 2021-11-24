@@ -7,7 +7,7 @@ from pytest_redis import factories
 
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.predictor import Spec2VecPredictor
-from omigami.spectra_matching.entities.embedding import Embedding
+from omigami.spec2vec.entities.embedding import Embedding
 
 redis_db = factories.redisdb("redis_nooproc")
 
