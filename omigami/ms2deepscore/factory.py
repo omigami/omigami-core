@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Dict
 
-import pandas as pd
 from prefect import Flow
 
 from omigami.config import (
@@ -59,7 +58,7 @@ class MS2DeepScoreFlowFactory:
         scores_decimals: int,
         source_uri: str,
         spectrum_binner_n_bins: int,
-        schedule: pd.Timedelta = None,
+        schedule: int = None,
         ion_mode: IonModes = "positive",
         deploy_model: bool = False,
         overwrite_all_spectra: bool = False,
@@ -107,30 +106,31 @@ class MS2DeepScoreFlowFactory:
 
         flow_parameters = TrainingFlowParameters(
             data_gtw=data_gtw,
-            ion_mode=ion_mode,
             spectrum_dgw=spectrum_dgw,
-            dataset_directory=self._dataset_directory,
-            chunk_size=chunk_size,
-            dataset_id=self._dataset_ids[dataset_name].format(date=datetime.today()),
-            overwrite_model=overwrite_model,
-            overwrite_all_spectra=overwrite_all_spectra,
-            source_uri=source_uri,
             spectrum_cleaner=spectrum_cleaner,
+            source_uri=source_uri,
+            dataset_directory=self._dataset_directory,
+            dataset_id=self._dataset_ids[dataset_name].format(date=datetime.today()),
+            chunk_size=chunk_size,
+            ion_mode=ion_mode,
             scores_output_path=scores_output_path,
             fingerprint_n_bits=fingerprint_n_bits,
             scores_decimals=scores_decimals,
+            overwrite_all_spectra=overwrite_all_spectra,
             spectrum_binner_output_path=spectrum_binner_output_path,
             spectrum_binner_n_bins=spectrum_binner_n_bins,
+            overwrite_model=overwrite_model,
             model_output_path=model_output_path,
+            project_name=project_name,
+            mlflow_output_dir=mlflow_dir,
+            mlflow_server=self._mlflow_server,
             epochs=epochs,
             train_ratio=train_ratio,
             validation_ratio=validation_ratio,
             test_ratio=test_ratio,
-            project_name=project_name,
-            mlflow_output_dir=mlflow_dir,
-            mlflow_server=self._mlflow_server,
-            redis_db=self._redis_dbs[dataset_name],
             spectrum_ids_chunk_size=spectrum_ids_chunk_size,
+            redis_db=self._redis_dbs[dataset_name],
+            schedule_task_days=schedule,
         )
 
         ms2deepscore_flow = build_training_flow(
