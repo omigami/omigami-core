@@ -50,7 +50,7 @@ def mock_cli(
 
 
 def test_spec2vec_cli(monkeypatch):
-    monkeypatch.setattr(omigami.ms2deepscore.cli, "deploy_training_flow", mock_cli)
+    monkeypatch.setattr(omigami.ms2deepscore.cli, "run_ms2deepscore_flow", mock_cli)
     cli_command = [
         "train",
         "--image",

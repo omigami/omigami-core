@@ -93,9 +93,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
         chunk_size=150000,
     )
 
-    flow_id, flow_run_id = run_ms2deepscore_flow(
-        **params
-    )
+    flow_id, flow_run_id = run_ms2deepscore_flow(**params)
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_client_factory.assert_called_once()

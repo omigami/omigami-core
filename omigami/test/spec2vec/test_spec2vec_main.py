@@ -114,17 +114,13 @@ def test_mocked_deploy_training_flow(monkeypatch):
         schedule=None,
     )
 
-    flow_id, flow_run_id = run_spec2vec_flow(
-        **params
-    )
+    flow_id, flow_run_id = run_spec2vec_flow(**params)
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_client_factory.assert_called_once()
     client_factory_instance.get_client.assert_called_once()
     mock_flow_factory.assert_called_once()
-    factory_instance.build_training_flow.assert_called_once_with(
-        **params
-    )
+    factory_instance.build_training_flow.assert_called_once_with(**params)
     mock_deployer.assert_called_once_with(prefect_client="client")
     deployer_instance.deploy_flow.assert_called_once_with(
         flow="flow", project_name="default"
