@@ -14,7 +14,7 @@ from omigami.deployer import FlowDeployer
 from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
 
-def deploy_training_flow(
+def run_ms2deepscore_flow(
     image: str,
     project_name: str,
     flow_name: str,
@@ -34,7 +34,6 @@ def deploy_training_flow(
     epochs: int,
     chunk_size: int = CHUNK_SIZE,
     schedule: Optional[pd.Timedelta] = None,
-    authenticate: bool = True,
     dataset_directory: str = None,
 ) -> Tuple[str, str]:
     """
@@ -51,7 +50,7 @@ def deploy_training_flow(
 
     """
     api_server = API_SERVER_URLS[OMIGAMI_ENV]
-    login_config = get_login_config(authenticate)
+    login_config = get_login_config()
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()
 
