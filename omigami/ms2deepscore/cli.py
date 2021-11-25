@@ -2,7 +2,7 @@ import click
 
 from omigami.cli_options import common_training_options
 from omigami.ms2deepscore.config import PROJECT_NAME
-from omigami.ms2deepscore.main import deploy_training_flow
+from omigami.ms2deepscore.main import run_ms2deepscore_flow
 from omigami.utils import add_click_options
 
 
@@ -21,7 +21,7 @@ def ms2deepscore_cli():
 )
 @click.option(
     "--flow-name",
-    default="spec2vec-training-flow",
+    default="ms2deepscore-training-flow",
     show_default=True,
     help="Name of the flow. This is used as identification by Prefect",
 )
@@ -83,7 +83,7 @@ def ms2deepscore_cli():
 )
 @add_click_options(common_training_options)
 def training_flow_cli(*args, **kwargs):
-    deploy_training_flow(*args, **kwargs)
+    run_ms2deepscore_flow(*args, **kwargs)
 
 
 @ms2deepscore_cli.command(name="deploy-model")

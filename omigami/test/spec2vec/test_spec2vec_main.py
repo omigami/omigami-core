@@ -1,4 +1,3 @@
-from time import sleep
 from unittest.mock import Mock
 
 import pytest
@@ -15,8 +14,9 @@ from omigami.config import (
 from omigami.deployer import FlowDeployer
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.factory import Spec2VecFlowFactory
-from omigami.spec2vec.main import deploy_training_flow
+from omigami.spec2vec.main import run_spec2vec_flow
 from omigami.tasks import DownloadData, DownloadParameters
+from omigami.test.conftest import monitor_flow_results
 
 
 @pytest.mark.skip(
@@ -26,7 +26,7 @@ from omigami.tasks import DownloadData, DownloadParameters
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
 
-    flow_id, flow_run_id = deploy_training_flow(
+    flow_id, flow_run_id = run_spec2vec_flow(
         image="",
         project_name="local-integration-test-s2v",
         flow_name="Robert DeFlow",
@@ -42,15 +42,9 @@ def test_deploy_training_flow(backend_services):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        authenticate=False,
     )
 
-    while not (
-        client.get_flow_run_state(flow_run_id).is_successful()
-        or client.get_flow_run_state(flow_run_id).is_failed()
-    ):
-        sleep(0.5)
-
+    monitor_flow_results(client, flow_run_id)
     assert client.get_flow_run_state(flow_run_id).is_successful()
 
 
@@ -69,21 +63,16 @@ def test_single_task_local_integration(backend_services):
         storage=Local(str(STORAGE_ROOT)),
         run_config=LocalRun(working_dir=STORAGE_ROOT, labels=["dev"]),
     ) as flow:
-        res = DownloadData(
+        _ = DownloadData(
             FSDataGateway(),
             params,
         )()
 
     client.create_project("default")
     flow_id = client.register(flow, project_name="default")
-
     flow_run_id = client.create_flow_run(flow_id=flow_id, run_name=f"test run")
-    while (
-        not client.get_flow_run_state(flow_run_id).is_successful()
-        or client.get_flow_run_state(flow_run_id).is_failed()
-    ):
-        sleep(0.5)
 
+    monitor_flow_results(client, flow_run_id)
     assert client.get_flow_run_state(flow_run_id).is_successful()
 
 
@@ -125,9 +114,8 @@ def test_mocked_deploy_training_flow(monkeypatch):
         schedule=None,
     )
 
-    flow_id, flow_run_id = deploy_training_flow(
-        **params,
-        authenticate=False,
+    flow_id, flow_run_id = run_spec2vec_flow(
+        **params
     )
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
@@ -135,7 +123,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
     client_factory_instance.get_client.assert_called_once()
     mock_flow_factory.assert_called_once()
     factory_instance.build_training_flow.assert_called_once_with(
-        **params,
+        **params
     )
     mock_deployer.assert_called_once_with(prefect_client="client")
     deployer_instance.deploy_flow.assert_called_once_with(

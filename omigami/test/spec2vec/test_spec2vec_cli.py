@@ -19,7 +19,6 @@ def mock_cli(
     deploy_model: bool,
     overwrite_model: bool,
     overwrite_all_spectra: bool,
-    authenticate: bool,
     dataset_directory: str,
     schedule=None,
 ):
@@ -38,7 +37,6 @@ def mock_cli(
     assert overwrite_model is False
     assert overwrite_all_spectra is False
     assert schedule is None
-    assert authenticate is False
     assert dataset_directory == "dir"
 
 

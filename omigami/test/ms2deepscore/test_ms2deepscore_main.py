@@ -1,4 +1,3 @@
-from time import sleep
 from unittest.mock import Mock
 
 import pytest
@@ -10,7 +9,8 @@ from omigami.config import (
 )
 from omigami.deployer import FlowDeployer
 from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
-from omigami.ms2deepscore.main import deploy_training_flow
+from omigami.ms2deepscore.main import run_ms2deepscore_flow
+from omigami.test.conftest import monitor_flow_results
 
 
 @pytest.mark.skip(
@@ -22,7 +22,7 @@ from omigami.ms2deepscore.main import deploy_training_flow
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
 
-    flow_id, flow_run_id = deploy_training_flow(
+    flow_id, flow_run_id = run_ms2deepscore_flow(
         image="",
         project_name="local-integration-test-ms2ds",
         flow_name="MS2DS Flow",
@@ -34,7 +34,6 @@ def test_deploy_training_flow(backend_services):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        authenticate=False,
         spectrum_ids_chunk_size=100,
         fingerprint_n_bits=2048,
         scores_decimals=5,
@@ -46,12 +45,7 @@ def test_deploy_training_flow(backend_services):
         chunk_size=150000,
     )
 
-    while not (
-        client.get_flow_run_state(flow_run_id).is_successful()
-        or client.get_flow_run_state(flow_run_id).is_failed()
-    ):
-        sleep(0.5)
-
+    monitor_flow_results(client, flow_run_id)
     assert client.get_flow_run_state(flow_run_id).is_successful()
 
 
@@ -99,9 +93,8 @@ def test_mocked_deploy_training_flow(monkeypatch):
         chunk_size=150000,
     )
 
-    flow_id, flow_run_id = deploy_training_flow(
-        **params,
-        authenticate=False,
+    flow_id, flow_run_id = run_ms2deepscore_flow(
+        **params
     )
 
     assert (flow_id, flow_run_id) == ("id", "run_id")

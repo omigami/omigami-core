@@ -25,7 +25,6 @@ def mock_cli(
     epochs: int,
     chunk_size: int = 10,
     schedule=None,
-    authenticate: bool = True,
     dataset_directory: str = None,
 ):
     assert image == "image"
@@ -43,7 +42,6 @@ def mock_cli(
     assert epochs == 5
     assert chunk_size == 10
     assert spectrum_ids_chunk_size == 10000
-    assert authenticate is True
     assert deploy_model is False
     assert overwrite_model is False
     assert overwrite_all_spectra is False
@@ -73,7 +71,6 @@ def test_spec2vec_cli(monkeypatch):
         "20000",
         "--train-ratio",
         "0.7",
-        "--authenticate",
     ]
     runner = CliRunner()
 

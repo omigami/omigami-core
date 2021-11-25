@@ -12,6 +12,7 @@ from tensorflow import keras
 from omigami.config import IonModes
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 
+# NN Architecture parameters originated from MS2DS paper
 SIAMESE_MODEL_PARAMS = {
     "batch_size": 32,
     "learning_rate": 0.001,
@@ -85,7 +86,8 @@ class SiameseModelTrainer:
             dropout_rate=self._dropout_rate,
         )
         model.compile(
-            loss="mse", optimizer=keras.optimizers.Adam(learning_rate=self._learning_rate)
+            loss="mse",
+            optimizer=keras.optimizers.Adam(learning_rate=self._learning_rate),
         )
         model.fit(
             data_generators["training"],

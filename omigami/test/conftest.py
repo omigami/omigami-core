@@ -2,6 +2,7 @@ import itertools
 import os
 import pickle
 from pathlib import Path
+from time import sleep
 
 import boto3
 import ijson
@@ -11,13 +12,14 @@ import pytest
 import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
+from prefect import Client
 from pytest_redis import factories
 from spec2vec.model_building import train_new_word2vec_model
 
 import omigami
 import omigami.utils
 from omigami.authentication.prefect_factory import PrefectClientFactory
-from omigami.config import API_SERVER_URLS, get_login_config
+from omigami.config import API_SERVER_URLS, get_login_config, MLFLOW_SERVER
 from omigami.flow_config import (
     make_flow_config,
     PrefectStorageMethods,
@@ -303,10 +305,11 @@ def fitted_spectrum_binner(fitted_spectrum_binner_path):
 
 @pytest.fixture()
 def backend_services():
-    mlflow.set_tracking_uri("http://localhost:5000")
+    """Connects to mlflow and prefect and return client objects to communica with them"""
+    mlflow.set_tracking_uri(MLFLOW_SERVER)
     mlflow_client = mlflow.tracking.MlflowClient()
 
-    login_config = get_login_config(auth=False)
+    login_config = get_login_config()
     api_server = API_SERVER_URLS["local"]
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()
@@ -326,3 +329,16 @@ def flow_config():
         redis_db="0",
     )
     return flow_config
+
+
+def monitor_flow_results(client: Client, flow_run_id: str):
+    flow_duration = 0
+    while not (
+        client.get_flow_run_state(flow_run_id).is_successful()
+        or client.get_flow_run_state(flow_run_id).is_failed()
+    ):
+        flow_duration += 0.5
+        sleep(0.5)
+
+        if flow_duration > 60:
+            raise TimeoutError("Flow timeout. Check flow logs.")

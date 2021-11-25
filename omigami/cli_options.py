@@ -6,11 +6,11 @@ common_training_options = [
     click.option(
         "--image", "-i", type=str, required=True, help="Image used to build the flow"
     ),
-    click.option(
+    click.option(  # TODO: these two parameters need some refactoring
         "--dataset-id",
         type=click.Choice(["small", "10k", "complete"]),
         required=True,
-        help="Name of the dataset of choice.",
+        help="Name of the dataset of choice. It must match the source-uri of the dataset.",
     ),
     click.option(
         "--source-uri",
@@ -47,17 +47,11 @@ common_training_options = [
         default=False,
     ),
     click.option(
-        "--authenticate",
-        is_flag=True,
-        help="Whether to authenticate to Prefect.",
-        show_default=True,
-        default=False,
-    ),
-    click.option(
         "--dataset-directory",
         type=str,
         default=str(STORAGE_ROOT / "datasets"),
         show_default=True,
-        help="Missing percentage of ions allowed",
+        help="Directory where the dataset will be downloaded to or where it is, in case "
+        "it is already downloaded.",
     ),
 ]

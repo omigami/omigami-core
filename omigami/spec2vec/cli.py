@@ -2,7 +2,7 @@ import click
 
 from omigami.cli_options import common_training_options
 from omigami.spec2vec.config import PROJECT_NAME
-from omigami.spec2vec.main import deploy_training_flow
+from omigami.spec2vec.main import run_spec2vec_flow
 from omigami.utils import add_click_options
 
 
@@ -62,7 +62,7 @@ def spec2vec_cli():
 )
 @add_click_options(common_training_options)
 def training_flow_cli(*args, **kwargs):
-    deploy_training_flow(*args, **kwargs)
+    run_spec2vec_flow(*args, **kwargs)
 
 
 @spec2vec_cli.command(name="deploy-model")
