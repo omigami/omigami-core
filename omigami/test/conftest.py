@@ -26,8 +26,6 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.spec2vec.entities.embedding import Spec2VecEmbedding
-from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
@@ -35,9 +33,11 @@ from omigami.spec2vec.config import (
     EMBEDDING_HASHES,
     PROJECT_NAME,
 )
+from omigami.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spec2vec.gateways.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway, KEYS
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=pd.Timedelta(seconds=0.1))
@@ -175,6 +175,7 @@ def binned_spectra(cleaned_data_ms2deep_score):
 
     """
     from ms2deepscore import SpectrumBinner
+
     path = Path(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_binned_spectra.pkl")
     if path.exists():
         with open(str(path), "rb") as f:
@@ -182,7 +183,9 @@ def binned_spectra(cleaned_data_ms2deep_score):
     else:
         spectrum_binner = SpectrumBinner(number_of_bins=10000)
         binned_spectra = spectrum_binner.fit_transform(cleaned_data_ms2deep_score)
-        for binned_spectrum, spectrum in zip(binned_spectra, cleaned_data_ms2deep_score):
+        for binned_spectrum, spectrum in zip(
+            binned_spectra, cleaned_data_ms2deep_score
+        ):
             binned_spectrum.set("spectrum_id", spectrum.get("spectrum_id"))
             binned_spectrum.set("inchi", spectrum.get("inchi"))
         with open(str(path), "wb") as f:
