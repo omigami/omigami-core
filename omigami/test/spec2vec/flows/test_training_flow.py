@@ -108,7 +108,7 @@ def test_run_training_flow(
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
-        ion_mode=ion_mode,
+        ion_mode="positive",
         n_decimals=1,
         overwrite_model=True,
         overwrite_all_spectra=True,
