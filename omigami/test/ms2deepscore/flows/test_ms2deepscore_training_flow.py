@@ -82,7 +82,6 @@ def test_training_flow(flow_config):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-# @pytest.mark.skip("Requires mlflow server running. Check README instructions.")
 def test_run_training_flow(
     tmpdir,
     flow_config,
@@ -134,15 +133,15 @@ def test_run_training_flow(
         flow_parameters=flow_params,
     )
 
-    results = flow.run()
-    d = flow.get_tasks("DownloadData")[0]
-    r = flow.get_tasks("RegisterModel")[0]
+    flow_run = flow.run()
+    download_task = flow.get_tasks("DownloadData")[0]
+    register_task = flow.get_tasks("RegisterModel")[0]
 
-    assert results.is_successful()
-    results.result[d].is_cached()
+    assert flow_run.is_successful()
+    flow_run.result[download_task].is_cached()
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")
-    model_uri = results.result[r].result["model_uri"]
+    model_uri = flow_run.result[register_task].result["model_uri"]
     assert Path(model_uri).exists()

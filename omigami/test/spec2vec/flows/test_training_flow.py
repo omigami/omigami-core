@@ -130,13 +130,13 @@ def test_run_training_flow(
         deploy_model=False,
     )
 
-    results = flow.run()
-    d = flow.get_tasks("DownloadData")[0]
-    r = flow.get_tasks("RegisterModel")[0]
+    flow_run = flow.run()
+    download_task = flow.get_tasks("DownloadData")[0]
+    register_task = flow.get_tasks("RegisterModel")[0]
 
-    assert results.is_successful()
-    results.result[d].is_cached()
-    model_uri = results.result[r].result["model_uri"]
+    assert flow_run.is_successful()
+    flow_run.result[download_task].is_cached()
+    model_uri = flow_run.result[register_task].result["model_uri"]
     assert Path(model_uri).exists()
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
