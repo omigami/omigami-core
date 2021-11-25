@@ -9,7 +9,7 @@ from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
-from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
+from omigami.ms2deepscore.helper_classes.similarity_score_calculator import (
     MS2DeepScoreSimilarityScoreCalculator,
 )
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
@@ -28,14 +28,16 @@ class MS2DeepScorePredictor(Predictor):
         self._run_id = run_id
         self.spectrum_processor = SpectrumProcessor()
         self.embedding_maker = EmbeddingMaker()
-        self.model = None
+        self._similarity_score_calculator = None
 
     def load_context(self, context):
         model_path = context.artifacts["ms2deepscore_model_path"]
         try:
             log.info(f"Loading model from {model_path}")
             siamese_model = ms2deepscore_load_model(model_path)
-            self.model = MS2DeepScoreSimilarityScoreCalculator(siamese_model)
+            self._similarity_score_calculator = MS2DeepScoreSimilarityScoreCalculator(
+                siamese_model
+            )
         except FileNotFoundError:
             log.error(f"Could not find MS2DeepScore model in {model_path}")
 
@@ -83,9 +85,15 @@ class MS2DeepScorePredictor(Predictor):
         query_spectra = self.spectrum_processor.process_spectra(
             data_input, process_reference_spectra=False
         )
-        query_binned_spectra = self.model.model.spectrum_binner.transform(query_spectra)
+        query_binned_spectra = (
+            self._similarity_score_calculator.model.spectrum_binner.transform(
+                query_spectra
+            )
+        )
         query_embeddings = [
-            self.embedding_maker.make_embedding(self.model, binned_spectrum)
+            self.embedding_maker.make_embedding(
+                self._similarity_score_calculator, binned_spectrum
+            )
             for binned_spectrum in query_binned_spectra
         ]
 
@@ -131,7 +139,7 @@ class MS2DeepScorePredictor(Predictor):
         scores = calculate_scores(
             all_references,
             queries,
-            self.model,
+            self._similarity_score_calculator,
         )
         best_matches = {}
         for i, query in enumerate(queries):
@@ -151,7 +159,9 @@ class MS2DeepScorePredictor(Predictor):
             best_matches[f"spectrum-{i}"] = spectrum_best_matches
         return best_matches
 
-    def _load_embeddings(self, spectrum_ids: List[List[str]]) -> List[MS2DeepScoreEmbedding]:
+    def _load_embeddings(
+        self, spectrum_ids: List[List[str]]
+    ) -> List[MS2DeepScoreEmbedding]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
         embeddings = self.dgw.read_embeddings(
             self.ion_mode, self._run_id, list(unique_ids)

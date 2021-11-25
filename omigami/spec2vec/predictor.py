@@ -13,8 +13,9 @@ from omigami.predictor import Predictor, SpectrumMatches
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
-from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecSimilarityScoreCalculator
-
+from omigami.spec2vec.helper_classes.similarity_score_calculator import (
+    Spec2VecSimilarityScoreCalculator
+)
 log = getLogger(__name__)
 
 

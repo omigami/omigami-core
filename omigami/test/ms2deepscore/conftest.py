@@ -7,7 +7,7 @@ from pytest_redis import factories
 
 import omigami.ms2deepscore.helper_classes.siamese_model_trainer
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
-from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
+from omigami.ms2deepscore.helper_classes.similarity_score_calculator import (
     MS2DeepScoreSimilarityScoreCalculator,
 )
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
@@ -89,7 +89,9 @@ def ms2deepscore_real_model(ms2deepscore_real_model_path):
 @pytest.fixture()
 def ms2deepscore_real_predictor(ms2deepscore_real_model):
     ms2deepscore_predictor = MS2DeepScorePredictor(ion_mode="positive", run_id="2")
-    ms2deepscore_predictor.model = MS2DeepScoreSimilarityScoreCalculator(ms2deepscore_real_model)
+    ms2deepscore_predictor._similarity_score_calculator = (
+        MS2DeepScoreSimilarityScoreCalculator(ms2deepscore_real_model)
+    )
     return ms2deepscore_predictor
 
 
