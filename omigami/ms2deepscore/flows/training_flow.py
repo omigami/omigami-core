@@ -129,7 +129,7 @@ class TrainingFlowParameters:
         self.embedding = MakeEmbeddingsParameters(ion_mode)
 
         self.deploying = DeployModelParameters(
-            redis_db, overwrite_model, f"spec2vec-{ion_mode}"
+            redis_db, overwrite_model, f"ms2deepscore-{ion_mode}"
         )
 
 
