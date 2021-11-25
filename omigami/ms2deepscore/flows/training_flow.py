@@ -7,7 +7,6 @@ from prefect.schedules.clocks import IntervalClock
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.spectra_matching.gateways.data_gateway import DataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
 from omigami.ms2deepscore.tasks import (
@@ -25,9 +24,8 @@ from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScore,
 )
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters, TrainModel
-from omigami.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.gateways.data_gateway import DataGateway
 from omigami.spectra_matching.tasks import (
-    DownloadData,
     DownloadParameters,
     DownloadData,
     ChunkingParameters,
@@ -37,6 +35,7 @@ from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
 )
+from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 class TrainingFlowParameters:

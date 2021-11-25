@@ -2,7 +2,10 @@ import pytest
 from prefect import Flow
 from prefect.storage import S3
 
-from omigami.tasks.deploy_model import DeployModelParameters, DeployModel
+from omigami.spectra_matching.tasks.deploy_model import (
+    DeployModelParameters,
+    DeployModel,
+)
 
 
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")

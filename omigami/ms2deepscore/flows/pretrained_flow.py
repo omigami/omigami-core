@@ -1,7 +1,6 @@
 from prefect import Flow
 
 from omigami.flow_config import FlowConfig
-from omigami.spectra_matching.gateways.data_gateway import DataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.tasks import (
     RegisterModel,
@@ -9,7 +8,8 @@ from omigami.ms2deepscore.tasks import (
     ProcessSpectrum,
     RegisterModelParameters,
 )
-from omigami.tasks import DeployModel, DeployModelParameters
+from omigami.spectra_matching.gateways.data_gateway import DataGateway
+from omigami.spectra_matching.tasks import DeployModel, DeployModelParameters
 
 
 class PretrainedFlowParameters:

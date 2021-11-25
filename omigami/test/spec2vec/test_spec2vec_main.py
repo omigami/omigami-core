@@ -12,10 +12,10 @@ from omigami.config import (
     DATASET_IDS,
 )
 from omigami.deployer import FlowDeployer
-from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spec2vec.main import run_spec2vec_flow
-from omigami.tasks import DownloadData, DownloadParameters
+from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.tasks import DownloadData, DownloadParameters
 from omigami.test.conftest import monitor_flow_results
 
 

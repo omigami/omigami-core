@@ -2,7 +2,7 @@ import pytest
 from prefect import Flow
 
 from omigami.spec2vec.factory import Spec2VecFlowFactory
-from omigami.tasks import CreateChunks
+from omigami.spectra_matching.tasks import CreateChunks
 
 
 def test_build_training_flow():
