@@ -42,7 +42,7 @@ def test_deploy_training_flow(backend_services):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        auth=False,
+        dataset_directory=STORAGE_ROOT.parent / "datasets",
     )
 
     monitor_flow_results(client, flow_run_id)
@@ -97,7 +97,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
     deployer_instance.deploy_flow = Mock(return_value=("id", "run_id"))
     monkeypatch.setattr(omigami.spec2vec.main, "FlowDeployer", mock_deployer)
 
-    flow_id, flow_run_id = run_spec2vec_flow(
+    params = dict(
         image="",
         project_name="default",
         flow_name="Robert DeFlow",
@@ -113,30 +113,15 @@ def test_mocked_deploy_training_flow(monkeypatch):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        auth=False,
     )
+
+    flow_id, flow_run_id = run_spec2vec_flow(**params)
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_client_factory.assert_called_once()
     client_factory_instance.get_client.assert_called_once()
     mock_flow_factory.assert_called_once()
-    factory_instance.build_training_flow.assert_called_once_with(
-        image="",
-        project_name="default",
-        flow_name="Robert DeFlow",
-        dataset_id="small",
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
-        ion_mode="positive",
-        iterations=3,
-        n_decimals=2,
-        window=500,
-        intensity_weighting_power=0.5,
-        allowed_missing_percentage=15,
-        deploy_model=False,
-        overwrite_model=False,
-        overwrite_all_spectra=True,
-        schedule=None,
-    )
+    factory_instance.build_training_flow.assert_called_once_with(**params)
     mock_deployer.assert_called_once_with(prefect_client="client")
     deployer_instance.deploy_flow.assert_called_once_with(
         flow="flow", project_name="default"

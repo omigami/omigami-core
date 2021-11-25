@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-import omigami.spec2vec.main
+import omigami.ms2deepscore.main
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
     STORAGE_ROOT,
@@ -27,14 +27,13 @@ def test_deploy_training_flow(backend_services):
         project_name="local-integration-test-ms2ds",
         flow_name="MS2DS Flow",
         dataset_id="small",
-        dataset_directory=str(STORAGE_ROOT / "datasets-ms2ds"),
+        dataset_directory=str(STORAGE_ROOT.parent / "datasets-ms2ds"),
         source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
         ion_mode="positive",
         deploy_model=False,
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        auth=False,
         spectrum_ids_chunk_size=100,
         fingerprint_n_bits=2048,
         scores_decimals=5,
@@ -55,7 +54,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
     client_factory_instance = mock_client_factory.return_value
     client_factory_instance.get_client = Mock(return_value="client")
     monkeypatch.setattr(
-        omigami.spec2vec.main,
+        omigami.ms2deepscore.main,
         "PrefectClientFactory",
         mock_client_factory,
     )
@@ -72,9 +71,9 @@ def test_mocked_deploy_training_flow(monkeypatch):
     deployer_instance.deploy_flow = Mock(return_value=("id", "run_id"))
     monkeypatch.setattr(omigami.ms2deepscore.main, "FlowDeployer", mock_deployer)
 
-    flow_id, flow_run_id = run_ms2deepscore_flow(
+    params = dict(
         image="",
-        project_name="local-integration-test",
+        project_name="default",
         flow_name="Robert DeFlow",
         dataset_id="small",
         source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
@@ -83,7 +82,6 @@ def test_mocked_deploy_training_flow(monkeypatch):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        auth=False,
         spectrum_ids_chunk_size=100,
         fingerprint_n_bits=2048,
         scores_decimals=5,
@@ -95,27 +93,13 @@ def test_mocked_deploy_training_flow(monkeypatch):
         chunk_size=150000,
     )
 
+    flow_id, flow_run_id = run_ms2deepscore_flow(**params)
+
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_client_factory.assert_called_once()
     client_factory_instance.get_client.assert_called_once()
     mock_flow_factory.assert_called_once()
-    factory_instance.build_training_flow.assert_called_once_with(
-        image="",
-        project_name="default",
-        flow_name="Robert DeFlow",
-        dataset_id="small",
-        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
-        ion_mode="positive",
-        iterations=3,
-        n_decimals=2,
-        window=500,
-        intensity_weighting_power=0.5,
-        allowed_missing_percentage=15,
-        deploy_model=False,
-        overwrite_model=False,
-        overwrite_all_spectra=True,
-        schedule=None,
-    )
+    factory_instance.build_training_flow.assert_called_once_with(**params)
     mock_deployer.assert_called_once_with(prefect_client="client")
     deployer_instance.deploy_flow.assert_called_once_with(
         flow="flow", project_name="default"

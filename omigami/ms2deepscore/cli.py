@@ -1,48 +1,91 @@
 import click
 
-from omigami.config import (
-    API_SERVER_URLS,
-    MLFLOW_SERVER,
-)
+from omigami.cli_options import common_training_options
 from omigami.ms2deepscore.config import PROJECT_NAME
-from omigami.ms2deepscore.deployment import MS2DeepScoreDeployer
+from omigami.ms2deepscore.main import run_ms2deepscore_flow
 from omigami.utils import add_click_options
 
-auth_options = [
-    click.option(
-        "--api-server", default=API_SERVER_URLS["dev"], help="URL to the prefect API"
-    ),
-    click.option("--auth", default=False, help="Enable authentication"),
-    click.option("--auth-url", default=None, help="Kratos Public URI"),
-    click.option("--username", default=None, help="Login username"),
-    click.option("--password", default=None, help="Login password"),
-]
 
-configuration_options = [
-    click.option("--project-name", "-p", default=PROJECT_NAME),
-    click.option("--mlflow-server", default=MLFLOW_SERVER),
-    click.option("--flow-name", default="ms2deepscore-pretrained-flow"),
-    click.option("--environment", "--env", default="dev"),
-    click.option("--deploy-model", is_flag=True),
-    click.option("--overwrite-model", is_flag=True, help="Overwrite existing model"),
-    click.option("--overwrite-all-spectra", is_flag=True, help="Overwrite all spectra"),
-]
-
-
-@click.group()
-def cli():
+@click.group(name="ms2deepscore")
+def ms2deepscore_cli():
     pass
 
 
-@cli.command(name="register-training-flow")
-@click.option("--image", "-i", type=str, required=True)
-@click.option("--dataset-name", "-d", type=str, required=True)
-@add_click_options(auth_options)
-@add_click_options(configuration_options)
-def deploy_training_flow_cli(flow_name, *args, **kwargs):
-    deployer = MS2DeepScoreDeployer(*args, **kwargs)
-    deployer.deploy_pretrained_flow(flow_name=flow_name)
+@ms2deepscore_cli.command(name="train")
+@click.option(
+    "--project-name",
+    "-p",
+    default=PROJECT_NAME,
+    show_default=True,
+    help="Name of the project. This is used as identification by Prefect",
+)
+@click.option(
+    "--flow-name",
+    default="ms2deepscore-training-flow",
+    show_default=True,
+    help="Name of the flow. This is used as identification by Prefect",
+)
+@click.option(
+    "--fingerprint-n-bits",
+    type=int,
+    default=2048,
+    help="Number of bits for molecular fingerprints used on calucation of tanimoto scores",
+    show_default=True,
+)
+@click.option(
+    "--scores-decimals",
+    type=int,
+    default=5,
+    help="Decimals used on tanimoto scores",
+    show_default=True,
+)
+@click.option(
+    "--spectrum-binner-n-bins",
+    type=int,
+    default=10000,
+    help="Number of bins for the spectrum binner",
+    show_default=True,
+)
+@click.option(
+    "--spectrum-ids-chunk-size",
+    type=int,
+    default=10000,
+    show_default=True,
+    help="Size of chunking in number of spectrum IDs",
+)
+@click.option(
+    "--train-ratio",
+    type=float,
+    default=0.9,
+    show_default=True,
+    help="Fraction of the dataset for the training set",
+)
+@click.option(
+    "--validation-ratio",
+    type=float,
+    default=0.05,
+    show_default=True,
+    help="Fraction of the dataset for the validation set",
+)
+@click.option(
+    "--test-ratio",
+    type=float,
+    default=0.05,
+    show_default=True,
+    help="Fraction of the dataset for the test set",
+)
+@click.option(
+    "--epochs",
+    type=float,
+    default=5.0,
+    show_default=True,
+    help="Number of epochs for training the siamese neural network",
+)
+@add_click_options(common_training_options)
+def training_flow_cli(*args, **kwargs):
+    run_ms2deepscore_flow(*args, **kwargs)
 
 
-if __name__ == "__main__":
-    cli()
+@ms2deepscore_cli.command(name="deploy-model")
+def deploy_model_cli():
+    pass

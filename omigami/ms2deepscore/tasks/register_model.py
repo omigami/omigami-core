@@ -107,7 +107,7 @@ class ModelRegister(MLFlowModelRegister):
         conda_env_path: str = None,
         artifacts: Dict = None,
         run_name: str = "ms2deepscore",
-    ):
+    ) -> str:
         """
         Method to register the MS2DeepScore to MLFlow.
 
