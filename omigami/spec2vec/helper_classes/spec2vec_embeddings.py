@@ -4,26 +4,27 @@ import numpy as np
 from spec2vec import Spec2Vec
 from spec2vec.vector_operations import cosine_similarity, cosine_similarity_matrix
 
-from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spec2vec.entities.embedding import Spec2VecEmbedding
 
 
-class Spec2VecEmbeddings(Spec2Vec):
+class Spec2VecSimilarityScoreCalculator(Spec2Vec):
     """Calculate spec2vec similarity scores between a reference and a query.
-    The only difference between Spec2VecEmbeddings and Spec2Vec is that
-    Spec2VecEmbeddings methods take as input argument Embedding instead of Union[SpectrumDocument, Spectrum].
-    The Embeddings are being stored at training so there is no need to recompute them at every lookup.
+    The only difference between Spec2VecSimilarityScoreCalculator and Spec2Vec is that
+    Spec2VecSimilarityScoreCalculator methods take as input argument Embedding instead
+    of Union[SpectrumDocument, Spectrum]. The Embeddings are being stored at training
+    so there is no need to recompute them at every lookup.
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def pair(self, reference: Embedding, query: Embedding) -> float:
+    def pair(self, reference: Spec2VecEmbedding, query: Spec2VecEmbedding) -> float:
         return cosine_similarity(reference.vector, query.vector)
 
     def matrix(
         self,
-        references: List[Embedding],
-        queries: List[Embedding],
+        references: List[Spec2VecEmbedding],
+        queries: List[Spec2VecEmbedding],
         is_symmetric: bool = False,
     ) -> np.ndarray:
 

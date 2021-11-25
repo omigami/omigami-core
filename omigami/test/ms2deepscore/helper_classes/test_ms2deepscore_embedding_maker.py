@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
-from omigami.ms2deepscore.entities.embedding import Embedding
+from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
 from omigami.test.conftest import ASSETS_DIR
 
 
@@ -25,5 +25,5 @@ def test_make_embedding(binned_spectra, ms2deepscore_real_predictor):
     embedding = maker.make_embedding(
         ms2deepscore_real_predictor.model, binned_spectra[0]
     )
-    assert isinstance(embedding, Embedding)
+    assert isinstance(embedding, MS2DeepScoreEmbedding)
     assert isinstance(embedding.vector, np.ndarray)
