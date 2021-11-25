@@ -47,13 +47,6 @@ common_training_options = [
         default=False,
     ),
     click.option(
-        "--authenticate",
-        is_flag=True,
-        help="Whether to authenticate to Prefect.",
-        show_default=True,
-        default=False,
-    ),
-    click.option(
         "--dataset-directory",
         type=str,
         default=str(STORAGE_ROOT / "datasets"),

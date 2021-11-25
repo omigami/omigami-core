@@ -42,7 +42,6 @@ def test_deploy_training_flow(backend_services):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        authenticate=False,
     )
 
     monitor_flow_results(client, flow_run_id)
@@ -113,7 +112,6 @@ def test_mocked_deploy_training_flow(monkeypatch):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
-        authenticate=False,
     )
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
