@@ -42,6 +42,7 @@ def test_deploy_training_flow(backend_services):
         overwrite_model=False,
         overwrite_all_spectra=True,
         schedule=None,
+        dataset_directory=STORAGE_ROOT.parent / "datasets",
     )
 
     monitor_flow_results(client, flow_run_id)

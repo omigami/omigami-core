@@ -24,6 +24,7 @@ def run_spec2vec_flow(
     overwrite_model: bool,
     overwrite_all_spectra: bool,
     schedule: Optional[pd.Timedelta] = None,
+    dataset_directory: str = None,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a Spec2Vec model training flow.
@@ -43,7 +44,7 @@ def run_spec2vec_flow(
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()
 
-    factory = Spec2VecFlowFactory()
+    factory = Spec2VecFlowFactory(dataset_directory=dataset_directory)
     flow = factory.build_training_flow(
         image=image,
         project_name=project_name,

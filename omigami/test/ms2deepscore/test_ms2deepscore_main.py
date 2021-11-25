@@ -27,7 +27,7 @@ def test_deploy_training_flow(backend_services):
         project_name="local-integration-test-ms2ds",
         flow_name="MS2DS Flow",
         dataset_id="small",
-        dataset_directory=str(STORAGE_ROOT / "datasets-ms2ds"),
+        dataset_directory=str(STORAGE_ROOT.parent / "datasets-ms2ds"),
         source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
         ion_mode="positive",
         deploy_model=False,
