@@ -304,7 +304,7 @@ def backend_services():
     mlflow.set_tracking_uri(MLFLOW_SERVER)
     mlflow_client = mlflow.tracking.MlflowClient()
 
-    login_config = get_login_config(auth=False)
+    login_config = get_login_config()
     api_server = API_SERVER_URLS["local"]
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()

@@ -49,8 +49,8 @@ DEFAULT_PREFECT_TASK_CONFIG = dict(
 DATASET_IDS = config["storage"]["dataset_id"].get(dict)
 
 
-def get_login_config(auth: bool) -> Dict[str, str]:
-    if auth:
+def get_login_config() -> Dict[str, str]:
+    if OMIGAMI_ENV in ("dev", "prod"):
         login_config = config["login"][OMIGAMI_ENV].get(dict)
         login_config.pop("token")
     else:

@@ -40,7 +40,7 @@ def deploy_training_flow(
 
     """
     api_server = API_SERVER_URLS[OMIGAMI_ENV]
-    login_config = get_login_config(auth)
+    login_config = get_login_config()
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()
 
