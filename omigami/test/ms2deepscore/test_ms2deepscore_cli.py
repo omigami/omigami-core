@@ -5,7 +5,7 @@ from omigami.config import IonModes, STORAGE_ROOT
 from omigami.ms2deepscore.cli import ms2deepscore_cli
 
 
-def mock_cli(
+def ms2deepscore_cli_assertions(
     image: str,
     project_name: str,
     flow_name: str,
@@ -13,19 +13,11 @@ def mock_cli(
     source_uri: str,
     ion_mode: IonModes,
     fingerprint_n_bits: int,
-    scores_decimals: int,
     spectrum_binner_n_bins: int,
-    deploy_model: bool,
-    overwrite_model: bool,
-    overwrite_all_spectra: bool,
     spectrum_ids_chunk_size: int,
     train_ratio: float,
-    validation_ratio: float,
-    test_ratio: float,
-    epochs: int,
-    chunk_size: int = 10,
-    schedule=None,
     dataset_directory: str = None,
+    **kwargs,
 ):
     assert image == "image"
     assert project_name == "project name"
@@ -34,23 +26,25 @@ def mock_cli(
     assert source_uri == "uri"
     assert ion_mode == "positive"
     assert fingerprint_n_bits == 2048
-    assert scores_decimals == 5
     assert spectrum_binner_n_bins == 20000
     assert train_ratio == 0.7
-    assert validation_ratio == 0.05
-    assert test_ratio == 0.05
-    assert epochs == 5
-    assert chunk_size == 10
     assert spectrum_ids_chunk_size == 10000
-    assert deploy_model is False
-    assert overwrite_model is False
-    assert overwrite_all_spectra is False
-    assert schedule is None
     assert dataset_directory == str(STORAGE_ROOT / "datasets")
+    assert set(kwargs.keys()) == {
+        "scores_decimals",
+        "overwrite_model",
+        "overwrite_all_spectra",
+        "deploy_model",
+        "epochs",
+        "validation_ratio",
+        "test_ratio",
+    }
 
 
 def test_ms2deepscore_cli(monkeypatch):
-    monkeypatch.setattr(omigami.ms2deepscore.cli, "run_ms2deepscore_flow", mock_cli)
+    monkeypatch.setattr(
+        omigami.ms2deepscore.cli, "run_ms2deepscore_flow", ms2deepscore_cli_assertions
+    )
     cli_command = [
         "train",
         "--image",
