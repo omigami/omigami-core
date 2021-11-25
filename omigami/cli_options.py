@@ -51,6 +51,7 @@ common_training_options = [
         type=str,
         default=str(STORAGE_ROOT / "datasets"),
         show_default=True,
-        help="Missing percentage of ions allowed",
+        help="Directory where the dataset will be downloaded to or where it is, in case "
+        "it is already downloaded.",
     ),
 ]
