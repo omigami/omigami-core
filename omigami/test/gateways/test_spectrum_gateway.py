@@ -4,7 +4,7 @@ import pytest
 from matchms.Spectrum import Spectrum
 from pytest_redis import factories
 
-from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.config import (
@@ -51,7 +51,7 @@ def test_read_embeddings(embeddings, embeddings_stored):
     embeddings_read = dgw.read_embeddings("positive", "1")
     assert len(embeddings_read) == len(embeddings)
     for embedding in embeddings_read:
-        assert isinstance(embedding, Embedding)
+        assert isinstance(embedding, Spec2VecEmbedding)
 
 
 def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_stored):
@@ -66,7 +66,7 @@ def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_sto
     embeddings_read = dgw.read_embeddings("positive", "1", spectrum_ids_within_range)
     assert len(embeddings_read) == len(filtered_spectra)
     for embedding in embeddings_read:
-        assert isinstance(embedding, Embedding)
+        assert isinstance(embedding, Spec2VecEmbedding)
         assert (
             mz_min
             <= dgw.client.zscore(

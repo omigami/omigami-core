@@ -7,7 +7,7 @@ from pytest_redis import factories
 
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.spec2vec.predictor import Spec2VecPredictor
-from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spec2vec.entities.embedding import Spec2VecEmbedding
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -150,7 +150,7 @@ def test_load_unique_ref_embeddings(spec2vec_predictor, redis_full_setup):
     ref_embeddings = spec2vec_predictor._load_unique_ref_embeddings(spectrum_ids)
 
     assert ref_embeddings
-    assert isinstance(ref_embeddings["CCMSLIB00000006878"], Embedding)
+    assert isinstance(ref_embeddings["CCMSLIB00000006878"], Spec2VecEmbedding)
 
 
 @pytest.mark.skipif(
@@ -175,7 +175,7 @@ def test_get_input_ref_embeddings(spec2vec_predictor, redis_full_setup):
         input_ref_spectrum_ids, ref_embeddings
     )
 
-    assert isinstance(ref_emb_for_input[0], Embedding)
+    assert isinstance(ref_emb_for_input[0], Spec2VecEmbedding)
     assert len(ref_emb_for_input) == len(input_ref_spectrum_ids)
     assert ref_emb_for_input[0].spectrum_id == input_ref_spectrum_ids[0]
 

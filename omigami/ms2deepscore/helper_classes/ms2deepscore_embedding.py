@@ -2,29 +2,30 @@ from typing import List
 
 import numpy as np
 from ms2deepscore import MS2DeepScore
+from ms2deepscore.models import SiameseModel
 from spec2vec.vector_operations import cosine_similarity, cosine_similarity_matrix
 from tqdm import tqdm
 
-from omigami.ms2deepscore.entities.embedding import Embedding
+from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
 
 
-class MS2DeepScoreEmbedding(MS2DeepScore):
+class MS2DeepScoreSimilarityScoreCalculator(MS2DeepScore):
     """Calculate MS2DeepScore similarity scores between a reference and a query. The
-    only difference between MS2DeepScoreEmbedding and MS2DeepScore is that
-    MS2DeepScoreEmbedding methods take as input argument Embedding instead
+    only difference between MS2DeepScoreSimilarityScoreCalculator and MS2DeepScore is that
+    MS2DeepScoreSimilarityScoreCalculator methods take as input argument Embedding instead
     of Spectrum.
     """
 
-    def __init__(self, model, **kwargs):
+    def __init__(self, model: SiameseModel, **kwargs):
         super().__init__(model, **kwargs)
 
-    def pair(self, reference: Embedding, query: Embedding) -> float:
+    def pair(self, reference: MS2DeepScoreEmbedding, query: MS2DeepScoreEmbedding) -> float:
         return cosine_similarity(reference.vector[0, :], query.vector[0, :])
 
     def matrix(
         self,
-        references: List[Embedding],
-        queries: List[Embedding],
+        references: List[MS2DeepScoreEmbedding],
+        queries: List[MS2DeepScoreEmbedding],
         is_symmetric: bool = False,
     ) -> np.ndarray:
 
@@ -40,7 +41,7 @@ class MS2DeepScoreEmbedding(MS2DeepScore):
         ms2ds_similarity = cosine_similarity_matrix(reference_vectors, query_vectors)
         return ms2ds_similarity
 
-    def calculate_vectors(self, spectrum_list: List[Embedding]) -> np.ndarray:
+    def calculate_vectors(self, spectrum_list: List[MS2DeepScoreEmbedding]) -> np.ndarray:
         n_rows = len(spectrum_list)
         reference_vectors = np.empty((n_rows, self.output_vector_dim), dtype="float")
         for index_reference, reference in enumerate(

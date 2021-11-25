@@ -7,13 +7,13 @@ from matchms import calculate_scores
 from matchms.filtering import normalize_intensities
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.spec2vec.entities.embedding import Embedding
+from omigami.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
 from omigami.predictor import Predictor, SpectrumMatches
 from omigami.spec2vec.config import PROJECT_NAME
 from omigami.spec2vec.entities.spectrum_document import SpectrumDocumentData
 from omigami.spec2vec.helper_classes.embedding_maker import EmbeddingMaker
-from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
+from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecSimilarityScoreCalculator
 
 log = getLogger(__name__)
 
@@ -103,7 +103,7 @@ class Spec2VecPredictor(Predictor):
         data_input = data_input_and_parameters.get("data")
         return data_input, parameters
 
-    def _pre_process_data(self, data_input: List[Dict[str, str]]) -> List[Embedding]:
+    def _pre_process_data(self, data_input: List[Dict[str, str]]) -> List[Spec2VecEmbedding]:
         embeddings = []
         for data in data_input:
             raw_spectrum = as_spectrum(data)
@@ -122,7 +122,7 @@ class Spec2VecPredictor(Predictor):
 
     def _load_unique_ref_embeddings(
         self, spectrum_ids: List[List[str]]
-    ) -> Dict[str, Embedding]:
+    ) -> Dict[str, Spec2VecEmbedding]:
         unique_ref_ids = set(item for elem in spectrum_ids for item in elem)
         unique_ref_embeddings = self.dgw.read_embeddings(
             self.ion_mode, self._run_id, list(unique_ref_ids)
@@ -131,11 +131,11 @@ class Spec2VecPredictor(Predictor):
 
     def _calculate_best_matches(
         self,
-        references: List[Embedding],
-        query: Embedding,
+        references: List[Spec2VecEmbedding],
+        query: Spec2VecEmbedding,
         n_best_spectra: int = 10,
     ) -> SpectrumMatches:
-        spec2vec_embeddings_similarity = Spec2VecEmbeddings(
+        spec2vec_similarity_score_calculator = Spec2VecSimilarityScoreCalculator(
             model=self.model,
             intensity_weighting_power=self.intensity_weighting_power,
             allowed_missing_percentage=self.allowed_missing_percentage,
@@ -143,7 +143,7 @@ class Spec2VecPredictor(Predictor):
         scores = calculate_scores(
             references,
             [query],
-            spec2vec_embeddings_similarity,
+            spec2vec_similarity_score_calculator,
         )
 
         all_scores = scores.scores_by_query(query, sort=True)
@@ -159,8 +159,8 @@ class Spec2VecPredictor(Predictor):
     @staticmethod
     def _get_input_ref_embeddings(
         ref_spectrum_ids: List[str],
-        ref_embeddings: Dict[str, Embedding],
-    ) -> List[Embedding]:
+        ref_embeddings: Dict[str, Spec2VecEmbedding],
+    ) -> List[Spec2VecEmbedding]:
         ref_emb_for_input = [
             ref_embeddings[sp_id]
             for sp_id in ref_spectrum_ids

@@ -9,7 +9,7 @@ from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
-    MS2DeepScoreEmbedding,
+    MS2DeepScoreSimilarityScoreCalculator,
 )
 from omigami.utils import merge_prefect_task_configs
 
@@ -73,7 +73,7 @@ class MakeEmbeddings(Task):
 
         embeddings = []
         siamese_model = self._fs_gtw.load_model(model_path)
-        model = MS2DeepScoreEmbedding(siamese_model)
+        model = MS2DeepScoreSimilarityScoreCalculator(siamese_model)
 
         for i, binned_spectrum in enumerate(binned_spectra):
             embeddings.append(

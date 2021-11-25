@@ -10,13 +10,13 @@ from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
 )
 from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
-    MS2DeepScoreEmbedding,
+    MS2DeepScoreSimilarityScoreCalculator,
 )
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
 from omigami.predictor import Predictor, SpectrumMatches
-from omigami.ms2deepscore.entities.embedding import Embedding
+from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
 
 log = getLogger(__name__)
 
@@ -35,7 +35,7 @@ class MS2DeepScorePredictor(Predictor):
         try:
             log.info(f"Loading model from {model_path}")
             siamese_model = ms2deepscore_load_model(model_path)
-            self.model = MS2DeepScoreEmbedding(siamese_model)
+            self.model = MS2DeepScoreSimilarityScoreCalculator(siamese_model)
         except FileNotFoundError:
             log.error(f"Could not find MS2DeepScore model in {model_path}")
 
@@ -123,8 +123,8 @@ class MS2DeepScorePredictor(Predictor):
 
     def _calculate_best_matches(
         self,
-        all_references: List[Embedding],
-        queries: List[Embedding],
+        all_references: List[MS2DeepScoreEmbedding],
+        queries: List[MS2DeepScoreEmbedding],
         n_best_spectra: int = 10,
     ) -> SpectrumMatches:
 
@@ -151,7 +151,7 @@ class MS2DeepScorePredictor(Predictor):
             best_matches[f"spectrum-{i}"] = spectrum_best_matches
         return best_matches
 
-    def _load_embeddings(self, spectrum_ids: List[List[str]]) -> List[Embedding]:
+    def _load_embeddings(self, spectrum_ids: List[List[str]]) -> List[MS2DeepScoreEmbedding]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
         embeddings = self.dgw.read_embeddings(
             self.ion_mode, self._run_id, list(unique_ids)

@@ -15,7 +15,7 @@ from spec2vec.model_building import train_new_word2vec_model
 
 import omigami
 import omigami.utils
-from omigami.spec2vec.entities.embedding import Embedding as Spec2VecEmbedding
+from omigami.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -141,10 +141,41 @@ def embeddings_stored(redis_db, cleaned_data, embeddings):
 
 
 @pytest.fixture(scope="module")
-def binned_spectra():
-    path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_binned_spectra.pickle")
+def cleaned_data_ms2deep_score():
+    path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_cleaned.pickle")
     with open(path, "rb") as handle:
-        binned_spectra = pickle.load(handle)
+        cleaned_data = pickle.load(handle)
+    return cleaned_data
+
+
+@pytest.fixture(scope="module")
+def binned_spectra(cleaned_data_ms2deep_score):
+    """
+    This fixture creates ms2deepscore.BinnedSpectrum objects from cleaned_data_ms2deep_score.
+    If the pkl file is already available it load binned_spectra from it.
+
+    Parameters
+    ----------
+    cleaned_data_ms2deep_score: List[Spectrum]
+
+    Returns
+    -------
+    List[BinnedSpectrum]
+
+    """
+    from ms2deepscore import SpectrumBinner
+    path = Path(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_binned_spectra.pkl")
+    if path.exists():
+        with open(str(path), "rb") as f:
+            binned_spectra = pickle.load(f)
+    else:
+        spectrum_binner = SpectrumBinner(number_of_bins=10000)
+        binned_spectra = spectrum_binner.fit_transform(cleaned_data_ms2deep_score)
+        for binned_spectrum, spectrum in zip(binned_spectra, cleaned_data_ms2deep_score):
+            binned_spectrum.set("spectrum_id", spectrum.get("spectrum_id"))
+            binned_spectrum.set("inchi", spectrum.get("inchi"))
+        with open(str(path), "wb") as f:
+            pickle.dump(binned_spectra, f)
     return binned_spectra
 
 
@@ -162,7 +193,7 @@ def binned_spectra_stored(redis_db, binned_spectra):
 
 @pytest.fixture()
 def embeddings_from_real_predictor():
-    path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_embeddings.pickle")
+    path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_embeddings.pkl")
     with open(path, "rb") as handle:
         embeddings = pickle.load(handle)
     return embeddings
@@ -245,14 +276,18 @@ def embeddings(documents_data, word2vec_model):
     `word2vec_model` and creates Embedding objects out of them. Then Embedding objects
     are saved to ASSET_DIR. If exists it will be read from ASSET_DIR.
 
+    If you rename Spec2VecEmbedding from omigami/spec2vec/entities/embedding.py, delete
+    the current pkl file and run a test that uses this fixture. Then pkl file will be
+    updated with the new class name.
+
     Parameters
     ----------
     documents_data: List[SpectrumDocument]
-    word2vec_model: Word2Vec
+    word2vec_model: Word2Vec model
 
     Returns
     -------
-    List[Embedding]
+    List[Spec2VecEmbedding]
 
     """
     embeddings_path = Path(ASSETS_DIR / "SMALL_GNPS_as_embeddings.pkl")

@@ -2,22 +2,22 @@ import numpy as np
 from ms2deepscore import BinnedSpectrum
 
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
-    MS2DeepScoreEmbedding,
+    MS2DeepScoreSimilarityScoreCalculator,
 )
-from omigami.ms2deepscore.entities.embedding import Embedding
+from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
 
 
 class EmbeddingMaker:
     def make_embedding(
         self,
-        model: MS2DeepScoreEmbedding,
+        model: MS2DeepScoreSimilarityScoreCalculator,
         binned_spectrum: BinnedSpectrum,
-    ) -> Embedding:
+    ) -> MS2DeepScoreEmbedding:
         vector = model.model.base.predict(
             self._create_input_vector(binned_spectrum, model.input_vector_dim)
         )
 
-        return Embedding(
+        return MS2DeepScoreEmbedding(
             vector=vector,
             spectrum_id=binned_spectrum.metadata.get("spectrum_id"),
             inchikey=binned_spectrum.get("inchikey"),
@@ -27,7 +27,11 @@ class EmbeddingMaker:
     def _create_input_vector(
         binned_spectrum: BinnedSpectrum, input_vector_dim: int
     ) -> np.ndarray:
-        """Creates input vector for model.base based on binned peaks and intensities"""
+        """
+        Creates input vector for model.base based on binned peaks and intensities.
+        If you refactor this method please also refactor tge same function in
+        `omigami/test/ms2deepscore/test_scripts_to_update_assets.py`
+        """
         X = np.zeros((1, input_vector_dim))
 
         idx = np.array([int(x) for x in binned_spectrum.binned_peaks.keys()])

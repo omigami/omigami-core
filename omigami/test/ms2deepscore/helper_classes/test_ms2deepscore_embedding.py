@@ -6,7 +6,7 @@ from matchms import calculate_scores
 from ms2deepscore import MS2DeepScore
 
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
-    MS2DeepScoreEmbedding,
+    MS2DeepScoreSimilarityScoreCalculator,
 )
 from omigami.test.conftest import ASSETS_DIR
 
@@ -26,7 +26,7 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture()
 def ms2deepscore_embedding_similarity(ms2deepscore_real_model):
-    return MS2DeepScoreEmbedding(ms2deepscore_real_model)
+    return MS2DeepScoreSimilarityScoreCalculator(ms2deepscore_real_model)
 
 
 @pytest.fixture()

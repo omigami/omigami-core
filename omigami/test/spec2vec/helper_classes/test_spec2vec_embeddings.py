@@ -3,12 +3,14 @@ import pytest
 from matchms import calculate_scores
 from spec2vec import Spec2Vec
 
-from omigami.spec2vec.helper_classes.spec2vec_embeddings import Spec2VecEmbeddings
+from omigami.spec2vec.helper_classes.spec2vec_embeddings import (
+    Spec2VecSimilarityScoreCalculator,
+)
 
 
 @pytest.fixture()
 def spec2vec_embeddings_similarity(word2vec_model):
-    return Spec2VecEmbeddings(
+    return Spec2VecSimilarityScoreCalculator(
         model=word2vec_model,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
