@@ -14,7 +14,7 @@ from omigami.config import (
 from omigami.deployer import FlowDeployer
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.factory import Spec2VecFlowFactory
-from omigami.spec2vec.main import deploy_training_flow
+from omigami.spec2vec.main import run_spec2vec_flow
 from omigami.tasks import DownloadData, DownloadParameters
 from omigami.test.conftest import monitor_flow_results
 
@@ -26,7 +26,7 @@ from omigami.test.conftest import monitor_flow_results
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
 
-    flow_id, flow_run_id = deploy_training_flow(
+    flow_id, flow_run_id = run_spec2vec_flow(
         image="",
         project_name="local-integration-test-s2v",
         flow_name="Robert DeFlow",
@@ -97,7 +97,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
     deployer_instance.deploy_flow = Mock(return_value=("id", "run_id"))
     monkeypatch.setattr(omigami.spec2vec.main, "FlowDeployer", mock_deployer)
 
-    flow_id, flow_run_id = deploy_training_flow(
+    flow_id, flow_run_id = run_spec2vec_flow(
         image="",
         project_name="default",
         flow_name="Robert DeFlow",

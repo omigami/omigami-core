@@ -8,7 +8,7 @@ from omigami.deployer import FlowDeployer
 from omigami.spec2vec.factory import Spec2VecFlowFactory
 
 
-def deploy_training_flow(
+def run_spec2vec_flow(
     image: str,
     project_name: str,
     flow_name: str,

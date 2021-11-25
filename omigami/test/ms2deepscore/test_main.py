@@ -9,7 +9,7 @@ from omigami.config import (
 )
 from omigami.deployer import FlowDeployer
 from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
-from omigami.ms2deepscore.main import deploy_training_flow
+from omigami.ms2deepscore.main import run_ms2deepscore_flow
 from omigami.test.conftest import monitor_flow_results
 
 
@@ -22,7 +22,7 @@ from omigami.test.conftest import monitor_flow_results
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
 
-    flow_id, flow_run_id = deploy_training_flow(
+    flow_id, flow_run_id = run_ms2deepscore_flow(
         image="",
         project_name="local-integration-test-ms2ds",
         flow_name="MS2DS Flow",
@@ -72,7 +72,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
     deployer_instance.deploy_flow = Mock(return_value=("id", "run_id"))
     monkeypatch.setattr(omigami.ms2deepscore.main, "FlowDeployer", mock_deployer)
 
-    flow_id, flow_run_id = deploy_training_flow(
+    flow_id, flow_run_id = run_ms2deepscore_flow(
         image="",
         project_name="local-integration-test",
         flow_name="Robert DeFlow",

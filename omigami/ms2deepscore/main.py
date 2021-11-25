@@ -14,7 +14,7 @@ from omigami.deployer import FlowDeployer
 from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
 
-def deploy_training_flow(
+def run_ms2deepscore_flow(
     image: str,
     project_name: str,
     flow_name: str,
