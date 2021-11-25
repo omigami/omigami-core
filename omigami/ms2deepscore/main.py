@@ -3,35 +3,45 @@ from typing import Optional, Tuple
 import pandas as pd
 
 from omigami.authentication.prefect_factory import PrefectClientFactory
-from omigami.config import IonModes, API_SERVER_URLS, OMIGAMI_ENV, get_login_config
+from omigami.config import (
+    IonModes,
+    API_SERVER_URLS,
+    OMIGAMI_ENV,
+    get_login_config,
+    CHUNK_SIZE,
+)
 from omigami.deployer import FlowDeployer
-from omigami.spec2vec.factory import Spec2VecFlowFactory
+from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
 
-def run_spec2vec_flow(
+def run_ms2deepscore_flow(
     image: str,
     project_name: str,
     flow_name: str,
     dataset_id: str,
     source_uri: str,
     ion_mode: IonModes,
-    iterations: int,
-    n_decimals: int,
-    window: int,
-    intensity_weighting_power: float,
-    allowed_missing_percentage: float,
+    fingerprint_n_bits: int,
+    scores_decimals: int,
+    spectrum_binner_n_bins: int,
     deploy_model: bool,
     overwrite_model: bool,
     overwrite_all_spectra: bool,
+    spectrum_ids_chunk_size: int,
+    train_ratio: float,
+    validation_ratio: float,
+    test_ratio: float,
+    epochs: int,
+    chunk_size: int = CHUNK_SIZE,
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
 ) -> Tuple[str, str]:
     """
-    Builds, deploys, and runs a Spec2Vec model training flow.
+    Builds, deploys, and runs a MS2DeepScore model training flow.
 
     Parameters
     ----------
-    For information on parameters please check spec2vec/cli.py
+    For information on parameters please check ms2deepscore/cli.py
 
     Returns
     -------
@@ -44,22 +54,26 @@ def run_spec2vec_flow(
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()
 
-    factory = Spec2VecFlowFactory(dataset_directory=dataset_directory)
+    factory = MS2DeepScoreFlowFactory(dataset_directory=dataset_directory)
     flow = factory.build_training_flow(
-        image=image,
-        project_name=project_name,
         flow_name=flow_name,
+        image=image,
         dataset_id=dataset_id,
+        fingerprint_n_bits=fingerprint_n_bits,
+        scores_decimals=scores_decimals,
         source_uri=source_uri,
+        spectrum_binner_n_bins=spectrum_binner_n_bins,
         ion_mode=ion_mode,
-        iterations=iterations,
-        n_decimals=n_decimals,
-        window=window,
-        intensity_weighting_power=intensity_weighting_power,
-        allowed_missing_percentage=allowed_missing_percentage,
         deploy_model=deploy_model,
-        overwrite_model=overwrite_model,
         overwrite_all_spectra=overwrite_all_spectra,
+        overwrite_model=overwrite_model,
+        project_name=project_name,
+        spectrum_ids_chunk_size=spectrum_ids_chunk_size,
+        train_ratio=train_ratio,
+        validation_ratio=validation_ratio,
+        test_ratio=test_ratio,
+        epochs=epochs,
+        chunk_size=chunk_size,
         schedule=schedule,
     )
     deployer = FlowDeployer(prefect_client=prefect_client)

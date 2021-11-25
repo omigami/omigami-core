@@ -4,13 +4,12 @@ from omigami.flow_config import FlowConfig
 from omigami.gateways.data_gateway import DataGateway
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.tasks import (
-    DeployModel,
-    DeployModelParameters,
     RegisterModel,
     ProcessSpectrumParameters,
     ProcessSpectrum,
     RegisterModelParameters,
 )
+from omigami.tasks import DeployModel, DeployModelParameters
 
 
 class PretrainedFlowParameters:
@@ -24,7 +23,6 @@ class PretrainedFlowParameters:
         mlflow_output_dir: str,
         mlflow_server: str,
         overwrite_model: bool = False,
-        environment: str = "dev",
         overwrite_all_spectra: bool = False,
         spectrum_binner_n_bins: int = 10000,
         redis_db: str = "0",
@@ -43,11 +41,7 @@ class PretrainedFlowParameters:
             project_name, mlflow_output_dir, mlflow_server, "positive"
         )
         self.deploying = DeployModelParameters(
-            redis_db,
-            ion_mode="positive",
-            overwrite_model=overwrite_model,
-            environment=environment,
-            pretrained=True,
+            redis_db, overwrite_model, "ms2deep-pretrained"
         )
 
 

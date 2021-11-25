@@ -9,8 +9,6 @@ from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
-    DeployModel,
-    DeployModelParameters,
     ProcessSpectrum,
     TrainModel,
     TrainModelParameters,
@@ -29,6 +27,8 @@ from omigami.tasks import (
     CreateChunks,
     SaveRawSpectra,
     SaveRawSpectraParameters,
+    DeployModelParameters,
+    DeployModel,
 )
 
 
@@ -40,7 +40,7 @@ class TrainingFlowParameters:
         document_dgw: SpectrumDocumentDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
-        output_dir: str,
+        dataset_directory: str,
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
@@ -48,7 +48,7 @@ class TrainingFlowParameters:
         overwrite_all_spectra: bool,
         iterations: int,
         window: int,
-        model_output_dir: str,
+        mlflow_output_directory: str,
         documents_save_directory: str,
         mlflow_server: str,
         intensity_weighting_power: Union[float, int] = 0.5,
@@ -57,7 +57,6 @@ class TrainingFlowParameters:
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
         overwrite_model: bool = False,
-        environment: str = "dev",
         model_name: Optional[str] = "spec2vec-model",
         experiment_name: str = "default",
     ):
@@ -68,7 +67,11 @@ class TrainingFlowParameters:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         self.downloading = DownloadParameters(
-            source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
+            source_uri,
+            dataset_directory,
+            dataset_id,
+            dataset_name,
+            dataset_checkpoint_name,
         )
         self.chunking = ChunkingParameters(
             self.downloading.download_path, chunk_size, ion_mode
@@ -86,7 +89,7 @@ class TrainingFlowParameters:
         self.training = TrainModelParameters(iterations, window)
         self.registering = RegisterModelParameters(
             experiment_name=experiment_name,
-            mlflow_output_path=model_output_dir,
+            mlflow_output_directory=mlflow_output_directory,
             server_uri=mlflow_server,
             n_decimals=n_decimals,
             ion_mode=ion_mode,
@@ -98,7 +101,7 @@ class TrainingFlowParameters:
             ion_mode, n_decimals, intensity_weighting_power, allowed_missing_percentage
         )
         self.deploying = DeployModelParameters(
-            redis_db, ion_mode, overwrite_model, environment
+            redis_db, overwrite_model, model_name=f"spec2vec-{ion_mode}"
         )
 
 

@@ -5,6 +5,7 @@ import pytest
 from ms2deepscore.models import load_model
 from pytest_redis import factories
 
+import omigami.ms2deepscore.helper_classes.siamese_model_trainer
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
     MS2DeepScoreEmbedding,
@@ -129,3 +130,20 @@ def binned_spectra_to_train_stored(redis_db, binned_spectra_to_train):
             pickle.dumps(spectrum),
         )
     pipe.execute()
+
+
+@pytest.fixture()
+def small_model_params(monkeypatch):
+    smaller_params = {
+        "batch_size": 2,
+        "learning_rate": 0.001,
+        "layer_base_dims": (300, 200, 100),
+        "embedding_dim": 100,
+        "dropout_rate": 0.2,
+    }
+
+    monkeypatch.setattr(
+        omigami.ms2deepscore.helper_classes.siamese_model_trainer,
+        "SIAMESE_MODEL_PARAMS",
+        smaller_params,
+    )

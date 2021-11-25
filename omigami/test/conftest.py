@@ -2,19 +2,29 @@ import itertools
 import os
 import pickle
 from pathlib import Path
+from time import sleep
 
 import boto3
 import ijson
+import mlflow
 import pandas as pd
 import pytest
 import s3fs
 from drfs.filesystems import get_fs
 from moto import mock_s3
+from prefect import Client
 from pytest_redis import factories
 from spec2vec.model_building import train_new_word2vec_model
 
 import omigami
 import omigami.utils
+from omigami.authentication.prefect_factory import PrefectClientFactory
+from omigami.config import API_SERVER_URLS, get_login_config, MLFLOW_SERVER
+from omigami.flow_config import (
+    make_flow_config,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
 from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -291,3 +301,44 @@ def fitted_spectrum_binner(fitted_spectrum_binner_path):
     with open(fitted_spectrum_binner_path, "rb") as f:
         spectrum_binner = pickle.load(f)
     return spectrum_binner
+
+
+@pytest.fixture()
+def backend_services():
+    """Connects to mlflow and prefect and return client objects to communica with them"""
+    mlflow.set_tracking_uri(MLFLOW_SERVER)
+    mlflow_client = mlflow.tracking.MlflowClient()
+
+    login_config = get_login_config()
+    api_server = API_SERVER_URLS["local"]
+    prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
+    prefect_client = prefect_factory.get_client()
+
+    if not prefect_client.active_tenant_id:
+        prefect_client.create_tenant("default")
+
+    return {"prefect": prefect_client, "mlflow": mlflow_client}
+
+
+@pytest.fixture
+def flow_config():
+    flow_config = make_flow_config(
+        image="image-ref-name-test-hermione-XXII",
+        storage_type=PrefectStorageMethods.Local,
+        executor_type=PrefectExecutorMethods.LOCAL_DASK,
+        redis_db="0",
+    )
+    return flow_config
+
+
+def monitor_flow_results(client: Client, flow_run_id: str):
+    flow_duration = 0
+    while not (
+        client.get_flow_run_state(flow_run_id).is_successful()
+        or client.get_flow_run_state(flow_run_id).is_failed()
+    ):
+        flow_duration += 0.5
+        sleep(0.5)
+
+        if flow_duration > 60:
+            raise TimeoutError("Flow timeout. Check flow logs.")

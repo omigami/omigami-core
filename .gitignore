@@ -146,5 +146,5 @@ dmypy.json
 **/assets/*model.pkl
 
 .DS_Store
-/local-deployment/spec2vec
+/local-deployment/results
 mlflow.sqlite

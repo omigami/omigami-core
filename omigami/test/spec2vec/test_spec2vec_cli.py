@@ -8,7 +8,7 @@ def mock_cli(
     image: str,
     project_name: str,
     flow_name: str,
-    dataset_name: str,
+    dataset_id: str,
     source_uri: str,
     ion_mode: str,
     iterations: int,
@@ -16,16 +16,16 @@ def mock_cli(
     window: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    environment: str,
     deploy_model: bool,
     overwrite_model: bool,
     overwrite_all_spectra: bool,
+    dataset_directory: str,
     schedule=None,
 ):
     assert image == "image"
     assert project_name == "project name"
     assert flow_name == "flow name"
-    assert dataset_name == "10k"
+    assert dataset_id == "10k"
     assert source_uri == "uri"
     assert ion_mode == "positive"
     assert iterations == 25
@@ -33,15 +33,15 @@ def mock_cli(
     assert window == 500
     assert intensity_weighting_power == 0.5
     assert allowed_missing_percentage == 5.0
-    assert environment == "dev"
     assert deploy_model is True
     assert overwrite_model is False
     assert overwrite_all_spectra is False
     assert schedule is None
+    assert dataset_directory == "dir"
 
 
 def test_spec2vec_cli(monkeypatch):
-    monkeypatch.setattr(omigami.spec2vec.cli, "run_training_flow", mock_cli)
+    monkeypatch.setattr(omigami.spec2vec.cli, "run_spec2vec_flow", mock_cli)
     cli_command = [
         "train",
         "--image",
@@ -50,7 +50,7 @@ def test_spec2vec_cli(monkeypatch):
         "project name",
         "--flow-name",
         "flow name",
-        "--dataset-name",
+        "--dataset-id",
         "10k",
         "--source-uri",
         "uri",
@@ -62,9 +62,9 @@ def test_spec2vec_cli(monkeypatch):
         "5",
         "--window",
         "500",
-        "-e",
-        "dev",
         "--deploy-model",
+        "--dataset-directory",
+        "dir",
     ]
     runner = CliRunner()
 

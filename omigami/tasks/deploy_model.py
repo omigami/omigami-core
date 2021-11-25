@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from prefect import Task
 
-from omigami.config import SELDON_PARAMS, CLUSTERS
+from omigami.config import CLUSTER, SELDON_PARAMS
 from omigami.seldon.seldon_deployment import SeldonDeployment
 from omigami.utils import merge_prefect_task_configs
 
@@ -10,9 +10,8 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class DeployModelParameters:
     redis_db: str
-    ion_mode: str
     overwrite_model: bool
-    environment: str = "dev"
+    model_name: str
 
 
 class DeployModel(Task):
@@ -22,10 +21,8 @@ class DeployModel(Task):
         **kwargs,
     ):
         self._redis_db = deploy_parameters.redis_db
-        self._environment = deploy_parameters.environment
         self._overwrite_model = deploy_parameters.overwrite_model
-        self._ion_mode = deploy_parameters.ion_mode
-        self._model_name = f"spec2vec-{self._ion_mode}"
+        self._model_name = deploy_parameters.model_name
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
@@ -37,17 +34,15 @@ class DeployModel(Task):
         Parameters
         ----------
         registered_model: Dict[str, str]
-            Dictionary containing registered model's `model_uri` and `run_id`
+            Dictionary containing registered `model_uri` and `run_id`
 
         """
-        sd = SeldonDeployment(
-            context=CLUSTERS[self._environment],
-        )
+        sd = SeldonDeployment(context=CLUSTER)
 
         model_uri = registered_model["model_uri"]
         self.logger.info(
-            f"Deploying model '{self._model_name}' from uri {model_uri}. \nUsing environment"
-            f" '{self._environment}' and namespace '{SELDON_PARAMS['namespace']}'."
+            f"Deploying model '{self._model_name}' from uri {model_uri}. \nUsing cluster"
+            f" '{CLUSTER}' and namespace '{SELDON_PARAMS['namespace']}'."
         )
 
         res, status = sd.deploy_model(

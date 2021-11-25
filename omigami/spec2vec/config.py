@@ -12,7 +12,6 @@ config = Configuration("omigami/spec2vec", __name__)
 PROJECT_NAME = config["prefect"]["project"].get(str)
 SPEC2VEC_ROOT = STORAGE_ROOT / PROJECT_NAME
 
-MODEL_FOLDER = STORAGE_ROOT / config["storage"]["model_folder"].get(str)
 DOCUMENT_DIRECTORIES = config["storage"]["documents"].get(dict)
 
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
@@ -24,5 +23,3 @@ EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
 
 REDIS_HOST = config["storage"]["redis"]["env_vars"]["redis_host"].get(str)
 REDIS_DB = config["storage"]["redis"]["env_vars"]["redis_db"].get(str)
-
-CHUNK_SIZE = int(1e8)  # maybe move this to config but looks like we rarely change it

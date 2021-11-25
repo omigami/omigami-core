@@ -7,11 +7,6 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.config import PROJECT_NAME, SPEC2VEC_ROOT
@@ -27,17 +22,6 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
-
-
-@pytest.fixture
-def flow_config():
-    flow_config = make_flow_config(
-        image="image-ref-name-test-harry-potter-XXII",
-        storage_type=PrefectStorageMethods.Local,
-        executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db="0",
-    )
-    return flow_config
 
 
 def test_training_flow(flow_config):
@@ -60,7 +44,7 @@ def test_training_flow(flow_config):
         document_dgw=mock_document_dgw,
         spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
-        output_dir="datasets",
+        dataset_directory="datasets",
         dataset_id="dataset-id",
         chunk_size=150000,
         ion_mode="positive",
@@ -69,8 +53,8 @@ def test_training_flow(flow_config):
         overwrite_all_spectra=False,
         iterations=25,
         window=500,
-        project_name="test",
-        model_output_dir="model-output",
+        experiment_name="test",
+        mlflow_output_directory="model-output",
         documents_save_directory="documents",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
@@ -120,18 +104,18 @@ def test_run_training_flow(
         document_dgw=document_dgw,
         spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
-        output_dir=ASSETS_DIR.parent,
+        dataset_directory=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
-        ion_mode=ion_mode,
+        ion_mode="positive",
         n_decimals=1,
         overwrite_model=True,
         overwrite_all_spectra=True,
         iterations=3,
         window=200,
-        project_name="test",
-        model_output_dir=str(mlflow_root),
+        experiment_name="test",
+        mlflow_output_directory=str(mlflow_root),
         documents_save_directory=tmpdir / f"documents/{ion_mode}",
         mlflow_server=str(mlflow_root),
         intensity_weighting_power=0.5,
@@ -146,13 +130,13 @@ def test_run_training_flow(
         deploy_model=False,
     )
 
-    results = flow.run()
-    d = flow.get_tasks("DownloadData")[0]
-    r = flow.get_tasks("RegisterModel")[0]
+    flow_run = flow.run()
+    download_task = flow.get_tasks("DownloadData")[0]
+    register_task = flow.get_tasks("RegisterModel")[0]
 
-    assert results.is_successful()
-    results.result[d].is_cached()
-    model_uri = results.result[r].result["model_uri"]
+    assert flow_run.is_successful()
+    flow_run.result[download_task].is_cached()
+    model_uri = flow_run.result[register_task].result["model_uri"]
     assert Path(model_uri).exists()
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")

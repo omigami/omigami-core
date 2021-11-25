@@ -1,10 +1,9 @@
 import click
 
-from omigami.config import (
-    SOURCE_URI_PARTIAL_GNPS,
-)
+from omigami.cli_options import common_training_options
 from omigami.spec2vec.config import PROJECT_NAME
-from omigami.spec2vec.main import deploy_training_flow
+from omigami.spec2vec.main import run_spec2vec_flow
+from omigami.utils import add_click_options
 
 
 @click.group(name="spec2vec")
@@ -13,9 +12,6 @@ def spec2vec_cli():
 
 
 @spec2vec_cli.command(name="train")
-@click.option(
-    "--image", "-i", type=str, required=True, help="Image used to build the flow"
-)
 @click.option(
     "--project-name",
     "-p",
@@ -28,24 +24,6 @@ def spec2vec_cli():
     default="spec2vec-training-flow",
     show_default=True,
     help="Name of the flow. This is used as identification by Prefect",
-)
-@click.option(
-    "--dataset-name",
-    type=click.Choice(["small", "10k", "complete"]),
-    required=True,
-    help="Name of the dataset of choice.",
-)
-@click.option(
-    "--source-uri",
-    default=SOURCE_URI_PARTIAL_GNPS,
-    help="URI to download training data from. Only downloads if it is not already downloaded",
-)
-@click.option(
-    "--ion-mode",
-    type=click.Choice(["positive", "negative"]),
-    default="positive",
-    help="Which ion mode to use.",
-    show_default=True,
 )
 @click.option(
     "--iterations",
@@ -65,7 +43,7 @@ def spec2vec_cli():
     "--window",
     type=int,
     default=500,
-    help="Window to the soul of the compound",
+    help="Size of window of words context for Word2Vec model",
     show_default=True,
 )
 @click.option(
@@ -82,38 +60,9 @@ def spec2vec_cli():
     show_default=True,
     help="Missing percentage of ions allowed",
 )
-@click.option(
-    "--environment",
-    "-e",
-    type=click.Choice(["dev", "prod"]),
-    default="dev",
-    help="Which environment to run the flow on.",
-    show_default=True,
-)
-@click.option(
-    "--deploy-model",
-    is_flag=True,
-    type=bool,
-    default=False,
-    help="Flag to whether deploy the model as a seldon deployment or not",
-    show_default=True,
-)
-@click.option(
-    "--overwrite-model",
-    is_flag=True,
-    help="Flag to overwrite existing deployed model. Only works with --deploy-model flag",
-    show_default=True,
-    default=False,
-)
-@click.option(
-    "--overwrite-all-spectra",
-    is_flag=True,
-    help="Flag to overwrite all processed spectra and create them again.",
-    show_default=True,
-    default=False,
-)
+@add_click_options(common_training_options)
 def training_flow_cli(*args, **kwargs):
-    deploy_training_flow(*args, **kwargs)
+    run_spec2vec_flow(*args, **kwargs)
 
 
 @spec2vec_cli.command(name="deploy-model")

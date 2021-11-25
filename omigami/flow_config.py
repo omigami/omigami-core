@@ -7,7 +7,13 @@ from prefect.run_configs import RunConfig, KubernetesRun, LocalRun
 from prefect.schedules import IntervalSchedule
 from prefect.storage import Storage, S3, Local
 
-from omigami.config import ROOT_DIR, STORAGE_ROOT, ENV, MLFLOW_SERVER, REDIS_HOST
+from omigami.config import (
+    ROOT_DIR,
+    STORAGE_ROOT,
+    OMIGAMI_ENV,
+    MLFLOW_SERVER,
+    REDIS_HOST,
+)
 
 """
     Implemented Prefect flow configurations:
@@ -46,7 +52,6 @@ def make_flow_config(
     executor_type: PrefectExecutorMethods,
     image: str = None,
     redis_db: str = "",
-    environment: str = "local",
     storage_root: str = None,
     schedule: timedelta = None,
 ) -> FlowConfig:
@@ -63,8 +68,6 @@ def make_flow_config(
         Image to run the flow on. Used by k8s flows. Unused by local flows
     redis_db:
         Redis database where the data is
-    environment:
-        Environment to run the flow on ["local", "dev", "prod"]
     storage_root:
         Root directory of flow persistence
     schedule:
@@ -80,11 +83,11 @@ def make_flow_config(
     env_variables = {
         "REDIS_DB": redis_db,
         "REDIS_HOST": REDIS_HOST,
-        "OMIGAMI_ENV": ENV,
+        "OMIGAMI_ENV": OMIGAMI_ENV,
         "MLFLOW_SERVER": MLFLOW_SERVER,
     }
 
-    if environment in ("dev", "prod"):
+    if OMIGAMI_ENV in ("dev", "prod"):
         run_config = KubernetesRun(
             image=image,
             job_template_path=str(ROOT_DIR / "job_spec.yaml"),

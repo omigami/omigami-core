@@ -13,15 +13,16 @@ seldon:
   namespace: "seldon"
 
 storage:
-  dataset_dir:
-    small: "datasets/small"
-    10k: "datasets/10k"
-    complete: "datasets/complete/{date:%Y-%m}"
+  dataset_id:
+    small: "small"
+    10k: "10k"
+    complete: "complete/{date:%Y-%m}"
   root:
     dev: "s3://omigami-dev"
     prod: "s3://omigami"
 
 clusters:
+  local: ""
   dev: "dev"
   prod: "prod"
 
