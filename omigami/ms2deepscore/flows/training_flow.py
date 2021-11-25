@@ -1,4 +1,5 @@
 from datetime import timedelta, date, datetime
+from typing import Optional
 
 from prefect import Flow, unmapped
 from prefect.schedules import Schedule
@@ -64,7 +65,7 @@ class TrainingFlowParameters:
         validation_ratio: float = 0.05,
         test_ratio: float = 0.05,
         spectrum_ids_chunk_size: int = 10000,
-        schedule_task_days: int = 30,
+        schedule_task_days: Optional[int] = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
