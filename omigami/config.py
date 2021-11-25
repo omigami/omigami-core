@@ -20,7 +20,7 @@ SELDON_PARAMS = config["seldon"].get(dict)
 
 # Storage
 if OMIGAMI_ENV == "local":
-    STORAGE_ROOT = Path(__file__).parent.parent / "local-deployment"
+    STORAGE_ROOT = Path(__file__).parent.parent / "local-deployment" / "results"
 else:
     STORAGE_ROOT = DRPath(config["storage"]["root"][OMIGAMI_ENV])
 

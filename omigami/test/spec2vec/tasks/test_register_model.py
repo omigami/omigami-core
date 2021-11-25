@@ -23,5 +23,5 @@ def test_register_model(word2vec_model, tmpdir):
     )
     assert run_id
     model_files = os.listdir(f"{path}/{run_id}/artifacts/model")
-    assert model_files == ["MLmodel", "code", "python_model.pkl", "conda.yaml"]
+    assert set(model_files) == {"MLmodel", "code", "python_model.pkl", "conda.yaml"}
     assert "spec2vec" in os.listdir(f"{path}/{run_id}/artifacts/model/code/omigami")

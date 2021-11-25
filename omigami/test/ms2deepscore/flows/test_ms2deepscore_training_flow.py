@@ -5,12 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
+from omigami.config import SOURCE_URI_PARTIAL_GNPS, MLFLOW_SERVER
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.flows.training_flow import (
     build_training_flow,
@@ -24,17 +19,6 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
-
-
-@pytest.fixture
-def flow_config():
-    flow_config = make_flow_config(
-        image="image-ref-name-test-harry-potter-XXII",
-        storage_type=PrefectStorageMethods.Local,
-        executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db="0",
-    )
-    return flow_config
 
 
 def test_training_flow(flow_config):
@@ -136,7 +120,7 @@ def test_run_training_flow(
         epochs=1,
         project_name="test",
         mlflow_output_directory=f"{tmpdir}/model-output",
-        mlflow_server="mlflow-server",
+        mlflow_server=MLFLOW_SERVER,
         train_ratio=0.8,
         validation_ratio=0.2,
         test_ratio=0.2,
@@ -149,13 +133,15 @@ def test_run_training_flow(
         flow_parameters=flow_params,
     )
 
-    results = flow.run()
-    (d,) = flow.get_tasks("DownloadData")
+    flow_run = flow.run()
+    download_task = flow.get_tasks("DownloadData")[0]
+    register_task = flow.get_tasks("RegisterModel")[0]
 
-    assert results.is_successful()
-    results.result[d].is_cached()
+    assert flow_run.is_successful()
+    flow_run.result[download_task].is_cached()
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")
-    assert "model" in os.listdir(tmpdir / "model-output")
+    model_uri = flow_run.result[register_task].result["model_uri"]
+    assert Path(model_uri).exists()

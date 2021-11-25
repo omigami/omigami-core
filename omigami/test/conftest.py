@@ -20,6 +20,11 @@ import omigami
 import omigami.utils
 from omigami.authentication.prefect_factory import PrefectClientFactory
 from omigami.config import API_SERVER_URLS, get_login_config, MLFLOW_SERVER
+from omigami.flow_config import (
+    make_flow_config,
+    PrefectStorageMethods,
+    PrefectExecutorMethods,
+)
 from omigami.gateways.fs_data_gateway import FSDataGateway, KEYS
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spec2vec.config import (
@@ -313,6 +318,17 @@ def backend_services():
         prefect_client.create_tenant("default")
 
     return {"prefect": prefect_client, "mlflow": mlflow_client}
+
+
+@pytest.fixture
+def flow_config():
+    flow_config = make_flow_config(
+        image="image-ref-name-test-hermione-XXII",
+        storage_type=PrefectStorageMethods.Local,
+        executor_type=PrefectExecutorMethods.LOCAL_DASK,
+        redis_db="0",
+    )
+    return flow_config
 
 
 def monitor_flow_results(client: Client, flow_run_id: str):

@@ -41,7 +41,7 @@ def mock_cli(
 
 
 def test_spec2vec_cli(monkeypatch):
-    monkeypatch.setattr(omigami.spec2vec.cli, "deploy_training_flow", mock_cli)
+    monkeypatch.setattr(omigami.spec2vec.cli, "run_spec2vec_flow", mock_cli)
     cli_command = [
         "train",
         "--image",
