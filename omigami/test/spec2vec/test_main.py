@@ -1,4 +1,3 @@
-from time import sleep
 from unittest.mock import Mock
 
 import pytest
@@ -17,6 +16,7 @@ from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spec2vec.main import deploy_training_flow
 from omigami.tasks import DownloadData, DownloadParameters
+from omigami.test.conftest import monitor_flow_results
 
 
 @pytest.mark.skip(
@@ -45,12 +45,7 @@ def test_deploy_training_flow(backend_services):
         auth=False,
     )
 
-    while not (
-        client.get_flow_run_state(flow_run_id).is_successful()
-        or client.get_flow_run_state(flow_run_id).is_failed()
-    ):
-        sleep(0.5)
-
+    monitor_flow_results(client, flow_run_id)
     assert client.get_flow_run_state(flow_run_id).is_successful()
 
 
@@ -69,21 +64,16 @@ def test_single_task_local_integration(backend_services):
         storage=Local(str(STORAGE_ROOT)),
         run_config=LocalRun(working_dir=STORAGE_ROOT, labels=["dev"]),
     ) as flow:
-        res = DownloadData(
+        _ = DownloadData(
             FSDataGateway(),
             params,
         )()
 
     client.create_project("default")
     flow_id = client.register(flow, project_name="default")
-
     flow_run_id = client.create_flow_run(flow_id=flow_id, run_name=f"test run")
-    while (
-        not client.get_flow_run_state(flow_run_id).is_successful()
-        or client.get_flow_run_state(flow_run_id).is_failed()
-    ):
-        sleep(0.5)
 
+    monitor_flow_results(client, flow_run_id)
     assert client.get_flow_run_state(flow_run_id).is_successful()
 
 
