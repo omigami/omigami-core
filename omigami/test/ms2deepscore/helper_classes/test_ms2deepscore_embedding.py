@@ -5,7 +5,7 @@ import pytest
 from matchms import calculate_scores
 from ms2deepscore import MS2DeepScore
 
-from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
+from omigami.ms2deepscore.helper_classes.similarity_score_calculator import (
     MS2DeepScoreSimilarityScoreCalculator,
 )
 from omigami.test.conftest import ASSETS_DIR

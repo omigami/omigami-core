@@ -3,7 +3,7 @@ import pytest
 from matchms import calculate_scores
 from spec2vec import Spec2Vec
 
-from omigami.spec2vec.helper_classes.spec2vec_embeddings import (
+from omigami.spec2vec.helper_classes.similarity_score_calculator import (
     Spec2VecSimilarityScoreCalculator,
 )
 

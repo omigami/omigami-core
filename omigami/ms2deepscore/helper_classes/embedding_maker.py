@@ -1,7 +1,7 @@
 import numpy as np
 from ms2deepscore import BinnedSpectrum
 
-from omigami.ms2deepscore.helper_classes.ms2deepscore_embedding import (
+from omigami.ms2deepscore.helper_classes.similarity_score_calculator import (
     MS2DeepScoreSimilarityScoreCalculator,
 )
 from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
@@ -10,11 +10,13 @@ from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
 class EmbeddingMaker:
     def make_embedding(
         self,
-        model: MS2DeepScoreSimilarityScoreCalculator,
+        similarity_score_calculator: MS2DeepScoreSimilarityScoreCalculator,
         binned_spectrum: BinnedSpectrum,
     ) -> MS2DeepScoreEmbedding:
-        vector = model.model.base.predict(
-            self._create_input_vector(binned_spectrum, model.input_vector_dim)
+        vector = similarity_score_calculator.model.base.predict(
+            self._create_input_vector(
+                binned_spectrum, similarity_score_calculator.input_vector_dim
+            )
         )
 
         return MS2DeepScoreEmbedding(
