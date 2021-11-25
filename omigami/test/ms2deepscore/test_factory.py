@@ -6,7 +6,7 @@ from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
 
 def test_build_ms2deep_training_flow():
-    factory = MS2DeepScoreFlowFactory("dev")
+    factory = MS2DeepScoreFlowFactory()
     ms2deep_training_flow = factory.build_training_flow(
         flow_name="MS2DeepScore Training Flow",
         image="image",
