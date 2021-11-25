@@ -24,6 +24,8 @@ if OMIGAMI_ENV == "local":
 else:
     STORAGE_ROOT = DRPath(config["storage"]["root"][OMIGAMI_ENV])
 
+MLFLOW_DIRECTORY = STORAGE_ROOT / "mlflow"
+
 REDIS_DATABASES = {
     "local": {"small": "0"},
     "dev": {"small": "2", "10k": "1", "complete": "0"},
@@ -44,11 +46,11 @@ DEFAULT_PREFECT_TASK_CONFIG = dict(
     max_retries=3, retry_delay=datetime.timedelta(seconds=10)
 )
 
-DATASET_IDS = config["storage"]["dataset_dir"].get(dict)
+DATASET_IDS = config["storage"]["dataset_id"].get(dict)
 
 
-def get_login_config(auth: bool) -> Dict[str, str]:
-    if auth:
+def get_login_config() -> Dict[str, str]:
+    if OMIGAMI_ENV in ("dev", "prod"):
         login_config = config["login"][OMIGAMI_ENV].get(dict)
         login_config.pop("token")
     else:

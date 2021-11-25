@@ -147,4 +147,8 @@ dmypy.json
 
 .DS_Store
 /local-deployment/spec2vec
+/local-deployment/ms2ds-flow
+/local-deployment/robert-deflow
+/local-deployment/mlflow
+/local-deployment/ms2deepscore
 mlflow.sqlite

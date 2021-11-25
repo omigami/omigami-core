@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-import omigami.ms2deepscore.helper_classes.siamese_model_trainer
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.flow_config import (
     make_flow_config,
@@ -36,23 +35,6 @@ def flow_config():
         redis_db="0",
     )
     return flow_config
-
-
-@pytest.fixture()
-def small_model_params(monkeypatch):
-    smaller_params = {
-        "batch_size": 2,
-        "learning_rate": 0.001,
-        "layer_base_dims": (300, 200, 100),
-        "embedding_dim": 100,
-        "dropout_rate": 0.2,
-    }
-
-    monkeypatch.setattr(
-        omigami.ms2deepscore.helper_classes.siamese_model_trainer,
-        "SIAMESE_MODEL_PARAMS",
-        smaller_params,
-    )
 
 
 def test_training_flow(flow_config):
@@ -90,7 +72,7 @@ def test_training_flow(flow_config):
         model_output_path="some-path",
         spectrum_binner_output_path="some-path",
         project_name="test",
-        mlflow_output_dir="model-output",
+        mlflow_output_directory="model-output",
         mlflow_server="mlflow-server",
         train_ratio=0.6,
         validation_ratio=0.3,
@@ -153,7 +135,7 @@ def test_run_training_flow(
         dataset_checkpoint_name="spectrum_ids_500.pkl",
         epochs=1,
         project_name="test",
-        mlflow_output_dir=f"{tmpdir}/model-output",
+        mlflow_output_directory=f"{tmpdir}/model-output",
         mlflow_server="mlflow-server",
         train_ratio=0.8,
         validation_ratio=0.2,

@@ -17,7 +17,7 @@ CONDA_ENV_PATH = "./requirements/environment.frozen.yaml"
 @dataclass
 class RegisterModelParameters:
     experiment_name: str
-    mlflow_output_path: str
+    mlflow_output_directory: str
     server_uri: str
     n_decimals: int
     ion_mode: IonModes
@@ -33,7 +33,7 @@ class RegisterModel(Task):
         **kwargs,
     ):
         self._experiment_name = parameters.experiment_name
-        self._path = parameters.mlflow_output_path
+        self._path = parameters.mlflow_output_directory
         self._n_decimals = parameters.n_decimals
         self._ion_mode = parameters.ion_mode
         self._intensity_weighting_power = parameters.intensity_weighting_power

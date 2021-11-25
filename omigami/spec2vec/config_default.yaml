@@ -4,7 +4,6 @@ storage:
   documents:
     positive: "documents/positive"
     negative: "documents/negative"
-  model_folder: "mlflow"
   redis:
     spectrum_id_sorted_set: "spectrum_id_precursor_mz_sorted"
     spectrum_hashes: "spectrum_data"

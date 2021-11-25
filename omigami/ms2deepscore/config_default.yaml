@@ -3,8 +3,7 @@ prefect:
 storage:
   directory:
     pre-trained-model: "model/pre-trained/ms2deep_score.hdf5"
-    mlflow: "mlflow"
-    scores: "tanimoto-scores/tanimoto_scores.pkl"
+    scores: "tanimoto_scores.pkl"
     model: "model/trained/ms2deep_score.hdf5"
     spectrum_binner: "model/trained/spectrum_binner.pkl"
   redis:
