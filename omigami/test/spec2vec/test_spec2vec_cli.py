@@ -4,7 +4,7 @@ import omigami.spec2vec.cli
 from omigami.spec2vec.cli import spec2vec_cli
 
 
-def mock_cli(
+def spec2vec_cli_assertions(
     image: str,
     project_name: str,
     flow_name: str,
@@ -14,13 +14,9 @@ def mock_cli(
     iterations: int,
     n_decimals: int,
     window: int,
-    intensity_weighting_power: float,
-    allowed_missing_percentage: float,
     deploy_model: bool,
-    overwrite_model: bool,
-    overwrite_all_spectra: bool,
     dataset_directory: str,
-    schedule=None,
+    **kwargs,
 ):
     assert image == "image"
     assert project_name == "project name"
@@ -31,17 +27,20 @@ def mock_cli(
     assert iterations == 25
     assert n_decimals == 5
     assert window == 500
-    assert intensity_weighting_power == 0.5
-    assert allowed_missing_percentage == 5.0
     assert deploy_model is True
-    assert overwrite_model is False
-    assert overwrite_all_spectra is False
-    assert schedule is None
     assert dataset_directory == "dir"
+    assert set(kwargs.keys()) == {
+        "intensity_weighting_power",
+        "allowed_missing_percentage",
+        "overwrite_model",
+        "overwrite_all_spectra",
+    }
 
 
 def test_spec2vec_cli(monkeypatch):
-    monkeypatch.setattr(omigami.spec2vec.cli, "run_spec2vec_flow", mock_cli)
+    monkeypatch.setattr(
+        omigami.spec2vec.cli, "run_spec2vec_flow", spec2vec_cli_assertions
+    )
     cli_command = [
         "train",
         "--image",
