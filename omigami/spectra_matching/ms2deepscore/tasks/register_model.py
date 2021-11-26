@@ -7,11 +7,11 @@ from prefect import Task
 
 from omigami.config import IonModes, CONDA_ENV_PATH, CODE_PATH
 from omigami.model_register import MLFlowModelRegister
-from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
+from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SIAMESE_MODEL_PARAMS,
 )
-from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
-from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
+from omigami.spectra_matching.ms2deepscore.predictor import MS2DeepScorePredictor
+from omigami.spectra_matching.ms2deepscore.tasks.train_model import TrainModelParameters
 from omigami.utils import merge_prefect_task_configs
 
 

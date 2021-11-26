@@ -1,6 +1,9 @@
 from prefect import Flow
 
-from omigami.ms2deepscore.tasks import ChunkingIDsParameters, CreateSpectrumIDsChunks
+from omigami.spectra_matching.ms2deepscore.tasks import (
+    ChunkingIDsParameters,
+    CreateSpectrumIDsChunks,
+)
 from omigami.test.conftest import TEST_TASK_CONFIG
 
 

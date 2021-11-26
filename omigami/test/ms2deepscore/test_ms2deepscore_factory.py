@@ -2,7 +2,7 @@ import pytest
 from prefect import Flow
 
 from omigami.config import STORAGE_ROOT, MLFLOW_SERVER
-from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
+from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
 
 def test_build_ms2deep_training_flow():

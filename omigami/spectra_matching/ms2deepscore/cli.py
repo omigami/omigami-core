@@ -1,8 +1,8 @@
 import click
 
 from omigami.cli_options import common_training_options
-from omigami.ms2deepscore.config import PROJECT_NAME
-from omigami.ms2deepscore.main import run_ms2deepscore_flow
+from omigami.spectra_matching.ms2deepscore.config import PROJECT_NAME
+from omigami.spectra_matching.ms2deepscore.main import run_ms2deepscore_flow
 from omigami.utils import add_click_options
 
 

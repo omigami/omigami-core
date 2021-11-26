@@ -29,7 +29,7 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
+from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"

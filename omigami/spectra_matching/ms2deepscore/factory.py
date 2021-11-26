@@ -17,18 +17,22 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.ms2deepscore.config import (
+from omigami.spectra_matching.ms2deepscore.config import (
     DIRECTORIES,
     PROJECT_NAME,
     SPECTRUM_IDS_CHUNK_SIZE,
     MS2DEEPSCORE_ROOT,
 )
-from omigami.ms2deepscore.flows.training_flow import (
+from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     TrainingFlowParameters,
     build_training_flow,
 )
-from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
-from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
+from omigami.spectra_matching.ms2deepscore.gateways.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
+from omigami.spectra_matching.ms2deepscore.gateways.redis_spectrum_gateway import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
 from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 
 

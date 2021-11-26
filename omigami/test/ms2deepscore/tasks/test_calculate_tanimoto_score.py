@@ -2,9 +2,11 @@ import os
 
 from prefect import Flow
 
-from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
-from omigami.ms2deepscore.tasks import CalculateTanimotoScore
-from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
+from omigami.spectra_matching.ms2deepscore.gateways.redis_spectrum_gateway import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
+from omigami.spectra_matching.ms2deepscore.tasks import (
+    CalculateTanimotoScore,
     CalculateTanimotoScoreParameters,
 )
 

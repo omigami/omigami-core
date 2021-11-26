@@ -5,19 +5,19 @@ import prefect
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.spectra_matching.storage import DataGateway
-from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
+from omigami.spectra_matching.ms2deepscore.gateways import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.ms2deepscore.helper_classes.spectrum_binner import (
+from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_binner import (
     MS2DeepScoreSpectrumBinner,
 )
-from omigami.ms2deepscore.helper_classes.spectrum_processor import (
+from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
 from omigami.spectra_matching.spec2vec.helper_classes.progress_logger import (
     TaskProgressLogger,
 )
+from omigami.spectra_matching.storage import DataGateway
 from omigami.utils import merge_prefect_task_configs
 
 

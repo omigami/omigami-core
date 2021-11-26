@@ -3,8 +3,12 @@ import os
 import numpy as np
 import pytest
 
-from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
-from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
+from omigami.spectra_matching.ms2deepscore.embedding import (
+    MS2DeepScoreEmbedding,
+)
+from omigami.spectra_matching.ms2deepscore.similarity_score_calculator import (
+    EmbeddingMaker,
+)
 from omigami.test.conftest import ASSETS_DIR
 
 

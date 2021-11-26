@@ -10,7 +10,9 @@ from ms2deepscore.models import SiameseModel
 from tensorflow import keras
 
 from omigami.config import IonModes
-from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
+from omigami.spectra_matching.ms2deepscore.gateways import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
 
 # NN Architecture parameters originated from MS2DS paper
 SIAMESE_MODEL_PARAMS = {

@@ -1,6 +1,6 @@
 from ms2deepscore import BinnedSpectrum
 
-from omigami.ms2deepscore.helper_classes.spectrum_binner import (
+from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_binner import (
     MS2DeepScoreSpectrumBinner,
 )
 
