@@ -6,14 +6,14 @@ import pytest
 from drfs.filesystems import get_fs
 from pytest_redis import factories
 
-from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
-from omigami.spectra_matching.spec2vec.gateways.fs_document_iterator import (
-    FileSystemDocumentIterator,
-)
 from omigami.spectra_matching.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
+from omigami.spectra_matching.spec2vec.storage.fs_document_iterator import (
+    FileSystemDocumentIterator,
+)
 from omigami.spectra_matching.spec2vec.tasks import TrainModel, TrainModelParameters
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 
 redis_db = factories.redisdb("redis_nooproc")
 

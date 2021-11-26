@@ -5,15 +5,14 @@ import pytest
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.spectrum_document import (
     SpectrumDocumentData,
 )
-from omigami.spectra_matching.spec2vec.gateways.redis_spectrum_document import (
+from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
-from omigami.spectra_matching.spec2vec.gateways.spectrum_document import (
+from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
     SpectrumDocumentDataGateway,
 )
 from omigami.spectra_matching.spec2vec.tasks import ProcessSpectrum
@@ -21,6 +20,7 @@ from omigami.spectra_matching.spec2vec.tasks import ProcessSpectrumParameters
 from omigami.spectra_matching.spec2vec.tasks import (
     SpectrumProcessor,
 )
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 
 
 def test_process_spectrum_calls(

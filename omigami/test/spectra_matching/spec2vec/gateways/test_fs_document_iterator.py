@@ -2,10 +2,10 @@ import os
 
 import pytest
 
-from omigami.spectra_matching.storage import FSDataGateway
-from omigami.spectra_matching.spec2vec.gateways.fs_document_iterator import (
+from omigami.spectra_matching.spec2vec.storage.fs_document_iterator import (
     FileSystemDocumentIterator,
 )
+from omigami.spectra_matching.storage import FSDataGateway
 
 
 @pytest.mark.skipif(

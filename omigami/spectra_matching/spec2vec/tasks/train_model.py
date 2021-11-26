@@ -10,13 +10,13 @@ from spec2vec.model_building import (
     learning_rates_to_gensim_style,
 )
 
-from omigami.spectra_matching.storage import FSDataGateway
-from omigami.spectra_matching.spec2vec.gateways.fs_document_iterator import (
-    FileSystemDocumentIterator,
-)
 from omigami.spectra_matching.spec2vec.helper_classes.train_logger import (
     CustomTrainingProgressLogger,
 )
+from omigami.spectra_matching.spec2vec.storage.fs_document_iterator import (
+    FileSystemDocumentIterator,
+)
+from omigami.spectra_matching.storage import FSDataGateway
 from omigami.utils import merge_prefect_task_configs
 
 

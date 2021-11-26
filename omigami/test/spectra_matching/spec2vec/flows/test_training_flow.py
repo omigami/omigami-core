@@ -7,19 +7,19 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
 from omigami.spectra_matching.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.spectra_matching.spec2vec.gateways.redis_spectrum_document import (
+from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
-from omigami.spectra_matching.spec2vec.gateways.spectrum_document import (
+from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
     SpectrumDocumentDataGateway,
 )
 from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])

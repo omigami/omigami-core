@@ -3,7 +3,7 @@ from typing import List, Optional
 from spec2vec import SpectrumDocument
 
 from omigami.spectra_matching.spec2vec.config import PROJECT_NAME, DOCUMENT_HASHES
-from omigami.spectra_matching.spec2vec.gateways.spectrum_document import (
+from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
     SpectrumDocumentDataGateway,
 )
 from omigami.spectra_matching.storage import RedisDataGateway
