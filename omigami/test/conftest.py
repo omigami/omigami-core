@@ -30,7 +30,7 @@ from omigami.flow_config import (
     PrefectExecutorMethods,
 )
 from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
-from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway, KEYS
+from omigami.spectra_matching.storage import FSDataGateway, KEYS
 
 ASSETS_DIR = Path(__file__).parents[0] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=pd.Timedelta(seconds=0.1))
