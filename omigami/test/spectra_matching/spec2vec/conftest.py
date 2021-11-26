@@ -9,7 +9,7 @@ from spec2vec import calc_vector
 from spec2vec.model_building import train_new_word2vec_model
 
 from omigami.config import EMBEDDING_HASHES
-from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.storage import FSDataGateway
 from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.gateways.redis_spectrum_document import (

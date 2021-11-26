@@ -7,7 +7,7 @@ from matchms import calculate_scores
 from matchms.filtering import normalize_intensities
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.predictor import Predictor, SpectrumMatches
+from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
