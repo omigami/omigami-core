@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -6,14 +7,9 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
 from omigami.gateways import RedisSpectrumDataGateway
 from omigami.gateways.fs_data_gateway import FSDataGateway
-from omigami.spec2vec.config import PROJECT_NAME
+from omigami.spec2vec.config import PROJECT_NAME, SPEC2VEC_ROOT
 from omigami.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
@@ -26,17 +22,6 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
-
-
-@pytest.fixture
-def flow_config():
-    flow_config = make_flow_config(
-        image="image-ref-name-test-harry-potter-XXII",
-        storage_type=PrefectStorageMethods.S3,
-        executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db="0",
-    )
-    return flow_config
 
 
 def test_training_flow(flow_config):
@@ -59,7 +44,7 @@ def test_training_flow(flow_config):
         document_dgw=mock_document_dgw,
         spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
-        output_dir="datasets",
+        dataset_directory="datasets",
         dataset_id="dataset-id",
         chunk_size=150000,
         ion_mode="positive",
@@ -68,8 +53,8 @@ def test_training_flow(flow_config):
         overwrite_all_spectra=False,
         iterations=25,
         window=500,
-        project_name="test",
-        model_output_dir="model-output",
+        experiment_name="test",
+        mlflow_output_directory="model-output",
         documents_save_directory="documents",
         mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
@@ -103,9 +88,11 @@ def test_run_training_flow(
     redis_full_setup,
 ):
     # remove mlflow models from previous runs
-    fs = get_fs(ASSETS_DIR)
+    mlflow_root = SPEC2VEC_ROOT / "test-mlflow"
+    if mlflow_root.exists():
+        shutil.rmtree(mlflow_root)
+    fs = get_fs(mlflow_root)
     ion_mode = "positive"
-    _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
     spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     data_gtw = FSDataGateway()
@@ -117,22 +104,23 @@ def test_run_training_flow(
         document_dgw=document_dgw,
         spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
-        output_dir=ASSETS_DIR.parent,
+        dataset_directory=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
-        ion_mode=ion_mode,
+        ion_mode="positive",
         n_decimals=1,
         overwrite_model=True,
         overwrite_all_spectra=True,
         iterations=3,
         window=200,
-        project_name="test",
-        model_output_dir=f"{tmpdir}/model-output",
-        documents_save_directory=f"{tmpdir}/documents/{ion_mode}",
-        mlflow_server="mlflow-server",
+        experiment_name="test",
+        mlflow_output_directory=str(mlflow_root),
+        documents_save_directory=tmpdir / f"documents/{ion_mode}",
+        mlflow_server=str(mlflow_root),
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
+        model_name=None,
     )
 
     flow = build_training_flow(
@@ -142,11 +130,13 @@ def test_run_training_flow(
         deploy_model=False,
     )
 
-    results = flow.run()
-    (d,) = flow.get_tasks("DownloadData")
+    flow_run = flow.run()
+    download_task = flow.get_tasks("DownloadData")[0]
+    register_task = flow.get_tasks("RegisterModel")[0]
 
-    assert results.is_successful()
-    results.result[d].is_cached()
-    assert "model" in os.listdir(tmpdir / "model-output")
+    assert flow_run.is_successful()
+    flow_run.result[download_task].is_cached()
+    model_uri = flow_run.result[register_task].result["model_uri"]
+    assert Path(model_uri).exists()
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")

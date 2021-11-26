@@ -5,6 +5,7 @@ variables:
   PREFECT__FLOWS__CHECKPOINTING: True
   REDIS_HOST: localhost
   REDIS_DB: 0
+  MLFLOW_SERVER: sqlite:///mlflow.sqlite
 
 trigger:
   - master

@@ -2,25 +2,7 @@ import pytest
 from prefect import Flow
 from prefect.storage import S3
 
-from omigami.spec2vec.tasks import DeployModel, DeployModelParameters
-
-
-@pytest.mark.skip(
-    reason="This test is actually deploying to seldon we should change asap"
-)
-def test_deploy_model_task():
-    params = DeployModelParameters(
-        redis_db="2", ion_mode="neutral", overwrite_model=True, environment="dev"
-    )
-    with Flow("test-flow") as test_flow:
-        deploy_task = DeployModel(params)(registered_model={"model_uri": "uri"})
-
-        res = test_flow.run()
-        data = res.result[deploy_task].result
-
-        assert res.is_successful()
-
-    assert True
+from omigami.tasks.deploy_model import DeployModelParameters, DeployModel
 
 
 @pytest.mark.skip(reason="This test deploys a seldon model using a model URI.")

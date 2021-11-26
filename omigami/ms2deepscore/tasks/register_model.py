@@ -7,6 +7,9 @@ from prefect import Task
 
 from omigami.config import IonModes
 from omigami.model_register import MLFlowModelRegister
+from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
+    SIAMESE_MODEL_PARAMS,
+)
 from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
 from omigami.utils import merge_prefect_task_configs
@@ -93,6 +96,7 @@ class ModelRegister(MLFlowModelRegister):
     Class that implements MLFLowModelRegister to register ms2deepscore model to MLFlow
     """
 
+    # TODO: should be refactored together with spec2vec's implementation of this code
     def register_model(
         self,
         model: MS2DeepScorePredictor,
@@ -103,8 +107,7 @@ class ModelRegister(MLFlowModelRegister):
         conda_env_path: str = None,
         artifacts: Dict = None,
         run_name: str = "ms2deepscore",
-        **kwargs,
-    ):
+    ) -> str:
         """
         Method to register the MS2DeepScore to MLFlow.
 
@@ -142,16 +145,13 @@ class ModelRegister(MLFlowModelRegister):
                     self._convert_train_parameters(train_parameters, validation_loss)
                 )
 
-            self.log_model(
-                model,
-                experiment_name,
-                output_path=output_path,
-                code_path=[
-                    "omigami",
-                ],
-                conda_env_path=conda_env_path,
+            mlflow.pyfunc.log_model(
+                "model",
+                python_model=model,
+                registered_model_name="ms2deepscore",
+                code_path=["omigami"],
+                conda_env=conda_env_path,
                 artifacts=artifacts,
-                **kwargs,
             )
 
             return run_id
@@ -164,10 +164,10 @@ class ModelRegister(MLFlowModelRegister):
 
         train_params = {
             "epochs": train_parameters.epochs,
-            "learning_rate": train_parameters.learning_rate,
-            "layer_base_dims": train_parameters.layer_base_dims,
-            "embedding_dim": train_parameters.embedding_dim,
-            "dropout_rate": train_parameters.dropout_rate,
+            "learning_rate": SIAMESE_MODEL_PARAMS["learning_rate"],
+            "layer_base_dims": SIAMESE_MODEL_PARAMS["layer_base_dims"],
+            "embedding_dim": SIAMESE_MODEL_PARAMS["embedding_dim"],
+            "dropout_rate": SIAMESE_MODEL_PARAMS["dropout_rate"],
             "split_ratio": train_parameters.split_ratio,
             "validation_loss": validation_loss,
         }

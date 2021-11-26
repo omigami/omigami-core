@@ -5,12 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
+from omigami.config import SOURCE_URI_PARTIAL_GNPS, MLFLOW_SERVER
 from omigami.gateways.fs_data_gateway import FSDataGateway
 from omigami.ms2deepscore.flows.training_flow import (
     build_training_flow,
@@ -24,17 +19,6 @@ from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
-
-
-@pytest.fixture
-def flow_config():
-    flow_config = make_flow_config(
-        image="image-ref-name-test-harry-potter-XXII",
-        storage_type=PrefectStorageMethods.S3,
-        executor_type=PrefectExecutorMethods.LOCAL_DASK,
-        redis_db="0",
-    )
-    return flow_config
 
 
 def test_training_flow(flow_config):
@@ -59,7 +43,7 @@ def test_training_flow(flow_config):
         spectrum_dgw=mock_spectrum_dgw,
         spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
-        output_dir="datasets",
+        dataset_directory="datasets",
         dataset_id="dataset-id",
         ion_mode="positive",
         chunk_size=150000,
@@ -72,7 +56,7 @@ def test_training_flow(flow_config):
         model_output_path="some-path",
         spectrum_binner_output_path="some-path",
         project_name="test",
-        mlflow_output_dir="model-output",
+        mlflow_output_directory="model-output",
         mlflow_server="mlflow-server",
         train_ratio=0.6,
         validation_ratio=0.3,
@@ -98,9 +82,13 @@ def test_training_flow(flow_config):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-@pytest.mark.slow
 def test_run_training_flow(
-    tmpdir, flow_config, mock_default_config, clean_chunk_files, redis_full_setup
+    tmpdir,
+    flow_config,
+    mock_default_config,
+    clean_chunk_files,
+    redis_full_setup,
+    small_model_params,
 ):
     # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
@@ -114,10 +102,10 @@ def test_run_training_flow(
         data_gtw=data_gtw,
         spectrum_dgw=spectrum_dgw,
         spectrum_cleaner=spectrum_cleaner,
-        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
-        output_dir=ASSETS_DIR.parent,
+        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        dataset_directory=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
-        dataset_name="SMALL_GNPS_500_spectra.json",
+        dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
         ion_mode="positive",
         overwrite_model=True,
@@ -129,14 +117,14 @@ def test_run_training_flow(
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
         model_output_path=str(tmpdir / "model.hdf5"),
         dataset_checkpoint_name="spectrum_ids_500.pkl",
-        epochs=10,
+        epochs=1,
         project_name="test",
-        mlflow_output_dir=f"{tmpdir}/model-output",
-        mlflow_server="mlflow-server",
-        train_ratio=0.6,
-        validation_ratio=0.3,
-        test_ratio=0.1,
-        spectrum_ids_chunk_size=10,
+        mlflow_output_directory=f"{tmpdir}/model-output",
+        mlflow_server=MLFLOW_SERVER,
+        train_ratio=0.8,
+        validation_ratio=0.2,
+        test_ratio=0.2,
+        spectrum_ids_chunk_size=100,
     )
 
     flow = build_training_flow(
@@ -145,13 +133,15 @@ def test_run_training_flow(
         flow_parameters=flow_params,
     )
 
-    results = flow.run()
-    (d,) = flow.get_tasks("DownloadData")
+    flow_run = flow.run()
+    download_task = flow.get_tasks("DownloadData")[0]
+    register_task = flow.get_tasks("RegisterModel")[0]
 
-    assert results.is_successful()
-    results.result[d].is_cached()
-    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 18
+    assert flow_run.is_successful()
+    flow_run.result[download_task].is_cached()
+    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")
-    assert "model" in os.listdir(tmpdir / "model-output")
+    model_uri = flow_run.result[register_task].result["model_uri"]
+    assert Path(model_uri).exists()

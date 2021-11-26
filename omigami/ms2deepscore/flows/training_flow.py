@@ -1,5 +1,5 @@
 from datetime import timedelta, date, datetime
-from typing import Tuple
+from typing import Optional
 
 from prefect import Flow, unmapped
 from prefect.schedules import Schedule
@@ -14,8 +14,6 @@ from omigami.ms2deepscore.tasks import (
     ProcessSpectrumParameters,
     ProcessSpectrum,
     RegisterModel,
-    DeployModel,
-    DeployModelParameters,
     RegisterModelParameters,
     MakeEmbeddingsParameters,
     MakeEmbeddings,
@@ -29,12 +27,14 @@ from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters, TrainModel
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
-    DownloadData,
     DownloadParameters,
+    DownloadData,
     ChunkingParameters,
     CreateChunks,
     SaveRawSpectraParameters,
     SaveRawSpectra,
+    DeployModelParameters,
+    DeployModel,
 )
 
 
@@ -45,7 +45,7 @@ class TrainingFlowParameters:
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
-        output_dir: str,
+        dataset_directory: str,
         dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
@@ -58,21 +58,16 @@ class TrainingFlowParameters:
         overwrite_model: bool,
         model_output_path: str,
         project_name: str,
-        mlflow_output_dir: str,
+        mlflow_output_directory: str,
         mlflow_server: str,
         epochs: int = 50,
-        learning_rate: float = 0.001,
-        layer_base_dims: Tuple[int] = (600, 500, 400),
-        embedding_dim: int = 400,
-        dropout_rate: float = 0.2,
         train_ratio: float = 0.9,
         validation_ratio: float = 0.05,
         test_ratio: float = 0.05,
         spectrum_ids_chunk_size: int = 10000,
-        schedule_task_days: int = 30,
+        schedule_task_days: Optional[int] = 30,
         dataset_name: str = "gnps.json",
         dataset_checkpoint_name: str = "spectrum_ids.pkl",
-        environment: str = "dev",
         redis_db: str = "0",
     ):
         self.data_gtw = data_gtw
@@ -94,7 +89,11 @@ class TrainingFlowParameters:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         self.downloading = DownloadParameters(
-            source_uri, output_dir, dataset_id, dataset_name, dataset_checkpoint_name
+            source_uri,
+            dataset_directory,
+            dataset_id,
+            dataset_name,
+            dataset_checkpoint_name,
         )
 
         self.chunking = ChunkingParameters(
@@ -119,15 +118,11 @@ class TrainingFlowParameters:
             ion_mode,
             spectrum_binner_output_path,
             epochs,
-            learning_rate,
-            layer_base_dims,
-            embedding_dim,
-            dropout_rate,
             SplitRatio(train_ratio, validation_ratio, test_ratio),
         )
 
         self.registering = RegisterModelParameters(
-            project_name, mlflow_output_dir, mlflow_server, ion_mode
+            project_name, mlflow_output_directory, mlflow_server, ion_mode
         )
 
         self.spectrum_chunking = ChunkingIDsParameters(spectrum_ids_chunk_size)
@@ -135,7 +130,7 @@ class TrainingFlowParameters:
         self.embedding = MakeEmbeddingsParameters(ion_mode)
 
         self.deploying = DeployModelParameters(
-            redis_db, ion_mode, overwrite_model, environment
+            redis_db, overwrite_model, f"ms2deepscore-{ion_mode}"
         )
 
 

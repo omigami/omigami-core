@@ -144,3 +144,7 @@ dmypy.json
 
 # large test assets
 **/assets/*model.pkl
+
+.DS_Store
+/local-deployment/results
+mlflow.sqlite

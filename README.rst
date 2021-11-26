@@ -62,10 +62,53 @@ Start a Redis container and set these environment variables before running the t
     docker run -d --rm --name redis -p 6379:6379 redis:5-alpine
     export SKIP_REDIS_TEST=False
 
+
+Running Prefect Locally
+------------------------------------
+
+Start up prefect server.
+::
+    prefect server start -d
+
+
+If you are in a M1 machine you might (probably) need to increase docker memory resources to 7 GB.
+Alternatively, you can run it through docker-compose (requires less memory):
+::
+        docker-compose -f local-deployment/docker-compose.yml up -d
+
+To access the dashboard, go to http://localhost:8080/. If you see a blank screen,
+you will need to create a tenant:
+::
+    prefect backend server
+    prefect server create-tenant -n default
+
+
+In a terminal, start an agent that will execute the flows:
+::
+    prefect agent start -l "dev" --show-flow-logs
+
+
+To shut down prefect:
+::
+    prefect server stop
+    docker-compose -f local-deployment/docker-compose.yml down  # if you used docker-compose
+
+
+Running MLFlow Locally
+-----------------------
+
+To run mlflow locally run the following command:
+::
+    mlflow ui --backend-store-uri sqlite:///mlflow.sqlite
+
+
+To access it: http://localhost:5000/
+
+
 To run tests one by one via PyCharm, you can add this to your pytest Environment Variables (Run > Edit Configurations...)
 ::
 
-    SKIP_REDIS_TEST=False;PREFECT__FLOWS__CHECKPOINTING=True;REDIS_HOST=localhost;REDIS_DB=0
+    SKIP_REDIS_TEST=False;PREFECT__FLOWS__CHECKPOINTING=True;REDIS_HOST=localhost;REDIS_DB=0;MLFLOW_SERVER=sqlite:///mlflow.sqlite
 
 Please don't commit `*model.pkl` files to git. Every necessary model for the
 test setup is going to be generated and saved to `test/assets/` folder and be

@@ -1,57 +1,70 @@
 import click
 
-from omigami.config import (
-    API_SERVER_URLS,
-    S3_BUCKETS,
-    MLFLOW_SERVER,
-    SOURCE_URI_PARTIAL_GNPS,
-)
-from omigami.spec2vec.config import MODEL_DIRECTORIES, PROJECT_NAME
-from omigami.spec2vec.deployment import Spec2VecDeployer
+from omigami.cli_options import common_training_options
+from omigami.spec2vec.config import PROJECT_NAME
+from omigami.spec2vec.main import run_spec2vec_flow
 from omigami.utils import add_click_options
 
-configuration_options = [
-    click.option("--project-name", "-p", default=PROJECT_NAME),
-    click.option("--source-uri", default=SOURCE_URI_PARTIAL_GNPS),
-    click.option("--output-dir", default=S3_BUCKETS),
-    click.option("--flow-name", default="spec2vec-training-flow"),
-    click.option("--model-output-dir", default=MODEL_DIRECTORIES),
-    click.option("--mlflow-server", default=MLFLOW_SERVER),
-    click.option("--overwrite-model", is_flag=True, help="Overwrite existing model"),
-    click.option("--overwrite-all-spectra", is_flag=True, help="Overwrite all spectra"),
-]
 
-auth_options = [
-    click.option(
-        "--api-server", default=API_SERVER_URLS["dev"], help="URL to the prefect API"
-    ),
-    click.option("--auth", default=False, help="Enable authentication"),
-    click.option("--auth_url", default=None, help="Kratos Public URI"),
-    click.option("--username", default=None, help="Login username"),
-    click.option("--password", default=None, help="Login password"),
-]
-
-
-@click.group()
-def cli():
+@click.group(name="spec2vec")
+def spec2vec_cli():
     pass
 
 
-@cli.command(name="register-training-flow")
-@click.option("--image", "-i", type=str, required=True)
-@click.option("--dataset-name", type=str)
-@click.option("--dataset-id", default=None)
-@click.option("--n-decimals", type=int, default=2)
-@click.option("--iterations", type=int, default=25)
-@click.option("--window", type=int, default=500)
-@click.option("--intensity-weighting-power", type=float, default=0.5)
-@click.option("--allowed-missing-percentage", type=float, default=5.0)
-@add_click_options(auth_options)
-@add_click_options(configuration_options)
-def deploy_training_flow_cli(flow_name, *args, **kwargs):
-    deployer = Spec2VecDeployer(*args, **kwargs)
-    deployer.deploy_training_flow(flow_name=flow_name)
+@spec2vec_cli.command(name="train")
+@click.option(
+    "--project-name",
+    "-p",
+    default=PROJECT_NAME,
+    show_default=True,
+    help="Name of the project. This is used as identification by Prefect",
+)
+@click.option(
+    "--flow-name",
+    default="spec2vec-training-flow",
+    show_default=True,
+    help="Name of the flow. This is used as identification by Prefect",
+)
+@click.option(
+    "--iterations",
+    type=int,
+    default=25,
+    help="Number of iterations of model training",
+    show_default=True,
+)
+@click.option(
+    "--n-decimals",
+    type=int,
+    default=2,
+    help="Precision in number of decimals for creating the embeddings",
+    show_default=True,
+)
+@click.option(
+    "--window",
+    type=int,
+    default=500,
+    help="Size of window of words context for Word2Vec model",
+    show_default=True,
+)
+@click.option(
+    "--intensity-weighting-power",
+    type=float,
+    default=0.5,
+    show_default=True,
+    help="Value to elevate the intensities to",
+)
+@click.option(
+    "--allowed-missing-percentage",
+    type=float,
+    default=5.0,
+    show_default=True,
+    help="Missing percentage of ions allowed",
+)
+@add_click_options(common_training_options)
+def training_flow_cli(*args, **kwargs):
+    run_spec2vec_flow(*args, **kwargs)
 
 
-if __name__ == "__main__":
-    cli()
+@spec2vec_cli.command(name="deploy-model")
+def deploy_model_cli():
+    pass
