@@ -209,7 +209,6 @@ def ms2deepscore_embeddings_stored(redis_db, embeddings_from_real_predictor):
 @pytest.fixture()
 def redis_full_setup(
     spectra_stored,
-    spec2vec_embeddings_stored,
     binned_spectra_stored,
     ms2deepscore_embeddings_stored,
 ):

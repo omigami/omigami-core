@@ -3,9 +3,13 @@ import os
 import pytest
 from spec2vec import SpectrumDocument
 
+from omigami.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
+from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
+from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.gateways.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 
 
 @pytest.mark.skipif(
@@ -93,3 +97,36 @@ def test_list_missing_documents(documents_data, s3_mock, spectra_stored):
     documents = redis_dgw.list_missing_documents(spectrum_ids_stored, ion_mode=ion_mode)
 
     assert len(documents) == 50
+
+
+def test_read_embeddings(spec2vec_embeddings, spec2vec_embeddings_stored):
+    dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
+    dgw._init_client()
+    embeddings_read = dgw.read_embeddings("positive", "1")
+    assert len(embeddings_read) == len(spec2vec_embeddings)
+    for embedding in embeddings_read:
+        assert isinstance(embedding, Spec2VecEmbedding)
+
+
+def test_read_embeddings_within_range(
+    spec2vec_embeddings, spec2vec_embeddings_stored, spectra_stored
+):
+    dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
+    dgw._init_client()
+    mz_min = 300
+    mz_max = 600
+    filtered_spectra = dgw.client.zrangebyscore(
+        SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, mz_min, mz_max
+    )
+    spectrum_ids_within_range = dgw.get_spectrum_ids_within_range(mz_min, mz_max)
+    embeddings_read = dgw.read_embeddings("positive", "1", spectrum_ids_within_range)
+    assert len(embeddings_read) == len(filtered_spectra)
+    for embedding in embeddings_read:
+        assert isinstance(embedding, Spec2VecEmbedding)
+        assert (
+            mz_min
+            <= dgw.client.zscore(
+                SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, embedding.spectrum_id
+            )
+            <= mz_max
+        )

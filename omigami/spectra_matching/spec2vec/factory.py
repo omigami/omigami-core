@@ -18,7 +18,6 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.spectra_matching.spec2vec.config import (
     PROJECT_NAME,
     DOCUMENT_DIRECTORIES,
@@ -31,7 +30,8 @@ from omigami.spectra_matching.spec2vec.flows.training_flow import (
 from omigami.spectra_matching.spec2vec.gateways.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
-from omigami.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 
 
 class Spec2VecFlowFactory:

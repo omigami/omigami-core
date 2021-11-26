@@ -7,8 +7,7 @@ from matchms import calculate_scores
 from matchms.filtering import normalize_intensities
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.predictor import Predictor, SpectrumMatches
-from omigami.spectra_matching.storage import RedisSpectrumDataGateway
+from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
 from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.entities.spectrum_document import (
@@ -20,6 +19,7 @@ from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
 from omigami.spectra_matching.spec2vec.helper_classes.similarity_score_calculator import (
     Spec2VecSimilarityScoreCalculator,
 )
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 
 log = getLogger(__name__)
 

@@ -5,7 +5,7 @@ import mlflow
 from pandas import Timestamp
 from prefect import Task
 
-from omigami.config import IonModes, CONDA_ENV_PATH
+from omigami.config import IonModes, CONDA_ENV_PATH, CODE_PATH
 from omigami.model_register import MLFlowModelRegister
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
     SIAMESE_MODEL_PARAMS,
@@ -147,7 +147,7 @@ class ModelRegister(MLFlowModelRegister):
                 "model",
                 python_model=model,
                 registered_model_name="ms2deepscore",
-                code_path=["omigami"],
+                code_path=[CODE_PATH],
                 conda_env=conda_env_path,
                 artifacts=artifacts,
             )
