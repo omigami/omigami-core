@@ -12,7 +12,7 @@ from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
 
 from omigami.config import IonModes
-from omigami.spectra_matching.gateways.data_gateway import DataGateway
+from omigami.spectra_matching.storage import DataGateway
 from omigami.spectra_matching.entities.data_models import SpectrumInputData
 
 KEYS = [

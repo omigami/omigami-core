@@ -3,7 +3,7 @@ import pytest
 from matchms import Spectrum
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 
 
 @pytest.fixture

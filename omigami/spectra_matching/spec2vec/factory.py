@@ -18,8 +18,7 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
-from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.spectra_matching.spec2vec.config import (
     PROJECT_NAME,
     DOCUMENT_DIRECTORIES,

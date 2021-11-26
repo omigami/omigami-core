@@ -5,8 +5,7 @@ import pytest
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
-from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.spectrum_document import (
     SpectrumDocumentData,

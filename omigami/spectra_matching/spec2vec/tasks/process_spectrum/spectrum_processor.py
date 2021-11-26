@@ -9,7 +9,7 @@ from omigami.spectra_matching.spec2vec.entities.spectrum_document import (
 from omigami.spectra_matching.spec2vec.helper_classes.progress_logger import (
     TaskProgressLogger,
 )
-from omigami.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 
 
 class SpectrumProcessor(SpectrumCleaner):
