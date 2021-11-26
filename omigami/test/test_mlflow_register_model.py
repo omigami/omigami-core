@@ -5,8 +5,9 @@ import mlflow
 import pytest
 from mlflow.pyfunc import PythonModel
 
+from omigami.config import CODE_PATH
 from omigami.model_register import MLFlowModelRegister
-from omigami.spec2vec.predictor import Spec2VecPredictor
+from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 
 os.chdir(Path(__file__).parents[2])
 
@@ -35,13 +36,13 @@ def test_get_or_create_experiment(tmpdir):
     assert created_experiment_id == experiment_id
 
 
-def test_save_model(word2vec_model, tmpdir):
+def test_save_model(tmpdir):
     path = f"{tmpdir}/mlflow/"
     model_register = MockABCModelRegister(path)
 
     model_register.log_model(
         model=Spec2VecPredictor(
-            word2vec_model,
+            "Model",
             ion_mode="positive",
             n_decimals=1,
             intensity_weighting_power=0.5,
@@ -49,7 +50,7 @@ def test_save_model(word2vec_model, tmpdir):
         ),
         model_name="experiment",
         output_path=path,
-        code_path=["omigami"],
+        code_path=[str(CODE_PATH)],
     )
 
     assert os.path.exists(f"{path}/model/python_model.pkl")

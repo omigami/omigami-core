@@ -32,6 +32,11 @@ REDIS_DATABASES = {
     "prod": {"small": "2", "complete": "0"},
 }[OMIGAMI_ENV]
 REDIS_HOST = str(os.getenv("REDIS_HOST"))
+EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
+    "spectrum_id_sorted_set"
+].get(str)
+SPECTRUM_HASHES = config["storage"]["redis"]["spectrum_hashes"].get(str)
 
 SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
@@ -40,7 +45,8 @@ SOURCE_URI_PARTIAL_GNPS_500_SPECTRA = config["gnps_uri"]["partial_500_spectra"].
 CLUSTER = config["clusters"][OMIGAMI_ENV].get(str)
 ION_MODES = {"positive", "negative"}
 IonModes = Literal["positive", "negative"]
-
+CONDA_ENV_PATH = Path(__file__).parents[1] / "requirements/environment.frozen.yaml"
+CODE_PATH = Path(__file__).parent
 
 DEFAULT_PREFECT_TASK_CONFIG = dict(
     max_retries=3, retry_delay=datetime.timedelta(seconds=10)

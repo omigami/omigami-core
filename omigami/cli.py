@@ -1,7 +1,7 @@
 import click
 
 from omigami.ms2deepscore.cli import ms2deepscore_cli
-from omigami.spec2vec.cli import spec2vec_cli
+from omigami.spectra_matching.spec2vec.cli import spec2vec_cli
 
 
 @click.group(name="omigami")
