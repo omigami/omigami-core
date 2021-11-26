@@ -6,7 +6,7 @@ import pytest
 from mlflow.pyfunc import PythonModel
 
 from omigami.model_register import MLFlowModelRegister
-from omigami.spec2vec.predictor import Spec2VecPredictor
+from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 
 os.chdir(Path(__file__).parents[2])
 

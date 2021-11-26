@@ -20,6 +20,10 @@ storage:
   root:
     dev: "s3://omigami-dev"
     prod: "s3://omigami"
+  redis:
+    embedding_hashes: "embedding_data"
+    spectrum_id_sorted_set: "spectrum_id_precursor_mz_sorted"
+    spectrum_hashes: "spectrum_data"
 
 clusters:
   local: ""

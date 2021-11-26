@@ -6,13 +6,14 @@ from typing import List, Iterable, Set
 
 from matchms import Spectrum
 
-from omigami.spectra_matching.entities.embedding import Embedding
-from omigami.spectra_matching.storage import RedisDataGateway
-from omigami.spec2vec.config import (
+from omigami.config import (
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
 )
+from omigami.spectra_matching.entities.embedding import Embedding
+from omigami.spectra_matching.storage import RedisDataGateway
+
 
 # when running locally, those should be set in pycharm/shell env
 # when running on the cluster, they will be gotten from the seldon env,

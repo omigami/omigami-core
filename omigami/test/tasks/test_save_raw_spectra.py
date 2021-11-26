@@ -4,11 +4,11 @@ import pytest
 from matchms.importing.load_from_json import as_spectrum
 from prefect import Flow
 
+from omigami.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
 from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
 from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
-from omigami.spec2vec.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
-from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.tasks import SaveRawSpectra, SaveRawSpectraParameters
+from omigami.spectrum_cleaner import SpectrumCleaner
 
 
 @pytest.fixture
