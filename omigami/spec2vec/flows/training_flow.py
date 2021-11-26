@@ -4,8 +4,7 @@ from prefect import Flow, unmapped
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
-from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.spec2vec.gateways.spectrum_document import SpectrumDocumentDataGateway
 from omigami.spec2vec.tasks import (
     MakeEmbeddings,
@@ -19,7 +18,7 @@ from omigami.spec2vec.tasks import (
 from omigami.spec2vec.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
-from omigami.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.tasks import (
     DownloadData,
     DownloadParameters,

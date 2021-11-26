@@ -15,7 +15,7 @@ from omigami.ms2deepscore.helper_classes.similarity_score_calculator import (
 from omigami.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
-from omigami.predictor import Predictor, SpectrumMatches
+from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
 from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
 
 log = getLogger(__name__)

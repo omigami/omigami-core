@@ -30,9 +30,8 @@ from omigami.spec2vec.flows.training_flow import (
 from omigami.spec2vec.gateways.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
-from omigami.spectra_matching.gateways import RedisSpectrumDataGateway
-from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
-from omigami.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
+from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 
 
 class Spec2VecFlowFactory:
