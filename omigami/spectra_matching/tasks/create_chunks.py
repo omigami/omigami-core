@@ -5,7 +5,7 @@ from drfs import DRPath
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.spectra_matching.gateways.data_gateway import DataGateway
+from omigami.spectra_matching.storage import DataGateway
 from omigami.utils import create_prefect_result_from_path, merge_prefect_task_configs
 
 

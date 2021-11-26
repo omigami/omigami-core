@@ -8,7 +8,7 @@ from omigami.ms2deepscore.tasks import (
     ProcessSpectrum,
     RegisterModelParameters,
 )
-from omigami.spectra_matching.gateways.data_gateway import DataGateway
+from omigami.spectra_matching.storage import DataGateway
 from omigami.spectra_matching.tasks import DeployModel, DeployModelParameters
 
 

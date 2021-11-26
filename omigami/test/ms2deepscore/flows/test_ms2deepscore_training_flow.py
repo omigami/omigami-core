@@ -6,7 +6,7 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS, MLFLOW_SERVER
-from omigami.spectra_matching.gateways.fs_data_gateway import FSDataGateway
+from omigami.spectra_matching.storage import FSDataGateway
 from omigami.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,

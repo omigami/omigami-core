@@ -24,7 +24,7 @@ from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScore,
 )
 from omigami.ms2deepscore.tasks.train_model import TrainModelParameters, TrainModel
-from omigami.spectra_matching.gateways.data_gateway import DataGateway
+from omigami.spectra_matching.storage import DataGateway
 from omigami.spectra_matching.tasks import (
     DownloadParameters,
     DownloadData,
