@@ -35,7 +35,7 @@ from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
 )
-from omigami.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 
 
 class TrainingFlowParameters:

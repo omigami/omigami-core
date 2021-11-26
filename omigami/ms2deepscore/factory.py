@@ -29,7 +29,7 @@ from omigami.ms2deepscore.flows.training_flow import (
 )
 from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
-from omigami.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 
 
 class MS2DeepScoreFlowFactory:
