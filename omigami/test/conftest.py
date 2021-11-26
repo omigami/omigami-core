@@ -137,12 +137,12 @@ def spectra_stored(redis_db, common_cleaned_data):
 
 
 @pytest.fixture()
-def embeddings_stored(redis_db, cleaned_data, embeddings):
+def spec2vec_embeddings_stored(redis_db, cleaned_data, spec2vec_embeddings):
     run_id = "1"
     project = "spec2vec"
     ion_mode = "positive"
     pipe = redis_db.pipeline()
-    for embedding in embeddings:
+    for embedding in spec2vec_embeddings:
         pipe.hset(
             f"{EMBEDDING_HASHES}_{project}_{ion_mode}_{run_id}",
             embedding.spectrum_id,
@@ -232,7 +232,7 @@ def ms2deepscore_embeddings_stored(redis_db, embeddings_from_real_predictor):
 def redis_full_setup(
     spectra_stored,
     documents_stored,
-    embeddings_stored,
+    spec2vec_embeddings_stored,
     binned_spectra_stored,
     ms2deepscore_embeddings_stored,
 ):
@@ -284,15 +284,15 @@ def word2vec_model(documents_data):
 
 
 @pytest.fixture(scope="module")
-def embeddings(documents_data, word2vec_model):
+def spec2vec_embeddings(documents_data, word2vec_model):
     """
-    This fixture will take `documents_data` where `n_decimals` equal to 1, and
-    `word2vec_model` and creates Embedding objects out of them. Then Embedding objects
-    are saved to ASSET_DIR. If exists it will be read from ASSET_DIR.
+    This fixture returns Spec2VecEmbedding objects either by loading from ASSETS_DIR if
+    it exists already, or, takes both `documents_data` (where `n_decimals` equals 1) and
+    `word2vec_model` to create the Spec2VecEmbedding objects out of them.
 
-    If you rename Spec2VecEmbedding from omigami/spec2vec/entities/embedding.py, delete
-    the current pkl file and run a test that uses this fixture. Then pkl file will be
-    updated with the new class name.
+    If you do rename Spec2VecEmbedding from omigami/spec2vec/entities/embedding.py,
+    please delete the current pkl file and run a test that uses this fixture.
+    Then the pkl file will be updated with the new class name.
 
     Parameters
     ----------

@@ -8,7 +8,7 @@ from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
 from omigami.test.conftest import ASSETS_DIR
 
 
-def create_input_vector(binned_spectrum, input_vector_dim):
+def create_input_vector(binned_spectrum, input_vector_dim) -> np.ndarray:
     """
     Creates input vector for model.base based on binned peaks and intensities
     Function copied from omigami/ms2deepscore/helper_classes/embedding_maker.py
@@ -24,19 +24,21 @@ def create_input_vector(binned_spectrum, input_vector_dim):
 @pytest.mark.skip(
     reason="This test should only be run if "
     "`omigami/test/assets/ms2deepscore/SMALL_GNPS_as_embeddings.pkl`"
-    "needs to be updated. E.g. if you rename `MS2DeepScoreEmbedding` from "
-    "`omigami/ms2deepscore/entities/embedding.py`. It also requires ms2deepscore model "
-    "trained on all GNPS to be available in "
-    "`omigami/test/assets/ms2deepscore/pretrained`. You can download "
-    "`MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5` from "
-    "https://zenodo.org/record/4699356#.YNyD-2ZKhcA"
+    "needs to be updated. "
 )
 def test_create_embeddings_from_real_predictor(
     binned_spectra, ms2deepscore_real_predictor
 ):
     """
     This test is to create/update `omigami/test/assets/ms2deepscore/SMALL_GNPS_as_embeddings.pkl`
-    with MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 model.
+    with `MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 model`. E.g. if you rename
+    `MS2DeepScoreEmbedding` from `omigami/ms2deepscore/entities/embedding.py`, it is
+    necessary to run this test.
+
+    It also requires ms2deepscore model trained on all GNPS to be available in
+    `omigami/test/assets/ms2deepscore/pretrained`. Before running this, please download
+    the model from https://zenodo.org/record/4699356#.YNyD-2ZKhcA, and place it in
+    `omigami/test/assets/ms2deepscore/pretrained`.
 
     Parameters
     ----------

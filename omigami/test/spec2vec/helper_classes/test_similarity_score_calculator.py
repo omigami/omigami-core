@@ -27,14 +27,14 @@ def spec2vec_documents_similarity(word2vec_model):
 
 
 def test_pair(
-    embeddings,
+    spec2vec_embeddings,
     documents_data,
     spec2vec_embeddings_similarity,
     spec2vec_documents_similarity,
 ):
     spectrum_ids = ["CCMSLIB00000072099", "CCMSLIB00000001778"]
     docs = [d for d in documents_data if d.metadata["spectrum_id"] in spectrum_ids]
-    embs = [e for e in embeddings if e.spectrum_id in spectrum_ids]
+    embs = [e for e in spec2vec_embeddings if e.spectrum_id in spectrum_ids]
 
     similarity_score_from_embeddings = spec2vec_embeddings_similarity.pair(*embs)
     similarity_score_from_documents = spec2vec_documents_similarity.pair(*docs)
@@ -44,13 +44,13 @@ def test_pair(
 
 @pytest.mark.xfail
 def test_matrix(
-    embeddings,
+    spec2vec_embeddings,
     documents_data,
     spec2vec_embeddings_similarity,
     spec2vec_documents_similarity,
 ):
     similarity_score_from_embeddings = spec2vec_embeddings_similarity.matrix(
-        embeddings[:50], embeddings[50:]
+        spec2vec_embeddings[:50], spec2vec_embeddings[50:]
     )
 
     similarity_score_from_documents = spec2vec_documents_similarity.matrix(
@@ -61,14 +61,14 @@ def test_matrix(
 
 @pytest.mark.xfail
 def test_calculate_scores_with_spec2vec_embeddings(
-    embeddings,
+    spec2vec_embeddings,
     documents_data,
     spec2vec_embeddings_similarity,
     spec2vec_documents_similarity,
 ):
     scores_from_embeddings = calculate_scores(
-        embeddings[:50],
-        embeddings[50:],
+        spec2vec_embeddings[:50],
+        spec2vec_embeddings[50:],
         spec2vec_embeddings_similarity,
         is_symmetric=False,
     )
@@ -80,4 +80,4 @@ def test_calculate_scores_with_spec2vec_embeddings(
         is_symmetric=False,
     )
     assert np.all(scores_from_embeddings.scores == scores_from_documents.scores)
-    assert scores_from_embeddings.scores_by_query(embeddings[51])[0]
+    assert scores_from_embeddings.scores_by_query(spec2vec_embeddings[51])[0]

@@ -87,18 +87,18 @@ def test_pre_process_data(
     assert all(embedding_from_flow.vector == embeddings_from_model[0].vector)
 
 
-def test_get_best_matches(spec2vec_predictor, embeddings):
+def test_get_best_matches(spec2vec_predictor, spec2vec_embeddings):
     n_best_spectra = 2
     best_matches = {}
-    for query in embeddings[:2]:
+    for query in spec2vec_embeddings[:2]:
         input_best_matches = spec2vec_predictor._calculate_best_matches(
-            embeddings,
+            spec2vec_embeddings,
             query,
             n_best_spectra=n_best_spectra,
         )
         best_matches[query.spectrum_id] = input_best_matches
 
-    for query, (best_match_id, best_match) in zip(embeddings, best_matches.items()):
+    for query, (best_match_id, best_match) in zip(spec2vec_embeddings, best_matches.items()):
         assert len(best_match) == n_best_spectra
         assert query.spectrum_id == best_match_id
         assert "score" in pd.DataFrame(best_match).T.columns
@@ -184,12 +184,12 @@ def test_get_input_ref_embeddings(spec2vec_predictor, redis_full_setup):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_add_metadata(spec2vec_predictor, embeddings, redis_full_setup):
+def test_add_metadata(spec2vec_predictor, spec2vec_embeddings, redis_full_setup):
     n_best_spectra = 3
     best_matches = {}
-    for i, query in enumerate(embeddings):
+    for i, query in enumerate(spec2vec_embeddings):
         input_best_matches = spec2vec_predictor._calculate_best_matches(
-            embeddings,
+            spec2vec_embeddings,
             query,
             n_best_spectra=n_best_spectra,
         )

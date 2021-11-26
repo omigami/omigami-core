@@ -45,16 +45,18 @@ def test_read_spectra(cleaned_data, spectra_stored):
         assert len(spectrum.peaks) > 0
 
 
-def test_read_embeddings(embeddings, embeddings_stored):
+def test_read_embeddings(spec2vec_embeddings, spec2vec_embeddings_stored):
     dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     dgw._init_client()
     embeddings_read = dgw.read_embeddings("positive", "1")
-    assert len(embeddings_read) == len(embeddings)
+    assert len(embeddings_read) == len(spec2vec_embeddings)
     for embedding in embeddings_read:
         assert isinstance(embedding, Spec2VecEmbedding)
 
 
-def test_read_embeddings_within_range(embeddings, embeddings_stored, spectra_stored):
+def test_read_embeddings_within_range(
+    spec2vec_embeddings, spec2vec_embeddings_stored, spectra_stored
+):
     dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     dgw._init_client()
     mz_min = 300
