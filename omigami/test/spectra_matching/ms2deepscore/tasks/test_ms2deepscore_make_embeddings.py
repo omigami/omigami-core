@@ -3,9 +3,13 @@ import os
 import pytest
 from prefect import Flow
 
-from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
-from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
-from omigami.ms2deepscore.tasks.make_embeddings import (
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
+from omigami.spectra_matching.ms2deepscore.storage.redis_spectrum_gateway import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
+from omigami.spectra_matching.ms2deepscore.tasks import (
     MakeEmbeddings,
     MakeEmbeddingsParameters,
 )

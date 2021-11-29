@@ -7,9 +7,11 @@ from typing import List
 from ms2deepscore import BinnedSpectrum
 
 from omigami.config import IonModes
+from omigami.spectra_matching.ms2deepscore.config import (
+    BINNED_SPECTRUM_HASHES,
+    PROJECT_NAME,
+)
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
-from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
-from omigami.ms2deepscore.config import PROJECT_NAME
 
 
 class MS2DeepScoreRedisSpectrumDataGateway(RedisSpectrumDataGateway):

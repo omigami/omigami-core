@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
+from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.test.conftest import ASSETS_DIR
 
 

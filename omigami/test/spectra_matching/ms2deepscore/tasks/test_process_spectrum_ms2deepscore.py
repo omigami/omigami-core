@@ -4,14 +4,14 @@ from unittest.mock import MagicMock
 import pytest
 from prefect import Flow
 
-from omigami.spectra_matching.storage import FSDataGateway
-from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
+from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.ms2deepscore.tasks.process_spectrum import (
+from omigami.spectra_matching.ms2deepscore.tasks import (
     ProcessSpectrumParameters,
     ProcessSpectrum,
 )
+from omigami.spectra_matching.storage import FSDataGateway
 from omigami.test.conftest import ASSETS_DIR
 
 

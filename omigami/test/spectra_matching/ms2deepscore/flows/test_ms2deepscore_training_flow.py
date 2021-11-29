@@ -6,16 +6,18 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS, MLFLOW_SERVER
-from omigami.spectra_matching.storage import FSDataGateway
-from omigami.ms2deepscore.flows.training_flow import (
+from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.ms2deepscore.gateways.fs_data_gateway import MS2DeepScoreFSDataGateway
-from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
+from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
 from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.storage import FSDataGateway
 from omigami.test.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])

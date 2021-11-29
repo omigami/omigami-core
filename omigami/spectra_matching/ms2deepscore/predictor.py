@@ -5,18 +5,20 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore.models import load_model as ms2deepscore_load_model
 
-from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
-    MS2DeepScoreRedisSpectrumDataGateway,
+from omigami.spectra_matching.ms2deepscore.embedding import (
+    MS2DeepScoreEmbedding,
 )
-from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
-from omigami.ms2deepscore.helper_classes.similarity_score_calculator import (
-    MS2DeepScoreSimilarityScoreCalculator,
-)
-from omigami.ms2deepscore.helper_classes.spectrum_processor import (
+from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
+from omigami.spectra_matching.ms2deepscore.similarity_score_calculator import (
+    MS2DeepScoreSimilarityScoreCalculator,
+    EmbeddingMaker,
+)
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
 from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
-from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
 
 log = getLogger(__name__)
 

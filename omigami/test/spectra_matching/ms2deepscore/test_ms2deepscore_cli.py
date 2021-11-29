@@ -1,8 +1,8 @@
 from click.testing import CliRunner
 
-import omigami.ms2deepscore.cli
+import omigami.spectra_matching.ms2deepscore.cli
 from omigami.config import IonModes, STORAGE_ROOT
-from omigami.ms2deepscore.cli import ms2deepscore_cli
+from omigami.spectra_matching.ms2deepscore.cli import ms2deepscore_cli
 
 
 def mock_cli(
@@ -50,7 +50,9 @@ def mock_cli(
 
 
 def test_ms2deepscore_cli(monkeypatch):
-    monkeypatch.setattr(omigami.ms2deepscore.cli, "run_ms2deepscore_flow", mock_cli)
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.cli, "run_ms2deepscore_flow", mock_cli
+    )
     cli_command = [
         "train",
         "--image",
