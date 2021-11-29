@@ -27,7 +27,7 @@ from omigami.test.conftest import ASSETS_DIR
 def test_make_embedding(binned_spectra, ms2deepscore_real_predictor):
     maker = EmbeddingMaker()
     embedding = maker.make_embedding(
-        ms2deepscore_real_predictor.model, binned_spectra[0]
+        ms2deepscore_real_predictor._similarity_score_calculator, binned_spectra[0]
     )
     assert isinstance(embedding, MS2DeepScoreEmbedding)
     assert isinstance(embedding.vector, np.ndarray)
