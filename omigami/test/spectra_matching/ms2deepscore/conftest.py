@@ -137,7 +137,7 @@ def small_model_params(monkeypatch):
     }
 
     monkeypatch.setattr(
-        omigami.ms2deepscore.helper_classes.siamese_model_trainer,
+        omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer,
         "SIAMESE_MODEL_PARAMS",
         smaller_params,
     )
