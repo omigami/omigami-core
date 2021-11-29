@@ -5,8 +5,6 @@ import pytest
 
 from omigami.spectra_matching.ms2deepscore.embedding import (
     MS2DeepScoreEmbedding,
-)
-from omigami.spectra_matching.ms2deepscore.similarity_score_calculator import (
     EmbeddingMaker,
 )
 from omigami.test.conftest import ASSETS_DIR

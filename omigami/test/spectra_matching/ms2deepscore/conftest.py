@@ -10,8 +10,8 @@ from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
-from omigami.spectra_matching.ms2deepscore.predictor import MS2DeepScorePredictor
-from omigami.spectra_matching.ms2deepscore.similarity_score_calculator import (
+from omigami.spectra_matching.ms2deepscore.predictor import (
+    MS2DeepScorePredictor,
     MS2DeepScoreSimilarityScoreCalculator,
 )
 from omigami.test.conftest import ASSETS_DIR
