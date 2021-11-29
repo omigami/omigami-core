@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from prefect import Flow
 
-from omigami.spectra_matching.ms2deepscore.gateways import (
+from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.ms2deepscore.tasks import (

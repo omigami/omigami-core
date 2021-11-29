@@ -4,11 +4,11 @@ from typing import Set
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.spectra_matching.ms2deepscore.gateways import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
 from omigami.spectra_matching.ms2deepscore.helper_classes.tanimoto_score_calculator import (
     TanimotoScoreCalculator,
+)
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.utils import merge_prefect_task_configs
 

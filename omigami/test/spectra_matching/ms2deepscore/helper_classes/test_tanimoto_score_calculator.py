@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from omigami.spectra_matching.ms2deepscore.gateways import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
 from omigami.spectra_matching.ms2deepscore.helper_classes.tanimoto_score_calculator import (
     TanimotoScoreCalculator,
+)
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
 )
 
 

@@ -3,14 +3,14 @@ import os
 import pytest
 from prefect import Flow
 
-from omigami.spectra_matching.ms2deepscore.gateways import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
-from omigami.spectra_matching.ms2deepscore.gateways.fs_data_gateway import (
-    MS2DeepScoreFSDataGateway,
-)
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SplitRatio,
+)
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
 )
 from omigami.spectra_matching.ms2deepscore.tasks import TrainModel, TrainModelParameters
 

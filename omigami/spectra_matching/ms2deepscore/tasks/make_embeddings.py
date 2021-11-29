@@ -5,10 +5,10 @@ from prefect import Task
 
 from omigami.config import IonModes
 from omigami.spectra_matching.ms2deepscore.embedding import EmbeddingMaker
-from omigami.spectra_matching.ms2deepscore.gateways import (
+from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.spectra_matching.ms2deepscore.gateways.fs_data_gateway import (
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
 from omigami.spectra_matching.storage import REDIS_DB

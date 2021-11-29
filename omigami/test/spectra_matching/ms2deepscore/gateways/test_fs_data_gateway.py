@@ -1,6 +1,6 @@
 from ms2deepscore.models import SiameseModel
 
-from omigami.spectra_matching.ms2deepscore.gateways.fs_data_gateway import (
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
 

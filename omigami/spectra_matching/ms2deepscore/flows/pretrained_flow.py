@@ -1,7 +1,7 @@
 from prefect import Flow
 
 from omigami.flow_config import FlowConfig
-from omigami.spectra_matching.ms2deepscore.gateways import (
+from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.ms2deepscore.tasks import (

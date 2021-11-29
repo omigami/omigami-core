@@ -12,7 +12,7 @@ from omigami.spectra_matching.ms2deepscore.embedding import (
     MS2DeepScoreEmbedding,
     EmbeddingMaker,
 )
-from omigami.spectra_matching.ms2deepscore.gateways import (
+from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
