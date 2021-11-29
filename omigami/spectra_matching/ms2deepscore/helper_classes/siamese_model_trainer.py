@@ -10,7 +10,7 @@ from ms2deepscore.models import SiameseModel
 from tensorflow import keras
 
 from omigami.config import IonModes
-from omigami.spectra_matching.ms2deepscore.gateways import (
+from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
 

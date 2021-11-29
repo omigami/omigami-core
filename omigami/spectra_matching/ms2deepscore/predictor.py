@@ -8,15 +8,15 @@ from ms2deepscore.models import load_model as ms2deepscore_load_model
 from omigami.spectra_matching.ms2deepscore.embedding import (
     MS2DeepScoreEmbedding,
 )
-from omigami.spectra_matching.ms2deepscore.gateways import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
 from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
 from omigami.spectra_matching.ms2deepscore.similarity_score_calculator import (
     MS2DeepScoreSimilarityScoreCalculator,
     EmbeddingMaker,
+)
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
 

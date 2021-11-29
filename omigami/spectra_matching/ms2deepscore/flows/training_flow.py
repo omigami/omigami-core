@@ -7,11 +7,11 @@ from prefect.schedules.clocks import IntervalClock
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.spectra_matching.ms2deepscore.gateways import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SplitRatio,
+)
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.ms2deepscore.tasks import (
     ProcessSpectrumParameters,

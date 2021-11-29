@@ -10,7 +10,7 @@ from omigami.spectra_matching.ms2deepscore.flows.pretrained_flow import (
     build_pretrained_flow,
     PretrainedFlowParameters,
 )
-from omigami.spectra_matching.ms2deepscore.gateways import (
+from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.storage import DataGateway, FSDataGateway

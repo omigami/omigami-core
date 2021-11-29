@@ -4,15 +4,15 @@ from typing import Dict, Set
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.spectra_matching.ms2deepscore.gateways import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
-from omigami.spectra_matching.ms2deepscore.gateways.fs_data_gateway import (
-    MS2DeepScoreFSDataGateway,
-)
 from omigami.spectra_matching.ms2deepscore.similarity_score_calculator import (
     MS2DeepScoreSimilarityScoreCalculator,
     EmbeddingMaker,
+)
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
 )
 from omigami.spectra_matching.storage import REDIS_DB
 from omigami.utils import merge_prefect_task_configs

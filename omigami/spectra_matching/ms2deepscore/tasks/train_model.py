@@ -4,12 +4,12 @@ from typing import List, Dict
 from prefect import Task
 
 from omigami.config import IonModes
-from omigami.spectra_matching.ms2deepscore.gateways import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SiameseModelTrainer,
     SplitRatio,
+)
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.storage import DataGateway
 from omigami.utils import merge_prefect_task_configs
