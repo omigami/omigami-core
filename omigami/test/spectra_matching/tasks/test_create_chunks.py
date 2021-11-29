@@ -4,7 +4,7 @@ from prefect import Flow
 
 from omigami.spectra_matching.storage import FSDataGateway
 from omigami.spectra_matching.tasks import CreateChunks, ChunkingParameters
-from omigami.test.conftest import TEST_TASK_CONFIG, ASSETS_DIR
+from omigami.test.spectra_matching.conftest import TEST_TASK_CONFIG, ASSETS_DIR
 
 
 @pytest.mark.parametrize(

@@ -9,7 +9,7 @@ from omigami.spectra_matching.ms2deepscore.embedding import (
 from omigami.spectra_matching.ms2deepscore.similarity_score_calculator import (
     EmbeddingMaker,
 )
-from omigami.test.conftest import ASSETS_DIR
+from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 
 @pytest.mark.skipif(

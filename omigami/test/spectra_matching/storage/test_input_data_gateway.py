@@ -11,7 +11,7 @@ from omigami.config import (
     SOURCE_URI_COMPLETE_GNPS,
 )
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
-from omigami.test.conftest import ASSETS_DIR
+from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 
 def test_load_gnps(local_gnps_small_json):

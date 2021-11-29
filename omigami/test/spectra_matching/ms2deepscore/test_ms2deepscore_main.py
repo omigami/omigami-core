@@ -10,7 +10,7 @@ from omigami.config import (
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 from omigami.spectra_matching.ms2deepscore.main import run_ms2deepscore_flow
-from omigami.test.conftest import monitor_flow_results
+from omigami.test.spectra_matching.conftest import monitor_flow_results
 
 
 @pytest.mark.skip(

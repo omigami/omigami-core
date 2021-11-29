@@ -18,7 +18,7 @@ from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
 )
 from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.storage import FSDataGateway
-from omigami.test.conftest import ASSETS_DIR
+from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
 

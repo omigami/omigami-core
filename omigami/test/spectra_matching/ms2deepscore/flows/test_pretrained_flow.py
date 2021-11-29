@@ -14,7 +14,7 @@ from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.storage import DataGateway, FSDataGateway
-from omigami.test.conftest import ASSETS_DIR
+from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
 
