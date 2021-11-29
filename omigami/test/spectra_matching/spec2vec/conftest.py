@@ -11,7 +11,7 @@ from spec2vec.model_building import train_new_word2vec_model
 from omigami.config import EMBEDDING_HASHES
 from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
-from omigami.spectra_matching.spec2vec.gateways.redis_spectrum_document import (
+from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
 from omigami.spectra_matching.storage import FSDataGateway

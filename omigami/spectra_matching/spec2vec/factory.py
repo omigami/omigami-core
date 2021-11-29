@@ -27,7 +27,7 @@ from omigami.spectra_matching.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
     build_training_flow,
 )
-from omigami.spectra_matching.spec2vec.gateways.redis_spectrum_document import (
+from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
 from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
