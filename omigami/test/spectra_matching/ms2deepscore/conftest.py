@@ -71,7 +71,7 @@ def ms2deepscore_predictor(ms2deepscore_embedding):
 
 
 @pytest.fixture()
-def ms2deepscore_real_model_path():
+def siamese_model_path():
     return str(
         ASSETS_DIR
         / "ms2deepscore"
@@ -81,17 +81,15 @@ def ms2deepscore_real_model_path():
 
 
 @pytest.fixture()
-def ms2deepscore_real_model(ms2deepscore_real_model_path):
-    ms2deepscore_model = load_model(ms2deepscore_real_model_path)
+def siamese_model(siamese_model_path):
+    ms2deepscore_model = load_model(siamese_model_path)
     return ms2deepscore_model
 
 
 @pytest.fixture()
-def ms2deepscore_real_predictor(ms2deepscore_real_model):
+def ms2deepscore_real_predictor(siamese_model):
     ms2deepscore_predictor = MS2DeepScorePredictor(ion_mode="positive", run_id="2")
-    ms2deepscore_predictor._similarity_score_calculator = (
-        MS2DeepScoreSimilarityScoreCalculator(ms2deepscore_real_model)
-    )
+    ms2deepscore_predictor._model = siamese_model
     return ms2deepscore_predictor
 
 

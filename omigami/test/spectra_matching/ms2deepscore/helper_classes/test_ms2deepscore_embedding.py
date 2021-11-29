@@ -25,13 +25,13 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.fixture()
-def ms2deepscore_embedding_similarity(ms2deepscore_real_model):
-    return MS2DeepScoreSimilarityScoreCalculator(ms2deepscore_real_model)
+def ms2deepscore_embedding_similarity(siamese_model):
+    return MS2DeepScoreSimilarityScoreCalculator(siamese_model)
 
 
 @pytest.fixture()
-def ms2deepscore_spectrum_similarity(ms2deepscore_real_model):
-    return MS2DeepScore(ms2deepscore_real_model)
+def ms2deepscore_spectrum_similarity(siamese_model):
+    return MS2DeepScore(siamese_model)
 
 
 def test_pair(

@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.config import MLFLOW_SERVER
 from omigami.spectra_matching.ms2deepscore.flows.pretrained_flow import (
     build_pretrained_flow,
     PretrainedFlowParameters,
@@ -34,7 +33,6 @@ def test_pretrained_flow(flow_config, spectra_stored):
         spectrum_binner_output_path="some path",
         project_name="test",
         mlflow_output_dir="model-output",
-        mlflow_server=MLFLOW_SERVER,
     )
 
     flow = build_pretrained_flow(
@@ -93,7 +91,6 @@ def test_run_pretrained_flow(
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
         project_name="test",
         mlflow_output_dir=f"{tmpdir}/mlflow-model-output",
-        mlflow_server="mlflow-server",
     )
 
     flow = build_pretrained_flow(
@@ -104,6 +101,8 @@ def test_run_pretrained_flow(
     )
 
     results = flow.run()
+    register_task = flow.get_tasks("RegisterModel")[0]
 
     assert results.is_successful()
-    assert "model" in os.listdir(tmpdir / "mlflow-model-output")
+    model_uri = results.result[register_task].result["model_uri"]
+    assert Path(model_uri).exists()

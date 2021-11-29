@@ -84,9 +84,7 @@ class MS2DeepScorePredictor(Predictor):
         query_spectra = self.spectrum_processor.process_spectra(
             data_input, process_reference_spectra=False
         )
-        query_binned_spectra = self._model.model.spectrum_binner.transform(
-            query_spectra
-        )
+        query_binned_spectra = self._model.spectrum_binner.transform(query_spectra)
         query_embeddings = [
             self.embedding_maker.make_embedding(self._model, binned_spectrum)
             for binned_spectrum in query_binned_spectra

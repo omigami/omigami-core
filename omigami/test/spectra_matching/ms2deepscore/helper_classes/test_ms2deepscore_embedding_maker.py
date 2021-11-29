@@ -22,10 +22,8 @@ from omigami.test.conftest import ASSETS_DIR
     reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
     "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
 )
-def test_make_embedding(binned_spectra, ms2deepscore_real_predictor):
+def test_make_embedding(binned_spectra, siamese_model):
     maker = EmbeddingMaker()
-    embedding = maker.make_embedding(
-        ms2deepscore_real_predictor.model, binned_spectra[0]
-    )
+    embedding = maker.make_embedding(siamese_model, binned_spectra[0])
     assert isinstance(embedding, MS2DeepScoreEmbedding)
     assert isinstance(embedding.vector, np.ndarray)
