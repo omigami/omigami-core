@@ -125,7 +125,7 @@ class TrainingFlowParameters:
         )
 
         self.registering = RegisterModelParameters(
-            project_name, mlflow_output_directory, mlflow_server, ion_mode
+            project_name, mlflow_output_directory, ion_mode
         )
 
         self.spectrum_chunking = ChunkingIDsParameters(spectrum_ids_chunk_size)
