@@ -29,7 +29,7 @@ steps:
 - task: Cache@2
   displayName: Use cached Anaconda environment
   inputs:
-    key: 'conda | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml | omigami/spectra_matching/requirements/environment.frozen.yaml'
+    key: 'conda | "$(Agent.OS)" | requirements/environment.frozen.yaml | requirements/environment_test.yaml | omigami/spectra_matching/requirements/environment.frozen.yaml | omigami/spectra_matching/ms2deepscore/requirements/environment.frozen.yaml'
     restoreKeys: |
       python | "$(Agent.OS)"
       python
@@ -39,6 +39,7 @@ steps:
 - script: |
     conda env create --file requirements/environment.frozen.yaml
     conda env update --file omigami/spectra_matching/requirements/environment.frozen.yaml \
+      --file omigami/spectra_matching/ms2deepscore/requirements/environment.frozen.yaml \
       --file requirements/environment_test.yaml
   displayName: Create Anaconda environment
   condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
