@@ -11,7 +11,7 @@ from omigami.config import (
     CHUNK_SIZE,
 )
 from omigami.deployer import FlowDeployer
-from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
+from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
 
 def run_ms2deepscore_flow(

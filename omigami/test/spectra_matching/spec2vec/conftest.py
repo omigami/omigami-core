@@ -15,7 +15,7 @@ from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
 from omigami.spectra_matching.storage import FSDataGateway
-from omigami.test.conftest import ASSETS_DIR
+from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 
 @pytest.fixture()

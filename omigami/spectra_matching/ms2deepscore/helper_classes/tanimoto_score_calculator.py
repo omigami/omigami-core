@@ -7,7 +7,7 @@ from rdkit import Chem
 from rdkit.DataStructs import BulkTanimotoSimilarity
 
 from omigami.config import IonModes
-from omigami.ms2deepscore.gateways.redis_spectrum_gateway import (
+from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
 

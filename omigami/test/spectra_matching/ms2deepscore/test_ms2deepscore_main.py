@@ -2,15 +2,15 @@ from unittest.mock import Mock
 
 import pytest
 
-import omigami.ms2deepscore.main
+import omigami.spectra_matching.ms2deepscore.main
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
     STORAGE_ROOT,
 )
 from omigami.deployer import FlowDeployer
-from omigami.ms2deepscore.factory import MS2DeepScoreFlowFactory
-from omigami.ms2deepscore.main import run_ms2deepscore_flow
-from omigami.test.conftest import monitor_flow_results
+from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
+from omigami.spectra_matching.ms2deepscore.main import run_ms2deepscore_flow
+from omigami.test.spectra_matching.conftest import monitor_flow_results
 
 
 @pytest.mark.skip(
@@ -54,7 +54,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
     client_factory_instance = mock_client_factory.return_value
     client_factory_instance.get_client = Mock(return_value="client")
     monkeypatch.setattr(
-        omigami.ms2deepscore.main,
+        omigami.spectra_matching.ms2deepscore.main,
         "PrefectClientFactory",
         mock_client_factory,
     )
@@ -63,13 +63,17 @@ def test_mocked_deploy_training_flow(monkeypatch):
     factory_instance = mock_flow_factory.return_value
     factory_instance.build_training_flow = Mock(return_value="flow")
     monkeypatch.setattr(
-        omigami.ms2deepscore.main, "MS2DeepScoreFlowFactory", mock_flow_factory
+        omigami.spectra_matching.ms2deepscore.main,
+        "MS2DeepScoreFlowFactory",
+        mock_flow_factory,
     )
 
     mock_deployer = Mock(spec=FlowDeployer)
     deployer_instance = mock_deployer.return_value
     deployer_instance.deploy_flow = Mock(return_value=("id", "run_id"))
-    monkeypatch.setattr(omigami.ms2deepscore.main, "FlowDeployer", mock_deployer)
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.main, "FlowDeployer", mock_deployer
+    )
 
     params = dict(
         image="",

@@ -3,10 +3,12 @@ from unittest.mock import Mock
 
 import pytest
 
-from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
-from omigami.ms2deepscore.helper_classes.siamese_model_trainer import (
+from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SiameseModelTrainer,
     SplitRatio,
+)
+from omigami.spectra_matching.ms2deepscore.storage.redis_spectrum_gateway import (
+    MS2DeepScoreRedisSpectrumDataGateway,
 )
 
 

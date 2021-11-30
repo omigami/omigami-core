@@ -3,7 +3,7 @@ import pytest
 from matchms import Spectrum
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.ms2deepscore.helper_classes.spectrum_processor import (
+from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
 

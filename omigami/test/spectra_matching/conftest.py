@@ -29,10 +29,11 @@ from omigami.flow_config import (
     PrefectStorageMethods,
     PrefectExecutorMethods,
 )
-from omigami.ms2deepscore.config import BINNED_SPECTRUM_HASHES
+from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
+from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
 
-ASSETS_DIR = Path(__file__).parents[0] / "assets"
+ASSETS_DIR = Path(__file__).parents[1] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=pd.Timedelta(seconds=0.1))
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -186,8 +187,11 @@ def binned_spectra_stored(redis_db, binned_spectra):
 @pytest.fixture()
 def embeddings_from_real_predictor():
     path = str(ASSETS_DIR / "ms2deepscore" / "SMALL_GNPS_as_embeddings.pkl")
+
     with open(path, "rb") as handle:
-        embeddings = pickle.load(handle)
+        data = pickle.load(handle)
+
+    embeddings = [MS2DeepScoreEmbedding(**d) for d in data]
     return embeddings
 
 

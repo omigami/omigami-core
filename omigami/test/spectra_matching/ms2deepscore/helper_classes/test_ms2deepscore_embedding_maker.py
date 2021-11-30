@@ -3,9 +3,13 @@ import os
 import numpy as np
 import pytest
 
-from omigami.ms2deepscore.helper_classes.embedding_maker import EmbeddingMaker
-from omigami.ms2deepscore.entities.embedding import MS2DeepScoreEmbedding
-from omigami.test.conftest import ASSETS_DIR
+from omigami.spectra_matching.ms2deepscore.embedding import (
+    MS2DeepScoreEmbedding,
+)
+from omigami.spectra_matching.ms2deepscore.similarity_score_calculator import (
+    EmbeddingMaker,
+)
+from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 
 @pytest.mark.skipif(
@@ -23,7 +27,7 @@ from omigami.test.conftest import ASSETS_DIR
 def test_make_embedding(binned_spectra, ms2deepscore_real_predictor):
     maker = EmbeddingMaker()
     embedding = maker.make_embedding(
-        ms2deepscore_real_predictor.model, binned_spectra[0]
+        ms2deepscore_real_predictor._similarity_score_calculator, binned_spectra[0]
     )
     assert isinstance(embedding, MS2DeepScoreEmbedding)
     assert isinstance(embedding.vector, np.ndarray)

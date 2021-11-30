@@ -7,14 +7,16 @@ from mlflow.pyfunc import PyFuncModel
 from prefect import Flow
 
 from omigami.config import MLFLOW_SERVER
-from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
-from omigami.ms2deepscore.predictor import MS2DeepScorePredictor
-from omigami.ms2deepscore.tasks import (
+from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
+    SplitRatio,
+)
+from omigami.spectra_matching.ms2deepscore.predictor import MS2DeepScorePredictor
+from omigami.spectra_matching.ms2deepscore.tasks import (
     ModelRegister,
     RegisterModel,
     RegisterModelParameters,
+    TrainModelParameters,
 )
-from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
 
 os.chdir(Path(__file__).parents[4])
 
