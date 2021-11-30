@@ -38,7 +38,8 @@ steps:
 
 - script: |
     conda env create --file requirements/environment.frozen.yaml
-    conda env update --file requirements/environment_test.yaml
+    conda env update --file omigami/spectra_matching/requirements/environment.frozen.yaml \
+      --file requirements/environment_test.yaml
     source activate omigami
     conda env update -n omigami --file omigami/spectra_matching/requirements/requirements.txt
     pip install -r omigami/spectra_matching/requirements/requirements_pip.txt
