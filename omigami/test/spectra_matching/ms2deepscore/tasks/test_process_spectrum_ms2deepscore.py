@@ -50,7 +50,7 @@ def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
 def test_process_spectrum(
     spectra_stored,
     spectrum_ids,
-    ms2deepscore_real_model_path,
+    siamese_model_path,
     mock_default_config,
     tmpdir,
 ):

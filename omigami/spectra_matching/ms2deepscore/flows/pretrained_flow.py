@@ -23,7 +23,6 @@ class PretrainedFlowParameters:
         spectrum_binner_output_path: str,
         project_name: str,
         mlflow_output_dir: str,
-        mlflow_server: str,
         overwrite_model: bool = False,
         overwrite_all_spectra: bool = False,
         spectrum_binner_n_bins: int = 10000,
@@ -40,7 +39,7 @@ class PretrainedFlowParameters:
             n_bins=spectrum_binner_n_bins,
         )
         self.registering = RegisterModelParameters(
-            project_name, mlflow_output_dir, mlflow_server, "positive"
+            project_name, mlflow_output_dir, "positive"
         )
         self.deploying = DeployModelParameters(
             redis_db, overwrite_model, "ms2deep-pretrained"

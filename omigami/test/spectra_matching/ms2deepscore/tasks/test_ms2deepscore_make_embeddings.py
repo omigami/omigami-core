@@ -28,16 +28,14 @@ from omigami.test.spectra_matching.conftest import ASSETS_DIR
     reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
     "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
 )
-def test_make_embeddings(
-    binned_spectra_stored, binned_spectra, ms2deepscore_real_model_path
-):
+def test_make_embeddings(binned_spectra_stored, binned_spectra, siamese_model_path):
     spectrum_ids = [spectrum.get("spectrum_id") for spectrum in binned_spectra]
     parameters = MakeEmbeddingsParameters(ion_mode="positive")
     spectrum_gtw = MS2DeepScoreRedisSpectrumDataGateway()
     fs_gtw = MS2DeepScoreFSDataGateway()
     with Flow("test") as flow:
         MakeEmbeddings(spectrum_gtw, fs_gtw, parameters)(
-            {"ms2deepscore_model_path": ms2deepscore_real_model_path},
+            {"ms2deepscore_model_path": siamese_model_path},
             {"run_id": "1"},
             spectrum_ids,
         )
