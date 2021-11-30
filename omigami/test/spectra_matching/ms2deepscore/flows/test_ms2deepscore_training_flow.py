@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS, MLFLOW_SERVER
+from omigami.config import SOURCE_URI_PARTIAL_GNPS
 from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
@@ -121,7 +121,6 @@ def test_run_training_flow(
         epochs=1,
         project_name="test",
         mlflow_output_directory=f"{tmpdir}/model-output",
-        mlflow_server=MLFLOW_SERVER,
         train_ratio=0.8,
         validation_ratio=0.2,
         test_ratio=0.2,
