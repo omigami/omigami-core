@@ -12,6 +12,8 @@ How to setup
     conda env create -f requirements/environment.frozen.yaml
     conda env update -f requirements/environment_test.yaml
     conda activate omigami
+    conda env update -n omigami -f omigami/spectra_matching/requirements/requirements.txt
+    pip install -r omigami/spectra_matching/requirements/requirements_pip.txt
     pip install -e .
 
 How to update all packages
