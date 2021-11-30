@@ -4,9 +4,6 @@ from prefect import Flow, unmapped
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
-from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
-    SpectrumDocumentDataGateway,
-)
 from omigami.spectra_matching.spec2vec.tasks import (
     MakeEmbeddings,
     MakeEmbeddingsParameters,
@@ -16,6 +13,7 @@ from omigami.spectra_matching.spec2vec.tasks.deploy_model_tasks import (
     LoadSpec2VecModel,
 )
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
+from omigami.spectra_matching.storage.model_registry import ModelRegistryDataGateway
 from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
@@ -27,7 +25,7 @@ class DeployModelFlowParameters:
         self,
         spectrum_dgw: RedisSpectrumDataGateway,
         data_gtw: FSDataGateway,
-        document_dgw: SpectrumDocumentDataGateway,
+        model_registry_dgw: ModelRegistryDataGateway,
         ion_mode: IonModes,
         n_decimals: int,
         model_id: str,
@@ -39,7 +37,7 @@ class DeployModelFlowParameters:
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
-        self.document_dgw = document_dgw
+        self.model_registry_dgw = model_registry_dgw
         self.model_id = model_id
         self.documents_chunk_size = 10000
         self.documents_directory = documents_directory
@@ -81,7 +79,7 @@ def build_deploy_model_flow(
         document_paths = ChunkDocumentPaths(
             p.documents_directory, p.data_gtw, p.documents_chunk_size
         )()
-        model = LoadSpec2VecModel(p.model_id)()
+        model = LoadSpec2VecModel(p.model_id, p.data_gtw, p.model_registry_dgw)()
         make_embeddings = MakeEmbeddings(p.spectrum_dgw, p.data_gtw, p.embedding)
         make_embeddings.map(
             unmapped(model), unmapped({"run_id": p.model_id}), document_paths
