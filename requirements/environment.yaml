@@ -25,3 +25,4 @@ dependencies:
       - seldon-core==1.6.*
       - git+https://github.com/datarevenue-berlin/drfs
       - matchmsextras==0.2.*
+      - pubchempy==1.0.*
