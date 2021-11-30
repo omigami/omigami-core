@@ -76,7 +76,6 @@ def test_model_register_task(
     parameters = RegisterModelParameters(
         experiment_name="experiment",
         mlflow_output_path=tmpdir,
-        server_uri=MLFLOW_SERVER,
         ion_mode="positive",
     )
 
