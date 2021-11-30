@@ -7,7 +7,7 @@ from pandas import Timestamp
 from prefect import Task
 
 from omigami.config import IonModes, CONDA_ENV_PATH, CODE_PATH
-from omigami.model_register import MLFlowModelRegister
+from omigami.spectra_matching.model_register import MLFlowModelRegister
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.utils import merge_prefect_task_configs
 
