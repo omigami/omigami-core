@@ -82,7 +82,8 @@ def build_deploy_model_flow(
             p.documents_directory, p.data_gtw, p.documents_chunk_size
         )()
         model = LoadSpec2VecModel(p.model_id)()
-        MakeEmbeddings(p.spectrum_dgw, p.data_gtw, p.embedding).map(
+        make_embeddings = MakeEmbeddings(p.spectrum_dgw, p.data_gtw, p.embedding)
+        make_embeddings.map(
             unmapped(model), unmapped({"run_id": p.model_id}), document_paths
         )
         DeployModel(flow_parameters.deploying).set_upstream(make_embeddings)()
