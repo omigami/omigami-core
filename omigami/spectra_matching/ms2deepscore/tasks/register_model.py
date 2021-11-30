@@ -6,7 +6,7 @@ from pandas import Timestamp
 from prefect import Task
 
 from omigami.config import IonModes, CONDA_ENV_PATH, CODE_PATH, MLFLOW_SERVER
-from omigami.model_register import MLFlowModelRegister
+from omigami.spectra_matching.model_register import MLFlowModelRegister
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SIAMESE_MODEL_PARAMS,
 )
