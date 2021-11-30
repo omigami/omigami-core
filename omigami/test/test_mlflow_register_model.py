@@ -61,10 +61,16 @@ def test_save_model(tmpdir):
     "Requires MLFlow Server running locally."
     "mlflow server --backend-store-uri sqlite:///mydb.sqlite --default-artifact-root /local-deployment/mlflow"
 )
-def test_log_model(word2vec_model, tmpdir):
+def test_log_model(tmpdir):
 
     model_register = MockABCModelRegister("http://localhost:5000")
     exp_id = model_register._get_or_create_experiment_id("experiment")
+
+    class Word2Vec:
+        def __init__(self):
+            pass
+
+    word2vec_model = Word2Vec()
 
     with mlflow.start_run(experiment_id=exp_id, nested=True):
         model_register.log_model(

@@ -14,7 +14,7 @@ from omigami.spectra_matching.ms2deepscore.predictor import (
     MS2DeepScorePredictor,
     MS2DeepScoreSimilarityScoreCalculator,
 )
-from omigami.test.conftest import ASSETS_DIR
+from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 redis_db = factories.redisdb("redis_nooproc")
 

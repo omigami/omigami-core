@@ -33,7 +33,7 @@ from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
 
-ASSETS_DIR = Path(__file__).parents[0] / "assets"
+ASSETS_DIR = Path(__file__).parents[1] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=pd.Timedelta(seconds=0.1))
 redis_db = factories.redisdb("redis_nooproc")
 
