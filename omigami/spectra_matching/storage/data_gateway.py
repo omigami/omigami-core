@@ -44,3 +44,7 @@ class DataGateway(ABC):
     @abstractmethod
     def save(self, obj, output_path: str):
         pass
+
+    @abstractmethod
+    def list_files(self, directory: str) -> List[str]:
+        pass

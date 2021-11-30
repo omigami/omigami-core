@@ -52,7 +52,7 @@ class Spec2VecFlowFactory:
             else PrefectStorageMethods.Local
         )
 
-    def build_training_flow(
+    def build_spec2vec_flow(
         self,
         flow_name: str,
         image: str,
