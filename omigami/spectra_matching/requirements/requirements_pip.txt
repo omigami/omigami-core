@@ -1,5 +1,0 @@
-matchms==0.8.*
-mlflow==1.14.*
-spec2vec==0.4.*
-redis==3.5.*
-seldon-core==1.6.*

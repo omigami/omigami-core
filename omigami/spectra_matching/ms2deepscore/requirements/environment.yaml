@@ -5,6 +5,7 @@ channels:
   - nlesc
 dependencies:
   - rdkit=2020.09.*
+  - pip
   - pip:
       - tensorflow==2.5.*
       - ms2deepscore==0.2.*
