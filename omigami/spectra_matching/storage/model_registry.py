@@ -14,14 +14,46 @@ class ModelRegistryDataGateway(ABC):
         model: Predictor,
         experiment_name: str,
         run_name: str,
-        output_path: str = None,
+        experiment_path: str = None,
         conda_env_path: str = None,
         model_name: Optional[str] = None,
         params: Dict[str, Any] = None,
         metrics: Dict[str, float] = None,
         artifacts: Dict[str, Any] = None,
     ):
-        """TODO"""
+        """
+        Registers a model to the model registry. Optionally includes metrics, parameters,
+        and artifacts.
+
+        Parameters
+        ----------
+        model:
+            Model that will be saved on the registry
+        experiment_name:
+            Name of the experiment to add the model to. If no experiment with this name
+            is present, creates one.
+        run_name:
+            Name of the run that created this model
+        experiment_path:
+            Path used for the root of the files of a experiment. Only used when a new
+            experiment is created
+        conda_env_path:
+            Path to the conda environment file
+        model_name:
+            Name of the model
+        params:
+            Optional dictionary of parameters to be saved
+        metrics:
+            Optional dictionary of metrics to be saved
+        artifacts:
+            Optional dictionary of paths to artifacts in the filesystem that will be
+            registered with the model
+
+        Returns
+        -------
+        identifier:
+            A unique identifier for the registered model
+        """
         pass
 
 
@@ -34,14 +66,16 @@ class MLFlowDataGateway(ModelRegistryDataGateway):
         model: Predictor,
         experiment_name: str,
         run_name: str,
-        output_path: str = None,
+        experiment_path: str = None,
         conda_env_path: str = None,
         model_name: Optional[str] = None,
         params: Dict[str, Any] = None,
         metrics: Dict[str, float] = None,
         artifacts: Dict[str, Any] = None,
     ) -> str:
-        experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
+        experiment_id = self._get_or_create_experiment_id(
+            experiment_name, experiment_path
+        )
         with mlflow.start_run(
             run_name=run_name, experiment_id=experiment_id, nested=True
         ) as run:

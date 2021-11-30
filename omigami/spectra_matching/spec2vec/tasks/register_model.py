@@ -82,7 +82,7 @@ class RegisterModel(Task):
         run_id = model_register.register_model(
             spec2vec_model,
             experiment_name=self._experiment_name,
-            output_path=self._path,
+            experiment_path=self._path,
             conda_env_path=CONDA_ENV_PATH,
             run_name=run_name,
             model_name=self._model_name,
