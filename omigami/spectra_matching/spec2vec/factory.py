@@ -8,7 +8,6 @@ from omigami.config import (
     REDIS_DATABASES,
     IonModes,
     DATASET_IDS,
-    MLFLOW_SERVER,
     MLFLOW_DIRECTORY,
     STORAGE_ROOT,
     CHUNK_SIZE,
@@ -47,7 +46,6 @@ class Spec2VecFlowFactory:
         self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
         self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
         self._dataset_ids = DATASET_IDS
-        self._mlflow_server = MLFLOW_SERVER
         self._storage_type = (
             PrefectStorageMethods.S3
             if "s3" in str(SPEC2VEC_ROOT)
