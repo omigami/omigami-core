@@ -95,9 +95,6 @@ class Spec2VecPredictor(Predictor):
         log.info("Finishing prediction.")
         return best_matches
 
-    def set_run_id(self, run_id: str):
-        self._run_id = run_id
-
     @staticmethod
     def _parse_input(
         data_input_and_parameters: Dict[str, Union[Dict, List]]
