@@ -12,6 +12,7 @@ How to setup
     conda env create -f requirements/environment.frozen.yaml
     conda env update -f omigami/spectra_matching/requirements/environment.frozen.yaml
     conda env update -f omigami/spectra_matching/ms2deepscore/requirements/environment.frozen.yaml
+    conda env update -f omigami/spectra_matching/spec2vec/requirements/environment.frozen.yaml
     conda env update -f requirements/environment_test.yaml
     conda activate omigami
     pip install -e .
