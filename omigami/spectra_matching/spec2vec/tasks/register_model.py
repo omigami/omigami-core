@@ -6,7 +6,7 @@ from gensim.models import Word2Vec
 from pandas import Timestamp
 from prefect import Task
 
-from omigami.config import IonModes, CONDA_ENV_PATH, CODE_PATH
+from omigami.config import IonModes, CONDA_ENV_PATH, CODE_PATH, MLFLOW_SERVER
 from omigami.spectra_matching.model_register import MLFlowModelRegister
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.utils import merge_prefect_task_configs
@@ -16,7 +16,6 @@ from omigami.utils import merge_prefect_task_configs
 class RegisterModelParameters:
     experiment_name: str
     mlflow_output_directory: str
-    server_uri: str
     n_decimals: int
     ion_mode: IonModes
     intensity_weighting_power: Union[float, int]
@@ -36,7 +35,6 @@ class RegisterModel(Task):
         self._ion_mode = parameters.ion_mode
         self._intensity_weighting_power = parameters.intensity_weighting_power
         self._allowed_missing_percentage = parameters.allowed_missing_percentage
-        self._server_uri = parameters.server_uri
         self._model_name = parameters.model_name
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
@@ -61,11 +59,9 @@ class RegisterModel(Task):
         Dictionary containing registered model's `model_uri` and `run_id`
 
         """
-        self.logger.info(
-            f"Registering model to {self._server_uri} on URI: {self._path}."
-        )
+        self.logger.info(f"Registering model to {MLFLOW_SERVER} on URI: {self._path}.")
         run_name = f"spec2vec-{Timestamp.now():%Y%m%dT%H%M}"
-        model_register = ModelRegister(self._server_uri)
+        model_register = ModelRegister(MLFLOW_SERVER)
         run_id = model_register.register_model(
             Spec2VecPredictor(
                 model,
