@@ -77,7 +77,7 @@ class RegisterModel(Task):
         run_id = mlflow_dgw.register_model(
             model=MS2DeepScorePredictor(self._ion_mode),
             experiment_name=self._experiment_name,
-            output_path=self._mlflow_output_path,
+            experiment_path=self._mlflow_output_path,
             params=params,
             conda_env_path=CONDA_ENV_PATH,
             artifacts=train_model_output,
