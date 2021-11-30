@@ -45,7 +45,7 @@ def run_spec2vec_flow(
     prefect_client = prefect_factory.get_client()
 
     factory = Spec2VecFlowFactory(dataset_directory=dataset_directory)
-    flow = factory.build_training_flow(
+    flow = factory.build_spec2vec_flow(
         image=image,
         project_name=project_name,
         flow_name=flow_name,
