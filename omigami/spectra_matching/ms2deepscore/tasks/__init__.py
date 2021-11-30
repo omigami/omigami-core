@@ -15,7 +15,6 @@ from omigami.spectra_matching.ms2deepscore.tasks.process_spectrum import (
     ProcessSpectrumParameters,
 )
 from omigami.spectra_matching.ms2deepscore.tasks.register_model import (
-    ModelRegister,
     RegisterModel,
     RegisterModelParameters,
 )
