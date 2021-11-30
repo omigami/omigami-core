@@ -38,7 +38,9 @@ steps:
 
 - script: |
     conda env create --file requirements/environment.frozen.yaml
-    conda env update --file omigami/spectra_matching/requirements/environment.frozen.yaml --file omigami/spectra_matching/ms2deepscore/requirements/environment.frozen.yaml --file requirements/environment_test.yaml
+    conda env update --file omigami/spectra_matching/requirements/environment.frozen.yaml
+    conda env update --file omigami/spectra_matching/ms2deepscore/requirements/environment.frozen.yaml
+    conda env update --file requirements/environment_test.yaml
   displayName: Create Anaconda environment
   condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
 
