@@ -62,7 +62,6 @@ class TrainingFlowParameters:
         model_output_path: str,
         project_name: str,
         mlflow_output_directory: str,
-        mlflow_server: str,
         epochs: int = 50,
         train_ratio: float = 0.9,
         validation_ratio: float = 0.05,

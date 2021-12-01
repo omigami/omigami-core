@@ -51,7 +51,6 @@ class TrainingFlowParameters:
         window: int,
         mlflow_output_directory: str,
         documents_save_directory: str,
-        mlflow_server: str,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
         dataset_name: str = "gnps.json",
@@ -91,7 +90,6 @@ class TrainingFlowParameters:
         self.registering = RegisterModelParameters(
             experiment_name=experiment_name,
             mlflow_output_directory=mlflow_output_directory,
-            server_uri=mlflow_server,
             n_decimals=n_decimals,
             ion_mode=ion_mode,
             intensity_weighting_power=intensity_weighting_power,
