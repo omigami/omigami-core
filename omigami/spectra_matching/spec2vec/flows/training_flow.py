@@ -157,16 +157,16 @@ def build_training_flow(
             document_paths
         )
 
-        model_registry = RegisterModel(flow_parameters.registering)(model)
+        run_id = RegisterModel(flow_parameters.registering)(model)
 
         # TODO: this task prob doesnt need chunking or can be done in larger chunks
         _ = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
             flow_parameters.data_gtw,
             flow_parameters.embedding,
-        ).map(unmapped(model), unmapped(model_registry), document_paths)
+        ).map(unmapped(model), unmapped(run_id), document_paths)
 
         if deploy_model:
-            DeployModel(flow_parameters.deploying)(model_registry)
+            DeployModel(flow_parameters.deploying)(run_id)
 
     return training_flow

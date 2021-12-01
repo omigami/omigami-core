@@ -1,6 +1,6 @@
 from typing import Union
 
-from prefect import Flow, unmapped
+from prefect import Flow, unmapped, Parameter
 
 from omigami.config import IonModes, ION_MODES
 from omigami.flow_config import FlowConfig
@@ -9,7 +9,7 @@ from omigami.spectra_matching.spec2vec.tasks import (
     MakeEmbeddingsParameters,
 )
 from omigami.spectra_matching.spec2vec.tasks.deploy_model_tasks import (
-    ChunkDocumentPaths,
+    ListDocumentPaths,
     LoadSpec2VecModel,
 )
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
@@ -28,7 +28,6 @@ class DeployModelFlowParameters:
         model_registry_dgw: ModelRegistryDataGateway,
         ion_mode: IonModes,
         n_decimals: int,
-        model_id: str,
         documents_directory: str,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
@@ -38,8 +37,6 @@ class DeployModelFlowParameters:
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
         self.model_registry_dgw = model_registry_dgw
-        self.model_id = model_id
-        self.documents_chunk_size = 10000
         self.documents_directory = documents_directory
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
@@ -76,14 +73,14 @@ def build_deploy_model_flow(
     p = flow_parameters
 
     with Flow(flow_name, **flow_config.kwargs) as deploy_model_flow:
-        document_paths = ChunkDocumentPaths(
-            p.documents_directory, p.data_gtw, p.documents_chunk_size
-        )()
-        model = LoadSpec2VecModel(p.model_id, p.data_gtw, p.model_registry_dgw)()
-        make_embeddings = MakeEmbeddings(p.spectrum_dgw, p.data_gtw, p.embedding)
-        make_embeddings.map(
-            unmapped(model), unmapped({"run_id": p.model_id}), document_paths
+        model_run_id = Parameter("ModelRunID")
+        document_paths = ListDocumentPaths(p.documents_directory, p.data_gtw)()
+        loaded_model = LoadSpec2VecModel(p.data_gtw, p.model_registry_dgw)(model_run_id)
+        _ = MakeEmbeddings(p.spectrum_dgw, p.data_gtw, p.embedding).map(
+            unmapped(loaded_model),
+            unmapped(model_run_id),
+            document_paths,
         )
-        DeployModel(flow_parameters.deploying).set_upstream(make_embeddings)()
+        _ = DeployModel(flow_parameters.deploying)(model_run_id)
 
     return deploy_model_flow

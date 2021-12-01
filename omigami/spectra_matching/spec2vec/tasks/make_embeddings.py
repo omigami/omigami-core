@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union, Dict, Set
+from typing import Union, Set
 
 from gensim.models import Word2Vec
 from prefect import Task
@@ -48,7 +48,7 @@ class MakeEmbeddings(Task):
     def run(
         self,
         model: Word2Vec = None,
-        model_registry: Dict[str, str] = None,
+        model_run_id: str = None,
         document_path: str = None,
     ) -> Set[str]:
         """
@@ -64,8 +64,8 @@ class MakeEmbeddings(Task):
         ----------
         model: Word2Vec
             Model trained on spectrum documents
-        model_registry: Dict[str, str]
-            Dictionary containing registered model's `model_uri` and `run_id`
+        model_run_id:
+            Registered model's `run_id`
         document_path: str
             Directory which documents are saved
 
@@ -98,10 +98,8 @@ class MakeEmbeddings(Task):
         self.logger.info(
             f"Finished creating embeddings. Saving {len(embeddings)} embeddings to database."
         )
-        self.logger.debug(
-            f"Using Redis DB {REDIS_DB} and model id {model_registry['run_id']}."
-        )
+        self.logger.debug(f"Using Redis DB {REDIS_DB} and model id {model_run_id}.")
         self._redis_spectrum_dgw.write_embeddings(
-            embeddings, self._ion_mode, model_registry["run_id"], self.logger
+            embeddings, self._ion_mode, model_run_id, self.logger
         )
         return set(doc.get("spectrum_id") for doc in documents)

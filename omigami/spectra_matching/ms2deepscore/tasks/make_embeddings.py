@@ -39,7 +39,7 @@ class MakeEmbeddings(Task):
     def run(
         self,
         train_model_output: Dict = None,
-        model_registry: Dict[str, str] = None,
+        run_id: str = None,
         spectrum_ids: Set[str] = None,
     ) -> Set[str]:
         """
@@ -52,8 +52,8 @@ class MakeEmbeddings(Task):
         ----------
         train_model_output: Dict[str, str]
             Dictionary containing `ms2deepscore_model_path` and `validation_loss`
-        model_registry: Dict[str, str]
-            Dictionary containing registered `model_uri` and `run_id`
+        run_id:
+            Registered model `run_id`
         spectrum_ids: Set[str]
             Set of spectrum_ids to make embedding from
 
@@ -84,10 +84,8 @@ class MakeEmbeddings(Task):
             f"Finished creating embeddings. Saving {len(embeddings)} embeddings to "
             f"database."
         )
-        self.logger.debug(
-            f"Using Redis DB {REDIS_DB} and model id {model_registry['run_id']}."
-        )
+        self.logger.debug(f"Using Redis DB {REDIS_DB} and model id {run_id}.")
         self._spectrum_dgw.write_embeddings(
-            embeddings, self._ion_mode, model_registry["run_id"], self.logger
+            embeddings, self._ion_mode, run_id, self.logger
         )
         return spectrum_ids
