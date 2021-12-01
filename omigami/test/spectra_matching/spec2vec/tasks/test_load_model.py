@@ -27,14 +27,16 @@ def mlflow_setup(tmpdir_factory):
         model_name="test",
         experiment_path=str(tmpdir),
     )
-    return {"model": model, "path": tmpdir, "dgw": dgw, "run": run_id}
+    return {"dgw": dgw, "run": run_id}
 
 
 def test_load_spec2vec_model(mlflow_setup):
-    fs_dgw = FSDataGateway()
-    mlflow_dgw = mlflow_setup["dgw"]
-    task = LoadSpec2VecModel(mlflow_setup["run"], fs_dgw, mlflow_dgw)
+    task = LoadSpec2VecModel(mlflow_setup["run"], FSDataGateway(), mlflow_setup["dgw"])
 
     model = task.run()
 
     assert isinstance(model, Spec2VecPredictor)
+    assert model.n_decimals == 2
+    assert model.intensity_weighting_power == 1.0
+    assert model.ion_mode == "positive"
+    assert model.allowed_missing_percentage == 15

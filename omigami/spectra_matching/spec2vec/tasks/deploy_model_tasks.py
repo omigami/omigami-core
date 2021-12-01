@@ -44,8 +44,8 @@ class ChunkDocumentPaths(Task):
         return chunked_paths
 
 
-# TODO: we could probably unify this task for ms2ds and spec2vec but it would require
-#       some changes on the way we are saving models in spec2vec's RegisterModel task.
+# we could probably unify this task for ms2ds and spec2vec but it would require
+# some changes on the way we are saving models in spec2vec's RegisterModel task.
 class LoadSpec2VecModel(Task):
     def __init__(
         self,
