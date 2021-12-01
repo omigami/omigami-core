@@ -1,6 +1,5 @@
-from unittest.mock import Mock
-
 import pytest
+from gensim.models import Word2Vec
 
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.spec2vec.tasks.deploy_model_tasks import LoadSpec2VecModel
@@ -14,7 +13,7 @@ def mlflow_setup(tmpdir_factory):
     mlflow_uri = f"sqlite:///{tmpdir}/mlflow.sqlite"
     dgw = MLFlowDataGateway(mlflow_uri)
     model = Spec2VecPredictor(
-        Mock(),
+        Word2Vec(),
         ion_mode="positive",
         n_decimals=2,
         intensity_weighting_power=1.0,
@@ -31,12 +30,8 @@ def mlflow_setup(tmpdir_factory):
 
 
 def test_load_spec2vec_model(mlflow_setup):
-    task = LoadSpec2VecModel(mlflow_setup["run"], FSDataGateway(), mlflow_setup["dgw"])
+    task = LoadSpec2VecModel(FSDataGateway(), mlflow_setup["dgw"])
 
-    model = task.run()
+    model = task.run(mlflow_setup["run"])
 
-    assert isinstance(model, Spec2VecPredictor)
-    assert model.n_decimals == 2
-    assert model.intensity_weighting_power == 1.0
-    assert model.ion_mode == "positive"
-    assert model.allowed_missing_percentage == 15
+    assert isinstance(model, Word2Vec)

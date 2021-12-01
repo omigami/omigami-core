@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import mlflow
 import pytest
 from drfs.filesystems import get_fs
 
@@ -143,5 +144,8 @@ def test_run_training_flow(
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")
-    model_uri = flow_run.result[register_task].result["model_uri"]
+
+    run_id = flow_run.result[register_task].result
+    run = mlflow.get_run(run_id)
+    model_uri = f"{run.info.artifact_uri}/model/"
     assert Path(model_uri).exists()
