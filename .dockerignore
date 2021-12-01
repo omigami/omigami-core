@@ -10,3 +10,5 @@ omigami/test/*
 omigami/test/*/*
 omigami/test/*/*/*
 mlflow-server/*
+local-deployment/*
+mlruns/*
