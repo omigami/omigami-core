@@ -12,11 +12,11 @@ from omigami.spectra_matching.ms2deepscore.embedding import (
     MS2DeepScoreEmbedding,
     EmbeddingMaker,
 )
-from omigami.spectra_matching.ms2deepscore.storage import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
 from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
+)
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
 
@@ -39,9 +39,6 @@ class MS2DeepScorePredictor(Predictor):
             self._model = ms2deepscore_load_model(model_path)
         except FileNotFoundError:
             log.error(f"Could not find MS2DeepScore model in {model_path}")
-
-    def set_run_id(self, run_id: str):
-        self._run_id = run_id
 
     def predict(
         self,

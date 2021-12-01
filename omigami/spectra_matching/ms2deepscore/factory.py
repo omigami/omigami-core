@@ -7,7 +7,6 @@ from omigami.config import (
     REDIS_DATABASES,
     IonModes,
     DATASET_IDS,
-    MLFLOW_SERVER,
     STORAGE_ROOT,
     CHUNK_SIZE,
     MLFLOW_DIRECTORY,
@@ -48,7 +47,6 @@ class MS2DeepScoreFlowFactory:
         self._ms2deepscore_root = MS2DEEPSCORE_ROOT
         self._directories = directories or DIRECTORIES
         self._dataset_ids = DATASET_IDS
-        self._mlflow_server = MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or MLFLOW_DIRECTORY
         self._storage_type = (
             PrefectStorageMethods.S3
@@ -129,7 +127,6 @@ class MS2DeepScoreFlowFactory:
             model_output_path=model_output_path,
             project_name=project_name,
             mlflow_output_directory=str(self._mlflow_output_directory),
-            mlflow_server=self._mlflow_server,
             epochs=epochs,
             train_ratio=train_ratio,
             validation_ratio=validation_ratio,

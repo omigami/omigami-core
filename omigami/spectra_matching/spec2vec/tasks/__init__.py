@@ -10,7 +10,6 @@ from omigami.spectra_matching.spec2vec.tasks.process_spectrum import (
 from omigami.spectra_matching.spec2vec.tasks.register_model import (
     RegisterModel,
     RegisterModelParameters,
-    ModelRegister,
 )
 from omigami.spectra_matching.spec2vec.tasks.train_model import (
     TrainModel,
