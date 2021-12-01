@@ -57,7 +57,6 @@ def test_training_flow(flow_config):
         experiment_name="test",
         mlflow_output_directory="model-output",
         documents_save_directory="documents",
-        mlflow_server="mlflow-server",
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5,
     )
@@ -118,7 +117,6 @@ def test_run_training_flow(
         experiment_name="test",
         mlflow_output_directory=str(mlflow_root),
         documents_save_directory=tmpdir / f"documents/{ion_mode}",
-        mlflow_server=str(mlflow_root),
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
         model_name=None,

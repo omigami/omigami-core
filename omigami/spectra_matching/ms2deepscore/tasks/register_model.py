@@ -5,13 +5,15 @@ import mlflow
 from pandas import Timestamp
 from prefect import Task
 
-from omigami.config import IonModes, CONDA_ENV_PATH, CODE_PATH, MLFLOW_SERVER
-from omigami.spectra_matching.model_register import MLFlowModelRegister
+from omigami.config import IonModes, CONDA_ENV_PATH, MLFLOW_SERVER
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SIAMESE_MODEL_PARAMS,
 )
 from omigami.spectra_matching.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.spectra_matching.ms2deepscore.tasks.train_model import TrainModelParameters
+from omigami.spectra_matching.storage.model_registry import (
+    MLFlowDataGateway,
+)
 from omigami.utils import merge_prefect_task_configs
 
 
@@ -61,23 +63,24 @@ class RegisterModel(Task):
         Dictionary containing registered `model_uri` and `run_id`
 
         """
-        model_path = train_model_output["ms2deepscore_model_path"]
-        validation_loss = train_model_output["validation_loss"]
-
         self.logger.info(
             f"Registering model to {MLFLOW_SERVER} on URI: {self._mlflow_output_path}."
         )
+        params = self._convert_train_parameters(
+            train_model_output.pop("validation_loss")
+        )
+
         run_name = f"ms2deepscore-{self._ion_mode}-{Timestamp.now():%Y%m%dT%H%M}"
 
-        model_register = ModelRegister(MLFLOW_SERVER)
-        run_id = model_register.register_model(
+        mlflow_dgw = MLFlowDataGateway(MLFLOW_SERVER)
+
+        run_id = mlflow_dgw.register_model(
             model=MS2DeepScorePredictor(self._ion_mode),
             experiment_name=self._experiment_name,
-            output_path=self._mlflow_output_path,
-            train_parameters=self.training_parameters,
-            validation_loss=validation_loss,
+            experiment_path=self._mlflow_output_path,
+            params=params,
             conda_env_path=CONDA_ENV_PATH,
-            artifacts={"ms2deepscore_model_path": model_path},
+            artifacts=train_model_output,
             run_name=run_name,
         )
         run = mlflow.get_run(run_id)
@@ -86,85 +89,16 @@ class RegisterModel(Task):
         model_uri = f"{run.info.artifact_uri}/model/"
         return {"model_uri": model_uri, "run_id": run_id}
 
-
-class ModelRegister(MLFlowModelRegister):
-    """
-    Class that implements MLFLowModelRegister to register ms2deepscore model to MLFlow
-    """
-
-    # TODO: should be refactored together with spec2vec's implementation of this code
-    def register_model(
-        self,
-        model: MS2DeepScorePredictor,
-        experiment_name: str,
-        output_path: str,
-        train_parameters: TrainModelParameters = None,
-        validation_loss: float = None,
-        conda_env_path: str = None,
-        artifacts: Dict = None,
-        run_name: str = "ms2deepscore",
-    ) -> str:
-        """
-        Method to register the MS2DeepScore to MLFlow.
-
-        Parameters
-        ----------
-        model: MS2DeepScorePredictor
-            PythonModel class to execute the predictions
-        experiment_name: str
-            MLFlow Experiment name
-        output_path: str
-            Path to save the artifacts
-        train_parameters: TrainModelParameters = None
-            Training Parameters used to train the model
-        validation_loss: float = None
-            Last validation loss of the training
-        conda_env_path: str = None
-            Conda environment requirements file
-        artifacts: Dict = None
-            Dictionary of artifacts to be stored along with the model
-        run_name: str = "ms2deepscore"
-            Name of the run to identify in the MLFlow
-        Returns
-        -------
-            Return the MLFLow run ID
-        """
-        experiment_id = self._get_or_create_experiment_id(experiment_name, output_path)
-        with mlflow.start_run(
-            run_name=run_name, experiment_id=experiment_id, nested=True
-        ) as run:
-            run_id = run.info.run_id
-            model.set_run_id(run_id)
-
-            if train_parameters:
-                mlflow.log_params(
-                    self._convert_train_parameters(train_parameters, validation_loss)
-                )
-
-            mlflow.pyfunc.log_model(
-                "model",
-                python_model=model,
-                registered_model_name="ms2deepscore",
-                code_path=[CODE_PATH],
-                conda_env=conda_env_path,
-                artifacts=artifacts,
-            )
-
-            return run_id
-
-    @staticmethod
-    def _convert_train_parameters(
-        train_parameters: TrainModelParameters, validation_loss: float
-    ) -> Dict:
+    def _convert_train_parameters(self, validation_loss: float) -> Dict[str, float]:
         """Converts training parameters and the models metrics into a dict"""
 
         train_params = {
-            "epochs": train_parameters.epochs,
+            "epochs": self.training_parameters.epochs,
             "learning_rate": SIAMESE_MODEL_PARAMS["learning_rate"],
             "layer_base_dims": SIAMESE_MODEL_PARAMS["layer_base_dims"],
             "embedding_dim": SIAMESE_MODEL_PARAMS["embedding_dim"],
             "dropout_rate": SIAMESE_MODEL_PARAMS["dropout_rate"],
-            "split_ratio": train_parameters.split_ratio,
+            "split_ratio": self.training_parameters.split_ratio,
             "validation_loss": validation_loss,
         }
 
