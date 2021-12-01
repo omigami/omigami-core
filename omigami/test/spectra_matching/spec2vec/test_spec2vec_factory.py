@@ -1,6 +1,6 @@
-import pytest
 from prefect import Flow
 
+from omigami.config import MLFLOW_SERVER
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spectra_matching.tasks import CreateChunks
 
@@ -33,7 +33,26 @@ def test_build_training_flow():
     assert chunk_task._chunk_size == int(1e8)
 
 
-@pytest.mark.xfail(reason="Not implemented atm.")  # TODO
 def test_build_model_deployment_flow():
     factory = Spec2VecFlowFactory("dev")
-    assert factory.build_model_deployment_flow()
+    flow = factory.build_model_deployment_flow(
+        flow_name="Calvin Flowers",
+        image="star wars episode II wasn't so bad",
+        intensity_weighting_power=0.4,
+        allowed_missing_percentage=10,
+        dataset_id="small",
+        n_decimals=2,
+        ion_mode="positive",
+        overwrite_model=True,
+        project_name="Raging Flow",
+    )
+
+    assert isinstance(flow, Flow)
+    assert flow.name == "Calvin Flowers"
+    assert len(flow.tasks) == 5
+    assert flow.run_config.env == {
+        "REDIS_DB": "0",
+        "REDIS_HOST": "localhost",
+        "OMIGAMI_ENV": "local",
+        "MLFLOW_SERVER": MLFLOW_SERVER,
+    }

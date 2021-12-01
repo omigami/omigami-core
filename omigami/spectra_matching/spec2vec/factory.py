@@ -22,6 +22,10 @@ from omigami.spectra_matching.spec2vec.config import (
     DOCUMENT_DIRECTORIES,
     SPEC2VEC_ROOT,
 )
+from omigami.spectra_matching.spec2vec.flows.deploy_model import (
+    DeployModelFlowParameters,
+    build_deploy_model_flow,
+)
 from omigami.spectra_matching.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
     build_training_flow,
@@ -133,6 +137,61 @@ class Spec2VecFlowFactory:
 
         return spec2vec_flow
 
-    def build_model_deployment_flow(self) -> Flow:
-        """TODO"""
-        raise NotImplemented
+    def build_model_deployment_flow(
+        self,
+        flow_name: str,
+        image: str,
+        intensity_weighting_power: float,
+        allowed_missing_percentage: float,
+        dataset_id: str,
+        n_decimals: int = 2,
+        ion_mode: IonModes = "positive",
+        overwrite_model: bool = False,
+        project_name: str = PROJECT_NAME,
+    ) -> Flow:
+        """Creates all configuration/gateways objects used by the model deployment flow,
+        and builds the training flow with them.
+
+        Parameters
+        ----------
+        For information on parameters please check omigami/spec2vec/cli.py
+
+        Returns
+        -------
+        Flow:
+            A prefect model deployment flow with the given parameters
+
+        """
+        flow_config = make_flow_config(
+            image=image,
+            storage_type=self._storage_type,
+            executor_type=PrefectExecutorMethods.LOCAL_DASK,
+            redis_db=self._redis_dbs[dataset_id],
+            storage_root=STORAGE_ROOT,
+        )
+
+        spectrum_dgw = RedisSpectrumDataGateway(project=project_name)
+        data_gtw = FSDataGateway()
+
+        dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
+        flow_parameters = DeployModelFlowParameters(
+            spectrum_dgw=spectrum_dgw,
+            data_gtw=data_gtw,
+            ion_mode=ion_mode,
+            n_decimals=n_decimals,
+            documents_directory=str(
+                self._spec2vec_root / dataset_id / self._document_dirs[ion_mode]
+            ),
+            intensity_weighting_power=intensity_weighting_power,
+            allowed_missing_percentage=allowed_missing_percentage,
+            redis_db=self._redis_dbs[dataset_id],
+            overwrite_model=overwrite_model,
+        )
+
+        deploy_model_flow = build_deploy_model_flow(
+            flow_name,
+            flow_config,
+            flow_parameters,
+        )
+
+        return deploy_model_flow

@@ -13,7 +13,6 @@ from omigami.spectra_matching.spec2vec.tasks.deploy_model_tasks import (
     LoadSpec2VecModel,
 )
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
-from omigami.spectra_matching.storage.model_registry import ModelRegistryDataGateway
 from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
@@ -25,7 +24,6 @@ class DeployModelFlowParameters:
         self,
         spectrum_dgw: RedisSpectrumDataGateway,
         data_gtw: FSDataGateway,
-        model_registry_dgw: ModelRegistryDataGateway,
         ion_mode: IonModes,
         n_decimals: int,
         documents_directory: str,
@@ -36,7 +34,6 @@ class DeployModelFlowParameters:
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
-        self.model_registry_dgw = model_registry_dgw
         self.documents_directory = documents_directory
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
@@ -75,7 +72,7 @@ def build_deploy_model_flow(
     with Flow(flow_name, **flow_config.kwargs) as deploy_model_flow:
         model_run_id = Parameter("ModelRunID")
         document_paths = ListDocumentPaths(p.documents_directory, p.data_gtw)()
-        loaded_model = LoadSpec2VecModel(p.data_gtw, p.model_registry_dgw)(model_run_id)
+        loaded_model = LoadSpec2VecModel(p.data_gtw)(model_run_id)
         _ = MakeEmbeddings(p.spectrum_dgw, p.data_gtw, p.embedding).map(
             unmapped(loaded_model),
             unmapped(model_run_id),

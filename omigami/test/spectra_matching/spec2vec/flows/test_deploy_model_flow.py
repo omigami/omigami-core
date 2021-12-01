@@ -1,5 +1,3 @@
-from unittest.mock import Mock
-
 import pytest
 
 from omigami.spectra_matching.spec2vec.flows.deploy_model import (
@@ -43,7 +41,9 @@ def test_deploy_model_flow(flow_config):
 
 
 @pytest.fixture()
-def deploy_model_setup(tmpdir_factory, word2vec_model, monkeypatch):
+def deploy_model_setup(
+    tmpdir_factory, word2vec_model, monkeypatch, mock_deploy_model_task
+):
     tmpdir = tmpdir_factory.mktemp("model")
     mlflow_uri = f"sqlite:///{tmpdir}/mlflow.sqlite"
     dgw = MLFlowDataGateway(mlflow_uri)
@@ -62,17 +62,7 @@ def deploy_model_setup(tmpdir_factory, word2vec_model, monkeypatch):
         experiment_path=str(tmpdir),
     )
 
-    SeldonDeployment = Mock()
-    SeldonDeployment().deploy_model = Mock(return_value=[None, None])
-    import omigami.spectra_matching.tasks.deploy_model
-
-    monkeypatch.setattr(
-        omigami.spectra_matching.tasks.deploy_model,
-        "SeldonDeployment",
-        SeldonDeployment,
-    )
-
-    return {"dgw": dgw, "run_id": run_id}
+    return {"run_id": run_id}
 
 
 def test_run_deploy_model_flow(
@@ -83,11 +73,9 @@ def test_run_deploy_model_flow(
     spec2vec_redis_setup,
     s3_documents_directory,
 ):
-    fs_dgw = FSDataGateway()
     params = DeployModelFlowParameters(
         spectrum_dgw=RedisSpectrumDataGateway(),
         data_gtw=FSDataGateway(),
-        model_registry_dgw=deploy_model_setup["dgw"],
         ion_mode="positive",
         n_decimals=1,
         documents_directory=s3_documents_directory,

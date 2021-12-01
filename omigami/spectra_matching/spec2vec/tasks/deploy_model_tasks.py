@@ -5,10 +5,8 @@ from gensim.models import Word2Vec
 from mlflow.entities import Run
 from prefect import Task
 
+from omigami.config import MLFLOW_SERVER
 from omigami.spectra_matching.storage import DataGateway
-from omigami.spectra_matching.storage.model_registry import (
-    ModelRegistryDataGateway,
-)
 from omigami.utils import merge_prefect_task_configs
 
 
@@ -41,11 +39,9 @@ class LoadSpec2VecModel(Task):
     def __init__(
         self,
         fs_dgw: DataGateway,
-        model_registry_dgw: ModelRegistryDataGateway,
         **kwargs,
     ):
         self._fs_gtw = fs_dgw
-        self._model_registry_dgw = model_registry_dgw
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
@@ -53,6 +49,7 @@ class LoadSpec2VecModel(Task):
     def run(self, model_run_id: str = None) -> Word2Vec:
         """Loads a trained spec2vec model given an mlflow_run_id"""
         self.logger.info(f"Loading Spec2Vec model with run_id {model_run_id}.")
+        mlflow.set_tracking_uri(MLFLOW_SERVER)
         run: Run = mlflow.get_run(model_run_id)
         model_path = f"{run.info.artifact_uri}/model/python_model.pkl"
         self.logger.info(f"Loading model from path: {model_path}")

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from drfs.filesystems import get_fs
+from prefect import Task
 from spec2vec import calc_vector
 from spec2vec.model_building import train_new_word2vec_model
 
@@ -154,3 +155,21 @@ def documents_data():
         documents_data = pickle.load(handle)
 
     return documents_data
+
+
+@pytest.fixture
+def mock_deploy_model_task(monkeypatch):
+    class DeployModel(Task):
+        def __init__(self, *args, **kwargs):
+            super().__init__()
+
+        def run(self, model_run_id: str = None) -> None:
+            pass
+
+    import omigami.spectra_matching.spec2vec.flows.deploy_model
+
+    monkeypatch.setattr(
+        omigami.spectra_matching.spec2vec.flows.deploy_model,
+        "DeployModel",
+        DeployModel,
+    )
