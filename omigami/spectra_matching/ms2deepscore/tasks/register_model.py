@@ -38,10 +38,7 @@ class RegisterModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(
-        self,
-        train_model_output: dict = None,
-    ) -> Dict[str, str]:
+    def run(self, train_model_output: dict = None) -> Dict[str, str]:
         """
         Prefect task to register an ms2deepscore model to MLflow Model Registry. Model
         parameters saved during registration:

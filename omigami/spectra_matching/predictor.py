@@ -9,6 +9,7 @@ SpectrumMatches = Dict[str, Dict[str, Any]]
 
 class Predictor(PythonModel):
     _run_id: str
+    model: Any
 
     def __init__(self, dgw=None):
         self.dgw = dgw
