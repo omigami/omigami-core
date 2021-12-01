@@ -119,7 +119,6 @@ class Spec2VecFlowFactory:
             ),
             dataset_directory=self._dataset_directory,
             mlflow_output_directory=self._mlflow_output_directory,
-            mlflow_server=self._mlflow_server,
             experiment_name=project_name,
             redis_db=self._redis_dbs[dataset_id],
         )

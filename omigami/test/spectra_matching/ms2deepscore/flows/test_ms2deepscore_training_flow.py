@@ -59,7 +59,6 @@ def test_training_flow(flow_config):
         spectrum_binner_output_path="some-path",
         project_name="test",
         mlflow_output_directory="model-output",
-        mlflow_server="mlflow-server",
         train_ratio=0.6,
         validation_ratio=0.3,
         test_ratio=0.1,
