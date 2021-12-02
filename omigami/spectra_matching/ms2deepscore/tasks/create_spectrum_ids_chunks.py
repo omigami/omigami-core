@@ -1,15 +1,9 @@
-from dataclasses import dataclass
 from typing import List, Set
 
 from prefect import Task
 
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 from omigami.utils import merge_prefect_task_configs
-
-
-@dataclass
-class ChunkingIDsParameters:
-    spectrum_ids_chunk_size: int
 
 
 class CreateSpectrumIDsChunks(Task):

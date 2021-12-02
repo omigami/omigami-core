@@ -5,7 +5,7 @@ from prefect import Flow, unmapped
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
-from omigami.config import IonModes, ION_MODES
+from omigami.config import IonModes, ION_MODES, MLFLOW_SERVER
 from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SplitRatio,
@@ -61,8 +61,8 @@ class TrainingFlowParameters:
         overwrite_model: bool,
         model_output_path: str,
         project_name: str,
-        model_registry_uri: str,
         mlflow_output_directory: str,
+        model_registry_uri: str = MLFLOW_SERVER,
         epochs: int = 50,
         train_ratio: float = 0.9,
         validation_ratio: float = 0.05,
@@ -78,7 +78,7 @@ class TrainingFlowParameters:
         self.spectrum_chunk_size = spectrum_ids_chunk_size
         self.ion_mode = ion_mode
 
-        if schedule_task_days != None:
+        if schedule_task_days is not None:
             self.schedule = Schedule(
                 clocks=[
                     IntervalClock(

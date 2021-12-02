@@ -4,7 +4,6 @@ from omigami.spectra_matching.ms2deepscore.tasks.calculate_tanimoto_score import
 )
 from omigami.spectra_matching.ms2deepscore.tasks.create_spectrum_ids_chunks import (
     CreateSpectrumIDsChunks,
-    ChunkingIDsParameters,
 )
 from omigami.spectra_matching.ms2deepscore.tasks.get_model_path import (
     GetMS2DeepScoreModelPath,

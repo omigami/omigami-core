@@ -9,10 +9,7 @@ from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
 from omigami.spectra_matching.ms2deepscore.storage.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.spectra_matching.ms2deepscore.tasks import (
-    MakeEmbeddings,
-    MakeEmbeddingsParameters,
-)
+from omigami.spectra_matching.ms2deepscore.tasks import MakeEmbeddings
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 
@@ -30,11 +27,10 @@ from omigami.test.spectra_matching.conftest import ASSETS_DIR
 )
 def test_make_embeddings(binned_spectra_stored, binned_spectra, siamese_model_path):
     spectrum_ids = [spectrum.get("spectrum_id") for spectrum in binned_spectra]
-    parameters = MakeEmbeddingsParameters(ion_mode="positive")
     spectrum_gtw = MS2DeepScoreRedisSpectrumDataGateway()
     fs_gtw = MS2DeepScoreFSDataGateway()
     with Flow("test") as flow:
-        MakeEmbeddings(spectrum_gtw, fs_gtw, parameters)(
+        MakeEmbeddings(spectrum_gtw, fs_gtw, "positive")(
             {"ms2deepscore_model_path": siamese_model_path},
             "1",
             spectrum_ids,
