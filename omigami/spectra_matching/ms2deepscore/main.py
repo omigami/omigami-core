@@ -2,12 +2,11 @@ from typing import Optional, Tuple
 
 import pandas as pd
 
-from omigami.authentication.prefect_factory import PrefectClientFactory
+from omigami.authentication.prefect_factory import (
+    get_prefect_client,
+)
 from omigami.config import (
     IonModes,
-    API_SERVER_URLS,
-    OMIGAMI_ENV,
-    get_login_config,
     CHUNK_SIZE,
 )
 from omigami.deployer import FlowDeployer
@@ -49,10 +48,6 @@ def run_ms2deepscore_flow(
         Identifiers for the registered flow and for the run triggered with the flow
 
     """
-    api_server = API_SERVER_URLS[OMIGAMI_ENV]
-    login_config = get_login_config()
-    prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
-    prefect_client = prefect_factory.get_client()
 
     factory = MS2DeepScoreFlowFactory(dataset_directory=dataset_directory)
     flow = factory.build_training_flow(
@@ -76,7 +71,51 @@ def run_ms2deepscore_flow(
         chunk_size=chunk_size,
         schedule=schedule,
     )
-    deployer = FlowDeployer(prefect_client=prefect_client)
+    deployer = FlowDeployer(prefect_client=get_prefect_client())
     flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
+
+    return flow_id, flow_run_id
+
+
+def run_deploy_model_flow(
+    model_run_id: str,
+    image: str,
+    project_name: str,
+    flow_name: str,
+    dataset_id: str,
+    ion_mode: IonModes,
+    overwrite_model: bool,
+    dataset_directory: str = None,
+) -> Tuple[str, str]:
+    """
+    Builds, deploys, and runs a model deployment flow.
+
+    Parameters
+    ----------
+    For information on parameters please check spec2vec/cli.py
+
+    Returns
+    -------
+    flow_id, flow_run_id:
+        Identifiers for the registered flow and for the run triggered with the flow
+
+    """
+
+    factory = MS2DeepScoreFlowFactory(dataset_directory=dataset_directory)
+    flow = factory.build_model_deployment_flow(
+        image=image,
+        project_name=project_name,
+        flow_name=flow_name,
+        dataset_id=dataset_id,
+        ion_mode=ion_mode,
+        overwrite_model=overwrite_model,
+    )
+
+    flow_parameters = {"ModelRunID": model_run_id}
+
+    deployer = FlowDeployer(prefect_client=get_prefect_client())
+    flow_id, flow_run_id = deployer.deploy_flow(
+        flow=flow, project_name=project_name, parameters=flow_parameters
+    )
 
     return flow_id, flow_run_id

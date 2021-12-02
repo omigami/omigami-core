@@ -19,7 +19,7 @@ def mock_factories(monkeypatch):
     get_client = Mock()
     monkeypatch.setattr(
         omigami.spectra_matching.spec2vec.main,
-        "_get_prefect_client",
+        "get_prefect_client",
         get_client,
     )
 
