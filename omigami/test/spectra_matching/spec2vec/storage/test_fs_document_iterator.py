@@ -15,7 +15,7 @@ from omigami.spectra_matching.storage import FSDataGateway
 def test_read_documents_iter(documents_stored, s3_documents_directory, s3_mock):
 
     fs_dgw = FSDataGateway()
-    document_file_names = fs_dgw.listdir(s3_documents_directory)
+    document_file_names = fs_dgw.list_files(s3_documents_directory)
     iterator = FileSystemDocumentIterator(fs_dgw, document_file_names)
 
     document_counter = 0

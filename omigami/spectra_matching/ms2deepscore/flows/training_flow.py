@@ -196,7 +196,7 @@ def build_training_flow(
             nout=2,
         )(processed_ids, scores_output_path)
 
-        model_registry = RegisterModel(
+        run_id = RegisterModel(
             flow_parameters.registering, training_parameters=flow_parameters.training
         )(train_model_output)
 
@@ -210,11 +210,11 @@ def build_training_flow(
             flow_parameters.embedding,
         ).map(
             unmapped(train_model_output),
-            unmapped(model_registry),
+            unmapped(run_id),
             processed_chunks,
         )
 
         if deploy_model:
-            DeployModel(flow_parameters.deploying)(model_registry)
+            DeployModel(flow_parameters.deploying)(run_id)
 
     return training_flow

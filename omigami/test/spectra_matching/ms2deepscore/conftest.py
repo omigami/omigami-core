@@ -89,7 +89,7 @@ def siamese_model(siamese_model_path):
 @pytest.fixture()
 def ms2deepscore_real_predictor(siamese_model):
     ms2deepscore_predictor = MS2DeepScorePredictor(ion_mode="positive", run_id="2")
-    ms2deepscore_predictor._model = siamese_model
+    ms2deepscore_predictor.model = siamese_model
     return ms2deepscore_predictor
 
 

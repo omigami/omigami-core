@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import mlflow
 import pytest
 from drfs.filesystems import get_fs
 
@@ -135,7 +136,10 @@ def test_run_training_flow(
 
     assert flow_run.is_successful()
     flow_run.result[download_task].is_cached()
-    model_uri = flow_run.result[register_task].result["model_uri"]
-    assert Path(model_uri).exists()
     assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
+
+    run_id = flow_run.result[register_task].result
+    artifact_uri = mlflow.get_run(run_id).info.artifact_uri
+    model_uri = f"{artifact_uri}/model/"
+    assert Path(model_uri).exists()

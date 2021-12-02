@@ -98,12 +98,13 @@ class Spec2VecFlowFactory:
         spectrum_cleaner = SpectrumCleaner()
         document_dgw = RedisSpectrumDocumentDataGateway()
 
+        dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             data_gtw=data_gtw,
             spectrum_dgw=spectrum_dgw,
             document_dgw=document_dgw,
             spectrum_cleaner=spectrum_cleaner,
-            dataset_id=self._dataset_ids[dataset_id].format(date=datetime.today()),
+            dataset_id=dataset_id,
             ion_mode=ion_mode,
             n_decimals=n_decimals,
             iterations=iterations,
@@ -115,7 +116,7 @@ class Spec2VecFlowFactory:
             overwrite_model=overwrite_model,
             overwrite_all_spectra=overwrite_all_spectra,
             documents_save_directory=str(
-                self._spec2vec_root / self._document_dirs[ion_mode]
+                self._spec2vec_root / dataset_id / self._document_dirs[ion_mode]
             ),
             dataset_directory=self._dataset_directory,
             mlflow_output_directory=self._mlflow_output_directory,
@@ -123,14 +124,14 @@ class Spec2VecFlowFactory:
             redis_db=self._redis_dbs[dataset_id],
         )
 
-        spec2vec_flow = build_training_flow(
+        training_flow = build_training_flow(
             flow_name,
             flow_config,
             flow_parameters,
             deploy_model=deploy_model,
         )
 
-        return spec2vec_flow
+        return training_flow
 
     def build_model_deployment_flow(self) -> Flow:
         """TODO"""

@@ -2,7 +2,6 @@ import json
 import logging
 import pickle
 import sys
-from pathlib import Path
 from typing import List, Optional, Any
 
 import ijson
@@ -12,8 +11,8 @@ from drfs.filesystems import get_fs
 from drfs.filesystems.base import FileSystemBase
 
 from omigami.config import IonModes
-from omigami.spectra_matching.storage import DataGateway
 from omigami.spectra_matching.entities.data_models import SpectrumInputData
+from omigami.spectra_matching.storage import DataGateway
 
 KEYS = [
     "spectrum_id",
@@ -242,10 +241,10 @@ class FSDataGateway(DataGateway):
     def save(self, obj, output_path: str):
         pass
 
-    def listdir(self, path) -> List[Path]:
-        self.init_fs(path)
+    def list_files(self, directory: str) -> List[str]:
+        self.init_fs(directory)
 
-        return self.fs.ls(path)
+        return self.fs.ls(directory)
 
     def makedirs(self, path):
         self.init_fs(path)
