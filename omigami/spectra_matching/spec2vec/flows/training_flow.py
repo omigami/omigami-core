@@ -49,6 +49,7 @@ class TrainingFlowParameters:
         overwrite_all_spectra: bool,
         iterations: int,
         window: int,
+        model_registry_uri: str,
         mlflow_output_directory: str,
         documents_save_directory: str,
         intensity_weighting_power: Union[float, int] = 0.5,
@@ -89,6 +90,7 @@ class TrainingFlowParameters:
         self.training = TrainModelParameters(iterations, window)
         self.registering = RegisterModelParameters(
             experiment_name=experiment_name,
+            model_registry_uri=model_registry_uri,
             mlflow_output_directory=mlflow_output_directory,
             n_decimals=n_decimals,
             ion_mode=ion_mode,

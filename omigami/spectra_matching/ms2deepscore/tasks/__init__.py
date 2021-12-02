@@ -6,9 +6,11 @@ from omigami.spectra_matching.ms2deepscore.tasks.create_spectrum_ids_chunks impo
     CreateSpectrumIDsChunks,
     ChunkingIDsParameters,
 )
+from omigami.spectra_matching.ms2deepscore.tasks.get_model_path import (
+    GetMS2DeepScoreModelPath,
+)
 from omigami.spectra_matching.ms2deepscore.tasks.make_embeddings import (
     MakeEmbeddings,
-    MakeEmbeddingsParameters,
 )
 from omigami.spectra_matching.ms2deepscore.tasks.process_spectrum import (
     ProcessSpectrum,

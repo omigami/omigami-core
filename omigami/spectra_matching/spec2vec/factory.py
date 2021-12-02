@@ -126,6 +126,7 @@ class Spec2VecFlowFactory:
                 self._spec2vec_root / dataset_id / self._document_dirs[ion_mode]
             ),
             dataset_directory=self._dataset_directory,
+            model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=self._mlflow_output_directory,
             experiment_name=project_name,
             redis_db=self._redis_dbs[dataset_id],

@@ -4,7 +4,7 @@ from typing import Dict
 from pandas import Timestamp
 from prefect import Task
 
-from omigami.config import IonModes, CONDA_ENV_PATH, MLFLOW_SERVER
+from omigami.config import IonModes, CONDA_ENV_PATH
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SIAMESE_MODEL_PARAMS,
 )
@@ -19,6 +19,7 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class RegisterModelParameters:
     experiment_name: str
+    model_registry_uri: str
     mlflow_output_path: str
     ion_mode: IonModes
 
@@ -31,6 +32,7 @@ class RegisterModel(Task):
         **kwargs,
     ):
         self._experiment_name = parameters.experiment_name
+        self._model_registry_uri = parameters.model_registry_uri
         self._mlflow_output_path = parameters.mlflow_output_path
         self._ion_mode = parameters.ion_mode
         self.training_parameters = training_parameters
@@ -60,7 +62,8 @@ class RegisterModel(Task):
 
         """
         self.logger.info(
-            f"Registering model to {MLFLOW_SERVER} on URI: {self._mlflow_output_path}."
+            f"Registering model to {self._model_registry_uri} on URI: "
+            f"{self._mlflow_output_path}."
         )
         params = self._convert_train_parameters(
             train_model_output.pop("validation_loss")
@@ -68,7 +71,7 @@ class RegisterModel(Task):
 
         run_name = f"ms2deepscore-{self._ion_mode}-{Timestamp.now():%Y%m%dT%H%M}"
 
-        mlflow_dgw = MLFlowDataGateway(MLFLOW_SERVER)
+        mlflow_dgw = MLFlowDataGateway(self._model_registry_uri)
 
         run_id = mlflow_dgw.register_model(
             model=MS2DeepScorePredictor(self._ion_mode),
@@ -79,6 +82,8 @@ class RegisterModel(Task):
             artifacts=train_model_output,
             run_name=run_name,
         )
+
+        self.logger.info(f"Created model run_id: {run_id}.")
 
         return run_id
 

@@ -13,22 +13,22 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer 
 from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
 from omigami.spectra_matching.ms2deepscore.tasks import (
     ProcessSpectrumParameters,
     ProcessSpectrum,
     RegisterModel,
     RegisterModelParameters,
-    MakeEmbeddingsParameters,
     MakeEmbeddings,
     CreateSpectrumIDsChunks,
-    ChunkingIDsParameters,
     CalculateTanimotoScoreParameters,
     CalculateTanimotoScore,
     TrainModelParameters,
     TrainModel,
 )
 from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
-from omigami.spectra_matching.storage import DataGateway
 from omigami.spectra_matching.tasks import (
     DownloadParameters,
     DownloadData,
@@ -44,7 +44,7 @@ from omigami.spectra_matching.tasks import (
 class TrainingFlowParameters:
     def __init__(
         self,
-        data_gtw: DataGateway,
+        data_gtw: MS2DeepScoreFSDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
@@ -74,6 +74,8 @@ class TrainingFlowParameters:
     ):
         self.data_gtw = data_gtw
         self.spectrum_dgw = spectrum_dgw
+        self.spectrum_chunk_size = spectrum_ids_chunk_size
+        self.ion_mode = ion_mode
 
         if schedule_task_days != None:
             self.schedule = Schedule(
@@ -126,10 +128,6 @@ class TrainingFlowParameters:
         self.registering = RegisterModelParameters(
             project_name, mlflow_output_directory, ion_mode
         )
-
-        self.spectrum_chunking = ChunkingIDsParameters(spectrum_ids_chunk_size)
-
-        self.embedding = MakeEmbeddingsParameters(ion_mode)
 
         self.deploying = DeployModelParameters(
             redis_db, overwrite_model, f"ms2deepscore-{ion_mode}"
@@ -200,14 +198,14 @@ def build_training_flow(
             flow_parameters.registering, training_parameters=flow_parameters.training
         )(train_model_output)
 
-        processed_chunks = CreateSpectrumIDsChunks(flow_parameters.spectrum_chunking)(
-            processed_ids
-        )
+        processed_chunks = CreateSpectrumIDsChunks(
+            flow_parameters.spectrum_chunk_size, flow_parameters.spectrum_dgw
+        )(processed_ids)
 
         MakeEmbeddings(
             flow_parameters.spectrum_dgw,
             flow_parameters.data_gtw,
-            flow_parameters.embedding,
+            flow_parameters.ion_mode,
         ).map(
             unmapped(train_model_output),
             unmapped(run_id),

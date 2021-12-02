@@ -6,6 +6,7 @@ from ms2deepscore.models import load_model
 from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
+from omigami.config import STORAGE_ROOT
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
@@ -72,12 +73,9 @@ def ms2deepscore_predictor(ms2deepscore_embedding):
 
 @pytest.fixture()
 def siamese_model_path():
-    return str(
-        ASSETS_DIR
-        / "ms2deepscore"
-        / "pretrained"
-        / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
-    )
+    """In order to generate this test asset, please run test_deploy_training_flow on
+    ms2deepscore/test_integration.py with the local services running. Check README."""
+    return str(STORAGE_ROOT / "ms2deepscore" / "model" / "ms2deepscore_model.hdf5")
 
 
 @pytest.fixture()

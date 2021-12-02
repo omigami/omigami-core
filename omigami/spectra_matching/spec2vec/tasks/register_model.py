@@ -5,7 +5,7 @@ from gensim.models import Word2Vec
 from pandas import Timestamp
 from prefect import Task
 
-from omigami.config import IonModes, CONDA_ENV_PATH, MLFLOW_SERVER
+from omigami.config import IonModes, CONDA_ENV_PATH
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 from omigami.utils import merge_prefect_task_configs
@@ -14,6 +14,7 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class RegisterModelParameters:
     experiment_name: str
+    model_registry_uri: str
     mlflow_output_directory: str
     n_decimals: int
     ion_mode: IonModes
@@ -29,7 +30,8 @@ class RegisterModel(Task):
         **kwargs,
     ):
         self._experiment_name = parameters.experiment_name
-        self._path = parameters.mlflow_output_directory
+        self._model_registry_uri = parameters.model_registry_uri
+        self._mlflow_output_directory = parameters.mlflow_output_directory
         self._n_decimals = parameters.n_decimals
         self._ion_mode = parameters.ion_mode
         self._intensity_weighting_power = parameters.intensity_weighting_power
@@ -58,9 +60,12 @@ class RegisterModel(Task):
         Dictionary containing registered model's `model_uri` and `run_id`
 
         """
-        self.logger.info(f"Registering model to {MLFLOW_SERVER} on URI: {self._path}.")
+        self.logger.info(
+            f"Registering model to {self._model_registry_uri} on URI: "
+            f"{self._mlflow_output_directory}."
+        )
         run_name = f"spec2vec-{self._ion_mode}-{Timestamp.now():%Y%m%dT%H%M}"
-        model_register = MLFlowDataGateway(MLFLOW_SERVER)
+        model_register = MLFlowDataGateway(self._model_registry_uri)
         spec2vec_model = Spec2VecPredictor(
             model,
             self._ion_mode,
@@ -81,12 +86,14 @@ class RegisterModel(Task):
         run_id = model_register.register_model(
             spec2vec_model,
             experiment_name=self._experiment_name,
-            experiment_path=self._path,
+            experiment_path=self._mlflow_output_directory,
             conda_env_path=CONDA_ENV_PATH,
             run_name=run_name,
             model_name=self._model_name,
             params=params,
             metrics=metrics,
         )
+
+        self.logger.info(f"Created model run_id: {run_id}.")
 
         return run_id
