@@ -1,8 +1,10 @@
 import click
 
-from omigami.cli_options import common_training_options
-from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
-from omigami.spectra_matching.spec2vec.main import run_spec2vec_training_flow
+from omigami.cli_options import common_training_options, common_flow_options
+from omigami.spectra_matching.spec2vec.main import (
+    run_spec2vec_training_flow,
+    run_deploy_model_flow,
+)
 from omigami.utils import add_click_options
 
 
@@ -12,19 +14,6 @@ def spec2vec_cli():
 
 
 @spec2vec_cli.command(name="train")
-@click.option(
-    "--project-name",
-    "-p",
-    default=PROJECT_NAME,
-    show_default=True,
-    help="Name of the project. This is used as identification by Prefect",
-)
-@click.option(
-    "--flow-name",
-    default="spec2vec-training-flow",
-    show_default=True,
-    help="Name of the flow. This is used as identification by Prefect",
-)
 @click.option(
     "--iterations",
     type=int,
@@ -60,11 +49,40 @@ def spec2vec_cli():
     show_default=True,
     help="Missing percentage of ions allowed",
 )
+@add_click_options(common_flow_options)
 @add_click_options(common_training_options)
 def training_flow_cli(*args, **kwargs):
     run_spec2vec_training_flow(*args, **kwargs)
 
 
 @spec2vec_cli.command(name="deploy-model")
-def deploy_model_cli():
-    pass
+@click.option(
+    "--model-run-id",
+    type=str,
+    required=True,
+    help="Model run ID that will be used to deploy",
+)
+@click.option(
+    "--n-decimals",
+    type=int,
+    default=2,
+    help="Precision in number of decimals for creating the embeddings",
+    show_default=True,
+)
+@click.option(
+    "--intensity-weighting-power",
+    type=float,
+    default=0.5,
+    show_default=True,
+    help="Value to elevate the intensities to",
+)
+@click.option(
+    "--allowed-missing-percentage",
+    type=float,
+    default=5.0,
+    show_default=True,
+    help="Missing percentage of ions allowed",
+)
+@add_click_options(common_flow_options)
+def deploy_model_cli(*args, **kwargs):
+    run_deploy_model_flow(*args, **kwargs)

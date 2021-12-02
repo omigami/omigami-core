@@ -1,7 +1,6 @@
 import click
 
-from omigami.cli_options import common_training_options
-from omigami.spectra_matching.ms2deepscore.config import PROJECT_NAME
+from omigami.cli_options import common_training_options, common_flow_options
 from omigami.spectra_matching.ms2deepscore.main import run_ms2deepscore_flow
 from omigami.utils import add_click_options
 
@@ -12,19 +11,6 @@ def ms2deepscore_cli():
 
 
 @ms2deepscore_cli.command(name="train")
-@click.option(
-    "--project-name",
-    "-p",
-    default=PROJECT_NAME,
-    show_default=True,
-    help="Name of the project. This is used as identification by Prefect",
-)
-@click.option(
-    "--flow-name",
-    default="ms2deepscore-training-flow",
-    show_default=True,
-    help="Name of the flow. This is used as identification by Prefect",
-)
 @click.option(
     "--fingerprint-n-bits",
     type=int,
@@ -81,6 +67,7 @@ def ms2deepscore_cli():
     show_default=True,
     help="Number of epochs for training the siamese neural network",
 )
+@add_click_options(common_flow_options)
 @add_click_options(common_training_options)
 def training_flow_cli(*args, **kwargs):
     run_ms2deepscore_flow(*args, **kwargs)

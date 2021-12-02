@@ -2,10 +2,24 @@ import click
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS, STORAGE_ROOT
 
-common_training_options = [
+common_flow_options = [
     click.option(
         "--image", "-i", type=str, required=True, help="Image used to build the flow"
     ),
+    click.option(
+        "--project-name",
+        "-p",
+        help="Name of the project. This is used as identification by Prefect",
+        required=True,
+    ),
+    click.option(
+        "--flow-name",
+        help="Name of the flow. This is used as identification by Prefect",
+        required=True,
+    ),
+]
+
+common_training_options = [
     click.option(  # TODO: these two parameters need some refactoring
         "--dataset-id",
         type=click.Choice(["small", "10k", "complete"]),
