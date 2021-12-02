@@ -10,6 +10,7 @@ from omigami.config import (
     STORAGE_ROOT,
     CHUNK_SIZE,
     MLFLOW_DIRECTORY,
+    MLFLOW_SERVER,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -41,12 +42,14 @@ class MS2DeepScoreFlowFactory:
         dataset_directory: str = None,
         mlflow_output_directory: str = None,
         directories: Dict[str, str] = None,
+        model_registry_uri: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
         self._dataset_directory = dataset_directory or str(STORAGE_ROOT / "datasets")
         self._ms2deepscore_root = MS2DEEPSCORE_ROOT
         self._directories = directories or DIRECTORIES
         self._dataset_ids = DATASET_IDS
+        self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or MLFLOW_DIRECTORY
         self._storage_type = (
             PrefectStorageMethods.S3
@@ -126,6 +129,7 @@ class MS2DeepScoreFlowFactory:
             overwrite_model=overwrite_model,
             model_output_path=model_output_path,
             project_name=project_name,
+            model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=str(self._mlflow_output_directory),
             epochs=epochs,
             train_ratio=train_ratio,

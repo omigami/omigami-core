@@ -61,6 +61,7 @@ class TrainingFlowParameters:
         overwrite_model: bool,
         model_output_path: str,
         project_name: str,
+        model_registry_uri: str,
         mlflow_output_directory: str,
         epochs: int = 50,
         train_ratio: float = 0.9,
@@ -126,7 +127,7 @@ class TrainingFlowParameters:
         )
 
         self.registering = RegisterModelParameters(
-            project_name, mlflow_output_directory, ion_mode
+            project_name, model_registry_uri, mlflow_output_directory, ion_mode
         )
 
         self.deploying = DeployModelParameters(
