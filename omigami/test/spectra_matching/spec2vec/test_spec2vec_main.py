@@ -64,10 +64,10 @@ def test_mocked_deploy_training_flow(mock_factories):
         schedule=None,
     )
 
-    flow_id, flow_run_id = run_spec2vec_flow(**params)
+    flow_id, flow_run_id = run_spec2vec_training_flow(**params)
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
-    mock_factories["factory"].build_spec2vec_flow.assert_called_once_with(**params)
+    mock_factories["factory"].build_training_flow.assert_called_once_with(**params)
     mock_factories["deployer"].deploy_flow.assert_called_once_with(
         flow="flow", project_name="default"
     )

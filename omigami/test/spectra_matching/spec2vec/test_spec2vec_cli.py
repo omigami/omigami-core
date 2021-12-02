@@ -42,7 +42,7 @@ def mock_cli(
 
 def test_spec2vec_cli(monkeypatch):
     monkeypatch.setattr(
-        omigami.spectra_matching.spec2vec.cli, "run_spec2vec_flow", mock_cli
+        omigami.spectra_matching.spec2vec.cli, "run_spec2vec_training_flow", mock_cli
     )
     cli_command = [
         "train",

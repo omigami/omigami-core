@@ -56,7 +56,7 @@ class Spec2VecFlowFactory:
             else PrefectStorageMethods.Local
         )
 
-    def build_spec2vec_flow(
+    def build_training_flow(
         self,
         flow_name: str,
         image: str,
@@ -128,14 +128,14 @@ class Spec2VecFlowFactory:
             redis_db=self._redis_dbs[dataset_id],
         )
 
-        spec2vec_flow = build_training_flow(
+        training_flow = build_training_flow(
             flow_name,
             flow_config,
             flow_parameters,
             deploy_model=deploy_model,
         )
 
-        return spec2vec_flow
+        return training_flow
 
     def build_model_deployment_flow(
         self,

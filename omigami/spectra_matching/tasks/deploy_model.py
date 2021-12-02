@@ -41,8 +41,8 @@ class DeployModel(Task):
         """
         sd = SeldonDeployment(context=CLUSTER)
 
-        run = mlflow.get_run(model_run_id)
-        model_uri = f"{run.info.artifact_uri}/model/"
+        artifact_uri = mlflow.get_run(model_run_id).info.artifact_uri
+        model_uri = f"{artifact_uri}/model/"
         self.logger.info(
             f"Deploying model '{self._model_name}' from uri {model_uri}. \nUsing cluster"
             f" '{CLUSTER}' and namespace '{SELDON_PARAMS['namespace']}'."

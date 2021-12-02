@@ -11,7 +11,7 @@ from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 
 def test_deploy_model_flow(flow_config):
     expected_tasks = {
-        "ModelRunID",
+        "ModelRunID",  # a prefect `Parameter` is actually a Task too
         "ListDocumentPaths",
         "MakeEmbeddings",
         "DeployModel",
@@ -19,8 +19,7 @@ def test_deploy_model_flow(flow_config):
     }
     params = DeployModelFlowParameters(
         spectrum_dgw=RedisSpectrumDataGateway(),
-        data_gtw=FSDataGateway(),
-        model_registry_dgw=MLFlowDataGateway(),
+        fs_dgw=FSDataGateway(),
         ion_mode="positive",
         n_decimals=2,
         documents_directory="directory",
@@ -75,7 +74,7 @@ def test_run_deploy_model_flow(
 ):
     params = DeployModelFlowParameters(
         spectrum_dgw=RedisSpectrumDataGateway(),
-        data_gtw=FSDataGateway(),
+        fs_dgw=FSDataGateway(),
         ion_mode="positive",
         n_decimals=1,
         documents_directory=s3_documents_directory,
