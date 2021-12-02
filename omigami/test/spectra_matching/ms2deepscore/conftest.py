@@ -3,6 +3,7 @@ import pickle
 import pandas as pd
 import pytest
 from ms2deepscore.models import load_model
+from prefect import Task
 from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
@@ -144,4 +145,22 @@ def small_model_params(monkeypatch):
         omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer,
         "SIAMESE_MODEL_PARAMS",
         smaller_params,
+    )
+
+
+@pytest.fixture
+def mock_deploy_model_task(monkeypatch):
+    class DeployModel(Task):
+        def __init__(self, *args, **kwargs):
+            super().__init__()
+
+        def run(self, model_run_id: str = None) -> None:
+            pass
+
+    import omigami.spectra_matching.ms2deepscore.flows.deploy_model
+
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.deploy_model,
+        "DeployModel",
+        DeployModel,
     )
