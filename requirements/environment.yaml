@@ -11,3 +11,4 @@ dependencies:
   - click=7.1.*
   - pip:
       - git+https://github.com/datarevenue-berlin/drfs
+      - DockerMake==0.9.*

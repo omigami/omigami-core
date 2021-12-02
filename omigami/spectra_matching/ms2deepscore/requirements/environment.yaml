@@ -7,7 +7,7 @@ dependencies:
   - rdkit=2020.09.*
   - pip
   - pip:
-      - tensorflow==2.5.*
       - ms2deepscore==0.2.*
       - matchmsextras==0.2.*
       - pubchempy==1.0.*
+      - tensorflow==2.5.*
