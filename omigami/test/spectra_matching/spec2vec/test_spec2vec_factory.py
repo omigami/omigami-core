@@ -6,7 +6,7 @@ from omigami.spectra_matching.tasks import CreateChunks
 
 
 def test_build_training_flow():
-    factory = Spec2VecFlowFactory("dev")
+    factory = Spec2VecFlowFactory()
     flow = factory.build_training_flow(
         flow_name="Robert DeFlow",
         image="image",
@@ -34,7 +34,7 @@ def test_build_training_flow():
 
 
 def test_build_model_deployment_flow():
-    factory = Spec2VecFlowFactory("dev")
+    factory = Spec2VecFlowFactory()
     flow = factory.build_model_deployment_flow(
         flow_name="Calvin Flowers",
         image="star wars episode II wasn't so bad",

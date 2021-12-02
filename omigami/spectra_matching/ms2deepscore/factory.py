@@ -23,6 +23,10 @@ from omigami.spectra_matching.ms2deepscore.config import (
     SPECTRUM_IDS_CHUNK_SIZE,
     MS2DEEPSCORE_ROOT,
 )
+from omigami.spectra_matching.ms2deepscore.flows.deploy_model import (
+    DeployModelFlowParameters,
+    build_deploy_model_flow,
+)
 from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     TrainingFlowParameters,
     build_training_flow,
@@ -149,6 +153,53 @@ class MS2DeepScoreFlowFactory:
 
         return ms2deepscore_flow
 
-    def build_model_deployment_flow(self) -> Flow:
-        """TODO"""
-        raise NotImplemented
+    def build_model_deployment_flow(
+        self,
+        flow_name: str,
+        image: str,
+        dataset_id: str,
+        ion_mode: IonModes = "positive",
+        overwrite_model: bool = False,
+        project_name: str = PROJECT_NAME,
+    ) -> Flow:
+        """Creates all configuration/gateways objects used by the model deployment flow,
+        and builds the training flow with them.
+
+        Parameters
+        ----------
+        For information on parameters please check omigami/ms2deepscore/cli.py
+
+        Returns
+        -------
+        Flow:
+            A prefect model deployment flow with the given parameters
+
+        """
+        flow_config = make_flow_config(
+            image=image,
+            storage_type=self._storage_type,
+            executor_type=PrefectExecutorMethods.LOCAL_DASK,
+            redis_db=self._redis_dbs[dataset_id],
+            storage_root=STORAGE_ROOT,
+        )
+
+        spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway(project=project_name)
+        fs_dgw = MS2DeepScoreFSDataGateway()
+
+        dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
+        flow_parameters = DeployModelFlowParameters(
+            spectrum_dgw=spectrum_dgw,
+            fs_dgw=fs_dgw,
+            ion_mode=ion_mode,
+            redis_db=self._redis_dbs[dataset_id],
+            overwrite_model=overwrite_model,
+            model_registry_uri=self._model_registry_uri,
+        )
+
+        deploy_model_flow = build_deploy_model_flow(
+            flow_name,
+            flow_config,
+            flow_parameters,
+        )
+
+        return deploy_model_flow

@@ -25,7 +25,6 @@ class DeployModelFlowParameters:
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         fs_dgw: MS2DeepScoreFSDataGateway,
         ion_mode: IonModes,
-        documents_directory: str,
         redis_db: str = "0",
         model_registry_uri: str = MLFLOW_SERVER,
         overwrite_model: bool = False,
@@ -33,7 +32,6 @@ class DeployModelFlowParameters:
     ):
         self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
-        self.documents_directory = documents_directory
         self.model_registry_uri = model_registry_uri
         self.spectrum_chunk_size = spectrum_ids_chunk_size
 
