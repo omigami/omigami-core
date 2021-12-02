@@ -31,7 +31,6 @@ def test_deploy_model_flow(flow_config):
 
     deploy_model_flow = build_deploy_model_flow("deploy-flow", flow_config, params)
     list_task = deploy_model_flow.get_tasks("ListDocumentPaths")[0]
-    load_model_task = deploy_model_flow.get_tasks("LoadSpec2VecModel")[0]
 
     assert deploy_model_flow.name == "deploy-flow"
     assert list_task._documents_directory == "directory"
@@ -61,7 +60,7 @@ def deploy_model_setup(
         experiment_path=str(tmpdir),
     )
 
-    return {"run_id": run_id}
+    return {"run_id": run_id, "mlflow_uri": mlflow_uri}
 
 
 def test_run_deploy_model_flow(
@@ -82,6 +81,7 @@ def test_run_deploy_model_flow(
         allowed_missing_percentage=5.0,
         redis_db="0",
         overwrite_model=False,
+        model_registry_uri=deploy_model_setup["mlflow_uri"],
     )
 
     deploy_model_flow = build_deploy_model_flow("deploy-flow", flow_config, params)
