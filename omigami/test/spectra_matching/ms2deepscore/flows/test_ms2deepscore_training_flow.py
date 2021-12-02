@@ -146,6 +146,6 @@ def test_run_training_flow(
     assert fs.exists(tmpdir / "model.hdf5")
 
     run_id = flow_run.result[register_task].result
-    run = mlflow.get_run(run_id)
-    model_uri = f"{run.info.artifact_uri}/model/"
+    artifact_uri = mlflow.get_run(run_id).info.artifact_uri
+    model_uri = f"{artifact_uri}/model/"
     assert Path(model_uri).exists()

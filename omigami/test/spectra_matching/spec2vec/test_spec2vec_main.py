@@ -13,7 +13,7 @@ from omigami.config import (
 )
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
-from omigami.spectra_matching.spec2vec.main import run_spec2vec_flow
+from omigami.spectra_matching.spec2vec.main import run_spec2vec_training_flow
 from omigami.spectra_matching.storage import FSDataGateway
 from omigami.spectra_matching.tasks import DownloadData, DownloadParameters
 from omigami.test.spectra_matching.conftest import monitor_flow_results
@@ -26,7 +26,7 @@ from omigami.test.spectra_matching.conftest import monitor_flow_results
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
 
-    flow_id, flow_run_id = run_spec2vec_flow(
+    flow_id, flow_run_id = run_spec2vec_training_flow(
         image="",
         project_name="local-integration-test-s2v",
         flow_name="Robert DeFlow",
@@ -89,7 +89,7 @@ def test_mocked_deploy_training_flow(monkeypatch):
 
     mock_flow_factory = Mock(spec=Spec2VecFlowFactory)
     factory_instance = mock_flow_factory.return_value
-    factory_instance.build_spec2vec_flow = Mock(return_value="flow")
+    factory_instance.build_training_flow = Mock(return_value="flow")
     monkeypatch.setattr(
         omigami.spectra_matching.spec2vec.main, "Spec2VecFlowFactory", mock_flow_factory
     )
@@ -119,13 +119,13 @@ def test_mocked_deploy_training_flow(monkeypatch):
         schedule=None,
     )
 
-    flow_id, flow_run_id = run_spec2vec_flow(**params)
+    flow_id, flow_run_id = run_spec2vec_training_flow(**params)
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_client_factory.assert_called_once()
     client_factory_instance.get_client.assert_called_once()
     mock_flow_factory.assert_called_once()
-    factory_instance.build_spec2vec_flow.assert_called_once_with(**params)
+    factory_instance.build_training_flow.assert_called_once_with(**params)
     mock_deployer.assert_called_once_with(prefect_client="client")
     deployer_instance.deploy_flow.assert_called_once_with(
         flow="flow", project_name="default"

@@ -24,7 +24,7 @@ class DeployModelFlowParameters:
     def __init__(
         self,
         spectrum_dgw: RedisSpectrumDataGateway,
-        data_gtw: FSDataGateway,
+        fs_dgw: FSDataGateway,
         model_registry_dgw: ModelRegistryDataGateway,
         ion_mode: IonModes,
         n_decimals: int,
@@ -34,7 +34,7 @@ class DeployModelFlowParameters:
         redis_db: str = "0",
         overwrite_model: bool = False,
     ):
-        self.data_gtw = data_gtw
+        self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
         self.model_registry_dgw = model_registry_dgw
         self.documents_directory = documents_directory
@@ -70,13 +70,20 @@ def build_deploy_model_flow(
     -------
 
     """
-    p = flow_parameters
 
     with Flow(flow_name, **flow_config.kwargs) as deploy_model_flow:
         model_run_id = Parameter("ModelRunID")
-        document_paths = ListDocumentPaths(p.documents_directory, p.data_gtw)()
-        loaded_model = LoadSpec2VecModel(p.data_gtw, p.model_registry_dgw)(model_run_id)
-        _ = MakeEmbeddings(p.spectrum_dgw, p.data_gtw, p.embedding).map(
+        document_paths = ListDocumentPaths(
+            flow_parameters.documents_directory, flow_parameters.fs_dgw
+        )()
+        loaded_model = LoadSpec2VecModel(
+            flow_parameters.fs_dgw, flow_parameters.model_registry_dgw
+        )(model_run_id)
+        _ = MakeEmbeddings(
+            flow_parameters.spectrum_dgw,
+            flow_parameters.fs_dgw,
+            flow_parameters.embedding,
+        ).map(
             unmapped(loaded_model),
             unmapped(model_run_id),
             document_paths,
