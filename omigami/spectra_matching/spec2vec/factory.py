@@ -11,6 +11,7 @@ from omigami.config import (
     MLFLOW_DIRECTORY,
     STORAGE_ROOT,
     CHUNK_SIZE,
+    MLFLOW_SERVER,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -42,11 +43,13 @@ class Spec2VecFlowFactory:
         self,
         dataset_directory: str = None,
         documents_dir: Dict[str, str] = None,
+        model_registry_uri: str = None,
         mlflow_output_directory: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
         self._dataset_directory = dataset_directory or str(STORAGE_ROOT / "datasets")
         self._spec2vec_root = SPEC2VEC_ROOT
+        self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
         self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
         self._dataset_ids = DATASET_IDS
@@ -171,12 +174,12 @@ class Spec2VecFlowFactory:
         )
 
         spectrum_dgw = RedisSpectrumDataGateway(project=project_name)
-        data_gtw = FSDataGateway()
+        fs_dgw = FSDataGateway()
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = DeployModelFlowParameters(
             spectrum_dgw=spectrum_dgw,
-            data_gtw=data_gtw,
+            fs_dgw=fs_dgw,
             ion_mode=ion_mode,
             n_decimals=n_decimals,
             documents_directory=str(
@@ -186,6 +189,7 @@ class Spec2VecFlowFactory:
             allowed_missing_percentage=allowed_missing_percentage,
             redis_db=self._redis_dbs[dataset_id],
             overwrite_model=overwrite_model,
+            model_registry_uri=self._model_registry_uri,
         )
 
         deploy_model_flow = build_deploy_model_flow(

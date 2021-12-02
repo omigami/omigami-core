@@ -26,11 +26,11 @@ def mlflow_setup(tmpdir_factory):
         model_name="test",
         experiment_path=str(tmpdir),
     )
-    return {"dgw": dgw, "run": run_id}
+    return {"uri": mlflow_uri, "run": run_id}
 
 
 def test_load_spec2vec_model(mlflow_setup):
-    task = LoadSpec2VecModel(FSDataGateway(), mlflow_setup["dgw"])
+    task = LoadSpec2VecModel(FSDataGateway(), mlflow_setup["uri"])
 
     model = task.run(mlflow_setup["run"])
 
