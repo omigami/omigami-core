@@ -73,9 +73,7 @@ def build_deploy_model_flow(
         document_paths = ListDocumentPaths(
             flow_parameters.documents_directory, flow_parameters.fs_dgw
         )()
-        loaded_model = LoadSpec2VecModel(
-            flow_parameters.fs_dgw
-        )(model_run_id)
+        loaded_model = LoadSpec2VecModel(flow_parameters.fs_dgw)(model_run_id)
         _ = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
             flow_parameters.fs_dgw,

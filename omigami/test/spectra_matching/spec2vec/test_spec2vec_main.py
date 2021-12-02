@@ -9,7 +9,7 @@ from omigami.config import (
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spectra_matching.spec2vec.main import (
-    run_spec2vec_flow,
+    run_spec2vec_training_flow,
     run_deploy_model_flow,
 )
 
@@ -44,7 +44,7 @@ def mock_factories(monkeypatch):
 
 
 def test_mocked_deploy_training_flow(mock_factories):
-    mock_factories["factory"].build_spec2vec_flow = Mock(return_value="flow")
+    mock_factories["factory"].build_training_flow = Mock(return_value="flow")
 
     params = dict(
         image="",

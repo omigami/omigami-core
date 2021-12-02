@@ -10,7 +10,7 @@ from omigami.config import (
     MLFLOW_DIRECTORY,
 )
 from omigami.spectra_matching.spec2vec.main import (
-    run_spec2vec_flow,
+    run_spec2vec_training_flow,
     run_deploy_model_flow,
 )
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
@@ -27,7 +27,7 @@ from omigami.test.spectra_matching.conftest import monitor_flow_results
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
 
-    flow_id, flow_run_id = run_spec2vec_flow(
+    flow_id, flow_run_id = run_spec2vec_training_flow(
         image="",
         project_name="local-integration-test-s2v",
         flow_name="Robert DeFlow",
