@@ -74,14 +74,12 @@ def ms2deepscore_predictor(ms2deepscore_embedding):
 
 @pytest.fixture()
 def siamese_model_path():
-    """In order to generate this test asset, please run test_deploy_training_flow on
-    ms2deepscore/test_integration.py with the local services running. Check README."""
     path = STORAGE_ROOT / "ms2deepscore/model/trained/ms2deep_score.hdf5"
     if not path.exists():
         raise ValueError(
-            "In order to generate this test asset, please run test_deploy_training_flow "
+            "In order to generate this test asset, please run test_run_training_flow "
             "on ms2deepscore/test_integration.py with the local services running. "
-            "Check README."
+            "Check README for more information."
         )
 
     return str(path)

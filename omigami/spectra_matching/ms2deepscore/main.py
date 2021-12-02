@@ -85,7 +85,6 @@ def run_deploy_model_flow(
     dataset_id: str,
     ion_mode: IonModes,
     overwrite_model: bool,
-    dataset_directory: str = None,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a model deployment flow.
@@ -101,7 +100,7 @@ def run_deploy_model_flow(
 
     """
 
-    factory = MS2DeepScoreFlowFactory(dataset_directory=dataset_directory)
+    factory = MS2DeepScoreFlowFactory()
     flow = factory.build_model_deployment_flow(
         image=image,
         project_name=project_name,

@@ -47,6 +47,7 @@ class CreateSpectrumIDsChunks(Task):
         else:
             spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
 
+        self.logger.info(f"Creating chunkfs for {len(spectrum_ids)} spectra.")
         chunks = [
             spectrum_ids[x : x + self._chunk_size]
             for x in range(0, len(spectrum_ids), self._chunk_size)
