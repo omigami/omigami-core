@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM omigami_base:latest
 ENV PATH="/opt/conda/bin/:${PATH}"
 WORKDIR /opt/omigami
 

@@ -12,3 +12,4 @@ omigami/test/*/*/*
 mlflow-server/*
 local-deployment/*
 mlruns/*
+.git
