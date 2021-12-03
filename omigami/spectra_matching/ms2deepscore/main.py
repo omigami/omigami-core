@@ -2,18 +2,13 @@ from typing import Optional, Tuple
 
 import pandas as pd
 
-from omigami.authentication.prefect_factory import (
-    get_prefect_client,
-)
-from omigami.config import (
-    IonModes,
-    CHUNK_SIZE,
-)
+from omigami.authentication.prefect_factory import get_prefect_client
+from omigami.config import IonModes, CHUNK_SIZE
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
 
-def run_ms2deepscore_flow(
+def run_ms2deepscore_training_flow(
     image: str,
     project_name: str,
     flow_name: str,

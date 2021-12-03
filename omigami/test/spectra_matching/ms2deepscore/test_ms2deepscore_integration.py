@@ -7,7 +7,7 @@ from omigami.config import (
     MLFLOW_SERVER,
 )
 from omigami.spectra_matching.ms2deepscore.main import (
-    run_ms2deepscore_flow,
+    run_ms2deepscore_training_flow,
     run_deploy_model_flow,
 )
 from omigami.spectra_matching.ms2deepscore.tasks import (
@@ -27,7 +27,7 @@ from omigami.test.spectra_matching.conftest import monitor_flow_results
 def test_run_training_flow(backend_services):
     client = backend_services["prefect"]
 
-    flow_id, flow_run_id = run_ms2deepscore_flow(
+    flow_id, flow_run_id = run_ms2deepscore_training_flow(
         image="",
         project_name="local-integration-test-ms2ds",
         flow_name="MS2DS Flow",

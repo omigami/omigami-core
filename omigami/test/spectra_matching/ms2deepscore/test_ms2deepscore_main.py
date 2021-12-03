@@ -9,7 +9,7 @@ from omigami.config import (
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 from omigami.spectra_matching.ms2deepscore.main import (
-    run_ms2deepscore_flow,
+    run_ms2deepscore_training_flow,
     run_deploy_model_flow,
 )
 
@@ -70,7 +70,7 @@ def test_mocked_deploy_training_flow(mock_factories):
         chunk_size=150000,
     )
 
-    flow_id, flow_run_id = run_ms2deepscore_flow(**params)
+    flow_id, flow_run_id = run_ms2deepscore_training_flow(**params)
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_factories["factory"].build_training_flow.assert_called_once_with(**params)
