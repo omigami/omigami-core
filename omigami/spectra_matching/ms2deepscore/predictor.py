@@ -5,7 +5,6 @@ import numpy as np
 from matchms import calculate_scores
 from ms2deepscore import MS2DeepScore
 from ms2deepscore.models import load_model as ms2deepscore_load_model, SiameseModel
-from spec2vec.vector_operations import cosine_similarity, cosine_similarity_matrix
 from tqdm import tqdm
 
 from omigami.spectra_matching.ms2deepscore.embedding import (
@@ -17,6 +16,10 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor imp
 )
 from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
+)
+from omigami.spectra_matching.ms2deepscore.util import (
+    _cosine_similarity,
+    _cosine_similarity_matrix,
 )
 from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
 
@@ -173,7 +176,7 @@ class MS2DeepScoreSimilarityScoreCalculator(MS2DeepScore):
     def pair(
         self, reference: MS2DeepScoreEmbedding, query: MS2DeepScoreEmbedding
     ) -> float:
-        return cosine_similarity(reference.vector[0, :], query.vector[0, :])
+        return _cosine_similarity(reference.vector[0, :], query.vector[0, :])
 
     def matrix(
         self,
@@ -191,7 +194,7 @@ class MS2DeepScoreSimilarityScoreCalculator(MS2DeepScore):
         else:
             query_vectors = self.calculate_vectors(queries)
 
-        ms2ds_similarity = cosine_similarity_matrix(reference_vectors, query_vectors)
+        ms2ds_similarity = _cosine_similarity_matrix(reference_vectors, query_vectors)
         return ms2ds_similarity
 
     def calculate_vectors(
