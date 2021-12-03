@@ -1,11 +1,31 @@
 omigami-base:
-  FROM: continuumio/miniconda3
+  FROM: drtools/alpine-conda:alpine-3.11_conda-4.7.12
   build: |
     ENV PATH="/opt/conda/bin/:${PATH}"
     WORKDIR /opt/omigami
 
-    COPY ./docker /opt/omigami/docker
-    RUN cat docker/spectra_matching.Dockerfile
+    ENV PIP_FIND_LINKS=/opt/libs
+    COPY ./libs /opt/libs
+
+    COPY ./requirements/requirements_flow.txt /opt/omigami/requirements/requirements_flow.txt
+    COPY ./omigami/spectra_matching/requirements/requirements.txt /opt/omigami/requirements/requirements_spectra_matching.txt
+
+    RUN conda install -y -c conda-forge -c nlesc -c bioconda python=3.7 \
+    --file ./requirements/requirements_flow.txt \
+    --file ./requirements/requirements_spectra_matching.txt \
+    && /opt/conda/bin/conda clean -afy \
+    && find /opt/conda/ -follow -type f -name '*.a' -delete \
+    && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
+    && find /opt/conda/ -follow -type f -name '*.js.map' -delete
+
+    COPY ./requirements/requirements_flow_pip.txt /opt/omigami/requirements/requirements_flow_pip.txt
+    RUN pip install -r requirements/requirements_flow_pip.txt
+
+    COPY ./omigami/spectra_matching/requirements/requirements_pip.txt /opt/omigami/requirements/requirements_spectra_matching_pip.txt
+    RUN pip install -r requirements/requirements_spectra_matching_pip.txt
+
+    COPY . /opt/omigami
+    RUN pip install /opt/omigami
 
   build_directory: .
 
@@ -14,10 +34,21 @@ omigami-ms2deepscore:
   requires:
     - omigami-base
   build: |
-    WORKDIR /opt/ms2deepscore
+    WORKDIR /opt/omigami
 
-    COPY ./docker /opt/ms2deepscore/docker
-    RUN cat docker/ms2deepscore.Dockerfile
+    ENV PIP_DEFAULT_TIMEOUT=100
+
+    COPY ./omigami/spectra_matching/ms2deepscore/requirements/requirements.txt /opt/omigami/requirements/requirements_ms2ds.txt
+
+    RUN conda install -y -c conda-forge -c nlesc -c bioconda \
+    --file ./requirements/requirements_ms2ds.txt \
+    && /opt/conda/bin/conda clean -afy \
+    && find /opt/conda/ -follow -type f -name '*.a' -delete \
+    && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
+    && find /opt/conda/ -follow -type f -name '*.js.map' -delete
+
+    COPY ./omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt /opt/omigami/requirements/requirements_ms2ds_pip.txt
+    RUN pip install --no-cache-dir -r requirements/requirements_ms2ds_pip.txt
 
   build_directory: .
 
@@ -26,9 +57,20 @@ omigami-spec2vec:
   requires:
     - omigami-base
   build: |
-    WORKDIR /opt/spec2vec
+    WORKDIR /opt/omigami
 
-    COPY ./docker /opt/spec2vec/docker
-    RUN cat docker/spec2vec.Dockerfile
+    ENV PIP_DEFAULT_TIMEOUT=100
+
+    COPY ./omigami/spectra_matching/spec2vec/requirements/requirements.txt /opt/omigami/requirements/requirements_s2v.txt
+
+    RUN conda install -y -c conda-forge -c nlesc -c bioconda \
+    --file ./requirements/requirements_s2v.txt \
+    && /opt/conda/bin/conda clean -afy \
+    && find /opt/conda/ -follow -type f -name '*.a' -delete \
+    && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
+    && find /opt/conda/ -follow -type f -name '*.js.map' -delete
+
+    COPY ./omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt /opt/omigami/requirements/requirements_s2v_pip.txt
+    RUN pip install --no-cache-dir -r requirements/requirements_s2v_pip.txt
 
   build_directory: .

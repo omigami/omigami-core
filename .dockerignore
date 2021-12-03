@@ -3,7 +3,6 @@
 .DS_Store
 notebooks
 notebooks/*
-*.egg-info
 **/.pytest_cache
 omigami/test
 omigami/test/*
@@ -12,3 +11,4 @@ omigami/test/*/*/*
 mlflow-server/*
 local-deployment/*
 mlruns/*
+.git
