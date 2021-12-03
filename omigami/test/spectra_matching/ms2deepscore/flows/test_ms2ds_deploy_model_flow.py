@@ -31,7 +31,6 @@ def test_spec2vec_deploy_model_flow(flow_config):
         fs_dgw=MS2DeepScoreFSDataGateway(),
         ion_mode="positive",
         redis_db="0",
-        overwrite_model=False,
     )
 
     deploy_model_flow = build_deploy_model_flow("deploy-flow", flow_config, params)
@@ -72,7 +71,6 @@ def test_run_deploy_model_flow(
         fs_dgw=MS2DeepScoreFSDataGateway(),
         ion_mode="positive",
         redis_db="0",
-        overwrite_model=False,
         model_registry_uri=deploy_model_setup["mlflow_uri"],
     )
 

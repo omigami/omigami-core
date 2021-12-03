@@ -45,7 +45,6 @@ def test_build_model_deployment_flow():
         image="star wars episode III had nice lightsaber fights",
         dataset_id="small",
         ion_mode="positive",
-        overwrite_model=True,
         project_name="Raging Flow",
     )
 

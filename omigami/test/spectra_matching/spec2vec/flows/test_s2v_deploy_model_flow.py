@@ -80,7 +80,6 @@ def test_run_deploy_model_flow(
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5.0,
         redis_db="0",
-        overwrite_model=False,
         model_registry_uri=deploy_model_setup["mlflow_uri"],
     )
 

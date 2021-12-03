@@ -100,7 +100,6 @@ def run_deploy_spec2vec_model_flow(
         n_decimals=n_decimals,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
-        overwrite_model=overwrite_model,
     )
 
     flow_parameters = {"ModelRunID": model_run_id}
