@@ -18,7 +18,7 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
 )
 
 
-def test_spec2vec_deploy_model_flow(flow_config):
+def test_ms2ds_deploy_model_flow(flow_config):
     expected_tasks = {
         "ModelRunID",  # a prefect `Parameter` is actually a Task too
         "GetMS2DeepScoreModelPath",
@@ -60,7 +60,7 @@ def deploy_model_setup(
     return {"run_id": model_run_id, "mlflow_uri": mlflow_uri}
 
 
-def test_run_deploy_model_flow(
+def test_run_ms2ds_deploy_model_flow(
     deploy_model_setup,
     flow_config,
     mock_default_config,

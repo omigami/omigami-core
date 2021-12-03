@@ -9,7 +9,7 @@ from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGat
 from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 
 
-def test_ms2ds_deploy_model_flow(flow_config):
+def test_s2v_deploy_model_flow(flow_config):
     expected_tasks = {
         "ModelRunID",  # a prefect `Parameter` is actually a Task too
         "ListDocumentPaths",
@@ -26,7 +26,6 @@ def test_ms2ds_deploy_model_flow(flow_config):
         intensity_weighting_power=0.5,
         allowed_missing_percentage=5.0,
         redis_db="0",
-        overwrite_model=False,
     )
 
     deploy_model_flow = build_deploy_model_flow("deploy-flow", flow_config, params)
@@ -63,7 +62,7 @@ def deploy_model_setup(
     return {"run_id": run_id, "mlflow_uri": mlflow_uri}
 
 
-def test_run_deploy_model_flow(
+def test_run_s2v_deploy_model_flow(
     deploy_model_setup,
     flow_config,
     mock_default_config,
