@@ -8,7 +8,7 @@ from omigami.config import (
 )
 from omigami.spectra_matching.ms2deepscore.main import (
     run_ms2deepscore_training_flow,
-    run_deploy_model_flow,
+    run_deploy_ms2ds_model_flow,
 )
 from omigami.spectra_matching.ms2deepscore.tasks import (
     RegisterModelParameters,
@@ -77,14 +77,13 @@ def integration_test_setup(
 def test_run_model_deployment_flow(backend_services, integration_test_setup):
     client = backend_services["prefect"]
 
-    flow_id, flow_run_id = run_deploy_model_flow(
+    flow_id, flow_run_id = run_deploy_ms2ds_model_flow(
         model_run_id=integration_test_setup["run_id"],
         image="",
         project_name="local-integration-test-ms2ds",
         flow_name="MS2DS - Model Deployment Flow",
         dataset_id="small",
         ion_mode="positive",
-        overwrite_model=False,
     )
 
     monitor_flow_results(client, flow_run_id)

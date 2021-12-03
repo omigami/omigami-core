@@ -31,7 +31,6 @@ class DeployModelFlowParameters:
         allowed_missing_percentage: Union[float, int] = 5.0,
         redis_db: str = "0",
         model_registry_uri: str = MLFLOW_SERVER,
-        overwrite_model: bool = False,
     ):
         self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
@@ -44,7 +43,7 @@ class DeployModelFlowParameters:
             ion_mode, n_decimals, intensity_weighting_power, allowed_missing_percentage
         )
         self.deploying = DeployModelParameters(
-            redis_db, overwrite_model, model_name=f"spec2vec-{ion_mode}"
+            redis_db, overwrite_model=True, model_name=f"spec2vec-{ion_mode}"
         )
 
 

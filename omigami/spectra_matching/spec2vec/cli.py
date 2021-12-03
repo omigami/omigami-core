@@ -3,7 +3,7 @@ import click
 from omigami.cli_options import common_training_options, common_flow_options
 from omigami.spectra_matching.spec2vec.main import (
     run_spec2vec_training_flow,
-    run_deploy_model_flow,
+    run_deploy_spec2vec_model_flow,
 )
 from omigami.utils import add_click_options
 
@@ -85,4 +85,4 @@ def training_flow_cli(*args, **kwargs):
 )
 @add_click_options(common_flow_options)
 def deploy_model_cli(*args, **kwargs):
-    run_deploy_model_flow(*args, **kwargs)
+    run_deploy_spec2vec_model_flow(*args, **kwargs)

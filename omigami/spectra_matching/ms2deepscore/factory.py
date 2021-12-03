@@ -159,7 +159,6 @@ class MS2DeepScoreFlowFactory:
         image: str,
         dataset_id: str,
         ion_mode: IonModes = "positive",
-        overwrite_model: bool = False,
         project_name: str = PROJECT_NAME,
     ) -> Flow:
         """Creates all configuration/gateways objects used by the model deployment flow,
@@ -192,7 +191,6 @@ class MS2DeepScoreFlowFactory:
             fs_dgw=fs_dgw,
             ion_mode=ion_mode,
             redis_db=self._redis_dbs[dataset_id],
-            overwrite_model=overwrite_model,
             model_registry_uri=self._model_registry_uri,
         )
 

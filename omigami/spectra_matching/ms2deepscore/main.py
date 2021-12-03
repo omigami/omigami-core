@@ -72,14 +72,13 @@ def run_ms2deepscore_training_flow(
     return flow_id, flow_run_id
 
 
-def run_deploy_model_flow(
+def run_deploy_ms2ds_model_flow(
     model_run_id: str,
     image: str,
     project_name: str,
     flow_name: str,
     dataset_id: str,
     ion_mode: IonModes,
-    overwrite_model: bool,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a model deployment flow.
@@ -102,7 +101,6 @@ def run_deploy_model_flow(
         flow_name=flow_name,
         dataset_id=dataset_id,
         ion_mode=ion_mode,
-        overwrite_model=overwrite_model,
     )
 
     flow_parameters = {"ModelRunID": model_run_id}

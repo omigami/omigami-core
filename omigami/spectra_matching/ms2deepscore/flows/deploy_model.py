@@ -27,7 +27,6 @@ class DeployModelFlowParameters:
         ion_mode: IonModes,
         redis_db: str = "0",
         model_registry_uri: str = MLFLOW_SERVER,
-        overwrite_model: bool = False,
         spectrum_ids_chunk_size: int = 10000,
     ):
         self.fs_dgw = fs_dgw
@@ -40,7 +39,7 @@ class DeployModelFlowParameters:
         self.ion_mode = ion_mode
 
         self.deploying = DeployModelParameters(
-            redis_db, overwrite_model, model_name=f"spec2vec-{ion_mode}"
+            redis_db, overwrite_model=True, model_name=f"spec2vec-{ion_mode}"
         )
 
 

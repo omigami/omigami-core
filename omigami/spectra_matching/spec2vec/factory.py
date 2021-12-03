@@ -150,7 +150,6 @@ class Spec2VecFlowFactory:
         dataset_id: str,
         n_decimals: int = 2,
         ion_mode: IonModes = "positive",
-        overwrite_model: bool = False,
         project_name: str = PROJECT_NAME,
     ) -> Flow:
         """Creates all configuration/gateways objects used by the model deployment flow,
@@ -189,7 +188,6 @@ class Spec2VecFlowFactory:
             intensity_weighting_power=intensity_weighting_power,
             allowed_missing_percentage=allowed_missing_percentage,
             redis_db=self._redis_dbs[dataset_id],
-            overwrite_model=overwrite_model,
             model_registry_uri=self._model_registry_uri,
         )
 

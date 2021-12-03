@@ -64,7 +64,7 @@ def run_spec2vec_training_flow(
     return flow_id, flow_run_id
 
 
-def run_deploy_model_flow(
+def run_deploy_spec2vec_model_flow(
     model_run_id: str,
     image: str,
     project_name: str,
@@ -74,7 +74,6 @@ def run_deploy_model_flow(
     n_decimals: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    overwrite_model: bool,
     dataset_directory: str = None,
 ) -> Tuple[str, str]:
     """

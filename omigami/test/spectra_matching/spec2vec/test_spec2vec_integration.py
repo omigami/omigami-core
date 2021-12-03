@@ -11,7 +11,7 @@ from omigami.config import (
 )
 from omigami.spectra_matching.spec2vec.main import (
     run_spec2vec_training_flow,
-    run_deploy_model_flow,
+    run_deploy_spec2vec_model_flow,
 )
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.storage import FSDataGateway
@@ -102,7 +102,7 @@ def test_run_model_deployment_flow(
         experiment_path=str(MLFLOW_DIRECTORY),
     )
 
-    flow_id, flow_run_id = run_deploy_model_flow(
+    flow_id, flow_run_id = run_deploy_spec2vec_model_flow(
         model_run_id=run_id,
         image="",
         project_name="local-integration-test-s2v",
@@ -112,7 +112,6 @@ def test_run_model_deployment_flow(
         n_decimals=1,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=15,
-        overwrite_model=False,
         dataset_directory=STORAGE_ROOT.parent / "datasets",
     )
 

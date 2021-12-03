@@ -10,7 +10,7 @@ from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 from omigami.spectra_matching.ms2deepscore.main import (
     run_ms2deepscore_training_flow,
-    run_deploy_model_flow,
+    run_deploy_ms2ds_model_flow,
 )
 
 
@@ -88,11 +88,12 @@ def test_run_mocked_deploy_model_flow(mock_factories):
         image="star wars episode II wasn't so bad",
         dataset_id="small",
         ion_mode="positive",
-        overwrite_model=True,
         project_name="default",
     )
 
-    flow_id, flow_run_id = run_deploy_model_flow(model_run_id="model_run_id", **params)
+    flow_id, flow_run_id = run_deploy_ms2ds_model_flow(
+        model_run_id="model_run_id", **params
+    )
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_factories["factory"].build_model_deployment_flow.assert_called_once_with(
