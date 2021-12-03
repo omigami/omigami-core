@@ -55,9 +55,7 @@ def test_run_training_flow(backend_services):
 
 
 @pytest.fixture()
-def integration_test_setup(
-    mock_deploy_model_task, siamese_model_path, mock_default_config
-):
+def integration_test_setup(mock_deploy_model_task, siamese_model_path):
     params = RegisterModelParameters(
         "test_experiment", MLFLOW_SERVER, str(MLFLOW_DIRECTORY), "positive"
     )

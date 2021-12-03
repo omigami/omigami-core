@@ -3,7 +3,6 @@ import pickle
 import pandas as pd
 import pytest
 from ms2deepscore.models import load_model
-from prefect import Task
 from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
@@ -28,6 +27,7 @@ from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
 )
 from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from omigami.test.spectra_matching.tasks import DummyTask
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -154,14 +154,6 @@ def small_model_params(monkeypatch):
         "SIAMESE_MODEL_PARAMS",
         smaller_params,
     )
-
-
-class DummyTask(Task):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-
-    def run(self, arg1=None, arg2=None, arg3=None, arg4=None, **kwargs) -> None:
-        pass
 
 
 @pytest.fixture
