@@ -7,8 +7,12 @@ from prefect import Task
 from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
-from omigami.config import STORAGE_ROOT
+from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
+from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
+    build_training_flow,
+    TrainingFlowParameters,
+)
 from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
@@ -16,6 +20,13 @@ from omigami.spectra_matching.ms2deepscore.predictor import (
     MS2DeepScorePredictor,
     MS2DeepScoreSimilarityScoreCalculator,
 )
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
+from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 redis_db = factories.redisdb("redis_nooproc")
@@ -73,14 +84,13 @@ def ms2deepscore_predictor(ms2deepscore_embedding):
 
 
 @pytest.fixture()
-def siamese_model_path():
-    path = STORAGE_ROOT / "ms2deepscore/model/trained/ms2deep_score.hdf5"
+def siamese_model_path(
+    small_model_params, mock_default_config, flow_config, generate_ms2ds_model_flow
+):
+    path = ASSETS_DIR / "ms2deep_score.hdf5"
+
     if not path.exists():
-        raise ValueError(
-            "In order to generate this test asset, please run test_run_training_flow "
-            "on ms2deepscore/test_integration.py with the local services running. "
-            "Check README for more information."
-        )
+        generate_ms2ds_model_flow.run()
 
     return str(path)
 
@@ -146,19 +156,85 @@ def small_model_params(monkeypatch):
     )
 
 
+class DummyTask(Task):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+    def run(self, arg1=None, arg2=None, arg3=None, arg4=None, **kwargs) -> None:
+        pass
+
+
 @pytest.fixture
 def mock_deploy_model_task(monkeypatch):
-    class DeployModel(Task):
-        def __init__(self, *args, **kwargs):
-            super().__init__()
-
-        def run(self, model_run_id: str = None) -> None:
-            pass
 
     import omigami.spectra_matching.ms2deepscore.flows.deploy_model
 
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.deploy_model,
         "DeployModel",
-        DeployModel,
+        DummyTask,
     )
+
+
+@pytest.fixture
+def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_files):
+    """Used to generate local asset ms2deep_score.hd5 for multiple tests."""
+    import omigami.spectra_matching.ms2deepscore.flows.training_flow
+
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
+        "MakeEmbeddings",
+        DummyTask,
+    )
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
+        "RegisterModel",
+        DummyTask,
+    )
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
+        "DeployModel",
+        DummyTask,
+    )
+
+    data_gtw = MS2DeepScoreFSDataGateway()
+    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+    spectrum_cleaner = SpectrumCleaner()
+
+    flow_params = TrainingFlowParameters(
+        data_gtw=data_gtw,
+        spectrum_dgw=spectrum_dgw,
+        spectrum_cleaner=spectrum_cleaner,
+        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
+        # the three parameters below are for using cached assets instead of downloading
+        dataset_directory=str(ASSETS_DIR.parent),
+        dataset_id=ASSETS_DIR.name,
+        dataset_name="SMALL_GNPS_500_spectra.json",
+        chunk_size=150000,
+        ion_mode="positive",
+        overwrite_model=True,
+        overwrite_all_spectra=True,
+        # we use everything but the model path as tmpdir. We only want the model from this script
+        scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
+        fingerprint_n_bits=2048,
+        scores_decimals=5,
+        spectrum_binner_n_bins=10000,
+        spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
+        model_output_path=str(ASSETS_DIR / "ms2deep_score.hdf5"),
+        dataset_checkpoint_name="spectrum_ids_500.pkl",
+        epochs=5,
+        project_name="test",
+        mlflow_output_directory=f"{tmpdir}/model-output",
+        train_ratio=0.8,
+        validation_ratio=0.2,
+        test_ratio=0.2,
+        spectrum_ids_chunk_size=100,
+    )
+
+    flow = build_training_flow(
+        flow_config=flow_config,
+        flow_name="test-flow",
+        flow_parameters=flow_params,
+    )
+
+    return flow

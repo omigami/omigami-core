@@ -51,7 +51,9 @@ def mock_cli(
 
 def test_ms2deepscore_cli(monkeypatch):
     monkeypatch.setattr(
-        omigami.spectra_matching.ms2deepscore.cli, "run_ms2deepscore_flow", mock_cli
+        omigami.spectra_matching.ms2deepscore.cli,
+        "run_ms2deepscore_training_flow",
+        mock_cli,
     )
     cli_command = [
         "train",

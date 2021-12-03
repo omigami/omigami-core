@@ -7,7 +7,7 @@ import pytest
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 pytestmark = [
-    pytest.mark.xfail(reason="Not working currently"),
+    pytest.mark.skip(reason="Not working currently"),
     pytest.mark.skipif(
         not os.path.exists(
             str(
