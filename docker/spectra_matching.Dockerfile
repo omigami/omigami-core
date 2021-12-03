@@ -1,7 +1,3 @@
-FROM continuumio/miniconda3
-ENV PATH="/opt/conda/bin/:${PATH}"
-WORKDIR /opt/omigami
-
 COPY ./requirements /opt/omigami/requirements
 RUN cat requirements/environment.frozen.yaml | sed 's/omigami/base/g' > base-environment-docker.yml
 
