@@ -1,1 +1,1 @@
-spec2vec=0.4.*
+spec2vec=0.4.0
