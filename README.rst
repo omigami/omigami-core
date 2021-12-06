@@ -105,7 +105,7 @@ Running MLFlow Locally
 
 To run mlflow locally run the following command:
 ::
-    mlflow ui --backend-store-uri sqlite:///mlflow.sqlite
+    mlflow ui --backend-store-uri sqlite:///<PATH_TO_PROJECT_ROOT>/local-deployment/results/mlflow.sqlite
 
 
 To access it: http://localhost:5000/
@@ -114,7 +114,15 @@ To access it: http://localhost:5000/
 To run tests one by one via PyCharm, you can add this to your pytest Environment Variables (Run > Edit Configurations...)
 ::
 
-    SKIP_REDIS_TEST=False;PREFECT__FLOWS__CHECKPOINTING=True;REDIS_HOST=localhost;REDIS_DB=0;MLFLOW_SERVER=sqlite:///mlflow.sqlite
+    SKIP_REDIS_TEST=False;
+    PREFECT__FLOWS__CHECKPOINTING=True;
+    REDIS_HOST=localhost;REDIS_DB=0;
+    MLFLOW_SERVER=sqlite:////<path_to_project_root>mlflow.sqlite
+
+One example of MLFLOW_SERVER variable is (notice the 4 slashes):
+::
+    sqlite:////Users/czanella/dev/datarevenue/omigami-core/local-deployment/results/mlflow.sqlite
+
 
 Please don't commit `*model.pkl` files to git. Every necessary model for the
 test setup is going to be generated and saved to `test/assets/` folder and be

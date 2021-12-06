@@ -1,5 +1,3 @@
-from unittest.mock import Mock
-
 import pytest
 
 from omigami.spectra_matching.spec2vec.flows.deploy_model import (
@@ -22,7 +20,6 @@ def test_deploy_model_flow(flow_config):
     params = DeployModelFlowParameters(
         spectrum_dgw=RedisSpectrumDataGateway(),
         fs_dgw=FSDataGateway(),
-        model_registry_dgw=MLFlowDataGateway(),
         ion_mode="positive",
         n_decimals=2,
         documents_directory="directory",
@@ -34,7 +31,6 @@ def test_deploy_model_flow(flow_config):
 
     deploy_model_flow = build_deploy_model_flow("deploy-flow", flow_config, params)
     list_task = deploy_model_flow.get_tasks("ListDocumentPaths")[0]
-    load_model_task = deploy_model_flow.get_tasks("LoadSpec2VecModel")[0]
 
     assert deploy_model_flow.name == "deploy-flow"
     assert list_task._documents_directory == "directory"
@@ -43,7 +39,9 @@ def test_deploy_model_flow(flow_config):
 
 
 @pytest.fixture()
-def deploy_model_setup(tmpdir_factory, word2vec_model, monkeypatch):
+def deploy_model_setup(
+    tmpdir_factory, word2vec_model, monkeypatch, mock_deploy_model_task
+):
     tmpdir = tmpdir_factory.mktemp("model")
     mlflow_uri = f"sqlite:///{tmpdir}/mlflow.sqlite"
     dgw = MLFlowDataGateway(mlflow_uri)
@@ -62,17 +60,7 @@ def deploy_model_setup(tmpdir_factory, word2vec_model, monkeypatch):
         experiment_path=str(tmpdir),
     )
 
-    SeldonDeployment = Mock()
-    SeldonDeployment().deploy_model = Mock(return_value=[None, None])
-    import omigami.spectra_matching.tasks.deploy_model
-
-    monkeypatch.setattr(
-        omigami.spectra_matching.tasks.deploy_model,
-        "SeldonDeployment",
-        SeldonDeployment,
-    )
-
-    return {"dgw": dgw, "run_id": run_id}
+    return {"run_id": run_id, "mlflow_uri": mlflow_uri}
 
 
 def test_run_deploy_model_flow(
@@ -86,7 +74,6 @@ def test_run_deploy_model_flow(
     params = DeployModelFlowParameters(
         spectrum_dgw=RedisSpectrumDataGateway(),
         fs_dgw=FSDataGateway(),
-        model_registry_dgw=deploy_model_setup["dgw"],
         ion_mode="positive",
         n_decimals=1,
         documents_directory=s3_documents_directory,
@@ -94,6 +81,7 @@ def test_run_deploy_model_flow(
         allowed_missing_percentage=5.0,
         redis_db="0",
         overwrite_model=False,
+        model_registry_uri=deploy_model_setup["mlflow_uri"],
     )
 
     deploy_model_flow = build_deploy_model_flow("deploy-flow", flow_config, params)

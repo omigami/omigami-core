@@ -2,7 +2,7 @@ from typing import Union
 
 from prefect import Flow, unmapped, Parameter
 
-from omigami.config import IonModes, ION_MODES
+from omigami.config import IonModes, ION_MODES, MLFLOW_SERVER
 from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.spec2vec.tasks import (
     MakeEmbeddings,
@@ -13,7 +13,6 @@ from omigami.spectra_matching.spec2vec.tasks.deploy_model_tasks import (
     LoadSpec2VecModel,
 )
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
-from omigami.spectra_matching.storage.model_registry import ModelRegistryDataGateway
 from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
@@ -25,19 +24,20 @@ class DeployModelFlowParameters:
         self,
         spectrum_dgw: RedisSpectrumDataGateway,
         fs_dgw: FSDataGateway,
-        model_registry_dgw: ModelRegistryDataGateway,
         ion_mode: IonModes,
         n_decimals: int,
         documents_directory: str,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
         redis_db: str = "0",
+        model_registry_uri: str = MLFLOW_SERVER,
         overwrite_model: bool = False,
     ):
         self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
-        self.model_registry_dgw = model_registry_dgw
         self.documents_directory = documents_directory
+        self.model_registry_uri = model_registry_uri
+
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
         self.embedding = MakeEmbeddingsParameters(
@@ -73,12 +73,15 @@ def build_deploy_model_flow(
 
     with Flow(flow_name, **flow_config.kwargs) as deploy_model_flow:
         model_run_id = Parameter("ModelRunID")
+
         document_paths = ListDocumentPaths(
             flow_parameters.documents_directory, flow_parameters.fs_dgw
         )()
+
         loaded_model = LoadSpec2VecModel(
-            flow_parameters.fs_dgw, flow_parameters.model_registry_dgw
+            flow_parameters.fs_dgw, flow_parameters.model_registry_uri
         )(model_run_id)
+
         _ = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
             flow_parameters.fs_dgw,
@@ -88,6 +91,7 @@ def build_deploy_model_flow(
             unmapped(model_run_id),
             document_paths,
         )
+
         _ = DeployModel(flow_parameters.deploying)(model_run_id)
 
     return deploy_model_flow

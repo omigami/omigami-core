@@ -108,7 +108,7 @@ def test_run_training_flow(
         dataset_directory=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
-        chunk_size=150000,
+        chunk_size=int(1e8),
         ion_mode="positive",
         n_decimals=1,
         overwrite_model=True,
@@ -136,7 +136,7 @@ def test_run_training_flow(
 
     assert flow_run.is_successful()
     flow_run.result[download_task].is_cached()
-    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
+    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 2
     assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
 
     run_id = flow_run.result[register_task].result
