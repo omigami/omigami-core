@@ -19,7 +19,7 @@ class GetMS2DeepScoreModelPath(Task):
         super().__init__(**config)
 
     def run(self, model_run_id: str = None) -> Dict[str, str]:
-        """Loads a trained spec2vec model given an mlflow_run_id"""
+        """Loads a trained ms2deepscore model given an mlflow_run_id"""
         self.logger.info(
             f"Loading Spec2Vec model with run_id {model_run_id} from server "
             f"{self._model_registry_uri}."

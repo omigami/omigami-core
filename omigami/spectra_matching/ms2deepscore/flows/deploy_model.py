@@ -39,7 +39,7 @@ class DeployModelFlowParameters:
         self.ion_mode = ion_mode
 
         self.deploying = DeployModelParameters(
-            redis_db, overwrite_model=True, model_name=f"spec2vec-{ion_mode}"
+            redis_db, overwrite_model=True, model_name=f"ms2deepscore-{ion_mode}"
         )
 
 
@@ -49,7 +49,7 @@ def build_deploy_model_flow(
     flow_parameters: DeployModelFlowParameters,
 ) -> Flow:
     """
-    Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
+    Builds the ms2deepscore machine learning pipeline. It process data, trains a model, makes
     embeddings, registers the model and deploys it to the API.
 
     Parameters

@@ -3,11 +3,11 @@ from typing import Set, List
 
 from prefect import Task
 
+from omigami.common.progress_logger import (
+    TaskProgressLogger,
+)
 from omigami.spectra_matching.spec2vec.entities.spectrum_document import (
     SpectrumDocumentData,
-)
-from omigami.spectra_matching.spec2vec.helper_classes.progress_logger import (
-    TaskProgressLogger,
 )
 from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
     SpectrumDocumentDataGateway,
