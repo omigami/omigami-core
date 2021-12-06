@@ -1,4 +1,6 @@
-FROM spectra_matching:latest
+ARG BASE_IMAGE
+
+FROM $BASE_IMAGE
 
 WORKDIR /opt/omigami
 
