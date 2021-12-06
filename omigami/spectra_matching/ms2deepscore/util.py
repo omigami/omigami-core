@@ -3,7 +3,7 @@ import numpy as np
 
 
 @numba.njit
-def _cosine_similarity(vector1: np.ndarray, vector2: np.ndarray) -> np.float64:
+def cosine_similarity(vector1: np.ndarray, vector2: np.ndarray) -> np.float64:
     """Calculate cosine similarity between two input vectors. Function copied from
     spec2vec/vector_operations.py
 
@@ -46,7 +46,7 @@ def _cosine_similarity(vector1: np.ndarray, vector2: np.ndarray) -> np.float64:
 
 
 @numba.njit
-def _cosine_similarity_matrix(
+def cosine_similarity_matrix(
     vectors_1: np.ndarray, vectors_2: np.ndarray
 ) -> np.ndarray:
     """Fast implementation of cosine similarity between two arrays of vectors. Function
