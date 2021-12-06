@@ -8,7 +8,10 @@ class FlowDeployer:
         self._prefect_client = prefect_client
 
     def deploy_flow(
-        self, flow: Flow, project_name: str, parameters: Optional[Dict[str, Any]] = None
+        self,
+        flow: Flow,
+        project_name: str,
+        flow_parameters: Optional[Dict[str, Any]] = None,
     ) -> Tuple[str, str]:
         """Creates a Prefect project if it doesn't exist. Registers the flow to this
         project, and triggers a run of the flow.
@@ -19,7 +22,7 @@ class FlowDeployer:
             Prefect flow to be deployed
         project_name:
             Name of the prefect project.
-        parameters:
+        flow_parameters:
             Dictionary of prefect flow parameters.
 
         Returns
@@ -30,7 +33,7 @@ class FlowDeployer:
         self._prefect_client.create_project(project_name)
         flow_id = self._prefect_client.register(flow, project_name=project_name)
         flow_run_id = self._prefect_client.create_flow_run(
-            flow_id=flow_id, run_name=f"run {project_name}", parameters=parameters
+            flow_id=flow_id, run_name=f"run {project_name}", parameters=flow_parameters
         )
 
         return flow_id, flow_run_id

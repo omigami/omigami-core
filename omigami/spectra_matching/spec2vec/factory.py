@@ -88,7 +88,7 @@ class Spec2VecFlowFactory:
         Returns
         -------
         Flow:
-            A prefect training flow with the given parameters
+            A prefect training flow built with the given parameters
 
         """
         flow_config = make_flow_config(
