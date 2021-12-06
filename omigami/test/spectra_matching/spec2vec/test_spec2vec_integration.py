@@ -1,8 +1,11 @@
+from time import sleep
+
 import pytest
-from prefect import Flow
-from prefect.run_configs import LocalRun
+from prefect import Flow, task
+from prefect.run_configs import LocalRun, DockerRun
 from prefect.storage import Local
 
+from omigami.authentication.prefect_factory import get_prefect_client
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     STORAGE_ROOT,
@@ -20,15 +23,16 @@ from omigami.spectra_matching.tasks import DownloadParameters, DownloadData
 from omigami.test.spectra_matching.conftest import monitor_flow_results
 
 
-@pytest.mark.skip(
-    "Requires local prefect server and mlflow. Make sure they are running to run this"
-    "test. To run them, check README instructions."
-)
+# @pytest.mark.skip(
+#     "Requires local prefect server and mlflow. Make sure they are running to run this"
+#     "test. To run them, check README instructions."
+# )
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
+    image = "drtools/omigami-spec2vec:test-SNAPSHOT.1be1a79"
 
     flow_id, flow_run_id = run_spec2vec_training_flow(
-        image="",
+        image=image,
         project_name="local-integration-test-s2v",
         flow_name="Robert DeFlow",
         dataset_id="small",
@@ -118,3 +122,26 @@ def test_run_model_deployment_flow(
 
     monitor_flow_results(client, flow_run_id)
     assert client.get_flow_run_state(flow_run_id).is_successful()
+
+
+def test_docker_run():
+    @task()
+    def sum_value(x):
+        sleep(100)
+        return x + 5
+
+    image = "drtools/omigami-spec2vec:test-SNAPSHOT.1be1a79"
+    # image = "prefecthq/prefect:0.14.12"
+    run_config = DockerRun(env={"TZ": "UTC"}, labels=["dev"], image=image)
+    storage = Local()
+
+    with Flow("test_flow", run_config=run_config, storage=storage) as test_flow:
+        a = sum_value(5)
+        b = sum_value(a)
+
+    client = get_prefect_client()
+    client.create_project("test_project")
+    flow_id = client.register(test_flow, "test_project")
+    flow_run_id = client.create_flow_run(flow_id)
+
+    assert flow_run_id

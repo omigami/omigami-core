@@ -3,9 +3,9 @@ from enum import Enum
 
 from attr import dataclass
 from prefect.executors import Executor, LocalDaskExecutor
-from prefect.run_configs import RunConfig, KubernetesRun, LocalRun
+from prefect.run_configs import RunConfig, KubernetesRun, LocalRun, DockerRun
 from prefect.schedules import IntervalSchedule
-from prefect.storage import Storage, S3, Local
+from prefect.storage import Storage, S3, Local, Docker
 
 from omigami.config import (
     ROOT_DIR,
@@ -85,6 +85,7 @@ def make_flow_config(
         "REDIS_HOST": REDIS_HOST,
         "OMIGAMI_ENV": OMIGAMI_ENV,
         "MLFLOW_SERVER": MLFLOW_SERVER,
+        "TZ": "UTC",
     }
 
     if OMIGAMI_ENV in ("dev", "prod"):
@@ -97,12 +98,23 @@ def make_flow_config(
             memory_request="12Gi",
         )
     else:
-        run_config = LocalRun(env=env_variables, labels=["dev"])
+        if image is None:
+            run_config = LocalRun(env=env_variables, labels=["dev"])
+        else:
+            run_config = DockerRun(env=env_variables, labels=["dev"], image=image)
 
     if storage_type == PrefectStorageMethods.S3:
         storage = S3(STORAGE_ROOT.netloc)
     elif storage_type == PrefectStorageMethods.Local:
-        storage = Local(storage_root)
+        if image is None:
+            storage = Local(storage_root)
+        else:
+            storage = Docker(
+                base_image=image,
+                local_image=True,
+                ignore_healthchecks=False,
+                prefect_directory="/opt/omigami",
+            )
     else:
         raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
 
