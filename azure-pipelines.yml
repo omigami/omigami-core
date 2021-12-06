@@ -41,7 +41,7 @@ steps:
     conda create -y -c conda-forge -c nlesc -c bioconda -n omigami python=3.7 \
         --file requirements/requirements.txt \
         --file requirements/requirements_flow.txt \
-        --file requirements/requirements_test.txt \
+        --file requirements/requirements_test.txt
     source activate omigami
     pip install -r requirements/requirements_flow_pip.txt \
         -r requirements/requirements_test_pip.txt
