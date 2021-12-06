@@ -4,7 +4,7 @@ from typing import Dict
 from pandas import Timestamp
 from prefect import Task
 
-from omigami.config import IonModes, CONDA_ENV_PATH
+from omigami.config import IonModes
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SIAMESE_MODEL_PARAMS,
 )
@@ -78,7 +78,6 @@ class RegisterModel(Task):
             experiment_name=self._experiment_name,
             experiment_path=self._mlflow_output_path,
             params=params,
-            conda_env_path=CONDA_ENV_PATH,
             artifacts=train_model_output,
             run_name=run_name,
         )
