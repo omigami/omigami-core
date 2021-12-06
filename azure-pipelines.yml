@@ -52,12 +52,12 @@ steps:
     pip install -r omigami/spectra_matching/requirements/requirements_pip.txt
 
     conda install -y -c conda-forge -c nlesc -c bioconda \
-        --file omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
-    pip install  -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
-
-    conda install -y -c conda-forge -c nlesc -c bioconda \
         --file omigami/spectra_matching/spec2vec/requirements/requirements.txt
     pip install -r omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt
+
+    conda install -y -c conda-forge -c nlesc -c bioconda \
+        --file omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
+    pip install  -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
 
     pip install -e .
   displayName: Create Anaconda environment
