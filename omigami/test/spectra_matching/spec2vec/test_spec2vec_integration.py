@@ -23,13 +23,13 @@ from omigami.spectra_matching.tasks import DownloadParameters, DownloadData
 from omigami.test.spectra_matching.conftest import monitor_flow_results
 
 
-# @pytest.mark.skip(
-#     "Requires local prefect server and mlflow. Make sure they are running to run this"
-#     "test. To run them, check README instructions."
-# )
+@pytest.mark.skip(
+    "Requires local prefect server and mlflow. Make sure they are running to run this"
+    "test. To run them, check README instructions."
+)
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
-    image = "drtools/omigami-spec2vec:test-SNAPSHOT.1be1a79"
+    image = None  # "drtools/omigami-spec2vec:SNAPSHOT.1a6ec12c"
 
     flow_id, flow_run_id = run_spec2vec_training_flow(
         image=image,

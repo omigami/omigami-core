@@ -9,7 +9,7 @@ from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 
 
 def run_spec2vec_training_flow(
-    image: str,
+    image: Optional[str],
     project_name: str,
     flow_name: str,
     dataset_id: str,

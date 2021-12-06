@@ -22,16 +22,17 @@ SELDON_PARAMS = config["seldon"].get(dict)
 if OMIGAMI_ENV == "local":
     STORAGE_ROOT = Path(__file__).parent.parent / "local-deployment" / "results"
 else:
-    STORAGE_ROOT = DRPath(config["storage"]["root"][OMIGAMI_ENV])
+    STORAGE_ROOT = DRPath(config["storage"]["root"][OMIGAMI_ENV].get(str))
 
 MLFLOW_DIRECTORY = STORAGE_ROOT / "mlflow"
 
 REDIS_DATABASES = {
     "local": {"small": "0"},
+    "docker": {"small": "0"},
     "dev": {"small": "2", "10k": "1", "complete": "0"},
     "prod": {"small": "2", "complete": "0"},
 }[OMIGAMI_ENV]
-REDIS_HOST = str(os.getenv("REDIS_HOST"))
+REDIS_HOST = config["storage"]["redis"]["host"][OMIGAMI_ENV].get(str)
 EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
     "spectrum_id_sorted_set"
@@ -42,7 +43,7 @@ SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
 SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
 SOURCE_URI_PARTIAL_GNPS_500_SPECTRA = config["gnps_uri"]["partial_500_spectra"].get(str)
 
-CLUSTER = config["clusters"][OMIGAMI_ENV].get(str)
+CLUSTER = config["clusters"].get(dict).get(OMIGAMI_ENV, None)
 ION_MODES = {"positive", "negative"}
 IonModes = Literal["positive", "negative"]
 CONDA_ENV_PATH = Path(__file__).parents[1] / "requirements/environment.frozen.yaml"

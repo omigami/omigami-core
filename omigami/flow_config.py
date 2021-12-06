@@ -23,6 +23,7 @@ from omigami.config import (
 class PrefectStorageMethods(Enum):
     S3 = 0
     Local = 1
+    Docker = 2
 
 
 class PrefectExecutorMethods(Enum):
@@ -48,7 +49,6 @@ class FlowConfig:
 
 
 def make_flow_config(
-    storage_type: PrefectStorageMethods,
     executor_type: PrefectExecutorMethods,
     image: str = None,
     redis_db: str = "",
@@ -60,8 +60,6 @@ def make_flow_config(
 
     Parameters
     ----------
-    storage_type:
-        Type of storage. Available options are Local and S3
     executor_type:
         Dask executor. Only local is implemented
     image:
@@ -89,6 +87,7 @@ def make_flow_config(
     }
 
     if OMIGAMI_ENV in ("dev", "prod"):
+        storage = S3(STORAGE_ROOT.netloc)
         run_config = KubernetesRun(
             image=image,
             job_template_path=str(ROOT_DIR / "job_spec.yaml"),
@@ -97,26 +96,19 @@ def make_flow_config(
             env=env_variables,
             memory_request="12Gi",
         )
+    elif OMIGAMI_ENV == "local":
+        storage = Local(storage_root)
+        run_config = LocalRun(env=env_variables, labels=["dev"])
+    elif OMIGAMI_ENV == "docker":
+        storage = Docker(
+            base_image=image,
+            local_image=True,
+            ignore_healthchecks=False,
+            prefect_directory="/opt/omigami",
+        )
+        run_config = DockerRun(env=env_variables, labels=["dev"], image=image)
     else:
-        if image is None:
-            run_config = LocalRun(env=env_variables, labels=["dev"])
-        else:
-            run_config = DockerRun(env=env_variables, labels=["dev"], image=image)
-
-    if storage_type == PrefectStorageMethods.S3:
-        storage = S3(STORAGE_ROOT.netloc)
-    elif storage_type == PrefectStorageMethods.Local:
-        if image is None:
-            storage = Local(storage_root)
-        else:
-            storage = Docker(
-                base_image=image,
-                local_image=True,
-                ignore_healthchecks=False,
-                prefect_directory="/opt/omigami",
-            )
-    else:
-        raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
+        raise ValueError(f"Environment {OMIGAMI_ENV} not supported.")
 
     if executor_type == PrefectExecutorMethods.DASK:
         raise NotImplementedError(

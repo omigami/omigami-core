@@ -15,7 +15,6 @@ from omigami.config import (
 )
 from omigami.flow_config import (
     make_flow_config,
-    PrefectStorageMethods,
     PrefectExecutorMethods,
 )
 from omigami.spectra_matching.spec2vec.config import (
@@ -53,11 +52,6 @@ class Spec2VecFlowFactory:
         self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
         self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
         self._dataset_ids = DATASET_IDS
-        self._storage_type = (
-            PrefectStorageMethods.S3
-            if "s3" in str(SPEC2VEC_ROOT)
-            else PrefectStorageMethods.Local
-        )
 
     def build_training_flow(
         self,
@@ -93,7 +87,6 @@ class Spec2VecFlowFactory:
         """
         flow_config = make_flow_config(
             image=image,
-            storage_type=self._storage_type,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=self._redis_dbs[dataset_id],
             schedule=schedule,
@@ -167,7 +160,6 @@ class Spec2VecFlowFactory:
         """
         flow_config = make_flow_config(
             image=image,
-            storage_type=self._storage_type,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=self._redis_dbs[dataset_id],
             storage_root=STORAGE_ROOT,

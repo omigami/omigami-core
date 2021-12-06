@@ -129,17 +129,32 @@ To run tests one by one via PyCharm, you can add this to your pytest Environment
 
     SKIP_REDIS_TEST=False;
     PREFECT__FLOWS__CHECKPOINTING=True;
-    REDIS_HOST=localhost;REDIS_DB=0;
-    MLFLOW_SERVER=sqlite:////<path_to_project_root>mlflow.sqlite
+    REDIS_DB=0;
+    MLFLOW_SERVER=sqlite:///<absolute_path_to_project_root>mlflow.sqlite;
+    OMIGAMI_ENV=local
 
 One example of MLFLOW_SERVER variable is (notice the 4 slashes):
 ::
     sqlite:////Users/czanella/dev/datarevenue/omigami-core/local-deployment/results/mlflow.sqlite
 
+Running Prefect Tests using a built docker image
+-----------------------------------------------------
 
-Please don't commit `*model.pkl` files to git. Every necessary model for the
-test setup is going to be generated and saved to `test/assets/` folder and be
-used from there on.
+Running flows in docker can be used to test images. To run in docker a few environment
+variables must be changed, and a prefect docker agent must be used instead of a local one.
+
+We first need to connect redis to prefect-server network and then spin up a docker agent.
+Assuming prefect server is already up:
+::
+    docker network connect prefect-server redis
+    prefect agent docker start -n local-docker-agent -l dev --show-flow-logs --log-level DEBUG --network prefect-server
+
+
+Then a few environment variables must be updated on pytest settings:
+::
+    MLFLOW_SERVER=sqlite:///mlflow.sqlite;
+    OMIGAMI_ENV=docker
+
 
 How to register the training flow manually
 ------------------------------------------
@@ -236,3 +251,8 @@ version provided in the environment and the following command:
 ::
 
     black --target-version py37 omigami
+
+
+Please don't commit `*model.pkl` files to git. Every necessary model for the
+test setup is going to be generated and saved to `test/assets/` folder and be
+used from there on.
