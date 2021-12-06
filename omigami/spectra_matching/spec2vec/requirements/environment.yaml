@@ -1,0 +1,8 @@
+name: omigami
+channels:
+  - conda-forge
+  - bioconda
+  - nlesc
+dependencies:
+  - pip
+  - pip:

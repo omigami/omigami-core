@@ -9,9 +9,20 @@ How to setup
 ------------
 ::
 
-    conda env create -f requirements/environment.frozen.yaml
-    conda env update -f requirements/environment_test.yaml
-    conda activate omigami
+    export PIP_FIND_LINKS=$(pwd)/libs
+    conda create -y -c conda-forge -c nlesc -c bioconda -n omigami python=3.7 \
+        --file requirements/requirements.txt \
+        --file requirements/requirements_flow.txt \
+        --file requirements/requirements_test.txt \
+        --file omigami/spectra_matching/requirements/requirements.txt \
+        --file omigami/spectra_matching/spec2vec/requirements/requirements.txt \
+        --file omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
+    source activate omigami
+    pip install -r requirements/requirements_flow_pip.txt
+    pip install -r requirements/requirements_test_pip.txt
+    pip install -r omigami/spectra_matching/requirements/requirements_pip.txt
+    pip install -r omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt
+    pip install -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
     pip install -e .
 
 How to update all packages
@@ -20,9 +31,17 @@ To update all packages and create new frozen environments. Make sure you have co
 environment activated. You'll need at least `conda>=4.9`::
 
     conda activate omigami
-    python requirements/dress.py env freeze requirements/environment.yaml
-    conda env update -f requirements/environment.frozen.yaml
-    conda env update -f requirements/environment_test.yaml
+    conda env update -f requirements/requirements.txt
+    conda env update -f requirements/requirements_flow.txt
+    conda env update -f requirements/requirements_test.txt
+    conda env update -f omigami/spectra_matching/requirements/requirements.txt
+    conda env update -f omigami/spectra_matching/spec2vec/requirements/requirements.txt
+    conda env update -f omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
+    pip install -r requirements/requirements_flow_pip.txt \
+        -r requirements/requirements_test_pip.txt \
+        -r omigami/spectra_matching/requirements/requirements_pip.txt \
+        -r omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt \
+        -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
 
 How to add or update a single package
 -------------------------------------
