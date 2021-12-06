@@ -21,6 +21,3 @@ RUN pip install -r requirements/requirements_flow_pip.txt
 
 COPY ./omigami/spectra_matching/requirements/requirements_pip.txt /opt/omigami/requirements/requirements_spectra_matching_pip.txt
 RUN pip install -r requirements/requirements_spectra_matching_pip.txt
-
-COPY . /opt/omigami
-RUN pip install /opt/omigami

@@ -17,3 +17,10 @@ RUN conda install -y -c conda-forge -c nlesc -c bioconda \
 
 COPY ./omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt /opt/omigami/requirements/requirements_ms2ds_pip.txt
 RUN pip install --no-cache-dir -r requirements/requirements_ms2ds_pip.txt
+
+USER root
+COPY . /opt/omigami
+RUN chown -R anaconda /opt/omigami
+
+USER anaconda
+RUN pip install -e /opt/omigami/
