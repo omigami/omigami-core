@@ -1,2 +1,2 @@
-prefect=0.14.*
-confuse=1.4.*
+prefect=0.14.12
+confuse=1.4.0
