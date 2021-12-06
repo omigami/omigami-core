@@ -37,11 +37,11 @@ environment activated. You'll need at least `conda>=4.9`::
     conda env update -f omigami/spectra_matching/requirements/requirements.txt
     conda env update -f omigami/spectra_matching/spec2vec/requirements/requirements.txt
     conda env update -f omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
-    pip install -r requirements/requirements_flow_pip.txt
-    pip install -r requirements/requirements_test_pip.txt
-    pip install -r omigami/spectra_matching/requirements/requirements_pip.txt
-    pip install -r omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt
-    pip install -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
+    pip install -r requirements/requirements_flow_pip.txt \
+        -r requirements/requirements_test_pip.txt \
+        -r omigami/spectra_matching/requirements/requirements_pip.txt \
+        -r omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt \
+        -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
 
 How to add or update a single package
 -------------------------------------
