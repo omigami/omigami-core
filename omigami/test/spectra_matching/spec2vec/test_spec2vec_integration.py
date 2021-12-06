@@ -51,9 +51,10 @@ def test_deploy_training_flow(backend_services):
 
 
 @pytest.mark.skip(
-    "Requires local prefect server and mlflow. Check readme to start them."
+    "Requires local prefect server and mlflow. Make sure they are running to run this"
+    "test. To run them, check README instructions."
 )
-def test_single_task_local_integration(backend_services):
+def test_download_task_local_integration(backend_services):
     """This is covered by the integration test above but was used for development
     and it is useful for debugging"""
     client = backend_services["prefect"]

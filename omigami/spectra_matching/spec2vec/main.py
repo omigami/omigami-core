@@ -106,7 +106,7 @@ def run_deploy_spec2vec_model_flow(
 
     deployer = FlowDeployer(prefect_client=get_prefect_client())
     flow_id, flow_run_id = deployer.deploy_flow(
-        flow=flow, project_name=project_name, parameters=flow_parameters
+        flow=flow, project_name=project_name, flow_parameters=flow_parameters
     )
 
     return flow_id, flow_run_id
