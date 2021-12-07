@@ -36,10 +36,29 @@ steps:
     path: $(CONDA_CACHE_DIR)
     cacheHitVar: CONDA_CACHE_RESTORED
 
-- script: |
-    conda env create --file requirements/development/environment.frozen.yaml
-    conda env update --file requirements/development/environment_test.yaml
-  displayName: Create Anaconda environment
+- bash: |
+    export PIP_FIND_LINKS=$(pwd)/libs
+    conda create -y -c conda-forge -c nlesc -c bioconda -n omigami python=3.7 \
+        --file requirements/requirements.txt \
+        --file requirements/requirements_flow.txt \
+        --file requirements/requirements_test.txt
+    source activate omigami
+    pip install -r requirements/requirements_flow_pip.txt \
+        -r requirements/requirements_test_pip.txt
+
+    conda install -y -c conda-forge -c nlesc -c bioconda \
+        --file omigami/spectra_matching/requirements/requirements.txt
+    pip install -r omigami/spectra_matching/requirements/requirements_pip.txt
+
+    conda install -y -c conda-forge -c nlesc -c bioconda \
+        --file omigami/spectra_matching/spec2vec/requirements/requirements.txt
+    pip install -r omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt
+
+    conda install -y -c conda-forge -c nlesc -c bioconda \
+        --file omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
+    pip install  -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
+
+    pip install -e .  displayName: Create Anaconda environment
   condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
 
 - bash: |
