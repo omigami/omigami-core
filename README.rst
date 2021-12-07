@@ -9,36 +9,20 @@ How to setup
 ------------
 ::
 
-    export PIP_FIND_LINKS=$(pwd)/libs
-
-    conda create -c conda-forge -c nlesc -c bioconda -n omigami python=3.7 \
-        --file requirements/requirements.txt \
-        --file requirements/requirements_flow.txt \
-        --file requirements/requirements_test.txt
+    conda env create -f requirements/development/environment.frozen.yaml
+    conda env update -f requirements/development/environment_test.yaml
     conda activate omigami
-    pip install -r requirements/requirements_flow_pip.txt \
-        -r requirements/requirements_test_pip.txt
-
-    conda install -c conda-forge -c nlesc -c bioconda \
-        --file omigami/spectra_matching/requirements/requirements.txt
-    pip install -r omigami/spectra_matching/requirements/requirements_pip.txt
-
-    conda install -c conda-forge -c nlesc -c bioconda \
-        --file omigami/spectra_matching/spec2vec/requirements/requirements.txt
-    pip install -r omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt
-
-    conda install -c conda-forge -c nlesc -c bioconda \
-        --file omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
-    pip install  -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
-
     pip install -e .
 
 How to update all packages
 --------------------------
-To update all packages and create new environments. Below script will activate
-correct environment. You'll need at least `conda>=4.9`::
+To update all packages and create new frozen environments. Make sure you have
+correct environment activated.  You'll need at least `conda>=4.9`::
 
-    bash update_packages.sh
+    conda activate omigami
+    python requirements/development/dress.py env freeze requirements/development/environment.yaml
+    conda env update -f requirements/development/environment.frozen.yaml
+    conda env update -f requirements/development/environment_test.yaml
 
 How to add or update a single package
 -------------------------------------
