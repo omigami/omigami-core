@@ -55,11 +55,6 @@ class MS2DeepScoreFlowFactory:
         self._dataset_ids = DATASET_IDS
         self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or MLFLOW_DIRECTORY
-        self._storage_type = (
-            PrefectStorageMethods.S3
-            if "s3" in str(MS2DEEPSCORE_ROOT)
-            else PrefectStorageMethods.Local
-        )
 
     def build_training_flow(
         self,
@@ -98,7 +93,6 @@ class MS2DeepScoreFlowFactory:
         """
         flow_config = make_flow_config(
             image=image,
-            storage_type=self._storage_type,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=self._redis_dbs[dataset_id],
             schedule=schedule,
@@ -176,7 +170,6 @@ class MS2DeepScoreFlowFactory:
         """
         flow_config = make_flow_config(
             image=image,
-            storage_type=self._storage_type,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=self._redis_dbs[dataset_id],
             storage_root=STORAGE_ROOT,

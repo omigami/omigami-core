@@ -264,7 +264,6 @@ def backend_services():
 def flow_config():
     flow_config = make_flow_config(
         image="image-ref-name-test-hermione-XXII",
-        storage_type=PrefectStorageMethods.Local,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db="0",
     )

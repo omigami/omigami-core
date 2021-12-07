@@ -130,9 +130,10 @@ To run tests one by one via PyCharm, you can add this to your pytest Environment
     SKIP_REDIS_TEST=False;
     PREFECT__FLOWS__CHECKPOINTING=True;
     REDIS_DB=0;
-    MLFLOW_SERVER=sqlite:///<absolute_path_to_project_root>mlflow.sqlite;
+    MLFLOW_SERVER=sqlite:///<absolute_path_to_project_root>/local-deployment/results/mlflow.sqlite;
     OMIGAMI_ENV=local
 
+For the MLFLOW server path, you can get the correct value with sqlite:///$(pwd)/local-deployment/results/mlflow.sqlite
 One example of MLFLOW_SERVER variable is (notice the 4 slashes):
 ::
     sqlite:////Users/czanella/dev/datarevenue/omigami-core/local-deployment/results/mlflow.sqlite

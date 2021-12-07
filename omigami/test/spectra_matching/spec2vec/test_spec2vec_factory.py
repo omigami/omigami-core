@@ -54,4 +54,5 @@ def test_build_model_deployment_flow():
         "REDIS_HOST": "localhost",
         "OMIGAMI_ENV": "local",
         "MLFLOW_SERVER": MLFLOW_SERVER,
+        "TZ": "UTC",
     }
