@@ -37,7 +37,7 @@ DEFAULT_PREFECT_TASK_CONFIG = dict(
 # Mlflow
 MLFLOW_SERVER = os.getenv("MLFLOW_SERVER", config["mlflow"].get(str))
 MLFLOW_DIRECTORY = STORAGE_ROOT / "mlflow"
-CONDA_ENV_PATH = ROOT_DIR.parent / "requirements/environment.frozen.yaml"
+CONDA_ENV_PATH = ROOT_DIR.parent / "requirements/development/environment.frozen.yaml"
 CODE_PATH = ROOT_DIR
 
 
