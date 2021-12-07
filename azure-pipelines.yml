@@ -64,6 +64,14 @@ steps:
   condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
 
 - bash: |
+    source activate omigami
+    black --check --target-version py37 omigami/authentication
+    black --check --target-version py37 omigami/common
+    black --check --target-version py37 omigami/spectra_matching
+    black --check --target-version py37 omigami/test
+  displayName: Check black formatting
+
+- bash: |
    source activate omigami
    pytest \
      --junitxml=junit/test-results.xml \

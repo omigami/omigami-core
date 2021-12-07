@@ -10,45 +10,41 @@ How to setup
 ::
 
     export PIP_FIND_LINKS=$(pwd)/libs
-    conda create -y -c conda-forge -c nlesc -c bioconda -n omigami python=3.7 \
+
+    conda create -c conda-forge -c nlesc -c bioconda -n omigami python=3.7 \
         --file requirements/requirements.txt \
         --file requirements/requirements_flow.txt \
-        --file requirements/requirements_test.txt \
-        --file omigami/spectra_matching/requirements/requirements.txt \
-        --file omigami/spectra_matching/spec2vec/requirements/requirements.txt \
-        --file omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
-    source activate omigami
-    pip install -r requirements/requirements_flow_pip.txt
-    pip install -r requirements/requirements_test_pip.txt
+        --file requirements/requirements_test.txt
+    conda activate omigami
+    pip install -r requirements/requirements_flow_pip.txt \
+        -r requirements/requirements_test_pip.txt
+
+    conda install -c conda-forge -c nlesc -c bioconda \
+        --file omigami/spectra_matching/requirements/requirements.txt
     pip install -r omigami/spectra_matching/requirements/requirements_pip.txt
+
+    conda install -c conda-forge -c nlesc -c bioconda \
+        --file omigami/spectra_matching/spec2vec/requirements/requirements.txt
     pip install -r omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt
-    pip install -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
+
+    conda install -c conda-forge -c nlesc -c bioconda \
+        --file omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
+    pip install  -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
+
     pip install -e .
 
 How to update all packages
 --------------------------
-To update all packages and create new frozen environments. Make sure you have correct
-environment activated. You'll need at least `conda>=4.9`::
+To update all packages and create new environments. Below script will activate
+correct environment. You'll need at least `conda>=4.9`::
 
-    conda activate omigami
-    conda env update -f requirements/requirements.txt
-    conda env update -f requirements/requirements_flow.txt
-    conda env update -f requirements/requirements_test.txt
-    conda env update -f omigami/spectra_matching/requirements/requirements.txt
-    conda env update -f omigami/spectra_matching/spec2vec/requirements/requirements.txt
-    conda env update -f omigami/spectra_matching/ms2deepscore/requirements/requirements.txt
-    pip install -r requirements/requirements_flow_pip.txt \
-        -r requirements/requirements_test_pip.txt \
-        -r omigami/spectra_matching/requirements/requirements_pip.txt \
-        -r omigami/spectra_matching/spec2vec/requirements/requirements_pip.txt \
-        -r omigami/spectra_matching/ms2deepscore/requirements/requirements_pip.txt
+    bash update_packages.sh
 
 How to add or update a single package
 -------------------------------------
 
 1. Install the package as usual with conda
-2. Check which version was installed and add major and minor version to environment.frozen.yaml
-3. Add the package with the most relaxed version restrictions possible to environment.yaml
+2. Check which version was installed and add major and minor version to respective requirements.txt file
 
 Special steps for M1 Users
 -------------------------------------
@@ -70,6 +66,11 @@ In order to publish this Docker Image, there's an auxiliary script to do this.
 To run it, execute::
 
     bash deploy.sh
+
+This will push 3 images to 3 different repositories:
+ - drtools/prefect
+ - drtools/omigami-spec2vec
+ - drtools/omigami-ms2deepscore
 
 How to run tests that require Redis locally
 -------------------------------------------
