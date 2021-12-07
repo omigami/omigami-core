@@ -17,7 +17,7 @@ import omigami
 import omigami.utils
 from omigami.authentication.prefect_factory import PrefectClientFactory
 from omigami.config import (
-    API_SERVER_URLS,
+    PREFECT_SERVER,
     get_login_config,
     MLFLOW_SERVER,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
@@ -246,7 +246,7 @@ def backend_services():
     mlflow_client = mlflow.tracking.MlflowClient()
 
     login_config = get_login_config()
-    api_server = API_SERVER_URLS["local"]
+    api_server = PREFECT_SERVER
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()
 

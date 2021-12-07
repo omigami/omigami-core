@@ -14,6 +14,7 @@ from omigami.config import (
     MLFLOW_SERVER,
     REDIS_HOST,
 )
+from omigami.env_config import Environments
 
 """
     Implemented Prefect flow configurations:
@@ -86,7 +87,7 @@ def make_flow_config(
         "TZ": "UTC",
     }
 
-    if OMIGAMI_ENV in ("dev", "prod"):
+    if OMIGAMI_ENV in (Environments.dev, Environments.prod):
         storage = S3(STORAGE_ROOT.netloc)
         run_config = KubernetesRun(
             image=image,
@@ -96,10 +97,10 @@ def make_flow_config(
             env=env_variables,
             memory_request="12Gi",
         )
-    elif OMIGAMI_ENV == "local":
+    elif OMIGAMI_ENV == Environments.local:
         storage = Local(storage_root)
         run_config = LocalRun(env=env_variables, labels=["dev"])
-    elif OMIGAMI_ENV == "docker":
+    elif OMIGAMI_ENV == Environments.docker:
         storage = Docker(
             base_image=image,
             local_image=True,

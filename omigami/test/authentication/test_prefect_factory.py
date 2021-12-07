@@ -6,7 +6,8 @@ from prefect import Client
 import omigami.authentication.prefect_factory
 from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.authentication.prefect_factory import PrefectClientFactory
-from omigami.config import API_SERVER_URLS, config
+from omigami.config import PREFECT_SERVER, config
+from omigami.env_config import Environments
 
 
 @pytest.fixture()
@@ -50,8 +51,8 @@ def test_mock_prefect_get_client_without_token(mock_prefect_client):
     "test. To run them, check README instructions."
 )
 def test_prefect_get_client():
-    api_server = API_SERVER_URLS["local"]
-    login_config = config["login"]["local"].get(dict)
+    api_server = PREFECT_SERVER
+    login_config = config["login"][Environments.local].get(dict)
 
     factory = PrefectClientFactory(api_server=api_server, **login_config)
 

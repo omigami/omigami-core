@@ -5,6 +5,7 @@ from prefect.engine.result import Result
 from prefect.engine.results import S3Result, LocalResult, PrefectResult
 
 from omigami.config import DEFAULT_PREFECT_TASK_CONFIG, OMIGAMI_ENV
+from omigami.env_config import Environments
 
 
 def add_click_options(options):
@@ -30,7 +31,7 @@ def create_prefect_result_from_path(
 
     path = DRPath(path)
     protocol = getattr(path, "scheme", "file")
-    if OMIGAMI_ENV == "docker":
+    if OMIGAMI_ENV == Environments.docker:
         protocol = "docker"
 
     protocol_to_result = {

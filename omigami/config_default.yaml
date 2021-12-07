@@ -1,10 +1,3 @@
-prefect:
-  api_server:
-    prod: "https://prefect.omigami.datarevenue.com/graphql"
-    dev: "https://prefect.mlops.datarevenue.com/graphql"
-    local: "http://localhost:4200/graphql"
-    docker: "http://localhost:4200/graphql"
-
 mlflow: "http://mlflow.mlflow:5000"
 
 seldon:
@@ -23,19 +16,14 @@ storage:
     prod: "s3://omigami"
     docker: "/opt/omigami/local-deployment"
   redis:
-    host:
-      local: "localhost"
-      docker: "host.docker.internal"
-      dev: "redis-master.redis"
-      prod: "redis-master.redis"
     embedding_hashes: "embedding_data"
     spectrum_id_sorted_set: "spectrum_id_precursor_mz_sorted"
     spectrum_hashes: "spectrum_data"
 
-clusters:
-  local: ""
-  dev: "dev"
-  prod: "prod"
+gnps_uri:
+  complete: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
+  partial: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json"
+  partial_500_spectra: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS_500_spectra.json"
 
 login:
   prod:
@@ -48,8 +36,3 @@ login:
     username: "user"
     password: "pw"
     session_token: "token"
-
-gnps_uri:
-  complete: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
-  partial: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json"
-  partial_500_spectra: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS_500_spectra.json"

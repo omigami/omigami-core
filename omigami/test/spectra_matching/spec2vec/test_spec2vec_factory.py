@@ -1,6 +1,6 @@
 from prefect import Flow
 
-from omigami.config import MLFLOW_SERVER
+from omigami.config import MLFLOW_SERVER, OMIGAMI_ENV
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spectra_matching.tasks import CreateChunks
 
@@ -52,7 +52,7 @@ def test_build_model_deployment_flow():
     assert flow.run_config.env == {
         "REDIS_DB": "0",
         "REDIS_HOST": "localhost",
-        "OMIGAMI_ENV": "local",
+        "OMIGAMI_ENV": OMIGAMI_ENV,
         "MLFLOW_SERVER": MLFLOW_SERVER,
         "TZ": "UTC",
     }
