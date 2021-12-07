@@ -5,12 +5,7 @@ from prefect.schedules import Schedule
 from prefect.storage import Local
 
 from omigami.config import DATASET_IDS
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-    FlowConfig,
-)
+from omigami.flow_config import make_flow_config, PrefectExecutorMethods, FlowConfig
 
 
 def test_make_flow_config():

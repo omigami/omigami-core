@@ -24,11 +24,7 @@ from omigami.config import (
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
 )
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
+from omigami.flow_config import make_flow_config, PrefectExecutorMethods
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
