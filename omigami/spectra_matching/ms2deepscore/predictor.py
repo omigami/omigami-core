@@ -17,7 +17,7 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor imp
 from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.spectra_matching.ms2deepscore.util import (
+from omigami.spectra_matching.util import (
     cosine_similarity,
     cosine_similarity_matrix,
 )

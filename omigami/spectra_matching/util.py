@@ -7,6 +7,9 @@ def cosine_similarity(vector1: np.ndarray, vector2: np.ndarray) -> np.float64:
     """Calculate cosine similarity between two input vectors. Function copied from
     spec2vec/vector_operations.py
 
+    Function is copied and wrapped to make `spectra_matching.ms2deepscore` module
+    independent of spec2vec package.
+
     For example:
 
     .. testcode::
@@ -47,10 +50,13 @@ def cosine_similarity(vector1: np.ndarray, vector2: np.ndarray) -> np.float64:
 
 @numba.njit
 def cosine_similarity_matrix(
-    vectors_1: np.ndarray, vectors_2: np.ndarray
+        vectors_1: np.ndarray, vectors_2: np.ndarray
 ) -> np.ndarray:
     """Fast implementation of cosine similarity between two arrays of vectors. Function
     copied from spec2vec/vector_operations.py
+
+    Function is copied and wrapped to make `spectra_matching.ms2deepscore` module
+    independent of spec2vec package.
 
     For example:
 
@@ -76,7 +82,7 @@ def cosine_similarity_matrix(
         is vector dimension.
     """
     assert (
-        vectors_1.shape[1] == vectors_2.shape[1]
+            vectors_1.shape[1] == vectors_2.shape[1]
     ), "Input vectors must have same shape."
     vectors_1 = vectors_1.astype(
         np.float64

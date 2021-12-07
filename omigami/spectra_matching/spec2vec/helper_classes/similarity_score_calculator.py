@@ -2,7 +2,7 @@ from typing import List
 
 import numpy as np
 from spec2vec import Spec2Vec
-from spec2vec.vector_operations import cosine_similarity, cosine_similarity_matrix
+from omigami.spectra_matching.util import cosine_similarity, cosine_similarity_matrix
 
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 
