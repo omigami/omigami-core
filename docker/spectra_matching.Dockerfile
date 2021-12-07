@@ -5,17 +5,17 @@ WORKDIR /opt/omigami
 ENV PIP_FIND_LINKS=/opt/libs
 COPY ./libs /opt/libs
 
-COPY ./requirements/spectra_matching/requirements_conda.txt /opt/omigami/requirements/requirements_conda.txt
+COPY ./requirements/spectra_matching/conda.txt /opt/omigami/requirements/conda.txt
 
 RUN conda install -y -c conda-forge -c nlesc -c bioconda python=3.7 \
---file ./requirements/requirements_conda.txt \
+--file ./requirements/conda.txt \
 && /opt/conda/bin/conda clean -afy \
 && find /opt/conda/ -follow -type f -name '*.a' -delete \
 && find /opt/conda/ -follow -type f -name '*.pyc' -delete \
 && find /opt/conda/ -follow -type f -name '*.js.map' -delete
 
-COPY ./requirements/spectra_matching/requirements_pip.txt /opt/omigami/requirements/requirements_pip.txt
-RUN pip install -r requirements/requirements_pip.txt
+COPY ./requirements/spectra_matching/pip.txt /opt/omigami/requirements/pip.txt
+RUN pip install -r requirements/pip.txt
 
 COPY . /opt/omigami
 RUN pip install /opt/omigami
