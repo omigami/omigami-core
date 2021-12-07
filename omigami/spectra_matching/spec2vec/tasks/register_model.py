@@ -6,7 +6,7 @@ from gensim.models import Word2Vec
 from pandas import Timestamp
 from prefect import Task
 
-from omigami.config import IonModes, CONDA_ENV_PATH, MLFLOW_SERVER
+from omigami.config import IonModes, MLFLOW_SERVER
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 from omigami.utils import merge_prefect_task_configs
@@ -83,7 +83,6 @@ class RegisterModel(Task):
             spec2vec_model,
             experiment_name=self._experiment_name,
             experiment_path=self._path,
-            conda_env_path=CONDA_ENV_PATH,
             run_name=run_name,
             model_name=self._model_name,
             params=params,

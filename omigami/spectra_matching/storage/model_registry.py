@@ -91,7 +91,6 @@ class MLFlowDataGateway(ModelRegistryDataGateway):
                 python_model=model,
                 registered_model_name=model_name,
                 code_path=[CODE_PATH],
-                conda_env=conda_env_path,
                 artifacts=artifacts,
             )
 

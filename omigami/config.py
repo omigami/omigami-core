@@ -45,7 +45,6 @@ SOURCE_URI_PARTIAL_GNPS_500_SPECTRA = config["gnps_uri"]["partial_500_spectra"].
 CLUSTER = config["clusters"][OMIGAMI_ENV].get(str)
 ION_MODES = {"positive", "negative"}
 IonModes = Literal["positive", "negative"]
-CONDA_ENV_PATH = Path(__file__).parents[1] / "requirements/environment.frozen.yaml"
 CODE_PATH = Path(__file__).parent
 
 DEFAULT_PREFECT_TASK_CONFIG = dict(
