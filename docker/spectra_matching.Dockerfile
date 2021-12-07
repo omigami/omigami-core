@@ -1,5 +1,9 @@
 FROM drtools/alpine-conda:alpine-3.11_conda-4.7.12
 ENV PATH="/opt/conda/bin/:${PATH}"
+USER root
+RUN mkdir /opt/omigami
+RUN chown -R anaconda /opt/omigami
+USER anaconda
 WORKDIR /opt/omigami
 
 ENV PIP_FIND_LINKS=/opt/libs
