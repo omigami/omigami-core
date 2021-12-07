@@ -10,7 +10,6 @@ How to setup
 ::
 
     conda env create -f requirements/development/environment.frozen.yaml
-    conda env update -f requirements/development/environment_test.yaml
     conda activate omigami
     pip install -e .
 
@@ -22,7 +21,6 @@ correct environment activated.  You'll need at least `conda>=4.9`::
     conda activate omigami
     python requirements/development/dress.py env freeze requirements/development/environment.yaml
     conda env update -f requirements/development/environment.frozen.yaml
-    conda env update -f requirements/development/environment_test.yaml
 
 How to add or update a single package
 -------------------------------------

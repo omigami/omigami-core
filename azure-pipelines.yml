@@ -38,7 +38,6 @@ steps:
 
 - script: |
     conda env create --file requirements/development/environment.frozen.yaml
-    conda env update --file requirements/development/environment_test.yaml
   displayName: Create Anaconda environment
   condition: eq(variables.CONDA_CACHE_RESTORED, 'false')
 
