@@ -135,7 +135,7 @@ def test_get_chunk_count(documents_stored, s3_documents_directory):
     process_spectrum = ProcessSpectrum(data_gtw, document_dgw, parameters)
     count = process_spectrum._get_chunk_count(s3_documents_directory)
 
-    assert count == len(data_gtw.listdir(s3_documents_directory))
+    assert count == len(data_gtw.list_files(s3_documents_directory))
 
 
 def test_clean_data(common_cleaned_data):

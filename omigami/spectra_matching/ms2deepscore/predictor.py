@@ -33,13 +33,13 @@ class MS2DeepScorePredictor(Predictor):
         self._run_id = run_id
         self.spectrum_processor = SpectrumProcessor()
         self.embedding_maker = EmbeddingMaker()
-        self._model: Union[SiameseModel, None] = None
+        self.model: Union[SiameseModel, None] = None
 
     def load_context(self, context):
         model_path = context.artifacts["ms2deepscore_model_path"]
         try:
             log.info(f"Loading model from {model_path}")
-            self._model = ms2deepscore_load_model(model_path)
+            self.model = ms2deepscore_load_model(model_path)
         except FileNotFoundError:
             log.error(f"Could not find MS2DeepScore model in {model_path}")
 
@@ -84,9 +84,9 @@ class MS2DeepScorePredictor(Predictor):
         query_spectra = self.spectrum_processor.process_spectra(
             data_input, process_reference_spectra=False
         )
-        query_binned_spectra = self._model.spectrum_binner.transform(query_spectra)
+        query_binned_spectra = self.model.spectrum_binner.transform(query_spectra)
         query_embeddings = [
-            self.embedding_maker.make_embedding(self._model, binned_spectrum)
+            self.embedding_maker.make_embedding(self.model, binned_spectrum)
             for binned_spectrum in query_binned_spectra
         ]
 
@@ -128,7 +128,7 @@ class MS2DeepScorePredictor(Predictor):
         queries: List[MS2DeepScoreEmbedding],
         n_best_spectra: int = 10,
     ) -> SpectrumMatches:
-        similarity_score_calculator = MS2DeepScoreSimilarityScoreCalculator(self._model)
+        similarity_score_calculator = MS2DeepScoreSimilarityScoreCalculator(self.model)
 
         scores = calculate_scores(
             all_references,

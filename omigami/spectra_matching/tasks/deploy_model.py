@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
+import mlflow
 from prefect import Task
+from prefect.triggers import all_successful
 
 from omigami.config import CLUSTER, SELDON_PARAMS
 from omigami.spectra_matching.seldon.seldon_deployment import SeldonDeployment
@@ -25,21 +27,22 @@ class DeployModel(Task):
         self._model_name = deploy_parameters.model_name
 
         config = merge_prefect_task_configs(kwargs)
-        super().__init__(**config)
+        super().__init__(**config, trigger=all_successful)
 
-    def run(self, registered_model: dict = None) -> None:
+    def run(self, model_run_id: str = None) -> None:
         """
         Prefect task to deploy model to Kubernetes Cluster
 
         Parameters
         ----------
-        registered_model: Dict[str, str]
-            Dictionary containing registered `model_uri` and `run_id`
+        model_run_id:
+            Registered model's `run_id`
 
         """
         sd = SeldonDeployment(context=CLUSTER)
 
-        model_uri = registered_model["model_uri"]
+        artifact_uri = mlflow.get_run(model_run_id).info.artifact_uri
+        model_uri = f"{artifact_uri}/model/"
         self.logger.info(
             f"Deploying model '{self._model_name}' from uri {model_uri}. \nUsing cluster"
             f" '{CLUSTER}' and namespace '{SELDON_PARAMS['namespace']}'."

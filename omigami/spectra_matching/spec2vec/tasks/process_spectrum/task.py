@@ -137,11 +137,11 @@ class ProcessSpectrum(Task):
         if not self._fs_dgw.exists(documents_save_directory):
             self._fs_dgw.makedirs(documents_save_directory)
 
-        return len(self._fs_dgw.listdir(self._documents_save_directory))
+        return len(self._fs_dgw.list_files(self._documents_save_directory))
 
     def _remove_all_documents(self):
 
-        document_file_paths = self._fs_dgw.listdir(self._documents_save_directory)
+        document_file_paths = self._fs_dgw.list_files(self._documents_save_directory)
 
         self.logger.info(f"Removing {len(document_file_paths)} document files")
 

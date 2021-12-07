@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import Union, Dict, Optional
+from typing import Union, Optional
 
-import mlflow
 from gensim.models import Word2Vec
 from pandas import Timestamp
 from prefect import Task
@@ -39,7 +38,7 @@ class RegisterModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, model: Word2Vec = None) -> Dict[str, str]:
+    def run(self, model: Word2Vec = None) -> str:
         """
         Prefect task to register the model to MLflow Model Registry. `alpha` is saved as
         model metric. Following are saved as model parameters:
@@ -88,8 +87,5 @@ class RegisterModel(Task):
             params=params,
             metrics=metrics,
         )
-        run = mlflow.get_run(run_id)
-        self.logger.info(f"{run.info}")
 
-        model_uri = f"{run.info.artifact_uri}/model/"
-        return {"model_uri": model_uri, "run_id": run_id}
+        return run_id

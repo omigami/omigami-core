@@ -1,3 +1,4 @@
+import click
 from click.testing import CliRunner
 
 import omigami.spectra_matching.spec2vec.cli
@@ -40,9 +41,9 @@ def mock_cli(
     assert dataset_directory == "dir"
 
 
-def test_spec2vec_cli(monkeypatch):
+def test_spec2vec_training_cli(monkeypatch):
     monkeypatch.setattr(
-        omigami.spectra_matching.spec2vec.cli, "run_spec2vec_flow", mock_cli
+        omigami.spectra_matching.spec2vec.cli, "run_spec2vec_training_flow", mock_cli
     )
     cli_command = [
         "train",
@@ -78,3 +79,27 @@ def test_spec2vec_cli(monkeypatch):
         raise result.exception
     elif result.exit_code == 2:
         raise ValueError(result.output)
+
+
+def test_spec2vec_deploy_model_cli():
+    command = spec2vec_cli.commands["deploy-model"]
+    required_params = {"model_run_id", "image", "project_name", "flow_name"}
+    optional_params = {
+        "intensity_weighting_power",
+        "allowed_missing_percentage",
+        "n_decimals",
+    }
+    param_types = [
+        click.STRING,
+        click.INT,
+        click.FLOAT,
+        click.FLOAT,
+        click.STRING,
+        click.STRING,
+        click.STRING,
+    ]
+
+    assert command.name == "deploy-model"
+    assert required_params == {p.name for p in command.params if p.required}
+    assert optional_params == {p.name for p in command.params if not p.required}
+    assert param_types == [p.type for p in command.params]

@@ -36,7 +36,7 @@ def test_make_embeddings(binned_spectra_stored, binned_spectra, siamese_model_pa
     with Flow("test") as flow:
         MakeEmbeddings(spectrum_gtw, fs_gtw, parameters)(
             {"ms2deepscore_model_path": siamese_model_path},
-            {"run_id": "1"},
+            "1",
             spectrum_ids,
         )
 

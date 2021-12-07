@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict
 
-import mlflow
 from pandas import Timestamp
 from prefect import Task
 
@@ -38,10 +37,7 @@ class RegisterModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(
-        self,
-        train_model_output: dict = None,
-    ) -> Dict[str, str]:
+    def run(self, train_model_output: dict = None) -> str:
         """
         Prefect task to register an ms2deepscore model to MLflow Model Registry. Model
         parameters saved during registration:
@@ -60,7 +56,7 @@ class RegisterModel(Task):
 
         Returns
         -------
-        Dictionary containing registered `model_uri` and `run_id`
+        Model `run_id`
 
         """
         self.logger.info(
@@ -82,11 +78,8 @@ class RegisterModel(Task):
             artifacts=train_model_output,
             run_name=run_name,
         )
-        run = mlflow.get_run(run_id)
-        self.logger.info(f"{run.info}")
 
-        model_uri = f"{run.info.artifact_uri}/model/"
-        return {"model_uri": model_uri, "run_id": run_id}
+        return run_id
 
     def _convert_train_parameters(self, validation_loss: float) -> Dict[str, float]:
         """Converts training parameters and the models metrics into a dict"""
