@@ -9,9 +9,7 @@ from matchms.filtering import (
 from matchms.importing.load_from_json import as_spectrum
 from matchmsextras.pubchem_lookup import pubchem_metadata_lookup
 
-from omigami.spectra_matching.spec2vec.helper_classes.progress_logger import (
-    TaskProgressLogger,
-)
+from omigami.common.progress_logger import TaskProgressLogger
 from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 
 INCORRECT_LAST_WORDS = [

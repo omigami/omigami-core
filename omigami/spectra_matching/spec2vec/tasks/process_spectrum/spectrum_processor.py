@@ -3,11 +3,11 @@ from typing import List
 from matchms import Spectrum
 from matchms.filtering import normalize_intensities
 
+from omigami.common.progress_logger import (
+    TaskProgressLogger,
+)
 from omigami.spectra_matching.spec2vec.entities.spectrum_document import (
     SpectrumDocumentData,
-)
-from omigami.spectra_matching.spec2vec.helper_classes.progress_logger import (
-    TaskProgressLogger,
 )
 from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 

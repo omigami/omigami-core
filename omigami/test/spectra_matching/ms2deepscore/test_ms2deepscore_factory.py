@@ -1,8 +1,8 @@
-import pytest
 from prefect import Flow
 
-from omigami.config import STORAGE_ROOT, MLFLOW_SERVER
+from omigami.config import STORAGE_ROOT, MLFLOW_SERVER, REDIS_HOST, OMIGAMI_ENV
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
+from omigami.spectra_matching.storage import REDIS_DB
 
 
 def test_build_ms2deep_training_flow():
@@ -31,14 +31,29 @@ def test_build_ms2deep_training_flow():
     assert tanimoto_task._decimals == 5
     assert ms2deep_training_flow.storage.directory == str(STORAGE_ROOT)
     assert ms2deep_training_flow.run_config.env == {
-        "REDIS_DB": "0",
-        "REDIS_HOST": "localhost",
-        "OMIGAMI_ENV": "local",
+        "REDIS_DB": REDIS_DB,
+        "REDIS_HOST": REDIS_HOST,
+        "OMIGAMI_ENV": OMIGAMI_ENV,
         "MLFLOW_SERVER": MLFLOW_SERVER,
     }
 
 
-@pytest.mark.xfail(reason="Not implemented atm.")  # TODO
 def test_build_model_deployment_flow():
-    factory = MS2DeepScoreFlowFactory("dev")
-    assert factory.build_model_deployment_flow()
+    factory = MS2DeepScoreFlowFactory()
+    model_deployment_flow = factory.build_model_deployment_flow(
+        flow_name="Model Destroyment Flow",
+        image="star wars episode III had nice lightsaber fights",
+        dataset_id="small",
+        ion_mode="positive",
+        project_name="Raging Flow",
+    )
+
+    assert isinstance(model_deployment_flow, Flow)
+    assert model_deployment_flow.name == "Model Destroyment Flow"
+    assert len(model_deployment_flow.tasks) == 5
+    assert model_deployment_flow.run_config.env == {
+        "REDIS_DB": REDIS_DB,
+        "REDIS_HOST": REDIS_HOST,
+        "OMIGAMI_ENV": OMIGAMI_ENV,
+        "MLFLOW_SERVER": MLFLOW_SERVER,
+    }

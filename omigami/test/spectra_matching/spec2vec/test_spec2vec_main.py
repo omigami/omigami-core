@@ -10,7 +10,7 @@ from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spectra_matching.spec2vec.main import (
     run_spec2vec_training_flow,
-    run_deploy_model_flow,
+    run_deploy_spec2vec_model_flow,
 )
 
 
@@ -19,7 +19,7 @@ def mock_objects(monkeypatch):
     get_client = Mock()
     monkeypatch.setattr(
         omigami.spectra_matching.spec2vec.main,
-        "_get_prefect_client",
+        "get_prefect_client",
         get_client,
     )
 
@@ -86,11 +86,12 @@ def test_run_mocked_deploy_model_flow(mock_objects):
         dataset_id="small",
         n_decimals=2,
         ion_mode="positive",
-        overwrite_model=True,
         project_name="default",
     )
 
-    flow_id, flow_run_id = run_deploy_model_flow(model_run_id="model_run_id", **params)
+    flow_id, flow_run_id = run_deploy_spec2vec_model_flow(
+        model_run_id="model_run_id", **params
+    )
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_objects["factory"].build_model_deployment_flow.assert_called_once_with(

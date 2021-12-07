@@ -1,7 +1,10 @@
 import click
 
 from omigami.cli_options import common_training_options, common_flow_options
-from omigami.spectra_matching.ms2deepscore.main import run_ms2deepscore_flow
+from omigami.spectra_matching.ms2deepscore.main import (
+    run_ms2deepscore_training_flow,
+    run_deploy_ms2ds_model_flow,
+)
 from omigami.utils import add_click_options
 
 
@@ -70,9 +73,16 @@ def ms2deepscore_cli():
 @add_click_options(common_flow_options)
 @add_click_options(common_training_options)
 def training_flow_cli(*args, **kwargs):
-    run_ms2deepscore_flow(*args, **kwargs)
+    run_ms2deepscore_training_flow(*args, **kwargs)
 
 
 @ms2deepscore_cli.command(name="deploy-model")
-def deploy_model_cli():
-    pass
+@click.option(
+    "--model-run-id",
+    type=str,
+    required=True,
+    help="Model run ID that will be used to deploy",
+)
+@add_click_options(common_flow_options)
+def deploy_model_cli(*args, **kwargs):
+    run_deploy_ms2ds_model_flow(*args, **kwargs)

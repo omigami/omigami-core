@@ -1,10 +1,9 @@
 from typing import Optional, Tuple
 
 import pandas as pd
-from prefect import Client
 
-from omigami.authentication.prefect_factory import PrefectClientFactory
-from omigami.config import IonModes, API_SERVER_URLS, OMIGAMI_ENV, get_login_config
+from omigami.authentication.prefect_factory import get_prefect_client
+from omigami.config import IonModes
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 
@@ -59,13 +58,13 @@ def run_spec2vec_training_flow(
         schedule=schedule,
     )
 
-    deployer = FlowDeployer(prefect_client=_get_prefect_client())
+    deployer = FlowDeployer(prefect_client=get_prefect_client())
     flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
 
     return flow_id, flow_run_id
 
 
-def run_deploy_model_flow(
+def run_deploy_spec2vec_model_flow(
     model_run_id: str,
     image: str,
     project_name: str,
@@ -75,7 +74,6 @@ def run_deploy_model_flow(
     n_decimals: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    overwrite_model: bool,
     dataset_directory: str = None,
 ) -> Tuple[str, str]:
     """
@@ -102,22 +100,13 @@ def run_deploy_model_flow(
         n_decimals=n_decimals,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
-        overwrite_model=overwrite_model,
     )
 
     flow_parameters = {"ModelRunID": model_run_id}
 
-    deployer = FlowDeployer(prefect_client=_get_prefect_client())
+    deployer = FlowDeployer(prefect_client=get_prefect_client())
     flow_id, flow_run_id = deployer.deploy_flow(
         flow=flow, project_name=project_name, flow_parameters=flow_parameters
     )
 
     return flow_id, flow_run_id
-
-
-def _get_prefect_client() -> Client:
-    api_server = API_SERVER_URLS[OMIGAMI_ENV]
-    login_config = get_login_config()
-    prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
-    prefect_client = prefect_factory.get_client()
-    return prefect_client

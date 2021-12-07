@@ -1,6 +1,7 @@
 """CURRENTLY UNUSED AND NOT WORKING"""
 from prefect import Flow
 
+from omigami.config import MLFLOW_SERVER
 from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
@@ -40,7 +41,7 @@ class PretrainedFlowParameters:
             n_bins=spectrum_binner_n_bins,
         )
         self.registering = RegisterModelParameters(
-            project_name, mlflow_output_dir, "positive"
+            project_name, MLFLOW_SERVER, mlflow_output_dir, "positive"
         )
         self.deploying = DeployModelParameters(
             redis_db, overwrite_model, "ms2deep-pretrained"

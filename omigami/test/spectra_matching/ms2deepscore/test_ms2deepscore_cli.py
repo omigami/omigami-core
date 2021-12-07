@@ -1,3 +1,4 @@
+import click
 from click.testing import CliRunner
 
 import omigami.spectra_matching.ms2deepscore.cli
@@ -51,7 +52,9 @@ def mock_cli(
 
 def test_ms2deepscore_cli(monkeypatch):
     monkeypatch.setattr(
-        omigami.spectra_matching.ms2deepscore.cli, "run_ms2deepscore_flow", mock_cli
+        omigami.spectra_matching.ms2deepscore.cli,
+        "run_ms2deepscore_training_flow",
+        mock_cli,
     )
     cli_command = [
         "train",
@@ -84,3 +87,20 @@ def test_ms2deepscore_cli(monkeypatch):
         raise result.exception
     elif result.exit_code == 2:
         raise ValueError(result.output)
+
+
+def test_ms2ds_deploy_model_cli():
+    command = ms2deepscore_cli.commands["deploy-model"]
+    required_params = {"model_run_id", "image", "project_name", "flow_name"}
+    optional_params = set()
+    param_types = [
+        click.STRING,
+        click.STRING,
+        click.STRING,
+        click.STRING,
+    ]
+
+    assert command.name == "deploy-model"
+    assert required_params == {p.name for p in command.params if p.required}
+    assert optional_params == {p.name for p in command.params if not p.required}
+    assert param_types == [p.type for p in command.params]

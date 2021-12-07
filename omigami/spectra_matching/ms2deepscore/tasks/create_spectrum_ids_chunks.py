@@ -1,23 +1,20 @@
-from dataclasses import dataclass
 from typing import List, Set
 
 from prefect import Task
 
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 from omigami.utils import merge_prefect_task_configs
-
-
-@dataclass
-class ChunkingIDsParameters:
-    spectrum_ids_chunk_size: int
 
 
 class CreateSpectrumIDsChunks(Task):
     def __init__(
         self,
-        chunking_parameters: ChunkingIDsParameters,
+        chunk_size: int,
+        spectrum_dgw: RedisSpectrumDataGateway,
         **kwargs,
     ):
-        self._chunk_size = chunking_parameters.spectrum_ids_chunk_size
+        self._chunk_size = chunk_size
+        self._spectrum_dgw = spectrum_dgw
 
         config = merge_prefect_task_configs(kwargs)
 
@@ -39,7 +36,12 @@ class CreateSpectrumIDsChunks(Task):
             Chunked spectrum_ids, as a list of list containing spectrum_ids
 
         """
-        spectrum_ids = list(spectrum_ids)
+        if spectrum_ids is not None:
+            spectrum_ids = list(spectrum_ids)
+        else:
+            spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
+
+        self.logger.info(f"Creating chunkfs for {len(spectrum_ids)} spectra.")
         chunks = [
             spectrum_ids[x : x + self._chunk_size]
             for x in range(0, len(spectrum_ids), self._chunk_size)

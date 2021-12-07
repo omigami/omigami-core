@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Dict, Set
 
 from prefect import Task
@@ -15,23 +14,18 @@ from omigami.spectra_matching.storage import REDIS_DB
 from omigami.utils import merge_prefect_task_configs
 
 
-@dataclass
-class MakeEmbeddingsParameters:
-    ion_mode: IonModes
-
-
 class MakeEmbeddings(Task):
     def __init__(
         self,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         fs_gtw: MS2DeepScoreFSDataGateway,
-        parameters: MakeEmbeddingsParameters,
+        ion_mode: IonModes,
         **kwargs,
     ):
         self._spectrum_dgw = spectrum_dgw
         self._fs_gtw = fs_gtw
         self._embedding_maker = EmbeddingMaker()
-        self._ion_mode = parameters.ion_mode
+        self._ion_mode = ion_mode
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)

@@ -2,7 +2,7 @@ from typing import Union, Optional
 
 from prefect import Flow, unmapped
 
-from omigami.config import IonModes, ION_MODES
+from omigami.config import IonModes, ION_MODES, MLFLOW_SERVER
 from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
     SpectrumDocumentDataGateway,
@@ -51,6 +51,7 @@ class TrainingFlowParameters:
         window: int,
         mlflow_output_directory: str,
         documents_save_directory: str,
+        model_registry_uri: str = MLFLOW_SERVER,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
         dataset_name: str = "gnps.json",
@@ -89,6 +90,7 @@ class TrainingFlowParameters:
         self.training = TrainModelParameters(iterations, window)
         self.registering = RegisterModelParameters(
             experiment_name=experiment_name,
+            model_registry_uri=model_registry_uri,
             mlflow_output_directory=mlflow_output_directory,
             n_decimals=n_decimals,
             ion_mode=ion_mode,

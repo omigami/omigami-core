@@ -6,7 +6,12 @@ from ms2deepscore.models import load_model
 from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
+from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
+from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
+    build_training_flow,
+    TrainingFlowParameters,
+)
 from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
@@ -14,7 +19,15 @@ from omigami.spectra_matching.ms2deepscore.predictor import (
     MS2DeepScorePredictor,
     MS2DeepScoreSimilarityScoreCalculator,
 )
+from omigami.spectra_matching.ms2deepscore.storage import (
+    MS2DeepScoreRedisSpectrumDataGateway,
+)
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
+from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from omigami.test.spectra_matching.tasks import DummyTask
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -71,13 +84,15 @@ def ms2deepscore_predictor(ms2deepscore_embedding):
 
 
 @pytest.fixture()
-def siamese_model_path():
-    return str(
-        ASSETS_DIR
-        / "ms2deepscore"
-        / "pretrained"
-        / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
-    )
+def siamese_model_path(
+    small_model_params, mock_default_config, flow_config, generate_ms2ds_model_flow
+):
+    path = ASSETS_DIR / "ms2deep_score.hdf5"
+
+    if not path.exists():
+        generate_ms2ds_model_flow.run()
+
+    return str(path)
 
 
 @pytest.fixture()
@@ -139,3 +154,79 @@ def small_model_params(monkeypatch):
         "SIAMESE_MODEL_PARAMS",
         smaller_params,
     )
+
+
+@pytest.fixture
+def mock_deploy_model_task(monkeypatch):
+
+    import omigami.spectra_matching.ms2deepscore.flows.deploy_model
+
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.deploy_model,
+        "DeployModel",
+        DummyTask,
+    )
+
+
+@pytest.fixture
+def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_files):
+    """Used to generate local asset ms2deep_score.hd5 for multiple tests."""
+    import omigami.spectra_matching.ms2deepscore.flows.training_flow
+
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
+        "MakeEmbeddings",
+        DummyTask,
+    )
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
+        "RegisterModel",
+        DummyTask,
+    )
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
+        "DeployModel",
+        DummyTask,
+    )
+
+    data_gtw = MS2DeepScoreFSDataGateway()
+    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+    spectrum_cleaner = SpectrumCleaner()
+
+    flow_params = TrainingFlowParameters(
+        data_gtw=data_gtw,
+        spectrum_dgw=spectrum_dgw,
+        spectrum_cleaner=spectrum_cleaner,
+        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
+        # the three parameters below are for using cached assets instead of downloading
+        dataset_directory=str(ASSETS_DIR.parent),
+        dataset_id=ASSETS_DIR.name,
+        dataset_name="SMALL_GNPS_500_spectra.json",
+        chunk_size=150000,
+        ion_mode="positive",
+        overwrite_model=True,
+        overwrite_all_spectra=True,
+        # we use everything but the model path as tmpdir. We only want the model from this script
+        scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
+        fingerprint_n_bits=2048,
+        scores_decimals=5,
+        spectrum_binner_n_bins=10000,
+        spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
+        model_output_path=str(ASSETS_DIR / "ms2deep_score.hdf5"),
+        dataset_checkpoint_name="spectrum_ids_500.pkl",
+        epochs=5,
+        project_name="test",
+        mlflow_output_directory=f"{tmpdir}/model-output",
+        train_ratio=0.6,
+        validation_ratio=0.2,
+        test_ratio=0.2,
+        spectrum_ids_chunk_size=100,
+    )
+
+    flow = build_training_flow(
+        flow_config=flow_config,
+        flow_name="test-flow",
+        flow_parameters=flow_params,
+    )
+
+    return flow

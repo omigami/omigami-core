@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 from drfs.filesystems import get_fs
-from prefect import Task
 from spec2vec import calc_vector
 from spec2vec.model_building import train_new_word2vec_model
 
@@ -17,6 +16,7 @@ from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
 )
 from omigami.spectra_matching.storage import FSDataGateway
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from omigami.test.spectra_matching.tasks import DummyTask
 
 
 @pytest.fixture()
@@ -159,17 +159,11 @@ def documents_data():
 
 @pytest.fixture
 def mock_deploy_model_task(monkeypatch):
-    class DeployModel(Task):
-        def __init__(self, *args, **kwargs):
-            super().__init__()
-
-        def run(self, model_run_id: str = None) -> None:
-            pass
 
     import omigami.spectra_matching.spec2vec.flows.deploy_model
 
     monkeypatch.setattr(
         omigami.spectra_matching.spec2vec.flows.deploy_model,
         "DeployModel",
-        DeployModel,
+        DummyTask,
     )

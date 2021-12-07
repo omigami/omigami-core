@@ -10,6 +10,7 @@ from omigami.config import (
     STORAGE_ROOT,
     CHUNK_SIZE,
     MLFLOW_DIRECTORY,
+    MLFLOW_SERVER,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -21,6 +22,10 @@ from omigami.spectra_matching.ms2deepscore.config import (
     PROJECT_NAME,
     SPECTRUM_IDS_CHUNK_SIZE,
     MS2DEEPSCORE_ROOT,
+)
+from omigami.spectra_matching.ms2deepscore.flows.deploy_model import (
+    DeployModelFlowParameters,
+    build_deploy_model_flow,
 )
 from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     TrainingFlowParameters,
@@ -41,12 +46,14 @@ class MS2DeepScoreFlowFactory:
         dataset_directory: str = None,
         mlflow_output_directory: str = None,
         directories: Dict[str, str] = None,
+        model_registry_uri: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
         self._dataset_directory = dataset_directory or str(STORAGE_ROOT / "datasets")
         self._ms2deepscore_root = MS2DEEPSCORE_ROOT
         self._directories = directories or DIRECTORIES
         self._dataset_ids = DATASET_IDS
+        self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or MLFLOW_DIRECTORY
         self._storage_type = (
             PrefectStorageMethods.S3
@@ -126,6 +133,7 @@ class MS2DeepScoreFlowFactory:
             overwrite_model=overwrite_model,
             model_output_path=model_output_path,
             project_name=project_name,
+            model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=str(self._mlflow_output_directory),
             epochs=epochs,
             train_ratio=train_ratio,
@@ -145,6 +153,51 @@ class MS2DeepScoreFlowFactory:
 
         return ms2deepscore_flow
 
-    def build_model_deployment_flow(self) -> Flow:
-        """TODO"""
-        raise NotImplemented
+    def build_model_deployment_flow(
+        self,
+        flow_name: str,
+        image: str,
+        dataset_id: str,
+        ion_mode: IonModes = "positive",
+        project_name: str = PROJECT_NAME,
+    ) -> Flow:
+        """Creates all configuration/gateways objects used by the model deployment flow,
+        and builds the training flow with them.
+
+        Parameters
+        ----------
+        For information on parameters please check omigami/ms2deepscore/cli.py
+
+        Returns
+        -------
+        Flow:
+            A prefect model deployment flow with the given parameters
+
+        """
+        flow_config = make_flow_config(
+            image=image,
+            storage_type=self._storage_type,
+            executor_type=PrefectExecutorMethods.LOCAL_DASK,
+            redis_db=self._redis_dbs[dataset_id],
+            storage_root=STORAGE_ROOT,
+        )
+
+        spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway(project=project_name)
+        fs_dgw = MS2DeepScoreFSDataGateway()
+
+        dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
+        flow_parameters = DeployModelFlowParameters(
+            spectrum_dgw=spectrum_dgw,
+            fs_dgw=fs_dgw,
+            ion_mode=ion_mode,
+            redis_db=self._redis_dbs[dataset_id],
+            model_registry_uri=self._model_registry_uri,
+        )
+
+        deploy_model_flow = build_deploy_model_flow(
+            flow_name,
+            flow_config,
+            flow_parameters,
+        )
+
+        return deploy_model_flow

@@ -4,12 +4,12 @@ from typing import Union, Set
 from gensim.models import Word2Vec
 from prefect import Task
 
+from omigami.common.progress_logger import (
+    TaskProgressLogger,
+)
 from omigami.config import IonModes
 from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
     EmbeddingMaker,
-)
-from omigami.spectra_matching.spec2vec.helper_classes.progress_logger import (
-    TaskProgressLogger,
 )
 from omigami.spectra_matching.storage import (
     RedisSpectrumDataGateway,
