@@ -217,7 +217,7 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
         epochs=5,
         project_name="test",
         mlflow_output_directory=f"{tmpdir}/model-output",
-        train_ratio=0.8,
+        train_ratio=0.6,
         validation_ratio=0.2,
         test_ratio=0.2,
         spectrum_ids_chunk_size=100,
