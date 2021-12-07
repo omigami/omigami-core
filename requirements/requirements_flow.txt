@@ -1,2 +1,0 @@
-prefect=0.14.12
-confuse=1.4.0

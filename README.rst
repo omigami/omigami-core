@@ -28,7 +28,19 @@ How to add or update a single package
 -------------------------------------
 
 1. Install the package as usual with conda
-2. Check which version was installed and add major and minor version to respective requirements.txt file
+2. Check which version was installed and add major and minor version to
+`requirements/development/environment.frozen.yaml`
+3. Add the package with the most relaxed version restrictions possible to
+`requirements/development/environment.yaml`
+4. If package is required to run any of the spectra_matching Prefect flow, add
+the package to the correct text requirement file in the directory requirements/spectra_matching
+
+E.g. if a package is required by ms2deepscore only and installed by conda, add it to
+`requirements/spectra_matching/ms2deepscore/requirements_conda.txt`
+
+Another example is, if a package is required by both ms2deepscore and spec2vec
+and installed by pip, add it to
+`requirements/spectra_matching/requirements_pip.txt`
 
 Special steps for M1 Users
 -------------------------------------
