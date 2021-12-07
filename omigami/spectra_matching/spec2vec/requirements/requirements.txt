@@ -1,0 +1,2 @@
+spec2vec=0.4.0
+gensim=3.8.3
