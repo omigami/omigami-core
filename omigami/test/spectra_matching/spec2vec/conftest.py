@@ -90,7 +90,7 @@ def spec2vec_embeddings(documents_data, word2vec_model):
                 model=word2vec_model,
                 document=document,
                 intensity_weighting_power=0.5,
-                allowed_missing_percentage=5.0,
+                allowed_missing_percentage=15.0,
             )
             embeddings.append(
                 Spec2VecEmbedding(

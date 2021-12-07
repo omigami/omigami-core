@@ -1,11 +1,8 @@
-from time import sleep
-
 import pytest
-from prefect import Flow, task
-from prefect.run_configs import LocalRun, DockerRun
+from prefect import Flow
+from prefect.run_configs import LocalRun
 from prefect.storage import Local
 
-from omigami.authentication.prefect_factory import get_prefect_client
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     STORAGE_ROOT,
@@ -103,7 +100,7 @@ def test_run_model_deployment_flow(
         model=model,
         run_name="run",
         experiment_name="local-integration-test-s2v",
-        model_name="test",
+        model_name="integration-test-model",
         experiment_path=str(MLFLOW_DIRECTORY),
     )
 

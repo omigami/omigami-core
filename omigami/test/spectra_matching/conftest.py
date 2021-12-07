@@ -241,7 +241,7 @@ def fitted_spectrum_binner(fitted_spectrum_binner_path):
 
 @pytest.fixture()
 def backend_services():
-    """Connects to mlflow and prefect and return client objects to communica with them"""
+    """Connects to mlflow and prefect and return client objects to communicate with them"""
     mlflow.set_tracking_uri(MLFLOW_SERVER)
     mlflow_client = mlflow.tracking.MlflowClient()
 
