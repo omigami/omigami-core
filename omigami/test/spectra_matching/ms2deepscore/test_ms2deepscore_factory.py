@@ -35,7 +35,7 @@ def test_build_ms2deep_training_flow():
         "REDIS_HOST": REDIS_HOST,
         "OMIGAMI_ENV": OMIGAMI_ENV,
         "MLFLOW_SERVER": MLFLOW_SERVER,
-        "TZ": "UTC"
+        "TZ": "UTC",
     }
 
 
@@ -57,5 +57,5 @@ def test_build_model_deployment_flow():
         "REDIS_HOST": REDIS_HOST,
         "OMIGAMI_ENV": OMIGAMI_ENV,
         "MLFLOW_SERVER": MLFLOW_SERVER,
-        "TZ": "UTC"
+        "TZ": "UTC",
     }
