@@ -57,7 +57,7 @@ class Predictor(PythonModel):
 
         spectra = self.dgw.read_spectra(set(spectrum_ids))
         spectra = {spectrum.metadata["spectrum_id"]: spectrum for spectrum in spectra}
-        # add key/value pairs to the dictionary for the user specified keys
+
         for matches in best_matches.values():
             for spectrum_id in matches.keys():
                 matches[spectrum_id]["metadata"] = spectra[spectrum_id].metadata

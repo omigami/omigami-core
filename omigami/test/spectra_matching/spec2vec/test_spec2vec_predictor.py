@@ -205,4 +205,4 @@ def test_add_metadata(spec2vec_predictor, spec2vec_embeddings, spec2vec_redis_se
     bm = best_matches["CCMSLIB00000072099"]
     assert set(bm["CCMSLIB00000072099"].keys()) == {"score", "metadata"}
     assert len(bm["CCMSLIB00000072099"]["metadata"]) == 37
-    assert bm["CCMSLIB00000072099"]["metadata"]["Compound_Name"] == "Coproporphyrin I"
+    assert bm["CCMSLIB00000072099"]["metadata"]["compound_name"] == "Coproporphyrin I"
