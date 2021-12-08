@@ -17,11 +17,11 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor imp
 from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
+from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
 from omigami.spectra_matching.util import (
     cosine_similarity,
     cosine_similarity_matrix,
 )
-from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
 
 log = getLogger(__name__)
 
@@ -101,11 +101,7 @@ class MS2DeepScorePredictor(Predictor):
             best_matches_data["n_best_spectra"] = parameters.get("n_best_spectra")
 
         best_matches = self._calculate_best_matches(**best_matches_data)
-
-        if parameters.get("include_metadata", None):
-            best_matches = self._add_metadata(
-                best_matches, parameters["include_metadata"]
-            )
+        best_matches = self._add_metadata(best_matches)
 
         log.info("Finishing prediction.")
         return best_matches
