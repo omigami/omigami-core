@@ -15,10 +15,8 @@ from pytest_redis import factories
 
 import omigami
 import omigami.utils
-from omigami.authentication.prefect_factory import PrefectClientFactory
+from omigami.authentication.prefect_factory import prefect_client_factory
 from omigami.config import (
-    PREFECT_SERVER,
-    get_login_config,
     MLFLOW_SERVER,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
@@ -245,10 +243,7 @@ def backend_services():
     mlflow.set_tracking_uri(MLFLOW_SERVER)
     mlflow_client = mlflow.tracking.MlflowClient()
 
-    login_config = get_login_config()
-    api_server = PREFECT_SERVER
-    prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
-    prefect_client = prefect_factory.get()
+    prefect_client = prefect_client_factory.get()
 
     if not prefect_client.active_tenant_id:
         prefect_client.create_tenant("default")
