@@ -7,50 +7,60 @@ import confuse
 from drfs import DRPath
 from typing_extensions import Literal
 
-config = confuse.Configuration("omigami", __name__)
-OMIGAMI_ENV = os.getenv("OMIGAMI_ENV", "local")
+from omigami.env_config import (
+    Clusters,
+    StorageRoots,
+    RedisDatabases,
+    RedisHosts,
+    PrefectServers,
+    Environments,
+)
 
 ROOT_DIR = Path(__file__).parents[0]
+config = confuse.Configuration("omigami", __name__)
+OMIGAMI_ENV = os.getenv("OMIGAMI_ENV", Environments.local)
 
-# Prefect
-API_SERVER_URLS = config["prefect"]["api_server"].get(dict)
-
-MLFLOW_SERVER = os.getenv("MLFLOW_SERVER", config["mlflow"].get(str))
-SELDON_PARAMS = config["seldon"].get(dict)
-
-# Storage
-if OMIGAMI_ENV == "local":
-    STORAGE_ROOT = Path(__file__).parent.parent / "local-deployment" / "results"
-else:
-    STORAGE_ROOT = DRPath(config["storage"]["root"][OMIGAMI_ENV])
-
-MLFLOW_DIRECTORY = STORAGE_ROOT / "mlflow"
-
-REDIS_DATABASES = {
-    "local": {"small": "0"},
-    "dev": {"small": "2", "10k": "1", "complete": "0"},
-    "prod": {"small": "2", "complete": "0"},
-}[OMIGAMI_ENV]
-REDIS_HOST = str(os.getenv("REDIS_HOST"))
-
-SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
-SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
-SOURCE_URI_PARTIAL_GNPS_500_SPECTRA = config["gnps_uri"]["partial_500_spectra"].get(str)
-
-CLUSTER = config["clusters"][OMIGAMI_ENV].get(str)
 ION_MODES = {"positive", "negative"}
 IonModes = Literal["positive", "negative"]
 
+STORAGE_ROOT = DRPath(StorageRoots[OMIGAMI_ENV])
+CLUSTER = Clusters[OMIGAMI_ENV]
 
+# Prefect & Tasks
+PREFECT_SERVER = PrefectServers[OMIGAMI_ENV]
+CHUNK_SIZE = int(1e8)
+DATASET_IDS = config["storage"]["dataset_id"].get(dict)
 DEFAULT_PREFECT_TASK_CONFIG = dict(
     max_retries=3, retry_delay=datetime.timedelta(seconds=10)
 )
 
-DATASET_IDS = config["storage"]["dataset_id"].get(dict)
+# Mlflow
+MLFLOW_SERVER = os.getenv("MLFLOW_SERVER", config["mlflow"].get(str))
+MLFLOW_DIRECTORY = STORAGE_ROOT / "mlflow"
+CONDA_ENV_PATH = ROOT_DIR.parent / "requirements/development/environment.frozen.yaml"
+CODE_PATH = ROOT_DIR
+
+
+SELDON_PARAMS = config["seldon"].get(dict)
+
+
+# Redis Configurations
+REDIS_DATABASES = RedisDatabases[OMIGAMI_ENV]
+REDIS_HOST = RedisHosts[OMIGAMI_ENV]
+EMBEDDING_HASHES = config["storage"]["redis"]["embedding_hashes"].get(str)
+SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
+    "spectrum_id_sorted_set"
+].get(str)
+SPECTRUM_HASHES = config["storage"]["redis"]["spectrum_hashes"].get(str)
+
+# URIs for downloading GNPS files
+SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
+SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
+SOURCE_URI_PARTIAL_GNPS_500_SPECTRA = config["gnps_uri"]["partial_500_spectra"].get(str)
 
 
 def get_login_config() -> Dict[str, str]:
-    if OMIGAMI_ENV in ("dev", "prod"):
+    if OMIGAMI_ENV in (Environments.dev, Environments.prod):
         login_config = config["login"][OMIGAMI_ENV].get(dict)
         login_config.pop("token")
     else:
@@ -61,6 +71,3 @@ def get_login_config() -> Dict[str, str]:
             "session_token": "token",
         }
     return login_config
-
-
-CHUNK_SIZE = int(1e8)

@@ -1,0 +1,11 @@
+prefect:
+  project: "spec2vec"
+storage:
+  documents:
+    positive: "documents/positive"
+    negative: "documents/negative"
+  redis:
+    document_hashes: "document_data"
+    env_vars:
+      redis_host: "REDIS_HOST"
+      redis_db: "REDIS_DB"

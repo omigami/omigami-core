@@ -9,27 +9,36 @@ How to setup
 ------------
 ::
 
-    conda env create -f requirements/environment.frozen.yaml
-    conda env update -f requirements/environment_test.yaml
+    conda env create -f requirements/development/environment.frozen.yaml
     conda activate omigami
     pip install -e .
 
 How to update all packages
 --------------------------
-To update all packages and create new frozen environments. Make sure you have correct
-environment activated. You'll need at least `conda>=4.9`::
+To update all packages and create new frozen environments. Make sure you have
+correct environment activated.  You'll need at least `conda>=4.9`::
 
     conda activate omigami
-    python requirements/dress.py env freeze requirements/environment.yaml
-    conda env update -f requirements/environment.frozen.yaml
-    conda env update -f requirements/environment_test.yaml
+    python requirements/development/dress.py env freeze requirements/development/environment.yaml
+    conda env update -f requirements/development/environment.frozen.yaml
 
 How to add or update a single package
 -------------------------------------
 
 1. Install the package as usual with conda
-2. Check which version was installed and add major and minor version to environment.frozen.yaml
-3. Add the package with the most relaxed version restrictions possible to environment.yaml
+2. Check which version was installed and add major and minor versions to
+`requirements/development/environment.frozen.yaml`
+3. Add the package with the most relaxed version restrictions possible to
+`requirements/development/environment.yaml`
+4. If the package is required to run any of the spectra_matching Prefect flows, add
+the package to the correct text requirement file in the directory requirements/spectra_matching
+
+E.g. if a package is required by ms2deepscore only and installed by conda, add it to
+`requirements/spectra_matching/ms2deepscore/conda.txt`
+
+Another example is, if a package is required by both ms2deepscore and spec2vec
+and installed by pip, add it to
+`requirements/spectra_matching/pip.txt`
 
 Special steps for M1 Users
 -------------------------------------
@@ -51,6 +60,11 @@ In order to publish this Docker Image, there's an auxiliary script to do this.
 To run it, execute::
 
     bash deploy.sh
+
+This will push 3 images to 3 different repositories:
+ - drtools/prefect
+ - drtools/omigami-spec2vec
+ - drtools/omigami-ms2deepscore
 
 How to run tests that require Redis locally
 -------------------------------------------
@@ -99,7 +113,7 @@ Running MLFlow Locally
 
 To run mlflow locally run the following command:
 ::
-    mlflow ui --backend-store-uri sqlite:///mlflow.sqlite
+    mlflow ui --backend-store-uri sqlite:///<PATH_TO_PROJECT_ROOT>/local-deployment/results/mlflow.sqlite
 
 
 To access it: http://localhost:5000/
@@ -108,11 +122,35 @@ To access it: http://localhost:5000/
 To run tests one by one via PyCharm, you can add this to your pytest Environment Variables (Run > Edit Configurations...)
 ::
 
-    SKIP_REDIS_TEST=False;PREFECT__FLOWS__CHECKPOINTING=True;REDIS_HOST=localhost;REDIS_DB=0;MLFLOW_SERVER=sqlite:///mlflow.sqlite
+    SKIP_REDIS_TEST=False;
+    PREFECT__FLOWS__CHECKPOINTING=True;
+    REDIS_DB=0;
+    MLFLOW_SERVER=sqlite:///<absolute_path_to_project_root>/local-deployment/results/mlflow.sqlite;
+    OMIGAMI_ENV=local
 
-Please don't commit `*model.pkl` files to git. Every necessary model for the
-test setup is going to be generated and saved to `test/assets/` folder and be
-used from there on.
+For the MLFLOW server path, you can get the correct value with sqlite:///$(pwd)/local-deployment/results/mlflow.sqlite
+One example of MLFLOW_SERVER variable is (notice the 4 slashes):
+::
+    sqlite:////Users/czanella/dev/datarevenue/omigami-core/local-deployment/results/mlflow.sqlite
+
+Running Prefect Tests using a built docker image
+-----------------------------------------------------
+
+Running flows in docker can be used to test images. To run in docker a few environment
+variables must be changed, and a prefect docker agent must be used instead of a local one.
+
+We first need to connect redis to prefect-server network and then spin up a docker agent.
+Assuming prefect server is already up:
+::
+    docker network connect prefect-server redis
+    prefect agent docker start -n local-docker-agent -l dev --show-flow-logs --log-level DEBUG --network prefect-server
+
+
+Then a few environment variables must be updated on pytest settings:
+::
+    MLFLOW_SERVER=sqlite:///mlflow.sqlite;
+    OMIGAMI_ENV=docker
+
 
 How to register the training flow manually
 ------------------------------------------
@@ -209,3 +247,8 @@ version provided in the environment and the following command:
 ::
 
     black --target-version py37 omigami
+
+
+Please don't commit `*model.pkl` files to git. Every necessary model for the
+test setup is going to be generated and saved to `test/assets/` folder and be
+used from there on. You can also regenerate them at will if necessary (if you change some code that breaks the old pickled code).

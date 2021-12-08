@@ -6,7 +6,8 @@ from prefect import Client
 import omigami.authentication.prefect_factory
 from omigami.authentication.authenticator import KratosAuthenticator
 from omigami.authentication.prefect_factory import PrefectClientFactory
-from omigami.config import API_SERVER_URLS, config
+from omigami.config import PREFECT_SERVER, config
+from omigami.env_config import Environments
 
 
 @pytest.fixture()
@@ -23,10 +24,10 @@ def test_mock_prefect_get_client_with_token(mock_prefect_client):
     auth = Mock(spec=KratosAuthenticator)
 
     factory = PrefectClientFactory(
-        "auth-url", "api-server", session_token="token", authenticator=auth
+        "auth-url", session_token="token", authenticator=auth
     )
 
-    client = factory.get_client()
+    client = factory.get()
 
     assert client == mock_prefect_client
     auth.authenticate.assert_not_called()
@@ -35,11 +36,9 @@ def test_mock_prefect_get_client_with_token(mock_prefect_client):
 def test_mock_prefect_get_client_without_token(mock_prefect_client):
     auth = Mock(spec=KratosAuthenticator)
 
-    factory_no_token = PrefectClientFactory(
-        "auth-url", "api-server", authenticator=auth
-    )
+    factory_no_token = PrefectClientFactory("auth-url", authenticator=auth)
 
-    client = factory_no_token.get_client()
+    client = factory_no_token.get()
 
     assert client == mock_prefect_client
     auth.authenticate.assert_called_once()
@@ -50,12 +49,12 @@ def test_mock_prefect_get_client_without_token(mock_prefect_client):
     "test. To run them, check README instructions."
 )
 def test_prefect_get_client():
-    api_server = API_SERVER_URLS["local"]
-    login_config = config["login"]["local"].get(dict)
+    api_server = PREFECT_SERVER
+    login_config = config["login"][Environments.local].get(dict)
 
-    factory = PrefectClientFactory(api_server=api_server, **login_config)
+    factory = PrefectClientFactory(**login_config)
 
-    client = factory.get_client()
+    client = factory.get()
 
     assert isinstance(client, Client)
     assert client.api_server == api_server
