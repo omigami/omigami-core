@@ -251,4 +251,4 @@ version provided in the environment and the following command:
 
 Please don't commit `*model.pkl` files to git. Every necessary model for the
 test setup is going to be generated and saved to `test/assets/` folder and be
-used from there on.
+used from there on. You can also regenerate them at will if necessary (if you change some code that breaks the old pickled code).
