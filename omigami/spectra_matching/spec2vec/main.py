@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 
 import pandas as pd
 
-from omigami.authentication.prefect_factory import get_prefect_client
+from omigami.authentication.prefect_factory import prefect_client_factory
 from omigami.config import IonModes
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
@@ -58,7 +58,7 @@ def run_spec2vec_training_flow(
         schedule=schedule,
     )
 
-    deployer = FlowDeployer(prefect_client=get_prefect_client())
+    deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
     flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
 
     return flow_id, flow_run_id
@@ -104,7 +104,7 @@ def run_deploy_spec2vec_model_flow(
 
     flow_parameters = {"ModelRunID": model_run_id}
 
-    deployer = FlowDeployer(prefect_client=get_prefect_client())
+    deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
     flow_id, flow_run_id = deployer.deploy_flow(
         flow=flow, project_name=project_name, flow_parameters=flow_parameters
     )

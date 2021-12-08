@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 import omigami.spectra_matching.ms2deepscore.main
+from omigami.authentication.prefect_factory import prefect_client_factory
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
 )
@@ -15,12 +16,13 @@ from omigami.spectra_matching.ms2deepscore.main import (
 
 
 @pytest.fixture
-def mock_factories(monkeypatch):
-    get_client = Mock()
+def mock_objects(monkeypatch):
+    client_factory = prefect_client_factory
+    client_factory.get = Mock()
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.main,
-        "get_prefect_client",
-        get_client,
+        "prefect_client_factory",
+        client_factory,
     )
 
     mock_deployer = Mock(spec=FlowDeployer)
@@ -40,13 +42,13 @@ def mock_factories(monkeypatch):
 
     return {
         "deployer": deployer_instance,
-        "get_client": get_client,
+        "client": client_factory,
         "factory": factory_instance,
     }
 
 
-def test_mocked_deploy_training_flow(mock_factories):
-    mock_factories["factory"].build_training_flow = Mock(return_value="flow")
+def test_mocked_deploy_training_flow(mock_objects):
+    mock_objects["factory"].build_training_flow = Mock(return_value="flow")
 
     params = dict(
         image="",
@@ -73,15 +75,15 @@ def test_mocked_deploy_training_flow(mock_factories):
     flow_id, flow_run_id = run_ms2deepscore_training_flow(**params)
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
-    mock_factories["factory"].build_training_flow.assert_called_once_with(**params)
-    mock_factories["deployer"].deploy_flow.assert_called_once_with(
+    mock_objects["factory"].build_training_flow.assert_called_once_with(**params)
+    mock_objects["deployer"].deploy_flow.assert_called_once_with(
         flow="flow", project_name="default"
     )
-    mock_factories["get_client"].assert_called_once()
+    mock_objects["client"].get.assert_called_once()
 
 
-def test_run_mocked_deploy_model_flow(mock_factories):
-    mock_factories["factory"].build_model_deployment_flow = Mock(return_value="flow")
+def test_run_mocked_deploy_model_flow(mock_objects):
+    mock_objects["factory"].build_model_deployment_flow = Mock(return_value="flow")
 
     params = dict(
         flow_name="Calvin Flowers",
@@ -96,12 +98,12 @@ def test_run_mocked_deploy_model_flow(mock_factories):
     )
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
-    mock_factories["factory"].build_model_deployment_flow.assert_called_once_with(
+    mock_objects["factory"].build_model_deployment_flow.assert_called_once_with(
         **params
     )
-    mock_factories["deployer"].deploy_flow.assert_called_once_with(
+    mock_objects["deployer"].deploy_flow.assert_called_once_with(
         flow="flow",
         project_name="default",
         flow_parameters={"ModelRunID": "model_run_id"},
     )
-    mock_factories["get_client"].assert_called_once()
+    mock_objects["client"].get.assert_called_once()
