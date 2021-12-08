@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 import omigami.spectra_matching.spec2vec.main
+from omigami.authentication.prefect_factory import prefect_client_factory
 from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
 )
@@ -16,11 +17,12 @@ from omigami.spectra_matching.spec2vec.main import (
 
 @pytest.fixture
 def mock_objects(monkeypatch):
-    get_client = Mock()
+    client_factory = prefect_client_factory
+    client_factory.get = Mock()
     monkeypatch.setattr(
         omigami.spectra_matching.spec2vec.main,
-        "get_prefect_client",
-        get_client,
+        "prefect_client_factory",
+        client_factory,
     )
 
     mock_deployer = Mock(spec=FlowDeployer)
@@ -37,7 +39,7 @@ def mock_objects(monkeypatch):
 
     return {
         "deployer": deployer_instance,
-        "get_client": get_client,
+        "client": client_factory,
         "factory": factory_instance,
     }
 
@@ -71,7 +73,7 @@ def test_mocked_deploy_training_flow(mock_objects):
     mock_objects["deployer"].deploy_flow.assert_called_once_with(
         flow="flow", project_name="default"
     )
-    mock_objects["get_client"].assert_called_once()
+    mock_objects["client"].get.assert_called_once()
 
 
 def test_run_mocked_deploy_model_flow(mock_objects):
@@ -102,4 +104,4 @@ def test_run_mocked_deploy_model_flow(mock_objects):
         project_name="default",
         flow_parameters={"ModelRunID": "model_run_id"},
     )
-    mock_objects["get_client"].assert_called_once()
+    mock_objects["client"].get.assert_called_once()

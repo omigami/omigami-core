@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 
 import pandas as pd
 
-from omigami.authentication.prefect_factory import get_prefect_client
+from omigami.authentication.prefect_factory import prefect_client_factory
 from omigami.config import IonModes, CHUNK_SIZE
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
@@ -66,7 +66,7 @@ def run_ms2deepscore_training_flow(
         chunk_size=chunk_size,
         schedule=schedule,
     )
-    deployer = FlowDeployer(prefect_client=get_prefect_client())
+    deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
     flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
 
     return flow_id, flow_run_id
@@ -105,7 +105,7 @@ def run_deploy_ms2ds_model_flow(
 
     flow_parameters = {"ModelRunID": model_run_id}
 
-    deployer = FlowDeployer(prefect_client=get_prefect_client())
+    deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
     flow_id, flow_run_id = deployer.deploy_flow(
         flow=flow, project_name=project_name, flow_parameters=flow_parameters
     )

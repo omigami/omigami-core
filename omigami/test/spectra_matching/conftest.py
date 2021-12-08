@@ -248,7 +248,7 @@ def backend_services():
     login_config = get_login_config()
     api_server = PREFECT_SERVER
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
-    prefect_client = prefect_factory.get_client()
+    prefect_client = prefect_factory.get()
 
     if not prefect_client.active_tenant_id:
         prefect_client.create_tenant("default")
