@@ -49,8 +49,9 @@ def build_deploy_model_flow(
     flow_parameters: DeployModelFlowParameters,
 ) -> Flow:
     """
-    Builds the ms2deepscore machine learning pipeline. It process data, trains a model, makes
-    embeddings, registers the model and deploys it to the API.
+    Builds the ms2deepscore deploy model flow used for deploying a pre-trained model.
+    It loads the model, generates the embeddings used by it, and deploys to the cluster
+    as a seldon endpoint.
 
     Parameters
     ----------
