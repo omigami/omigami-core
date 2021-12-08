@@ -17,3 +17,6 @@ RUN conda install -y -c conda-forge -c nlesc -c bioconda \
 
 COPY ./requirements/spectra_matching/spec2vec/pip.txt /opt/omigami/requirements/s2v_pip.txt
 RUN pip install --no-cache-dir -r requirements/s2v_pip.txt
+
+COPY . /opt/omigami
+RUN pip install -e /opt/omigami/

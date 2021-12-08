@@ -3,7 +3,7 @@ from typing import Any, Optional, Dict
 
 import mlflow
 
-from omigami.config import CODE_PATH, MLFLOW_SERVER
+from omigami.config import CODE_PATH, MLFLOW_SERVER, CONDA_ENV_PATH
 from omigami.spectra_matching.predictor import Predictor
 
 
@@ -15,7 +15,6 @@ class ModelRegistryDataGateway(ABC):
         experiment_name: str,
         run_name: str,
         experiment_path: str = None,
-        conda_env_path: str = None,
         model_name: Optional[str] = None,
         params: Dict[str, Any] = None,
         metrics: Dict[str, float] = None,
@@ -37,8 +36,6 @@ class ModelRegistryDataGateway(ABC):
         experiment_path:
             Path used for the root of the files of a experiment. Only used when a new
             experiment is created
-        conda_env_path:
-            Path to the conda environment file
         model_name:
             Name of the model
         params:
@@ -67,7 +64,6 @@ class MLFlowDataGateway(ModelRegistryDataGateway):
         experiment_name: str,
         run_name: str,
         experiment_path: str = None,
-        conda_env_path: str = None,
         model_name: Optional[str] = None,
         params: Dict[str, Any] = None,
         metrics: Dict[str, float] = None,
@@ -91,7 +87,7 @@ class MLFlowDataGateway(ModelRegistryDataGateway):
                 python_model=model,
                 registered_model_name=model_name,
                 code_path=[CODE_PATH],
-                conda_env=conda_env_path,
+                conda_env=CONDA_ENV_PATH,
                 artifacts=artifacts,
             )
 

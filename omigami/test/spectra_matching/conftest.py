@@ -17,18 +17,14 @@ import omigami
 import omigami.utils
 from omigami.authentication.prefect_factory import PrefectClientFactory
 from omigami.config import (
-    API_SERVER_URLS,
+    PREFECT_SERVER,
     get_login_config,
     MLFLOW_SERVER,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
     SPECTRUM_HASHES,
     EMBEDDING_HASHES,
 )
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectStorageMethods,
-    PrefectExecutorMethods,
-)
+from omigami.flow_config import make_flow_config, PrefectExecutorMethods
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
@@ -245,12 +241,12 @@ def fitted_spectrum_binner(fitted_spectrum_binner_path):
 
 @pytest.fixture()
 def backend_services():
-    """Connects to mlflow and prefect and return client objects to communica with them"""
+    """Connects to mlflow and prefect and return client objects to communicate with them"""
     mlflow.set_tracking_uri(MLFLOW_SERVER)
     mlflow_client = mlflow.tracking.MlflowClient()
 
     login_config = get_login_config()
-    api_server = API_SERVER_URLS["local"]
+    api_server = PREFECT_SERVER
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()
 
@@ -264,7 +260,6 @@ def backend_services():
 def flow_config():
     flow_config = make_flow_config(
         image="image-ref-name-test-hermione-XXII",
-        storage_type=PrefectStorageMethods.Local,
         executor_type=PrefectExecutorMethods.LOCAL_DASK,
         redis_db="0",
     )

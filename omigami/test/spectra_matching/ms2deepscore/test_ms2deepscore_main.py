@@ -100,6 +100,8 @@ def test_run_mocked_deploy_model_flow(mock_factories):
         **params
     )
     mock_factories["deployer"].deploy_flow.assert_called_once_with(
-        flow="flow", project_name="default", parameters={"ModelRunID": "model_run_id"}
+        flow="flow",
+        project_name="default",
+        flow_parameters={"ModelRunID": "model_run_id"},
     )
     mock_factories["get_client"].assert_called_once()

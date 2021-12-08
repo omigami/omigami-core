@@ -3,7 +3,7 @@ from typing import Optional
 from prefect import Client
 
 from omigami.authentication.authenticator import KratosAuthenticator, Authenticator
-from omigami.config import API_SERVER_URLS, OMIGAMI_ENV, get_login_config
+from omigami.config import PREFECT_SERVER, get_login_config
 
 
 class PrefectClientFactory:
@@ -33,7 +33,7 @@ class PrefectClientFactory:
 
 
 def get_prefect_client() -> Client:
-    api_server = API_SERVER_URLS[OMIGAMI_ENV]
+    api_server = PREFECT_SERVER
     login_config = get_login_config()
     prefect_factory = PrefectClientFactory(api_server=api_server, **login_config)
     prefect_client = prefect_factory.get_client()

@@ -26,9 +26,10 @@ from omigami.test.spectra_matching.conftest import monitor_flow_results
 )
 def test_deploy_training_flow(backend_services):
     client = backend_services["prefect"]
+    image = None  # "drtools/omigami-spec2vec:SNAPSHOT.1a6ec12c"
 
     flow_id, flow_run_id = run_spec2vec_training_flow(
-        image="",
+        image=image,
         project_name="local-integration-test-s2v",
         flow_name="Robert DeFlow",
         dataset_id="small",
@@ -99,7 +100,7 @@ def test_run_model_deployment_flow(
         model=model,
         run_name="run",
         experiment_name="local-integration-test-s2v",
-        model_name="test",
+        model_name="integration-test-model",
         experiment_path=str(MLFLOW_DIRECTORY),
     )
 

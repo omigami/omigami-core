@@ -1,5 +1,9 @@
 FROM drtools/alpine-conda:alpine-3.11_conda-4.7.12
 ENV PATH="/opt/conda/bin/:${PATH}"
+USER root
+RUN mkdir /opt/omigami
+RUN chown -R anaconda /opt/omigami
+USER anaconda
 WORKDIR /opt/omigami
 
 ENV PIP_FIND_LINKS=/opt/libs
@@ -16,6 +20,3 @@ RUN conda install -y -c conda-forge -c nlesc -c bioconda python=3.7 \
 
 COPY ./requirements/spectra_matching/pip.txt /opt/omigami/requirements/pip.txt
 RUN pip install -r requirements/pip.txt
-
-COPY . /opt/omigami
-RUN pip install /opt/omigami
