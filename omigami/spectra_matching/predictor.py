@@ -51,7 +51,7 @@ class Predictor(PythonModel):
             )
 
     def _add_metadata(
-        self, best_matches: Dict[str, SpectrumMatches], metadata_keys: List[str]
+        self, best_matches: Dict[str, SpectrumMatches]
     ) -> Dict[str, SpectrumMatches]:
         spectrum_ids = [key for match in best_matches.values() for key in match.keys()]
 
@@ -60,10 +60,7 @@ class Predictor(PythonModel):
         # add key/value pairs to the dictionary for the user specified keys
         for matches in best_matches.values():
             for spectrum_id in matches.keys():
-                for key in metadata_keys:
-                    matches[spectrum_id][key] = spectra[spectrum_id].metadata[
-                        key.lower()
-                    ]
+                matches[spectrum_id]["metadata"] = spectra[spectrum_id].metadata
 
         return best_matches
 

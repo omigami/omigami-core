@@ -12,3 +12,4 @@ mlflow-server/*
 local-deployment/*
 mlruns/*
 .git
+omigami_core.egg-info
