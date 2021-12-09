@@ -3,7 +3,7 @@ function usage()
 {
    cat << HEREDOC
 
-   Usage: $(basename $0) TAG [-h] [-s] [-r REPO] [-p] [-j] [--rebuild-base]
+   Usage: $(basename $0) TAG [-h] [-s] [-p]
 
    Tags the current HEAD as a release and pushes the tag. Next a docker image is built
    and optionally pushed. Snapshot releases can be built for testing with the -s option.
