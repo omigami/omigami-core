@@ -1,11 +1,28 @@
-snap ()
+set -e
+function usage()
 {
-    echo "SNAPSHOT.$(git rev-parse --short HEAD)"
+   cat << HEREDOC
+
+   Usage: $(basename $0) TAG [-h] [-s] [-r REPO] [-p] [-j] [--rebuild-base]
+
+   Tags the current HEAD as a release and pushes the tag. Next a docker image is built
+   and optionally pushed. Snapshot releases can be built for testing with the -s option.
+
+   optional arguments:
+     -h, --help                show this help message and exit
+     -s, --snapshot            marks this release as a snapshot release, will append
+                              '-SNAPSHOT.[GIT-HASH]' to the TAG and not create a git tag.
+     -p, --push                if set the image will also be pushed
+
+HEREDOC
 }
 
-BASE_TAG="drtools/prefect:omigami-$(snap)"
-S2V_TAG="drtools/omigami-spec2vec:$(snap)"
-MS2DS_TAG="drtools/omigami-ms2deepscore:$(snap)"
+
+
+snap ()
+{
+    echo "-SNAPSHOT.$(git rev-parse --short HEAD)"
+}
 
 
 POSITIONAL=()
@@ -17,6 +34,10 @@ key="$1"
       PUSH="true"
       shift # past argument
       ;;
+      -s|--snapshot)
+      SNAPSHOT="true"
+      shift # past argument
+      ;;
       *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -24,6 +45,27 @@ key="$1"
   esac
 done
 set -- "${POSITIONAL[@]}"
+
+TAG="$1"
+
+if [[ -z "$SNAPSHOT" ]]; then
+  echo ""
+  echo "======================================="
+  echo "Creating full release for v$TAG."
+  echo "======================================="
+  if [ "$(git describe --tags --abbrev=0)" != "$TAG" ]; then
+    git tag "$1"
+  fi
+  git push --tags
+else
+  TAG="$TAG$(snap)"
+  echo "Creating snapshot release $TAG"
+fi
+
+
+BASE_TAG="drtools/prefect:omigami-$TAG"
+S2V_TAG="drtools/omigami-spec2vec:$TAG"
+MS2DS_TAG="drtools/omigami-ms2deepscore:$TAG"
 
 
 echo "$BASE_TAG"
