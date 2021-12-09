@@ -46,7 +46,7 @@ class Spec2VecFlowFactory:
         mlflow_output_directory: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
-        self._dataset_directory = dataset_directory or str(STORAGE_ROOT / "datasets")
+        self._dataset_directory = dataset_directory or STORAGE_ROOT / "datasets"
         self._spec2vec_root = SPEC2VEC_ROOT
         self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
@@ -104,7 +104,7 @@ class Spec2VecFlowFactory:
             spectrum_dgw=spectrum_dgw,
             document_dgw=document_dgw,
             spectrum_cleaner=spectrum_cleaner,
-            dataset_id=dataset_id,
+            dataset_directory=str(self._dataset_directory / dataset_id),
             ion_mode=ion_mode,
             n_decimals=n_decimals,
             iterations=iterations,
@@ -116,9 +116,8 @@ class Spec2VecFlowFactory:
             overwrite_model=overwrite_model,
             overwrite_all_spectra=overwrite_all_spectra,
             documents_save_directory=str(
-                self._spec2vec_root / dataset_id / self._document_dirs[ion_mode]
+                self._spec2vec_root / self._document_dirs[ion_mode] / dataset_id
             ),
-            dataset_directory=self._dataset_directory,
             model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=self._mlflow_output_directory,
             experiment_name=project_name,

@@ -73,7 +73,7 @@ def test_download_data(mock_default_config, tmpdir):
 
     assert len(return_res) == 12
     data_gtw.download_gnps.assert_called_once_with(
-        download_params.input_uri, download_params.download_path
+        download_params.source_uri, download_params.download_path
     )
     data_gtw.get_spectrum_ids.assert_called_once_with(download_params.download_path)
     data_gtw.serialize_to_file.assert_called_once_with(

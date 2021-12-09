@@ -1,4 +1,5 @@
 import pickle
+import shutil
 from pathlib import Path
 from time import sleep
 
@@ -8,7 +9,6 @@ import mlflow
 import pandas as pd
 import pytest
 import s3fs
-from drfs.filesystems import get_fs
 from moto import mock_s3
 from prefect import Client
 from pytest_redis import factories
@@ -220,9 +220,9 @@ def s3_documents_directory():
 
 @pytest.fixture()
 def clean_chunk_files():
-    fs = get_fs(str(ASSETS_DIR))
-    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "positive")]
-    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "negative")]
+    chunk_root = ASSETS_DIR / "raw"
+    if chunk_root.exists():
+        shutil.rmtree(chunk_root)
 
 
 @pytest.fixture()

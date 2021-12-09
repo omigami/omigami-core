@@ -42,7 +42,6 @@ class TrainingFlowParameters:
         spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         dataset_directory: str,
-        dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
         n_decimals: int,
@@ -55,7 +54,6 @@ class TrainingFlowParameters:
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
         dataset_name: str = "gnps.json",
-        dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
         overwrite_model: bool = False,
         model_name: Optional[str] = "spec2vec-model",
@@ -68,14 +66,15 @@ class TrainingFlowParameters:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         self.downloading = DownloadParameters(
-            source_uri,
-            dataset_directory,
-            dataset_id,
-            dataset_name,
-            dataset_checkpoint_name,
+            source_uri=source_uri,
+            output_directory=dataset_directory,
+            file_name=dataset_name,
         )
         self.chunking = ChunkingParameters(
-            self.downloading.download_path, chunk_size, ion_mode
+            input_file=self.downloading.download_path,
+            output_directory=f"{dataset_directory}/raw/{ion_mode}",
+            chunk_size=chunk_size,
+            ion_mode=ion_mode,
         )
         self.save_raw_spectra = SaveRawSpectraParameters(
             spectrum_dgw, data_gtw, spectrum_cleaner

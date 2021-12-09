@@ -11,7 +11,6 @@ from omigami.config import (
     SOURCE_URI_COMPLETE_GNPS,
 )
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 
 def test_load_gnps(local_gnps_small_json):
@@ -76,53 +75,6 @@ def test_load_spectrum_ids(local_gnps_small_json, spectrum_ids):
 
     assert len(spectrum_data) == len(spectrum_ids[:10])
     assert set(spectrum_ids[:10]) == {d["SpectrumID"] for d in spectrum_data}
-
-
-@pytest.mark.parametrize(
-    "ion_mode, expected_chunk_files",
-    [
-        ("positive", 3),
-        ("negative", 2),
-    ],
-)
-def test_chunk_gnps_outputs(
-    local_gnps_small_json, clean_chunk_files, ion_mode, expected_chunk_files
-):
-    dgw = FSDataGateway()
-    fs = get_fs(ASSETS_DIR)
-
-    dgw.chunk_gnps(local_gnps_small_json, chunk_size=150000, ion_mode=ion_mode)
-
-    assert len(fs.ls(ASSETS_DIR / "chunks" / ion_mode)) == expected_chunk_files
-
-
-@pytest.mark.parametrize(
-    "ion_mode, expected_chunk_files",
-    [
-        ("positive", 3),
-        ("negative", 2),
-    ],
-)
-def test_chunk_gnps_data_consistency(
-    local_gnps_small_json,
-    clean_chunk_files,
-    ion_mode,
-    expected_chunk_files,
-    spectrum_ids_by_mode,
-):
-    dgw = FSDataGateway()
-    fs = get_fs(ASSETS_DIR)
-
-    dgw.chunk_gnps(local_gnps_small_json, chunk_size=150000, ion_mode=ion_mode)
-
-    paths = fs.ls(ASSETS_DIR / "chunks" / ion_mode)
-    assert len(paths) == expected_chunk_files
-
-    chunked_ids = []
-    for p in paths:
-        chunked_ids += dgw.get_spectrum_ids(str(p))
-
-    assert set(chunked_ids) == set(spectrum_ids_by_mode[ion_mode])
 
 
 def test_serialize_to_file(tmpdir, fitted_spectrum_binner):
