@@ -199,17 +199,10 @@ def test_add_metadata(spec2vec_predictor, spec2vec_embeddings, spec2vec_redis_se
         )
         best_matches[query.spectrum_id] = input_best_matches
 
-    best_matches = spec2vec_predictor._add_metadata(
-        best_matches, metadata_keys=["Smiles", "Compound_Name"]
-    )
+    best_matches = spec2vec_predictor._add_metadata(best_matches)
 
-    assert best_matches
-    assert set(best_matches["CCMSLIB00000072099"]["CCMSLIB00000072099"].keys()) == {
-        "score",
-        "Smiles",
-        "Compound_Name",
-    }
-    assert (
-        best_matches["CCMSLIB00000072099"]["CCMSLIB00000072099"]["Compound_Name"]
-        == "Coproporphyrin I"
-    )
+    assert len(best_matches) == 100
+    bm = best_matches["CCMSLIB00000072099"]
+    assert set(bm["CCMSLIB00000072099"].keys()) == {"score", "metadata"}
+    assert len(bm["CCMSLIB00000072099"]["metadata"]) == 37  # nr of metadata in GNPS
+    assert bm["CCMSLIB00000072099"]["metadata"]["compound_name"] == "Coproporphyrin I"

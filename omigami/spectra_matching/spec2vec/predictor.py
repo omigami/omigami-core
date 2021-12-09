@@ -87,10 +87,7 @@ class Spec2VecPredictor(Predictor):
                 input_spectrum.spectrum_id or f"spectrum-{i}"
             ] = spectrum_best_matches
 
-        if parameters.get("include_metadata", None):
-            best_matches = self._add_metadata(
-                best_matches, parameters["include_metadata"]
-            )
+        best_matches = self._add_metadata(best_matches)
 
         log.info("Finishing prediction.")
         return best_matches
