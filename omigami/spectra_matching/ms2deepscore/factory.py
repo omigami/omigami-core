@@ -36,7 +36,6 @@ from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
 from omigami.spectra_matching.ms2deepscore.storage.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.spectra_matching.tasks.clean_raw_spectra import SpectrumCleaner
 
 
 class MS2DeepScoreFlowFactory:
@@ -48,7 +47,7 @@ class MS2DeepScoreFlowFactory:
         model_registry_uri: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
-        self._dataset_directory = dataset_directory or str(STORAGE_ROOT / "datasets")
+        self._dataset_directory = dataset_directory or STORAGE_ROOT / "datasets"
         self._ms2deepscore_root = MS2DEEPSCORE_ROOT
         self._directories = directories or DIRECTORIES
         self._dataset_ids = DATASET_IDS
@@ -67,7 +66,6 @@ class MS2DeepScoreFlowFactory:
         schedule: int = None,
         ion_mode: IonModes = "positive",
         deploy_model: bool = False,
-        overwrite_all_spectra: bool = False,
         overwrite_model: bool = False,
         project_name: str = PROJECT_NAME,
         spectrum_ids_chunk_size: int = SPECTRUM_IDS_CHUNK_SIZE,
@@ -99,8 +97,7 @@ class MS2DeepScoreFlowFactory:
         )
 
         spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway(project=project_name)
-        data_gtw = MS2DeepScoreFSDataGateway()
-        spectrum_cleaner = SpectrumCleaner()
+        fs_dgw = MS2DeepScoreFSDataGateway()
 
         spectrum_binner_output_path = (
             self._ms2deepscore_root / self._directories["spectrum_binner"]
@@ -108,18 +105,17 @@ class MS2DeepScoreFlowFactory:
         model_output_path = str(self._ms2deepscore_root / self._directories["model"])
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
 
+        dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
-            data_gtw=data_gtw,
+            fs_dgw=fs_dgw,
             spectrum_dgw=spectrum_dgw,
             source_uri=source_uri,
-            dataset_directory=self._dataset_directory,
-            dataset_id=self._dataset_ids[dataset_id].format(date=datetime.today()),
+            dataset_directory=self._dataset_directory / dataset_id,
             chunk_size=chunk_size,
             ion_mode=ion_mode,
             scores_output_path=str(scores_output_path),
             fingerprint_n_bits=fingerprint_n_bits,
             scores_decimals=scores_decimals,
-            overwrite_all_spectra=overwrite_all_spectra,
             spectrum_binner_output_path=spectrum_binner_output_path,
             spectrum_binner_n_bins=spectrum_binner_n_bins,
             overwrite_model=overwrite_model,

@@ -2,6 +2,7 @@ import os
 
 import pytest
 from matchms.Spectrum import Spectrum
+from matchms.importing.load_from_json import as_spectrum
 from pytest_redis import factories
 
 from omigami.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
@@ -69,3 +70,15 @@ def test_delete_spectrum_ids(spectra_stored):
     stored_ids_2 = dgw.list_spectrum_ids()
 
     assert set(stored_ids) - set(stored_ids_2) == {stored_ids[0]}
+
+
+@pytest.mark.skipif(
+    os.getenv("SKIP_REDIS_TEST", True),
+    reason="It can only be run if the Redis is up",
+)
+def test_write_raw_spectra(redis_db, loaded_data):
+    db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data]
+
+    dgw = RedisSpectrumDataGateway()
+    dgw.write_raw_spectra(db_entries)
+    assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(db_entries)

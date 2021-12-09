@@ -14,3 +14,4 @@ from omigami.spectra_matching.tasks.download_data import (
     DownloadData,
     DownloadParameters,
 )
+from omigami.spectra_matching.tasks.save_cleaned_spectra import SaveCleanedSpectra

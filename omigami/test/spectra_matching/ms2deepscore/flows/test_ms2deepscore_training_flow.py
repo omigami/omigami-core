@@ -42,15 +42,13 @@ def test_training_flow(flow_config):
     }
 
     flow_parameters = TrainingFlowParameters(
-        data_gtw=mock_data_gtw,
+        fs_dgw=mock_data_gtw,
         spectrum_dgw=mock_spectrum_dgw,
         source_uri="source_uri",
         dataset_directory="datasets",
-        dataset_id="dataset-id",
         ion_mode="positive",
         chunk_size=150000,
         overwrite_model=True,
-        overwrite_all_spectra=False,
         scores_output_path="some-path",
         fingerprint_n_bits=2048,
         scores_decimals=5,
@@ -99,16 +97,14 @@ def test_run_training_flow(
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
     flow_params = TrainingFlowParameters(
-        data_gtw=data_gtw,
+        fs_dgw=data_gtw,
         spectrum_dgw=spectrum_dgw,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         dataset_directory=ASSETS_DIR.parent,
-        dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
         ion_mode="positive",
         overwrite_model=True,
-        overwrite_all_spectra=True,
         scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
         fingerprint_n_bits=2048,
         scores_decimals=5,

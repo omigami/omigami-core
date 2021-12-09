@@ -194,18 +194,15 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
     spectrum_cleaner = SpectrumCleaner()
 
     flow_params = TrainingFlowParameters(
-        data_gtw=data_gtw,
+        fs_dgw=data_gtw,
         spectrum_dgw=spectrum_dgw,
-        spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
         # the three parameters below are for using cached assets instead of downloading
         dataset_directory=str(ASSETS_DIR.parent),
-        dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS_500_spectra.json",
         chunk_size=150000,
         ion_mode="positive",
         overwrite_model=True,
-        overwrite_all_spectra=True,
         # we use everything but the model path as tmpdir. We only want the model from this script
         scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
         fingerprint_n_bits=2048,

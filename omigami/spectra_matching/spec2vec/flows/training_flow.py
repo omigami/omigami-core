@@ -29,6 +29,7 @@ from omigami.spectra_matching.tasks import (
     CleanRawSpectraParameters,
     DeployModelParameters,
     DeployModel,
+    SaveCleanedSpectra,
 )
 
 
@@ -36,7 +37,7 @@ class TrainingFlowParameters:
     def __init__(
         self,
         spectrum_dgw: RedisSpectrumDataGateway,
-        data_gtw: FSDataGateway,
+        fs_dgw: FSDataGateway,
         document_dgw: SpectrumDocumentDataGateway,
         source_uri: str,
         dataset_directory: str,
@@ -57,7 +58,7 @@ class TrainingFlowParameters:
         model_name: Optional[str] = "spec2vec-model",
         experiment_name: str = "default",
     ):
-        self.data_gtw = data_gtw
+        self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
         self.document_dgw = document_dgw
         if ion_mode not in ION_MODES:
@@ -133,26 +134,30 @@ def build_training_flow(
         # if you update one return type of a task please mind the later tasks too
 
         spectrum_ids = DownloadData(
-            flow_parameters.data_gtw,
+            flow_parameters.fs_dgw,
             flow_parameters.downloading,
         )()
 
-        gnps_chunk_paths = CreateChunks(
-            flow_parameters.data_gtw,
+        raw_spectra_paths = CreateChunks(
+            flow_parameters.fs_dgw,
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        _ = CleanRawSpectra(
-            flow_parameters.data_gtw, flow_parameters.clean_raw_spectra
-        ).map(gnps_chunk_paths)
+        cleaned_spectra_paths = CleanRawSpectra(
+            flow_parameters.fs_dgw, flow_parameters.clean_raw_spectra
+        ).map(raw_spectra_paths)
+
+        _ = SaveCleanedSpectra(
+            flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
+        ).map(cleaned_spectra_paths)
 
         document_paths = CreateDocuments(
-            flow_parameters.data_gtw,
+            flow_parameters.fs_dgw,
             flow_parameters.document_dgw,
             flow_parameters.processing,
-        ).map(gnps_chunk_paths)
+        ).map(cleaned_spectra_paths)
 
-        model = TrainModel(flow_parameters.data_gtw, flow_parameters.training)(
+        model = TrainModel(flow_parameters.fs_dgw, flow_parameters.training)(
             document_paths
         )
 
@@ -161,7 +166,7 @@ def build_training_flow(
         # TODO: this task prob doesnt need chunking or can be done in larger chunks
         _ = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
-            flow_parameters.data_gtw,
+            flow_parameters.fs_dgw,
             flow_parameters.embedding,
         ).map(unmapped(model), unmapped(run_id), document_paths)
 

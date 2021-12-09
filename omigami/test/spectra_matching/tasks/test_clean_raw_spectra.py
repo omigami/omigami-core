@@ -7,7 +7,6 @@ from matchms.importing.load_from_json import as_spectrum
 from prefect import Flow
 
 from omigami.spectra_matching.storage import FSDataGateway
-from omigami.spectra_matching.tasks import CreateChunks, ChunkingParameters
 from omigami.spectra_matching.tasks.clean_raw_spectra import (
     SpectrumCleaner,
     CleanRawSpectra,
@@ -16,26 +15,12 @@ from omigami.spectra_matching.tasks.clean_raw_spectra import (
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 
-@pytest.fixture
-def previous_task(clean_chunk_files, local_gnps_small_json):
-    data_gtw = FSDataGateway()
-    output_directory = ASSETS_DIR / "raw" / "positive"
-    chunking_parameters = ChunkingParameters(
-        local_gnps_small_json, str(output_directory), 150000, "positive"
-    )
-    chunk_task = CreateChunks(
-        data_gtw=data_gtw, chunking_parameters=chunking_parameters
-    )
-
-    return chunk_task
-
-
-def test_clean_raw_spectra_run(previous_task):
+def test_clean_raw_spectra_run(create_chunks_task):
     output_dir = ASSETS_DIR / "cleaned"
     fs_dgw = FSDataGateway()
     params = CleanRawSpectraParameters(output_dir)
     t = CleanRawSpectra(fs_dgw, params)
-    chunk_paths = previous_task.run()
+    chunk_paths = create_chunks_task.run()
 
     res = t.run(chunk_paths[0])
 
@@ -44,14 +29,14 @@ def test_clean_raw_spectra_run(previous_task):
     }
 
 
-def test_clean_raw_spectra_flow(previous_task, mock_default_config):
+def test_clean_raw_spectra_flow(create_chunks_task, mock_default_config):
     output_dir = ASSETS_DIR / "cleaned"
     fs_dgw = FSDataGateway()
     params = CleanRawSpectraParameters(output_dir)
 
     with Flow("test-flow") as flow:
-        p = previous_task()
-        t = CleanRawSpectra(fs_dgw, params).map(p)
+        cc = create_chunks_task()
+        t = CleanRawSpectra(fs_dgw, params).map(cc)
 
     res = flow.run()
 

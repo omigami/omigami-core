@@ -40,7 +40,7 @@ def test_training_flow(flow_config):
     }
     flow_params = TrainingFlowParameters(
         spectrum_dgw=mock_spectrum_dgw,
-        data_gtw=mock_data_gtw,
+        fs_dgw=mock_data_gtw,
         document_dgw=mock_document_dgw,
         source_uri="source_uri",
         dataset_directory="datasets",
@@ -96,7 +96,7 @@ def test_run_training_flow(
     document_dgw = RedisSpectrumDocumentDataGateway()
     flow_params = TrainingFlowParameters(
         spectrum_dgw=spectrum_dgw,
-        data_gtw=data_gtw,
+        fs_dgw=data_gtw,
         document_dgw=document_dgw,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         dataset_directory=ASSETS_DIR.parent,

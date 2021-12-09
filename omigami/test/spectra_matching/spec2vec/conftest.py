@@ -8,13 +8,15 @@ from drfs.filesystems import get_fs
 from spec2vec import calc_vector
 from spec2vec.model_building import train_new_word2vec_model
 
-from omigami.config import EMBEDDING_HASHES
+from omigami.config import EMBEDDING_HASHES, MLFLOW_DIRECTORY
 from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
+from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
 from omigami.spectra_matching.storage import FSDataGateway
+from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 from omigami.test.spectra_matching.tasks import DummyTask
 
@@ -167,3 +169,24 @@ def mock_deploy_model_task(monkeypatch):
         "DeployModel",
         DummyTask,
     )
+
+
+@pytest.fixture
+def registered_s2v_model(word2vec_model):
+    dgw = MLFlowDataGateway()
+    model = Spec2VecPredictor(
+        word2vec_model,
+        ion_mode="positive",
+        n_decimals=1,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=15,
+    )
+    model_run_id = dgw.register_model(
+        model=model,
+        run_name="run",
+        experiment_name="local-integration-test-s2v",
+        model_name="integration-test-model",
+        experiment_path=str(MLFLOW_DIRECTORY),
+    )
+
+    return {"run_id": model_run_id, "model": model}
