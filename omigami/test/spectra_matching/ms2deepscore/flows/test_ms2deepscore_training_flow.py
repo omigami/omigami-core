@@ -17,8 +17,8 @@ from omigami.spectra_matching.ms2deepscore.storage import (
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.storage import FSDataGateway
+from omigami.spectra_matching.tasks.clean_raw_spectra import SpectrumCleaner
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
@@ -44,7 +44,6 @@ def test_training_flow(flow_config):
     flow_parameters = TrainingFlowParameters(
         data_gtw=mock_data_gtw,
         spectrum_dgw=mock_spectrum_dgw,
-        spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
         dataset_directory="datasets",
         dataset_id="dataset-id",
@@ -98,12 +97,10 @@ def test_run_training_flow(
 
     data_gtw = MS2DeepScoreFSDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
-    spectrum_cleaner = SpectrumCleaner()
 
     flow_params = TrainingFlowParameters(
         data_gtw=data_gtw,
         spectrum_dgw=spectrum_dgw,
-        spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         dataset_directory=ASSETS_DIR.parent,
         dataset_id=ASSETS_DIR.name,
@@ -118,7 +115,7 @@ def test_run_training_flow(
         spectrum_binner_n_bins=10000,
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
         model_output_path=str(tmpdir / "model.hdf5"),
-        dataset_checkpoint_name="spectrum_ids_500.pkl",
+        # dataset_checkpoint_name="spectrum_ids_500.pkl",
         epochs=1,
         project_name="test",
         mlflow_output_directory=f"{tmpdir}/model-output",

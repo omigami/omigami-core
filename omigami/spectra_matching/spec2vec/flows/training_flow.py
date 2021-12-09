@@ -8,26 +8,25 @@ from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
     SpectrumDocumentDataGateway,
 )
 from omigami.spectra_matching.spec2vec.tasks import (
+    CreateDocumentsParameters,
+)
+from omigami.spectra_matching.spec2vec.tasks import (
     MakeEmbeddings,
-    ProcessSpectrum,
+    CreateDocuments,
     TrainModel,
     TrainModelParameters,
     RegisterModel,
     RegisterModelParameters,
     MakeEmbeddingsParameters,
 )
-from omigami.spectra_matching.spec2vec.tasks import (
-    ProcessSpectrumParameters,
-)
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.spectra_matching.tasks import (
     DownloadData,
     DownloadParameters,
     ChunkingParameters,
     CreateChunks,
-    SaveRawSpectra,
-    SaveRawSpectraParameters,
+    CleanRawSpectra,
+    CleanRawSpectraParameters,
     DeployModelParameters,
     DeployModel,
 )
@@ -39,7 +38,6 @@ class TrainingFlowParameters:
         spectrum_dgw: RedisSpectrumDataGateway,
         data_gtw: FSDataGateway,
         document_dgw: SpectrumDocumentDataGateway,
-        spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         dataset_directory: str,
         chunk_size: int,
@@ -76,10 +74,10 @@ class TrainingFlowParameters:
             chunk_size=chunk_size,
             ion_mode=ion_mode,
         )
-        self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, data_gtw, spectrum_cleaner
+        self.clean_raw_spectra = CleanRawSpectraParameters(
+            output_directory=f"{dataset_directory}/cleaned/{ion_mode}"
         )
-        self.processing = ProcessSpectrumParameters(
+        self.processing = CreateDocumentsParameters(
             spectrum_dgw,
             documents_save_directory,
             ion_mode,
@@ -139,20 +137,20 @@ def build_training_flow(
             flow_parameters.downloading,
         )()
 
-        gnps_chunks = CreateChunks(
+        gnps_chunk_paths = CreateChunks(
             flow_parameters.data_gtw,
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        chunked_spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
-            gnps_chunks
-        )
+        _ = CleanRawSpectra(
+            flow_parameters.data_gtw, flow_parameters.clean_raw_spectra
+        ).map(gnps_chunk_paths)
 
-        document_paths = ProcessSpectrum(
+        document_paths = CreateDocuments(
             flow_parameters.data_gtw,
             flow_parameters.document_dgw,
             flow_parameters.processing,
-        ).map(chunked_spectrum_ids)
+        ).map(gnps_chunk_paths)
 
         model = TrainModel(flow_parameters.data_gtw, flow_parameters.training)(
             document_paths

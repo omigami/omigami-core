@@ -224,6 +224,10 @@ def clean_chunk_files():
     if chunk_root.exists():
         shutil.rmtree(chunk_root)
 
+    cleaned_root = ASSETS_DIR / "cleaned"
+    if cleaned_root.exists():
+        shutil.rmtree(cleaned_root)
+
 
 @pytest.fixture()
 def fitted_spectrum_binner_path():

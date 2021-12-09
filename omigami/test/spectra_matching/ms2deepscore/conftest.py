@@ -25,7 +25,7 @@ from omigami.spectra_matching.ms2deepscore.storage import (
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.tasks.clean_raw_spectra import SpectrumCleaner
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 from omigami.test.spectra_matching.tasks import DummyTask
 

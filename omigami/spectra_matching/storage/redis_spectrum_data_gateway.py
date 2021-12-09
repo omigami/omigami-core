@@ -24,7 +24,7 @@ class RedisSpectrumDataGateway(RedisDataGateway):
     """Data gateway for Redis storage."""
 
     def write_raw_spectra(self, spectra: List[Spectrum]):
-        """Writes a list of raw spectra to the redis database unsing the spectrum_id as the key.
+        """Writes a list of raw spectra to the redis database using the spectrum_id as the key.
 
         Parameters
         ----------

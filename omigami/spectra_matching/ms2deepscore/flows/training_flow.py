@@ -28,14 +28,13 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     TrainModelParameters,
     TrainModel,
 )
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.tasks import (
     DownloadParameters,
     DownloadData,
     ChunkingParameters,
     CreateChunks,
-    SaveRawSpectraParameters,
-    SaveRawSpectra,
+    CleanRawSpectraParameters,
+    CleanRawSpectra,
     DeployModelParameters,
     DeployModel,
 )
@@ -46,7 +45,6 @@ class TrainingFlowParameters:
         self,
         data_gtw: MS2DeepScoreFSDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
-        spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         dataset_directory: str,
         dataset_id: str,
@@ -70,7 +68,6 @@ class TrainingFlowParameters:
         spectrum_ids_chunk_size: int = 10000,
         schedule_task_days: Optional[int] = 30,
         dataset_name: str = "gnps.json",
-        dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
     ):
         self.data_gtw = data_gtw
@@ -94,18 +91,19 @@ class TrainingFlowParameters:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         self.downloading = DownloadParameters(
-            source_uri,
-            dataset_directory,
-            dataset_id,
-            dataset_name,
-            dataset_checkpoint_name,
+            source_uri=source_uri,
+            output_directory=dataset_directory,
+            file_name=dataset_name,
         )
 
         self.chunking = ChunkingParameters(
-            self.downloading.download_path, chunk_size, ion_mode
+            input_file=self.downloading.download_path,
+            output_directory=f"{dataset_directory}/raw/{ion_mode}",
+            chunk_size=chunk_size,
+            ion_mode=ion_mode,
         )
-        self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, data_gtw, spectrum_cleaner, overwrite_all_spectra
+        self.clean_raw_spectra = CleanRawSpectraParameters(
+            output_directory=f"{dataset_directory}/cleaned/{ion_mode}"
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
@@ -169,20 +167,20 @@ def build_training_flow(
             flow_parameters.downloading,
         )()
 
-        gnps_chunks = CreateChunks(
+        gnps_chunk_paths = CreateChunks(
             flow_parameters.data_gtw,
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        spectrum_ids_chunks = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
-            gnps_chunks
-        )
+        cleaned_paths = CleanRawSpectra(
+            flow_parameters.data_gtw, flow_parameters.clean_raw_spectra
+        ).map(gnps_chunk_paths)
 
         processed_ids = ProcessSpectrum(
             flow_parameters.data_gtw,
             flow_parameters.spectrum_dgw,
             flow_parameters.process_spectrum,
-        )(spectrum_ids_chunks)
+        )(cleaned_paths)
 
         scores_output_path = CalculateTanimotoScore(
             flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score

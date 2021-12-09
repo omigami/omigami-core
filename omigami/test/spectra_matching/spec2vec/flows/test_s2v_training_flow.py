@@ -19,7 +19,6 @@ from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
 from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
     SpectrumDocumentDataGateway,
 )
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
@@ -30,7 +29,6 @@ def test_training_flow(flow_config):
     mock_spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
     mock_data_gtw = MagicMock(spec=FSDataGateway)
     mock_document_dgw = MagicMock(spec=SpectrumDocumentDataGateway)
-    mock_cleaner = MagicMock(spec=SpectrumCleaner)
     expected_tasks = {
         "DownloadData",
         "CreateChunks",
@@ -44,10 +42,8 @@ def test_training_flow(flow_config):
         spectrum_dgw=mock_spectrum_dgw,
         data_gtw=mock_data_gtw,
         document_dgw=mock_document_dgw,
-        spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
         dataset_directory="datasets",
-        dataset_id="dataset-id",
         chunk_size=150000,
         ion_mode="positive",
         n_decimals=2,
@@ -98,15 +94,12 @@ def test_run_training_flow(
     spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
     data_gtw = FSDataGateway()
     document_dgw = RedisSpectrumDocumentDataGateway()
-    spectrum_cleaner = SpectrumCleaner()
     flow_params = TrainingFlowParameters(
         spectrum_dgw=spectrum_dgw,
         data_gtw=data_gtw,
         document_dgw=document_dgw,
-        spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
         dataset_directory=ASSETS_DIR.parent,
-        dataset_id=ASSETS_DIR.name,
         dataset_name="SMALL_GNPS.json",
         chunk_size=int(1e8),
         ion_mode="positive",

@@ -33,7 +33,6 @@ from omigami.spectra_matching.spec2vec.flows.training_flow import (
 from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
     RedisSpectrumDocumentDataGateway,
 )
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 
 
@@ -93,9 +92,8 @@ class Spec2VecFlowFactory:
             storage_root=STORAGE_ROOT,
         )
 
-        spectrum_dgw = RedisSpectrumDataGateway(project=project_name)
+        spectrum_dgw = RedisSpectrumDataGateway()
         data_gtw = FSDataGateway()
-        spectrum_cleaner = SpectrumCleaner()
         document_dgw = RedisSpectrumDocumentDataGateway()
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
@@ -103,7 +101,6 @@ class Spec2VecFlowFactory:
             data_gtw=data_gtw,
             spectrum_dgw=spectrum_dgw,
             document_dgw=document_dgw,
-            spectrum_cleaner=spectrum_cleaner,
             dataset_directory=str(self._dataset_directory / dataset_id),
             ion_mode=ion_mode,
             n_decimals=n_decimals,
@@ -142,7 +139,6 @@ class Spec2VecFlowFactory:
         dataset_id: str,
         n_decimals: int = 2,
         ion_mode: IonModes = "positive",
-        project_name: str = PROJECT_NAME,
     ) -> Flow:
         """Creates all configuration/gateways objects used by the model deployment flow,
         and builds the training flow with them.
@@ -164,7 +160,7 @@ class Spec2VecFlowFactory:
             storage_root=STORAGE_ROOT,
         )
 
-        spectrum_dgw = RedisSpectrumDataGateway(project=project_name)
+        spectrum_dgw = RedisSpectrumDataGateway()
         fs_dgw = FSDataGateway()
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())

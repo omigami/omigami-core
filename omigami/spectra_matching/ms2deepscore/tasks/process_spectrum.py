@@ -48,14 +48,14 @@ class ProcessSpectrum(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, spectrum_ids_chunks: List[Set[str]] = None) -> Set[str]:
+    def run(self, cleaned_paths: List[Set[str]] = None) -> Set[str]:
         """
         Prefect task to clean spectra and create binned spectra from cleaned spectra.
         Binned spectra are saved to REDIS DB and filesystem.
 
         Parameters
         ----------
-        spectrum_ids_chunks: List[Set[str]]
+        cleaned_paths: List[Set[str]]
             spectrum_ids defined in the set of chunks. If it is not passed, then method
             cleans and creates binned spectra for the existing ones in DB.
 

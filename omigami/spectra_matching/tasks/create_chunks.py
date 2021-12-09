@@ -22,7 +22,7 @@ class ChunkingParameters:
 
     @property
     def checkpoint_file(self) -> str:
-        return f"{self.output_directory}/chunk_paths.pickle"
+        return f"{self.output_directory}/raw_chunk_paths.pickle"
 
 
 class CreateChunks(Task):

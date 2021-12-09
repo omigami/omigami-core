@@ -10,7 +10,6 @@ from matchms.importing.load_from_json import as_spectrum
 from matchmsextras.pubchem_lookup import pubchem_metadata_lookup
 
 from omigami.common.progress_logger import TaskProgressLogger
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 
 INCORRECT_LAST_WORDS = [
     "M",
@@ -25,7 +24,7 @@ INCORRECT_LAST_WORDS = [
 ]
 
 
-class SpectrumProcessor(SpectrumCleaner):
+class SpectrumProcessor:
     def __init__(self, is_pretrained_flow: bool = False):
         self._is_pretrained_flow = is_pretrained_flow
 
@@ -40,10 +39,6 @@ class SpectrumProcessor(SpectrumCleaner):
             if type(spectrum) == dict:
                 spectrum = as_spectrum(spectrum)
             if spectrum is not None:
-                if self._is_pretrained_flow:
-                    spectrum = self._select_ion_mode(spectrum)
-                    spectrum = self._common_cleaning(spectrum)  # this is only until
-                    # all the saved spectra are not cleaned
                 spectrum = normalize_intensities(spectrum)
                 spectrum = self._apply_ms2deepscore_filters(spectrum)
                 if process_reference_spectra:

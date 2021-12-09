@@ -29,9 +29,7 @@ def test_create_chunks(
     )
     with Flow("test-flow") as test_flow:
         chunks = CreateChunks(
-            data_gtw=data_gtw,
-            chunking_parameters=chunking_parameters,
-            **TEST_TASK_CONFIG,
+            data_gtw=data_gtw, chunking_parameters=chunking_parameters
         )(spectrum_ids)
 
     res = test_flow.run()

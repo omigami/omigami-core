@@ -14,7 +14,6 @@ from omigami.config import (
 )
 from omigami.flow_config import (
     make_flow_config,
-    PrefectStorageMethods,
     PrefectExecutorMethods,
 )
 from omigami.spectra_matching.ms2deepscore.config import (
@@ -37,7 +36,7 @@ from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
 from omigami.spectra_matching.ms2deepscore.storage.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
+from omigami.spectra_matching.tasks.clean_raw_spectra import SpectrumCleaner
 
 
 class MS2DeepScoreFlowFactory:
@@ -112,7 +111,6 @@ class MS2DeepScoreFlowFactory:
         flow_parameters = TrainingFlowParameters(
             data_gtw=data_gtw,
             spectrum_dgw=spectrum_dgw,
-            spectrum_cleaner=spectrum_cleaner,
             source_uri=source_uri,
             dataset_directory=self._dataset_directory,
             dataset_id=self._dataset_ids[dataset_id].format(date=datetime.today()),
