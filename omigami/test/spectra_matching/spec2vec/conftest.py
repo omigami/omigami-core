@@ -9,12 +9,8 @@ from spec2vec import calc_vector
 from spec2vec.model_building import train_new_word2vec_model
 
 from omigami.config import EMBEDDING_HASHES, MLFLOW_DIRECTORY
-from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
-from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
-    RedisSpectrumDocumentDataGateway,
-)
 from omigami.spectra_matching.storage import FSDataGateway
 from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
@@ -30,7 +26,6 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
         for i in range(0, len(documents_data), chunk_size)
     ]
 
-    dgw = RedisSpectrumDocumentDataGateway(project=PROJECT_NAME)
     fs_dgw = FSDataGateway()
 
     fs = get_fs(s3_documents_directory)
@@ -39,7 +34,6 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
 
     for i, documents in enumerate(documents_data):
         doc_path = f"{s3_documents_directory}/test{i}.pickle"
-        dgw.write_documents(documents, "positive")
         fs_dgw.serialize_to_file(doc_path, documents)
 
     return list(itertools.chain.from_iterable(documents_data))

@@ -5,7 +5,7 @@ import pytest
 from prefect import Flow
 
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
-from omigami.spectra_matching.tasks import SaveCleanedSpectra
+from omigami.spectra_matching.tasks import CacheCleanedSpectra
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def empty_database(spectrum_ids):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_save_cleaned_spectra_empty_db(cleaned_spectra_paths, empty_database):
+def test_cache_cleaned_spectra_empty_db(cleaned_spectra_paths, empty_database):
     fs_dgw = FSDataGateway()
     expected_ids = {
         sp.metadata["spectrum_id"]
@@ -25,7 +25,7 @@ def test_save_cleaned_spectra_empty_db(cleaned_spectra_paths, empty_database):
     }
     spectrum_dgw = RedisSpectrumDataGateway()
 
-    t = SaveCleanedSpectra(spectrum_dgw, fs_dgw)
+    t = CacheCleanedSpectra(spectrum_dgw, fs_dgw)
     data = t.run(cleaned_spectra_paths[0])
 
     assert len(data) == 36  # 36 positive in the first chunk
@@ -37,7 +37,7 @@ def test_save_cleaned_spectra_empty_db(cleaned_spectra_paths, empty_database):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_save_cleaned_spectra(cleaned_spectra_paths, cleaned_spectra, empty_database):
+def test_cache_cleaned_spectra(cleaned_spectra_paths, cleaned_spectra, empty_database):
     """On this test some spectra will already be present in redis"""
     spectrum_dgw = RedisSpectrumDataGateway()
     first_36_spectra = cleaned_spectra[0]
@@ -46,7 +46,7 @@ def test_save_cleaned_spectra(cleaned_spectra_paths, cleaned_spectra, empty_data
 
     # We want to see if this method gets called with the remaining half of spectra
     spectrum_dgw.write_raw_spectra = Mock()
-    t = SaveCleanedSpectra(spectrum_dgw, FSDataGateway())
+    t = CacheCleanedSpectra(spectrum_dgw, FSDataGateway())
     data = t.run(cleaned_spectra_paths[0])
 
     assert len(data) == 36
@@ -57,11 +57,11 @@ def test_save_cleaned_spectra(cleaned_spectra_paths, cleaned_spectra, empty_data
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_save_cleaned_spectrum_map(cleaned_spectra_paths, empty_database):
+def test_cache_cleaned_spectrum_map(cleaned_spectra_paths, empty_database):
     spectrum_dgw = RedisSpectrumDataGateway()
 
     with Flow("test-flow") as test_flow:
-        raw_spectra = SaveCleanedSpectra(
+        raw_spectra = CacheCleanedSpectra(
             RedisSpectrumDataGateway(), FSDataGateway()
         ).map(cleaned_spectra_paths)
 

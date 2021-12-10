@@ -7,7 +7,7 @@ from omigami.spectra_matching.storage import RedisSpectrumDataGateway, DataGatew
 from omigami.utils import merge_prefect_task_configs
 
 
-class SaveCleanedSpectra(Task):
+class CacheCleanedSpectra(Task):
     """
     Prefect task to save the raw spectra passed to it.
     """
@@ -28,7 +28,8 @@ class SaveCleanedSpectra(Task):
 
     def run(self, spectra_path: str = None) -> List[str]:
         """
-        TODO
+        Saves cleaned spectra to a cached database that will be later used by the
+        seldon deployment.
 
         Parameters:
         ----------

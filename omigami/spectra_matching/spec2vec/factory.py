@@ -30,9 +30,6 @@ from omigami.spectra_matching.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
     build_training_flow,
 )
-from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
-    RedisSpectrumDocumentDataGateway,
-)
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 
 
@@ -67,7 +64,7 @@ class Spec2VecFlowFactory:
         ion_mode: IonModes = "positive",
         overwrite_all_spectra: bool = False,
         overwrite_model: bool = False,
-        project_name: str = PROJECT_NAME,
+        experiment_name: str = PROJECT_NAME,
         deploy_model: bool = False,
         chunk_size: int = CHUNK_SIZE,
     ) -> Flow:
@@ -94,13 +91,11 @@ class Spec2VecFlowFactory:
 
         spectrum_dgw = RedisSpectrumDataGateway()
         fs_dgw = FSDataGateway()
-        document_dgw = RedisSpectrumDocumentDataGateway()
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
             spectrum_dgw=spectrum_dgw,
-            document_dgw=document_dgw,
             dataset_directory=str(self._dataset_directory / dataset_id),
             ion_mode=ion_mode,
             n_decimals=n_decimals,
@@ -111,13 +106,15 @@ class Spec2VecFlowFactory:
             chunk_size=chunk_size,
             source_uri=source_uri,
             overwrite_model=overwrite_model,
-            overwrite_all_spectra=overwrite_all_spectra,
             documents_save_directory=str(
-                self._spec2vec_root / self._document_dirs[ion_mode] / dataset_id
+                self._spec2vec_root
+                / self._document_dirs[ion_mode]
+                / dataset_id
+                / f"{n_decimals}_decimals"
             ),
             model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=self._mlflow_output_directory,
-            experiment_name=project_name,
+            experiment_name=experiment_name,
             redis_db=self._redis_dbs[dataset_id],
         )
 

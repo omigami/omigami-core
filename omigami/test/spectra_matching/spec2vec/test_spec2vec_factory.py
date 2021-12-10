@@ -21,7 +21,7 @@ def test_build_training_flow():
         source_uri="None",
         overwrite_all_spectra=False,
         overwrite_model=True,
-        project_name="Raging Flow",
+        experiment_name="Raging Flow",
         deploy_model=False,
         chunk_size=int(1e8),
     )

@@ -37,7 +37,7 @@ from omigami.spectra_matching.tasks import (
     CleanRawSpectra,
     DeployModelParameters,
     DeployModel,
-    SaveCleanedSpectra,
+    CacheCleanedSpectra,
 )
 
 
@@ -175,7 +175,7 @@ def build_training_flow(
             flow_parameters.fs_dgw, flow_parameters.clean_raw_spectra
         ).map(gnps_chunk_paths)
 
-        cleaned_spectrum_ids = SaveCleanedSpectra(
+        cleaned_spectrum_ids = CacheCleanedSpectra(
             flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
         ).map(cleaned_spectra_paths)
 

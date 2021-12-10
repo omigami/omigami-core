@@ -42,7 +42,7 @@ def run_spec2vec_training_flow(
     factory = Spec2VecFlowFactory(dataset_directory=dataset_directory)
     flow = factory.build_training_flow(
         image=image,
-        project_name=project_name,
+        experiment_name=project_name,
         flow_name=flow_name,
         dataset_id=dataset_id,
         source_uri=source_uri,

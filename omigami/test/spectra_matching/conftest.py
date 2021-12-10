@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 import s3fs
 from moto import mock_s3
-from prefect import Client
+from prefect import Client, Flow
 from pytest_redis import factories
 
 import omigami
@@ -26,6 +26,12 @@ from omigami.flow_config import make_flow_config, PrefectExecutorMethods
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
+from omigami.spectra_matching.tasks import (
+    ChunkingParameters,
+    CreateChunks,
+    CleanRawSpectraParameters,
+    CleanRawSpectra,
+)
 
 ASSETS_DIR = Path(__file__).parents[1] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=pd.Timedelta(seconds=0.1))
@@ -276,3 +282,42 @@ def monitor_flow_results(client: Client, flow_run_id: str):
 
         if flow_duration > 60:
             raise TimeoutError("Flow timeout. Check flow logs.")
+
+
+@pytest.fixture
+def create_chunks_task(clean_chunk_files, local_gnps_small_json):
+    data_gtw = FSDataGateway()
+    output_directory = ASSETS_DIR / "raw" / "positive"
+    chunking_parameters = ChunkingParameters(
+        local_gnps_small_json, str(output_directory), 150000, "positive"
+    )
+    t = CreateChunks(data_gtw=data_gtw, chunking_parameters=chunking_parameters)
+
+    return t
+
+
+@pytest.fixture
+def clean_spectra_task():
+    output_dir = ASSETS_DIR / "cleaned"
+    fs_dgw = FSDataGateway()
+    params = CleanRawSpectraParameters(output_dir)
+    t = CleanRawSpectra(fs_dgw, params)
+
+    return t
+
+
+@pytest.fixture()
+def cleaned_spectra_paths(create_chunks_task, clean_spectra_task):
+    with Flow("test-flow") as flow:
+        cc = create_chunks_task()
+        cs = clean_spectra_task.map(cc)
+
+    res = flow.run()
+
+    return res.result[cs].result
+
+
+@pytest.fixture
+def cleaned_spectra(cleaned_spectra_paths):
+    fs_dgw = FSDataGateway()
+    return [fs_dgw.read_from_file(p) for p in cleaned_spectra_paths]

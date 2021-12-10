@@ -4,9 +4,6 @@ from prefect import Flow, unmapped
 
 from omigami.config import IonModes, ION_MODES, MLFLOW_SERVER
 from omigami.flow_config import FlowConfig
-from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
-    SpectrumDocumentDataGateway,
-)
 from omigami.spectra_matching.spec2vec.tasks import (
     CreateDocumentsParameters,
 )
@@ -29,7 +26,7 @@ from omigami.spectra_matching.tasks import (
     CleanRawSpectraParameters,
     DeployModelParameters,
     DeployModel,
-    SaveCleanedSpectra,
+    CacheCleanedSpectra,
 )
 
 
@@ -38,13 +35,11 @@ class TrainingFlowParameters:
         self,
         spectrum_dgw: RedisSpectrumDataGateway,
         fs_dgw: FSDataGateway,
-        document_dgw: SpectrumDocumentDataGateway,
         source_uri: str,
         dataset_directory: str,
         chunk_size: int,
         ion_mode: IonModes,
         n_decimals: int,
-        overwrite_all_spectra: bool,
         iterations: int,
         window: int,
         mlflow_output_directory: str,
@@ -60,7 +55,6 @@ class TrainingFlowParameters:
     ):
         self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
-        self.document_dgw = document_dgw
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
@@ -78,12 +72,10 @@ class TrainingFlowParameters:
         self.clean_raw_spectra = CleanRawSpectraParameters(
             output_directory=f"{dataset_directory}/cleaned/{ion_mode}"
         )
-        self.processing = CreateDocumentsParameters(
-            spectrum_dgw,
-            documents_save_directory,
-            ion_mode,
-            n_decimals,
-            overwrite_all_spectra,
+        self.create_documents = CreateDocumentsParameters(
+            output_directory=documents_save_directory,
+            ion_mode=ion_mode,
+            n_decimals=n_decimals,
         )
         self.training = TrainModelParameters(iterations, window)
         self.registering = RegisterModelParameters(
@@ -147,14 +139,13 @@ def build_training_flow(
             flow_parameters.fs_dgw, flow_parameters.clean_raw_spectra
         ).map(raw_spectra_paths)
 
-        _ = SaveCleanedSpectra(
+        _ = CacheCleanedSpectra(
             flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
         ).map(cleaned_spectra_paths)
 
         document_paths = CreateDocuments(
             flow_parameters.fs_dgw,
-            flow_parameters.document_dgw,
-            flow_parameters.processing,
+            flow_parameters.create_documents,
         ).map(cleaned_spectra_paths)
 
         model = TrainModel(flow_parameters.fs_dgw, flow_parameters.training)(

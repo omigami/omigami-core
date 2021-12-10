@@ -26,17 +26,11 @@ class CleanRawSpectraParameters:
     """
     Parameters to determine aspects of the CleanRawSpectra task
 
-    fs_dgw:
-        A InputDataaGateway that is able to load the gnps dataset
     output_directory:
-        TODO
+        Directory where the cleaned spectra will be saved
     """
 
     output_directory: str
-
-    @property
-    def checkpoint_file(self) -> str:
-        return f"{self.output_directory}/cleaned_chunk_paths.pickle"
 
 
 class CleanRawSpectra(Task):
@@ -55,7 +49,7 @@ class CleanRawSpectra(Task):
         self._spectrum_cleaner = SpectrumCleaner()
         config = merge_prefect_task_configs(kwargs)
 
-        super().__init__(**config)
+        super().__init__(**config, checkpoint=True)
 
     def run(self, raw_spectra_path: str = None) -> str:
         """
@@ -72,9 +66,9 @@ class CleanRawSpectra(Task):
 
         """
         self.logger.info(f"Loading spectra from {raw_spectra_path}.")
-        output_path = f"{self._output_directory}/{DRPath(raw_spectra_path).name}"
+        output_path = f"{self._output_directory}/{DRPath(raw_spectra_path).stem}.pickle"
 
-        if DRPath(output_path).exists():
+        if DRPath(output_path).exists() and self.checkpoint:
             self.logger.info(f"Using cached result at {output_path}")
             return output_path
 
