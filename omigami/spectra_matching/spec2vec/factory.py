@@ -18,7 +18,6 @@ from omigami.flow_config import (
     PrefectExecutorMethods,
 )
 from omigami.spectra_matching.spec2vec.config import (
-    PROJECT_NAME,
     DOCUMENT_DIRECTORIES,
     SPEC2VEC_ROOT,
 )
@@ -51,6 +50,7 @@ class Spec2VecFlowFactory:
 
     def build_training_flow(
         self,
+        project_name: str,
         flow_name: str,
         image: str,
         iterations: int,
@@ -64,7 +64,6 @@ class Spec2VecFlowFactory:
         ion_mode: IonModes = "positive",
         overwrite_all_spectra: bool = False,
         overwrite_model: bool = False,
-        experiment_name: str = PROJECT_NAME,
         deploy_model: bool = False,
         chunk_size: int = CHUNK_SIZE,
     ) -> Flow:
@@ -89,7 +88,7 @@ class Spec2VecFlowFactory:
             storage_root=STORAGE_ROOT,
         )
 
-        spectrum_dgw = RedisSpectrumDataGateway()
+        spectrum_dgw = RedisSpectrumDataGateway(project_name)
         fs_dgw = FSDataGateway()
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
@@ -114,7 +113,7 @@ class Spec2VecFlowFactory:
             ),
             model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=self._mlflow_output_directory,
-            experiment_name=experiment_name,
+            experiment_name=project_name,
             redis_db=self._redis_dbs[dataset_id],
         )
 
@@ -129,6 +128,7 @@ class Spec2VecFlowFactory:
 
     def build_model_deployment_flow(
         self,
+        project_name: str,
         flow_name: str,
         image: str,
         intensity_weighting_power: float,
@@ -157,7 +157,7 @@ class Spec2VecFlowFactory:
             storage_root=STORAGE_ROOT,
         )
 
-        spectrum_dgw = RedisSpectrumDataGateway()
+        spectrum_dgw = RedisSpectrumDataGateway(project_name)
         fs_dgw = FSDataGateway()
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())

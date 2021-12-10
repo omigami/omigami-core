@@ -111,23 +111,20 @@ class RedisSpectrumDataGateway(RedisDataGateway):
         self,
         embeddings: List[Embedding],
         ion_mode: str,
-        run_id: str,
         logger: Logger = None,
     ):
         """Write embeddings data on the redis database."""
         self._init_client()
-        embeddings_key = self._format_redis_key(
-            hashes=EMBEDDING_HASHES, ion_mode=ion_mode, run_id=run_id
-        )
+        hash_key = self._format_redis_key(hashes=EMBEDDING_HASHES, ion_mode=ion_mode)
         if logger:
             logger.debug(
                 f"Saving {len(embeddings)} embeddings to the client {self.client}"
-                f" on hash '{embeddings_key}'."
+                f" on hash '{hash_key}'."
             )
         pipe = self.client.pipeline()
         for embedding in embeddings:
             pipe.hset(
-                embeddings_key,
+                hash_key,
                 embedding.spectrum_id,
                 pickle.dumps(embedding),
             )
@@ -140,8 +137,6 @@ class RedisSpectrumDataGateway(RedisDataGateway):
         Return a list of Embedding objects."""
         self._init_client()
         return self._read_hashes(
-            self._format_redis_key(
-                hashes=EMBEDDING_HASHES, ion_mode=ion_mode, run_id=run_id
-            ),
+            self._format_redis_key(hashes=EMBEDDING_HASHES, ion_mode=ion_mode),
             spectrum_ids,
         )

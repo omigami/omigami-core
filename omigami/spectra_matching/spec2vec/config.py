@@ -9,8 +9,7 @@ class Configuration(confuse.Configuration):
 
 
 config = Configuration("omigami/spec2vec", __name__)
-PROJECT_NAME = config["prefect"]["project"].get(str)
-SPEC2VEC_ROOT = STORAGE_ROOT / PROJECT_NAME
+SPEC2VEC_ROOT = STORAGE_ROOT / "spec2vec"
 
 DOCUMENT_DIRECTORIES = config["storage"]["documents"].get(dict)
 

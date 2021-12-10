@@ -59,6 +59,7 @@ class CreateDocuments(Task):
         )
 
         if DRPath(document_output_path).exists() and self.checkpoint:
+            self.logger.info(f"Using cached existing file on {document_output_path}")
             return document_output_path
 
         self.logger.info(

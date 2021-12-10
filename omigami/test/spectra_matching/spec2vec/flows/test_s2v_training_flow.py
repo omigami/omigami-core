@@ -8,7 +8,7 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
+from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
@@ -25,8 +25,9 @@ def test_training_flow(flow_config):
     expected_tasks = {
         "DownloadData",
         "CreateChunks",
-        "SaveRawSpectra",
-        "ProcessSpectrum",
+        "CleanRawSpectra",
+        "CacheCleanedSpectra",
+        "CreateDocuments",
         "MakeEmbeddings",
         "RegisterModel",
         "TrainModel",
@@ -40,7 +41,6 @@ def test_training_flow(flow_config):
         ion_mode="positive",
         n_decimals=2,
         overwrite_model=True,
-        overwrite_all_spectra=False,
         iterations=25,
         window=500,
         experiment_name="test",
@@ -83,19 +83,18 @@ def test_run_training_flow(
     fs = get_fs(mlflow_root)
     ion_mode = "positive"
 
-    spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
+    spectrum_dgw = RedisSpectrumDataGateway(project=SPEC2VEC_PROJECT_NAME)
     data_gtw = FSDataGateway()
     flow_params = TrainingFlowParameters(
         spectrum_dgw=spectrum_dgw,
         fs_dgw=data_gtw,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
-        dataset_directory=ASSETS_DIR.parent,
+        dataset_directory=ASSETS_DIR,
         dataset_name="SMALL_GNPS.json",
         chunk_size=int(1e8),
         ion_mode="positive",
         n_decimals=1,
         overwrite_model=True,
-        overwrite_all_spectra=True,
         iterations=3,
         window=200,
         experiment_name="test",
@@ -119,8 +118,8 @@ def test_run_training_flow(
 
     assert flow_run.is_successful()
     flow_run.result[download_task].is_cached()
-    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 2
-    assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
+    assert len(fs.ls(ASSETS_DIR / "raw/positive")) == 2
+    assert fs.exists(ASSETS_DIR / "raw/positive/raw_chunk_paths.pickle")
 
     run_id = flow_run.result[register_task].result
     artifact_uri = mlflow.get_run(run_id).info.artifact_uri

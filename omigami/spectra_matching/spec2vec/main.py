@@ -5,12 +5,12 @@ import pandas as pd
 from omigami.authentication.prefect_factory import prefect_client_factory
 from omigami.config import IonModes
 from omigami.deployer import FlowDeployer
+from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 
 
 def run_spec2vec_training_flow(
     image: Optional[str],
-    project_name: str,
     flow_name: str,
     dataset_id: str,
     source_uri: str,
@@ -25,6 +25,7 @@ def run_spec2vec_training_flow(
     overwrite_all_spectra: bool,
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
+    project_name: str = SPEC2VEC_PROJECT_NAME,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a Spec2Vec model training flow.
@@ -42,7 +43,7 @@ def run_spec2vec_training_flow(
     factory = Spec2VecFlowFactory(dataset_directory=dataset_directory)
     flow = factory.build_training_flow(
         image=image,
-        experiment_name=project_name,
+        project_name=project_name,
         flow_name=flow_name,
         dataset_id=dataset_id,
         source_uri=source_uri,
@@ -67,7 +68,6 @@ def run_spec2vec_training_flow(
 def run_deploy_spec2vec_model_flow(
     model_run_id: str,
     image: str,
-    project_name: str,
     flow_name: str,
     dataset_id: str,
     ion_mode: IonModes,
@@ -75,6 +75,7 @@ def run_deploy_spec2vec_model_flow(
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
     dataset_directory: str = None,
+    project_name: str = SPEC2VEC_PROJECT_NAME,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a model deployment flow.

@@ -41,13 +41,12 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
 
 @pytest.fixture()
 def spec2vec_embeddings_stored(redis_db, cleaned_data, spec2vec_embeddings):
-    run_id = "1"
     project = "spec2vec"
     ion_mode = "positive"
     pipe = redis_db.pipeline()
     for embedding in spec2vec_embeddings:
         pipe.hset(
-            f"{EMBEDDING_HASHES}_{project}_{ion_mode}_{run_id}",
+            f"{EMBEDDING_HASHES}_{project}_{ion_mode}",
             embedding.spectrum_id,
             pickle.dumps(embedding),
         )

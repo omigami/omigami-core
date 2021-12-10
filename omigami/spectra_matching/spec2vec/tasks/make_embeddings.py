@@ -100,6 +100,6 @@ class MakeEmbeddings(Task):
         )
         self.logger.debug(f"Using Redis DB {REDIS_DB} and model id {model_run_id}.")
         self._redis_spectrum_dgw.write_embeddings(
-            embeddings, self._ion_mode, model_run_id, self.logger
+            embeddings, self._ion_mode, self.logger
         )
         return set(doc.get("spectrum_id") for doc in documents)

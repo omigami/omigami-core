@@ -6,7 +6,7 @@ from matchms.importing.load_from_json import as_spectrum
 from pytest_redis import factories
 
 from omigami.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
-from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
+from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 
 redis_db = factories.redisdb("redis_nooproc")
@@ -19,7 +19,7 @@ pytestmark = pytest.mark.skipif(
 
 def test_list_spectrum_ids(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
-    dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
+    dgw = RedisSpectrumDataGateway(project=SPEC2VEC_PROJECT_NAME)
     ids = dgw.list_spectrum_ids()
     assert len(ids) == len(spectrum_ids_stored)
 
