@@ -15,7 +15,6 @@ from pytest_redis import factories
 
 import omigami
 import omigami.utils
-from omigami.authentication.prefect_factory import prefect_client_factory
 from omigami.config import (
     MLFLOW_SERVER,
     SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET,
@@ -238,17 +237,12 @@ def fitted_spectrum_binner(fitted_spectrum_binner_path):
 
 
 @pytest.fixture()
-def backend_services():
+def backend_services(prefect_service):
     """Connects to mlflow and prefect and return client objects to communicate with them"""
     mlflow.set_tracking_uri(MLFLOW_SERVER)
     mlflow_client = mlflow.tracking.MlflowClient()
 
-    prefect_client = prefect_client_factory.get()
-
-    if not prefect_client.active_tenant_id:
-        prefect_client.create_tenant("default")
-
-    return {"prefect": prefect_client, "mlflow": mlflow_client}
+    return {"prefect": prefect_service, "mlflow": mlflow_client}
 
 
 @pytest.fixture
