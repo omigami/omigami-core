@@ -36,15 +36,15 @@ class SpectraMatchingPredictorException(Exception):
 class Predictor(PythonModel):
     _run_id: str
     model: Any
-    model_error_handler = flask.Blueprint('error_handlers', __name__)  # The field is
+    model_error_handler = flask.Blueprint("error_handlers", __name__)  # The field is
     # used to register custom exceptions
 
     def __init__(self, dgw: RedisSpectrumDataGateway = None):
         self.dgw = dgw
 
     @staticmethod
-    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)  # Register the handler for
-    # an exception
+    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)  # Register
+    # the handler for an exception
     def handle_custom_error(error):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
