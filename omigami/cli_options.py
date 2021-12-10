@@ -54,13 +54,6 @@ common_training_options = [
         default=False,
     ),
     click.option(
-        "--overwrite-all-spectra",
-        is_flag=True,
-        help="Flag to overwrite all processed spectra and create them again.",
-        show_default=True,
-        default=False,
-    ),
-    click.option(
         "--dataset-directory",
         type=str,
         default=str(STORAGE_ROOT / "datasets"),

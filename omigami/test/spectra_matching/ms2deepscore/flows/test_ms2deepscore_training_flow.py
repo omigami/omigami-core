@@ -18,7 +18,6 @@ from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
 from omigami.spectra_matching.storage import FSDataGateway
-from omigami.spectra_matching.tasks.clean_raw_spectra import SpectrumCleaner
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
@@ -27,12 +26,12 @@ os.chdir(Path(__file__).parents[4])
 def test_training_flow(flow_config):
     mock_data_gtw = MagicMock(spec=FSDataGateway)
     mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
-    mock_cleaner = MagicMock(spec=SpectrumCleaner)
     flow_name = "test-flow"
     expected_tasks = {
         "DownloadData",
         "CreateChunks",
-        "SaveRawSpectra",
+        "CleanRawSpectra",
+        "CacheCleanedSpectra",
         "ProcessSpectrum",
         "CalculateTanimotoScore",
         "TrainModel",
@@ -100,7 +99,7 @@ def test_run_training_flow(
         fs_dgw=data_gtw,
         spectrum_dgw=spectrum_dgw,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
-        dataset_directory=ASSETS_DIR.parent,
+        dataset_directory=ASSETS_DIR,
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
         ion_mode="positive",
@@ -111,7 +110,6 @@ def test_run_training_flow(
         spectrum_binner_n_bins=10000,
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
         model_output_path=str(tmpdir / "model.hdf5"),
-        # dataset_checkpoint_name="spectrum_ids_500.pkl",
         epochs=1,
         project_name="test",
         mlflow_output_directory=f"{tmpdir}/model-output",
@@ -133,8 +131,8 @@ def test_run_training_flow(
 
     assert flow_run.is_successful()
     flow_run.result[download_task].is_cached()
-    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
-    assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
+    assert len(fs.ls(ASSETS_DIR / "raw/positive")) == 4
+    assert fs.exists(ASSETS_DIR / "raw/positive/raw_chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")
 

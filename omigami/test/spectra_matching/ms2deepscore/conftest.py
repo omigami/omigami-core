@@ -25,7 +25,6 @@ from omigami.spectra_matching.ms2deepscore.storage import (
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
-from omigami.spectra_matching.tasks.clean_raw_spectra import SpectrumCleaner
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 from omigami.test.spectra_matching.tasks import DummyTask
 
@@ -175,6 +174,11 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
 
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.training_flow,
+        "DownloadData",
+        DummyTask,
+    )
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
         "MakeEmbeddings",
         DummyTask,
     )
@@ -191,7 +195,6 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
 
     data_gtw = MS2DeepScoreFSDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
-    spectrum_cleaner = SpectrumCleaner()
 
     flow_params = TrainingFlowParameters(
         fs_dgw=data_gtw,
@@ -210,7 +213,6 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
         spectrum_binner_n_bins=10000,
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
         model_output_path=str(ASSETS_DIR / "ms2deep_score.hdf5"),
-        dataset_checkpoint_name="spectrum_ids_500.pkl",
         epochs=5,
         project_name="test",
         mlflow_output_directory=f"{tmpdir}/model-output",

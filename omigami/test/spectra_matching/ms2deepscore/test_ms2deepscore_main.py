@@ -59,7 +59,6 @@ def test_mocked_deploy_training_flow(mock_objects):
         ion_mode="positive",
         deploy_model=False,
         overwrite_model=False,
-        overwrite_all_spectra=True,
         schedule=None,
         spectrum_ids_chunk_size=100,
         fingerprint_n_bits=2048,
