@@ -14,7 +14,7 @@ from omigami.spectra_matching.storage import FSDataGateway
     reason="It can only be run if the Redis is up",
 )
 def test_create_documents(
-    mock_default_config, cleaned_spectra_paths, cleaned_spectra, tmpdir
+    mock_default_config, cleaned_spectra_paths, cleaned_spectra_chunks, tmpdir
 ):
     ion_mode = "positive"
     fs_dgw = FSDataGateway()
@@ -32,7 +32,7 @@ def test_create_documents(
     assert path == f"{documents_directory}/chunk_0.pickle"
     documents = fs_dgw.read_from_file(path)
     assert isinstance(documents[0], SpectrumDocument)
-    assert len(documents) == len(cleaned_spectra[0])
+    assert len(documents) == len(cleaned_spectra_chunks[0])
 
 
 @pytest.mark.skipif(
@@ -40,7 +40,7 @@ def test_create_documents(
     reason="It can only be run if the Redis is up",
 )
 def test_create_documents_map(
-    mock_default_config, cleaned_spectra_paths, cleaned_spectra, tmpdir
+    mock_default_config, cleaned_spectra_paths, cleaned_spectra_chunks, tmpdir
 ):
     ion_mode = "positive"
     fs_dgw = FSDataGateway()

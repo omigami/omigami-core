@@ -8,10 +8,6 @@ from omigami.utils import merge_prefect_task_configs
 
 
 class CacheCleanedSpectra(Task):
-    """
-    Prefect task to save the raw spectra passed to it.
-    """
-
     def __init__(
         self,
         spectrum_dgw: RedisSpectrumDataGateway,

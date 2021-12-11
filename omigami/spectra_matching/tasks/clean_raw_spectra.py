@@ -53,7 +53,9 @@ class CleanRawSpectra(Task):
 
     def run(self, raw_spectra_path: str = None) -> str:
         """
-        TODO
+        Loads a json file containing spectra from GNPS and applies a series of cleaning
+        steps to the spectra. Some spectra might be filtered out in the process.
+        Saves the spectra to the file system.
 
         Parameters:
         ----------

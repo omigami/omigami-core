@@ -37,10 +37,12 @@ def test_cache_cleaned_spectra_empty_db(cleaned_spectra_paths, empty_database):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_cache_cleaned_spectra(cleaned_spectra_paths, cleaned_spectra, empty_database):
+def test_cache_cleaned_spectra(
+    cleaned_spectra_paths, cleaned_spectra_chunks, empty_database
+):
     """On this test some spectra will already be present in redis"""
     spectrum_dgw = RedisSpectrumDataGateway()
-    first_36_spectra = cleaned_spectra[0]
+    first_36_spectra = cleaned_spectra_chunks[0]
     saved_spectra, new_spectra = first_36_spectra[:18], first_36_spectra[18:]
     spectrum_dgw.write_raw_spectra(saved_spectra)
 

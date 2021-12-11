@@ -318,6 +318,6 @@ def cleaned_spectra_paths(create_chunks_task, clean_spectra_task):
 
 
 @pytest.fixture
-def cleaned_spectra(cleaned_spectra_paths):
+def cleaned_spectra_chunks(cleaned_spectra_paths):
     fs_dgw = FSDataGateway()
     return [fs_dgw.read_from_file(p) for p in cleaned_spectra_paths]
