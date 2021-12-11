@@ -90,7 +90,6 @@ def test_download_existing_data(mock_default_config):
         SOURCE_URI_PARTIAL_GNPS,
         ASSETS_DIR.parent,
         ASSETS_DIR.name,
-        dataset_file=file_name,
     )
 
     with Flow("test-flow") as test_flow:

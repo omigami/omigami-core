@@ -37,7 +37,7 @@ def test_create_chunks(
 
     assert res.is_successful()
     assert res_2.result[chunks].is_cached()
-    assert fs.exists(output_directory / "chunk_paths.pickle")
+    assert fs.exists(output_directory / "raw_chunk_paths.pickle")
     assert len(fs.ls(output_directory)) == expected_chunk_files + 1
     assert set(res.result[chunks].result) == set(res_2.result[chunks].result)
 

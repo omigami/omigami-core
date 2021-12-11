@@ -15,6 +15,7 @@ pytestmark = pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
+_PROJECT = "project"
 
 
 def test_list_spectrum_ids(cleaned_data, spectra_stored):
@@ -28,13 +29,13 @@ def test_list_missing_spectra(cleaned_data, spectra_stored):
     spectrum_ids_stored = [sp.metadata["spectrum_id"] for sp in cleaned_data]
     spectrum_ids_stored += ["batman", "ROBEN"]
 
-    dgw = RedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway(_PROJECT)
     spectra = dgw._list_missing_spectrum_ids("spectrum_data", spectrum_ids_stored)
     assert set(spectra) == {"batman", "ROBEN"}
 
 
 def test_read_spectra(cleaned_data, spectra_stored):
-    dgw = RedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway(_PROJECT)
     dgw._init_client()
     spectra = dgw.read_spectra()
     assert len(spectra) == len(cleaned_data)
@@ -44,7 +45,7 @@ def test_read_spectra(cleaned_data, spectra_stored):
 
 
 def test_read_spectra_ids_within_range(spectra_stored):
-    dgw = RedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway(_PROJECT)
     dgw._init_client()
     mz_min = 300
     mz_max = 600
@@ -62,7 +63,7 @@ def test_read_spectra_ids_within_range(spectra_stored):
 
 
 def test_delete_spectrum_ids(spectra_stored):
-    dgw = RedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway(_PROJECT)
     stored_ids = dgw.list_spectrum_ids()
 
     dgw.delete_spectra([stored_ids[0]])
@@ -79,6 +80,6 @@ def test_delete_spectrum_ids(spectra_stored):
 def test_write_raw_spectra(redis_db, loaded_data):
     db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data]
 
-    dgw = RedisSpectrumDataGateway()
+    dgw = RedisSpectrumDataGateway(_PROJECT)
     dgw.write_raw_spectra(db_entries)
     assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(db_entries)
