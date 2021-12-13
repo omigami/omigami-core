@@ -162,15 +162,18 @@ def mock_ms2ds_deploy_model_task(monkeypatch):
     import omigami.spectra_matching.ms2deepscore.flows.deploy_model
     import omigami.spectra_matching.ms2deepscore.flows.training_flow
 
+    class DeployModel(DummyTask):
+        pass
+
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.deploy_model,
         "DeployModel",
-        DummyTask,
+        DeployModel,
     )
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.training_flow,
         "DeployModel",
-        DummyTask,
+        DeployModel,
     )
 
 
