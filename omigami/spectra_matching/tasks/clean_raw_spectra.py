@@ -106,6 +106,11 @@ class SpectrumCleaner:
     def _apply_filters(self, spectrum: Spectrum) -> Spectrum:
         """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
+        spectrum["parent_mass"] = (
+            spectrum.metadata["exactmass"]
+            if float(spectrum.metadata["exactmass"]) > 0
+            else None
+        )
         spectrum = add_parent_mass(spectrum)
         spectrum = self._filter_negative_intensities(spectrum)
         return spectrum
