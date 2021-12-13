@@ -35,7 +35,7 @@ def test_download_gnps_and_serialize_to_local(uri, tmpdir):
     assert (tmpdir / "test-ds").exists()
 
 
-def test_download_and_serialize_to_remote(loaded_data, s3_mock):
+def test_download_and_serialize_to_remote(single_spectrum_as_json, s3_mock):
     with requests_mock.Mocker() as m:
         m.get(SOURCE_URI_PARTIAL_GNPS, text="bac")
         _ = FSDataGateway().download_gnps(

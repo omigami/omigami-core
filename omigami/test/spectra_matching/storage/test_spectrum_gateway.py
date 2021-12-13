@@ -77,8 +77,10 @@ def test_delete_spectrum_ids(spectra_stored):
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
 )
-def test_write_raw_spectra(redis_db, loaded_data):
-    db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data]
+def test_write_raw_spectra(redis_db, single_spectrum_as_json):
+    db_entries = [
+        as_spectrum(spectrum_data) for spectrum_data in single_spectrum_as_json
+    ]
 
     dgw = RedisSpectrumDataGateway(_PROJECT)
     dgw.write_raw_spectra(db_entries)
