@@ -157,12 +157,18 @@ def small_model_params(monkeypatch):
 
 
 @pytest.fixture
-def mock_deploy_model_task(monkeypatch):
+def mock_ms2ds_deploy_model_task(monkeypatch):
 
     import omigami.spectra_matching.ms2deepscore.flows.deploy_model
+    import omigami.spectra_matching.ms2deepscore.flows.training_flow
 
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.deploy_model,
+        "DeployModel",
+        DummyTask,
+    )
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
         "DeployModel",
         DummyTask,
     )

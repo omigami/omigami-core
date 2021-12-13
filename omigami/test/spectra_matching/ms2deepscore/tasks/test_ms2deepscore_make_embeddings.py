@@ -38,6 +38,6 @@ def test_make_embeddings(binned_spectra_stored, binned_spectra, siamese_model_pa
 
     state = flow.run()
     assert state.is_successful()
-    assert len(spectrum_gtw.read_embeddings("positive", "1", spectrum_ids)) == len(
+    assert len(spectrum_gtw.read_embeddings("positive", spectrum_ids)) == len(
         spectrum_ids
     )

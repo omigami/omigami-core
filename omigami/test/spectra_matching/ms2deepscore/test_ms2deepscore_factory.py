@@ -16,7 +16,7 @@ def test_build_ms2deep_training_flow():
         source_uri="URI",
         overwrite_model=True,
         project_name="Raging Flow",
-        deploy_model=False,
+        deploy_model=True,
         spectrum_ids_chunk_size=10000,
         fingerprint_n_bits=2048,
         scores_decimals=5,
@@ -25,7 +25,7 @@ def test_build_ms2deep_training_flow():
 
     assert isinstance(ms2deep_training_flow, Flow)
     assert ms2deep_training_flow.name == "MS2DeepScore Training Flow"
-    assert len(ms2deep_training_flow.tasks) == 10
+    assert len(ms2deep_training_flow.tasks) == 11
     tanimoto_task = ms2deep_training_flow.get_tasks("CalculateTanimotoScore")[0]
     assert tanimoto_task._decimals == 5
     assert ms2deep_training_flow.storage.directory == str(STORAGE_ROOT)

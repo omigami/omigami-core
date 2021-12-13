@@ -127,7 +127,7 @@ class Spec2VecPredictor(Predictor):
     ) -> Dict[str, Spec2VecEmbedding]:
         unique_ref_ids = set(item for elem in spectrum_ids for item in elem)
         unique_ref_embeddings = self.dgw.read_embeddings(
-            self.ion_mode, self._run_id, list(unique_ref_ids)
+            self.ion_mode, list(unique_ref_ids)
         )
         return {emb.spectrum_id: emb for emb in unique_ref_embeddings}
 
