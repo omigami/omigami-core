@@ -88,8 +88,8 @@ def test_download_existing_data(mock_default_config):
     fs = get_fs(ASSETS_DIR)
     params = DownloadParameters(
         SOURCE_URI_PARTIAL_GNPS,
-        ASSETS_DIR.parent,
-        ASSETS_DIR.name,
+        ASSETS_DIR,
+        file_name,
     )
 
     with Flow("test-flow") as test_flow:
