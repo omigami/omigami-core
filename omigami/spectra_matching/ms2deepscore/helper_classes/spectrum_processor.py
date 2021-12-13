@@ -25,9 +25,6 @@ INCORRECT_LAST_WORDS = [
 
 
 class SpectrumProcessor:
-    def __init__(self, is_pretrained_flow: bool = False):
-        self._is_pretrained_flow = is_pretrained_flow
-
     def process_spectra(
         self,
         spectra: Union[List[Dict], List[Spectrum]],

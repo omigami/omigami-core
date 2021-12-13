@@ -56,15 +56,19 @@ Docker image that has Prefect installed and all the packages needed for running 
 Usually, updating the requirements file should cover all the needed packages. Otherwise,
 you should update the Dockerfile.
 
-In order to publish this Docker Image, there's an auxiliary script to do this.
+In order to build Docker Images, there's an auxiliary script to do this.
 To run it, execute::
 
-    bash deploy.sh
+    bash release.sh $TAG
 
+If you also want to push the images to Dockerhub, add `--push` or `-p` parameter.
 This will push 3 images to 3 different repositories:
  - drtools/prefect
  - drtools/omigami-spec2vec
  - drtools/omigami-ms2deepscore
+::
+
+    bash release.sh $TAG --push
 
 How to run tests that require Redis locally
 -------------------------------------------

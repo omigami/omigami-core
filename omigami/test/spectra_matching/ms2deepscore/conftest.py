@@ -46,8 +46,10 @@ def positive_spectra(positive_spectra_data):
 
 
 @pytest.fixture
-def ms2deepscore_payload(loaded_data):
-    spectra = [data for data in loaded_data if data["Ion_Mode"] == "Positive"]
+def ms2deepscore_payload(single_spectrum_as_json):
+    spectra = [
+        data for data in single_spectrum_as_json if data["Ion_Mode"] == "Positive"
+    ]
     payload = {
         "data": [
             {
