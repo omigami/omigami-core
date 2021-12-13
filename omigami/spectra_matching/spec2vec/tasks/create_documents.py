@@ -35,7 +35,7 @@ class CreateDocuments(Task):
         self._output_directory = parameters.output_directory
         self._ion_mode = parameters.ion_mode
         config = merge_prefect_task_configs(kwargs)
-        super().__init__(**config, checkpoint=True)
+        super().__init__(**config)
 
     def run(self, cleaned_spectra_path: str = None) -> str:
         """
@@ -58,7 +58,7 @@ class CreateDocuments(Task):
             f"{self._output_directory}/{DRPath(cleaned_spectra_path).name}"
         )
 
-        if DRPath(document_output_path).exists() and self.checkpoint:
+        if DRPath(document_output_path).exists():
             self.logger.info(f"Using cached existing file on {document_output_path}")
             return document_output_path
 

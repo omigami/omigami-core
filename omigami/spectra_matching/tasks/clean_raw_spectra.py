@@ -49,7 +49,7 @@ class CleanRawSpectra(Task):
         self._spectrum_cleaner = SpectrumCleaner()
         config = merge_prefect_task_configs(kwargs)
 
-        super().__init__(**config, checkpoint=True)
+        super().__init__(**config)
 
     def run(self, raw_spectra_path: str = None) -> str:
         """
@@ -70,7 +70,7 @@ class CleanRawSpectra(Task):
         self.logger.info(f"Loading spectra from {raw_spectra_path}.")
         output_path = f"{self._output_directory}/{DRPath(raw_spectra_path).stem}.pickle"
 
-        if DRPath(output_path).exists() and self.checkpoint:
+        if DRPath(output_path).exists():
             self.logger.info(f"Using cached result at {output_path}")
             return output_path
 
