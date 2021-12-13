@@ -83,13 +83,14 @@ def test_write_raw_spectra(redis_db, loaded_data):
 
 def test_delete_embeddings(redis_db, ms2deepscore_embeddings_stored):
     dgw = RedisSpectrumDataGateway("ms2deepscore")
-    hkeys = redis_db.scan()[1]
+    hash_keys = redis_db.scan()[1]
     embeddings_key = dgw._format_redis_key(EMBEDDING_HASHES, "positive").encode()
-
-    assert embeddings_key in hkeys
+    # asserting for correct test setup
+    assert embeddings_key in hash_keys
 
     dgw.delete_embeddings("positive")
     updated_hkeys = redis_db.scan()[1]
 
     assert embeddings_key not in updated_hkeys
-    dgw.delete_embeddings("positive")  # to make sure it works if the key is not there
+    # Asserting deleting the key still works even if the key is not there
+    dgw.delete_embeddings("positive")
