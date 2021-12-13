@@ -202,7 +202,7 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
         spectrum_dgw=spectrum_dgw,
         source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
         # the three parameters below are for using cached assets instead of downloading
-        dataset_directory=str(ASSETS_DIR.parent),
+        dataset_directory=str(ASSETS_DIR),
         dataset_name="SMALL_GNPS_500_spectra.json",
         chunk_size=150000,
         ion_mode="positive",
