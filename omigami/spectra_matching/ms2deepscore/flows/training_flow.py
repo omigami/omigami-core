@@ -204,17 +204,16 @@ def build_training_flow(
             flow_parameters.spectrum_chunk_size, flow_parameters.spectrum_dgw
         )(processed_ids)
 
-        MakeEmbeddings(
-            flow_parameters.spectrum_dgw,
-            flow_parameters.fs_dgw,
-            flow_parameters.ion_mode,
-        ).map(
-            unmapped(train_model_output),
-            unmapped(run_id),
-            processed_chunks,
-        )
-
         if deploy_model:
+            MakeEmbeddings(
+                flow_parameters.spectrum_dgw,
+                flow_parameters.fs_dgw,
+                flow_parameters.ion_mode,
+            ).map(
+                unmapped(train_model_output),
+                unmapped(run_id),
+                processed_chunks,
+            )
             DeployModel(flow_parameters.deploying)(run_id)
 
     return training_flow

@@ -15,11 +15,6 @@ from omigami.spectra_matching.entities.embedding import Embedding
 from omigami.spectra_matching.storage import RedisDataGateway
 
 
-# when running locally, those should be set in pycharm/shell env
-# when running on the cluster, they will be gotten from the seldon env,
-# which was defined during deployment by the 'dataset_name' param
-
-
 class RedisSpectrumDataGateway(RedisDataGateway):
     """Data gateway for Redis storage."""
 
@@ -131,7 +126,7 @@ class RedisSpectrumDataGateway(RedisDataGateway):
         pipe.execute()
 
     def read_embeddings(
-        self, ion_mode: str, run_id: str, spectrum_ids: List[str] = None
+        self, ion_mode: str, spectrum_ids: List[str] = None
     ) -> List[Embedding]:
         """Read the embeddings from spectra IDs.
         Return a list of Embedding objects."""
@@ -140,3 +135,9 @@ class RedisSpectrumDataGateway(RedisDataGateway):
             self._format_redis_key(hashes=EMBEDDING_HASHES, ion_mode=ion_mode),
             spectrum_ids,
         )
+
+    def delete_embeddings(self, ion_mode: str):
+        """Deletes embeddings for a project + ion mode combination."""
+        self._init_client()
+        hash_key = self._format_redis_key(EMBEDDING_HASHES, ion_mode)
+        self.client.delete(hash_key)
