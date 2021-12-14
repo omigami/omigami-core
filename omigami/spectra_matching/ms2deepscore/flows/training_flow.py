@@ -28,34 +28,31 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     TrainModelParameters,
     TrainModel,
 )
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.tasks import (
     DownloadParameters,
     DownloadData,
     ChunkingParameters,
     CreateChunks,
-    SaveRawSpectraParameters,
-    SaveRawSpectra,
+    CleanRawSpectraParameters,
+    CleanRawSpectra,
     DeployModelParameters,
     DeployModel,
+    CacheCleanedSpectra,
 )
 
 
 class TrainingFlowParameters:
     def __init__(
         self,
-        data_gtw: MS2DeepScoreFSDataGateway,
+        fs_dgw: MS2DeepScoreFSDataGateway,
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
-        spectrum_cleaner: SpectrumCleaner,
         source_uri: str,
         dataset_directory: str,
-        dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
         scores_output_path: str,
         fingerprint_n_bits: int,
         scores_decimals: int,
-        overwrite_all_spectra: bool,
         spectrum_binner_output_path: str,
         spectrum_binner_n_bins: int,
         overwrite_model: bool,
@@ -70,10 +67,9 @@ class TrainingFlowParameters:
         spectrum_ids_chunk_size: int = 10000,
         schedule_task_days: Optional[int] = 30,
         dataset_name: str = "gnps.json",
-        dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
     ):
-        self.data_gtw = data_gtw
+        self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
         self.spectrum_chunk_size = spectrum_ids_chunk_size
         self.ion_mode = ion_mode
@@ -94,18 +90,19 @@ class TrainingFlowParameters:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         self.downloading = DownloadParameters(
-            source_uri,
-            dataset_directory,
-            dataset_id,
-            dataset_name,
-            dataset_checkpoint_name,
+            source_uri=source_uri,
+            output_directory=dataset_directory,
+            file_name=dataset_name,
         )
 
         self.chunking = ChunkingParameters(
-            self.downloading.download_path, chunk_size, ion_mode
+            input_file=self.downloading.download_path,
+            output_directory=f"{dataset_directory}/raw/{ion_mode}",
+            chunk_size=chunk_size,
+            ion_mode=ion_mode,
         )
-        self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, data_gtw, spectrum_cleaner, overwrite_all_spectra
+        self.clean_raw_spectra = CleanRawSpectraParameters(
+            output_directory=f"{dataset_directory}/cleaned/{ion_mode}"
         )
 
         self.process_spectrum = ProcessSpectrumParameters(
@@ -165,31 +162,35 @@ def build_training_flow(
         # if you update one return type of a task please mind the later tasks too
 
         spectrum_ids = DownloadData(
-            flow_parameters.data_gtw,
+            flow_parameters.fs_dgw,
             flow_parameters.downloading,
         )()
 
-        gnps_chunks = CreateChunks(
-            flow_parameters.data_gtw,
+        gnps_chunk_paths = CreateChunks(
+            flow_parameters.fs_dgw,
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        spectrum_ids_chunks = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
-            gnps_chunks
-        )
+        cleaned_spectra_paths = CleanRawSpectra(
+            flow_parameters.fs_dgw, flow_parameters.clean_raw_spectra
+        ).map(gnps_chunk_paths)
+
+        cleaned_spectrum_ids = CacheCleanedSpectra(
+            flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
+        ).map(cleaned_spectra_paths)
 
         processed_ids = ProcessSpectrum(
-            flow_parameters.data_gtw,
+            flow_parameters.fs_dgw,
             flow_parameters.spectrum_dgw,
             flow_parameters.process_spectrum,
-        )(spectrum_ids_chunks)
+        )(cleaned_spectrum_ids)
 
         scores_output_path = CalculateTanimotoScore(
             flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score
         )(processed_ids)
 
         train_model_output = TrainModel(
-            flow_parameters.data_gtw,
+            flow_parameters.fs_dgw,
             flow_parameters.spectrum_dgw,
             flow_parameters.training,
             nout=2,
@@ -205,7 +206,7 @@ def build_training_flow(
 
         MakeEmbeddings(
             flow_parameters.spectrum_dgw,
-            flow_parameters.data_gtw,
+            flow_parameters.fs_dgw,
             flow_parameters.ion_mode,
         ).map(
             unmapped(train_model_output),

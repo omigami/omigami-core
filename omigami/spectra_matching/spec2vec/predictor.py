@@ -8,7 +8,7 @@ from matchms.filtering import normalize_intensities
 from matchms.importing.load_from_json import as_spectrum
 
 from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
-from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
+from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.entities.spectrum_document import (
     SpectrumDocumentData,
@@ -41,7 +41,7 @@ class Spec2VecPredictor(Predictor):
         self.allowed_missing_percentage = allowed_missing_percentage
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self._run_id = run_id
-        super().__init__(RedisSpectrumDataGateway(PROJECT_NAME))
+        super().__init__(RedisSpectrumDataGateway(SPEC2VEC_PROJECT_NAME))
 
     def predict(
         self,

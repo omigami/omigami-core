@@ -8,18 +8,11 @@ import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import SOURCE_URI_PARTIAL_GNPS
-from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
+from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
-    RedisSpectrumDocumentDataGateway,
-)
-from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
-    SpectrumDocumentDataGateway,
-)
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
@@ -29,30 +22,25 @@ os.chdir(Path(__file__).parents[4])
 def test_training_flow(flow_config):
     mock_spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
     mock_data_gtw = MagicMock(spec=FSDataGateway)
-    mock_document_dgw = MagicMock(spec=SpectrumDocumentDataGateway)
-    mock_cleaner = MagicMock(spec=SpectrumCleaner)
     expected_tasks = {
         "DownloadData",
         "CreateChunks",
-        "SaveRawSpectra",
-        "ProcessSpectrum",
+        "CleanRawSpectra",
+        "CacheCleanedSpectra",
+        "CreateDocuments",
         "MakeEmbeddings",
         "RegisterModel",
         "TrainModel",
     }
     flow_params = TrainingFlowParameters(
         spectrum_dgw=mock_spectrum_dgw,
-        data_gtw=mock_data_gtw,
-        document_dgw=mock_document_dgw,
-        spectrum_cleaner=mock_cleaner,
+        fs_dgw=mock_data_gtw,
         source_uri="source_uri",
         dataset_directory="datasets",
-        dataset_id="dataset-id",
         chunk_size=150000,
         ion_mode="positive",
         n_decimals=2,
         overwrite_model=True,
-        overwrite_all_spectra=False,
         iterations=25,
         window=500,
         experiment_name="test",
@@ -95,24 +83,18 @@ def test_run_training_flow(
     fs = get_fs(mlflow_root)
     ion_mode = "positive"
 
-    spectrum_dgw = RedisSpectrumDataGateway(project=PROJECT_NAME)
+    spectrum_dgw = RedisSpectrumDataGateway(project=SPEC2VEC_PROJECT_NAME)
     data_gtw = FSDataGateway()
-    document_dgw = RedisSpectrumDocumentDataGateway()
-    spectrum_cleaner = SpectrumCleaner()
     flow_params = TrainingFlowParameters(
         spectrum_dgw=spectrum_dgw,
-        data_gtw=data_gtw,
-        document_dgw=document_dgw,
-        spectrum_cleaner=spectrum_cleaner,
+        fs_dgw=data_gtw,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
-        dataset_directory=ASSETS_DIR.parent,
-        dataset_id=ASSETS_DIR.name,
+        dataset_directory=ASSETS_DIR,
         dataset_name="SMALL_GNPS.json",
         chunk_size=int(1e8),
         ion_mode="positive",
         n_decimals=1,
         overwrite_model=True,
-        overwrite_all_spectra=True,
         iterations=3,
         window=200,
         experiment_name="test",
@@ -136,8 +118,8 @@ def test_run_training_flow(
 
     assert flow_run.is_successful()
     flow_run.result[download_task].is_cached()
-    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 2
-    assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
+    assert len(fs.ls(ASSETS_DIR / "raw/positive")) == 2
+    assert fs.exists(ASSETS_DIR / "raw/positive/raw_chunk_paths.pickle")
 
     run_id = flow_run.result[register_task].result
     artifact_uri = mlflow.get_run(run_id).info.artifact_uri

@@ -4,32 +4,29 @@ from prefect import Flow, unmapped
 
 from omigami.config import IonModes, ION_MODES, MLFLOW_SERVER
 from omigami.flow_config import FlowConfig
-from omigami.spectra_matching.spec2vec.storage.spectrum_document import (
-    SpectrumDocumentDataGateway,
+from omigami.spectra_matching.spec2vec.tasks import (
+    CreateDocumentsParameters,
 )
 from omigami.spectra_matching.spec2vec.tasks import (
     MakeEmbeddings,
-    ProcessSpectrum,
+    CreateDocuments,
     TrainModel,
     TrainModelParameters,
     RegisterModel,
     RegisterModelParameters,
     MakeEmbeddingsParameters,
 )
-from omigami.spectra_matching.spec2vec.tasks import (
-    ProcessSpectrumParameters,
-)
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.spectra_matching.tasks import (
     DownloadData,
     DownloadParameters,
     ChunkingParameters,
     CreateChunks,
-    SaveRawSpectra,
-    SaveRawSpectraParameters,
+    CleanRawSpectra,
+    CleanRawSpectraParameters,
     DeployModelParameters,
     DeployModel,
+    CacheCleanedSpectra,
 )
 
 
@@ -37,16 +34,12 @@ class TrainingFlowParameters:
     def __init__(
         self,
         spectrum_dgw: RedisSpectrumDataGateway,
-        data_gtw: FSDataGateway,
-        document_dgw: SpectrumDocumentDataGateway,
-        spectrum_cleaner: SpectrumCleaner,
+        fs_dgw: FSDataGateway,
         source_uri: str,
         dataset_directory: str,
-        dataset_id: str,
         chunk_size: int,
         ion_mode: IonModes,
         n_decimals: int,
-        overwrite_all_spectra: bool,
         iterations: int,
         window: int,
         mlflow_output_directory: str,
@@ -55,37 +48,34 @@ class TrainingFlowParameters:
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
         dataset_name: str = "gnps.json",
-        dataset_checkpoint_name: str = "spectrum_ids.pkl",
         redis_db: str = "0",
         overwrite_model: bool = False,
         model_name: Optional[str] = "spec2vec-model",
         experiment_name: str = "default",
     ):
-        self.data_gtw = data_gtw
+        self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
-        self.document_dgw = document_dgw
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
         self.downloading = DownloadParameters(
-            source_uri,
-            dataset_directory,
-            dataset_id,
-            dataset_name,
-            dataset_checkpoint_name,
+            source_uri=source_uri,
+            output_directory=dataset_directory,
+            file_name=dataset_name,
         )
         self.chunking = ChunkingParameters(
-            self.downloading.download_path, chunk_size, ion_mode
+            input_file=self.downloading.download_path,
+            output_directory=f"{dataset_directory}/raw/{ion_mode}",
+            chunk_size=chunk_size,
+            ion_mode=ion_mode,
         )
-        self.save_raw_spectra = SaveRawSpectraParameters(
-            spectrum_dgw, data_gtw, spectrum_cleaner
+        self.clean_raw_spectra = CleanRawSpectraParameters(
+            output_directory=f"{dataset_directory}/cleaned/{ion_mode}"
         )
-        self.processing = ProcessSpectrumParameters(
-            spectrum_dgw,
-            documents_save_directory,
-            ion_mode,
-            n_decimals,
-            overwrite_all_spectra,
+        self.create_documents = CreateDocumentsParameters(
+            output_directory=documents_save_directory,
+            ion_mode=ion_mode,
+            n_decimals=n_decimals,
         )
         self.training = TrainModelParameters(iterations, window)
         self.registering = RegisterModelParameters(
@@ -136,26 +126,29 @@ def build_training_flow(
         # if you update one return type of a task please mind the later tasks too
 
         spectrum_ids = DownloadData(
-            flow_parameters.data_gtw,
+            flow_parameters.fs_dgw,
             flow_parameters.downloading,
         )()
 
-        gnps_chunks = CreateChunks(
-            flow_parameters.data_gtw,
+        raw_spectra_paths = CreateChunks(
+            flow_parameters.fs_dgw,
             flow_parameters.chunking,
         )(spectrum_ids)
 
-        chunked_spectrum_ids = SaveRawSpectra(flow_parameters.save_raw_spectra).map(
-            gnps_chunks
-        )
+        cleaned_spectra_paths = CleanRawSpectra(
+            flow_parameters.fs_dgw, flow_parameters.clean_raw_spectra
+        ).map(raw_spectra_paths)
 
-        document_paths = ProcessSpectrum(
-            flow_parameters.data_gtw,
-            flow_parameters.document_dgw,
-            flow_parameters.processing,
-        ).map(chunked_spectrum_ids)
+        _ = CacheCleanedSpectra(
+            flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
+        ).map(cleaned_spectra_paths)
 
-        model = TrainModel(flow_parameters.data_gtw, flow_parameters.training)(
+        document_paths = CreateDocuments(
+            flow_parameters.fs_dgw,
+            flow_parameters.create_documents,
+        ).map(cleaned_spectra_paths)
+
+        model = TrainModel(flow_parameters.fs_dgw, flow_parameters.training)(
             document_paths
         )
 
@@ -164,7 +157,7 @@ def build_training_flow(
         # TODO: this task prob doesnt need chunking or can be done in larger chunks
         _ = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
-            flow_parameters.data_gtw,
+            flow_parameters.fs_dgw,
             flow_parameters.embedding,
         ).map(unmapped(model), unmapped(run_id), document_paths)
 

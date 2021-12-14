@@ -25,7 +25,6 @@ from omigami.spectra_matching.ms2deepscore.storage import (
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 from omigami.test.spectra_matching.tasks import DummyTask
 
@@ -47,8 +46,8 @@ def positive_spectra(positive_spectra_data):
 
 
 @pytest.fixture
-def ms2deepscore_payload(loaded_data):
-    spectra = [data for data in loaded_data if data["Ion_Mode"] == "Positive"]
+def ms2deepscore_payload(raw_spectra):
+    spectra = [data for data in raw_spectra if data["Ion_Mode"] == "Positive"]
     payload = {
         "data": [
             {
@@ -90,7 +89,8 @@ def siamese_model_path(
     path = ASSETS_DIR / "ms2deep_score.hdf5"
 
     if not path.exists():
-        generate_ms2ds_model_flow.run()
+        res = generate_ms2ds_model_flow.run()
+        assert res.is_successful()
 
     return str(path)
 
@@ -175,6 +175,11 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
 
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.training_flow,
+        "DownloadData",
+        DummyTask,
+    )
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
         "MakeEmbeddings",
         DummyTask,
     )
@@ -191,21 +196,17 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
 
     data_gtw = MS2DeepScoreFSDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
-    spectrum_cleaner = SpectrumCleaner()
 
     flow_params = TrainingFlowParameters(
-        data_gtw=data_gtw,
+        fs_dgw=data_gtw,
         spectrum_dgw=spectrum_dgw,
-        spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
         # the three parameters below are for using cached assets instead of downloading
-        dataset_directory=str(ASSETS_DIR.parent),
-        dataset_id=ASSETS_DIR.name,
+        dataset_directory=str(ASSETS_DIR),
         dataset_name="SMALL_GNPS_500_spectra.json",
         chunk_size=150000,
         ion_mode="positive",
         overwrite_model=True,
-        overwrite_all_spectra=True,
         # we use everything but the model path as tmpdir. We only want the model from this script
         scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
         fingerprint_n_bits=2048,
@@ -213,7 +214,6 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
         spectrum_binner_n_bins=10000,
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
         model_output_path=str(ASSETS_DIR / "ms2deep_score.hdf5"),
-        dataset_checkpoint_name="spectrum_ids_500.pkl",
         epochs=5,
         project_name="test",
         mlflow_output_directory=f"{tmpdir}/model-output",

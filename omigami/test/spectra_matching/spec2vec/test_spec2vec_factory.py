@@ -28,7 +28,7 @@ def test_build_training_flow():
 
     assert isinstance(flow, Flow)
     assert flow.name == "Robert DeFlow"
-    assert len(flow.tasks) == 7
+    assert len(flow.tasks) == 8
     chunk_task: CreateChunks = flow.get_tasks("CreateChunks")[0]
     assert chunk_task._chunk_size == int(1e8)
 

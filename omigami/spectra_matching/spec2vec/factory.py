@@ -18,7 +18,6 @@ from omigami.flow_config import (
     PrefectExecutorMethods,
 )
 from omigami.spectra_matching.spec2vec.config import (
-    PROJECT_NAME,
     DOCUMENT_DIRECTORIES,
     SPEC2VEC_ROOT,
 )
@@ -30,10 +29,6 @@ from omigami.spectra_matching.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
     build_training_flow,
 )
-from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
-    RedisSpectrumDocumentDataGateway,
-)
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 
 
@@ -46,7 +41,7 @@ class Spec2VecFlowFactory:
         mlflow_output_directory: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
-        self._dataset_directory = dataset_directory or str(STORAGE_ROOT / "datasets")
+        self._dataset_directory = dataset_directory or STORAGE_ROOT / "datasets"
         self._spec2vec_root = SPEC2VEC_ROOT
         self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
@@ -55,6 +50,7 @@ class Spec2VecFlowFactory:
 
     def build_training_flow(
         self,
+        project_name: str,
         flow_name: str,
         image: str,
         iterations: int,
@@ -68,7 +64,6 @@ class Spec2VecFlowFactory:
         ion_mode: IonModes = "positive",
         overwrite_all_spectra: bool = False,
         overwrite_model: bool = False,
-        project_name: str = PROJECT_NAME,
         deploy_model: bool = False,
         chunk_size: int = CHUNK_SIZE,
     ) -> Flow:
@@ -93,18 +88,14 @@ class Spec2VecFlowFactory:
             storage_root=STORAGE_ROOT,
         )
 
-        spectrum_dgw = RedisSpectrumDataGateway(project=project_name)
-        data_gtw = FSDataGateway()
-        spectrum_cleaner = SpectrumCleaner()
-        document_dgw = RedisSpectrumDocumentDataGateway()
+        spectrum_dgw = RedisSpectrumDataGateway(project_name)
+        fs_dgw = FSDataGateway()
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
-            data_gtw=data_gtw,
+            fs_dgw=fs_dgw,
             spectrum_dgw=spectrum_dgw,
-            document_dgw=document_dgw,
-            spectrum_cleaner=spectrum_cleaner,
-            dataset_id=dataset_id,
+            dataset_directory=str(self._dataset_directory / dataset_id),
             ion_mode=ion_mode,
             n_decimals=n_decimals,
             iterations=iterations,
@@ -114,11 +105,12 @@ class Spec2VecFlowFactory:
             chunk_size=chunk_size,
             source_uri=source_uri,
             overwrite_model=overwrite_model,
-            overwrite_all_spectra=overwrite_all_spectra,
             documents_save_directory=str(
-                self._spec2vec_root / dataset_id / self._document_dirs[ion_mode]
+                self._spec2vec_root
+                / self._document_dirs[ion_mode]
+                / dataset_id
+                / f"{n_decimals}_decimals"
             ),
-            dataset_directory=self._dataset_directory,
             model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=self._mlflow_output_directory,
             experiment_name=project_name,
@@ -136,6 +128,7 @@ class Spec2VecFlowFactory:
 
     def build_model_deployment_flow(
         self,
+        project_name: str,
         flow_name: str,
         image: str,
         intensity_weighting_power: float,
@@ -143,7 +136,6 @@ class Spec2VecFlowFactory:
         dataset_id: str,
         n_decimals: int = 2,
         ion_mode: IonModes = "positive",
-        project_name: str = PROJECT_NAME,
     ) -> Flow:
         """Creates all configuration/gateways objects used by the model deployment flow,
         and builds the training flow with them.
@@ -165,7 +157,7 @@ class Spec2VecFlowFactory:
             storage_root=STORAGE_ROOT,
         )
 
-        spectrum_dgw = RedisSpectrumDataGateway(project=project_name)
+        spectrum_dgw = RedisSpectrumDataGateway(project_name)
         fs_dgw = FSDataGateway()
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())

@@ -1,0 +1,1 @@
+SPEC2VEC_PROJECT_NAME = "spec2vec"
