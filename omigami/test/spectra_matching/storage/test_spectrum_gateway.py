@@ -74,9 +74,7 @@ def test_delete_spectrum_ids(spectra_stored):
 
 
 def test_write_raw_spectra(redis_db, raw_spectra):
-    db_entries = [
-        as_spectrum(spectrum_data) for spectrum_data in raw_spectra
-    ]
+    db_entries = [as_spectrum(spectrum_data) for spectrum_data in raw_spectra]
 
     dgw = RedisSpectrumDataGateway(_PROJECT)
     dgw.write_raw_spectra(db_entries)
@@ -94,5 +92,6 @@ def test_delete_embeddings(redis_db, ms2deepscore_embeddings_stored):
     updated_hkeys = redis_db.scan()[1]
 
     assert embeddings_key not in updated_hkeys
-    # Asserting deleting the key still works even if the key is not there
+    # Test that the delete_embeddings method doesn't raise an error if the key is
+    # not present in the DB anymore.
     dgw.delete_embeddings("positive")
