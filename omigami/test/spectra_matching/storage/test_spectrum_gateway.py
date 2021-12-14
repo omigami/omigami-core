@@ -73,9 +73,9 @@ def test_delete_spectrum_ids(spectra_stored):
     assert set(stored_ids) - set(stored_ids_2) == {stored_ids[0]}
 
 
-def test_write_raw_spectra(redis_db, single_spectrum_as_json):
+def test_write_raw_spectra(redis_db, raw_spectra):
     db_entries = [
-        as_spectrum(spectrum_data) for spectrum_data in single_spectrum_as_json
+        as_spectrum(spectrum_data) for spectrum_data in raw_spectra
     ]
 
     dgw = RedisSpectrumDataGateway(_PROJECT)
