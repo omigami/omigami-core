@@ -14,8 +14,8 @@ def spectrum_processor():
 
 
 @pytest.fixture
-def spectrum(loaded_data):
-    return as_spectrum(loaded_data[0])
+def single_spectrum(raw_spectra):
+    return as_spectrum(raw_spectra[0])
 
 
 @pytest.mark.slow
@@ -30,19 +30,22 @@ def test_process_spectra(positive_spectra_data, spectrum_processor):
     assert cleaned_data[0].get("spectrum_id")
 
 
-def test_apply_ms2deepscore_filters(spectrum, spectrum_processor):
+def test_apply_ms2deepscore_filters(single_spectrum, spectrum_processor):
     mz_from = 10.0
     mz_to = 1000.0
 
-    filtered_spectrum = spectrum_processor._apply_ms2deepscore_filters(spectrum)
+    filtered_spectrum = spectrum_processor._apply_ms2deepscore_filters(single_spectrum)
 
     assert filtered_spectrum is not None
     assert all([mz_from <= mz <= mz_to for mz in filtered_spectrum.peaks.mz])
 
 
-def test_apply_ms2deepscore_filters_not_enough_peaks(spectrum, spectrum_processor):
+def test_apply_ms2deepscore_filters_not_enough_peaks(
+    single_spectrum, spectrum_processor
+):
     spectrum_with_not_enough_peaks = Spectrum(
-        mz=spectrum.peaks.mz[:4], intensities=spectrum.peaks.intensities[:4]
+        mz=single_spectrum.peaks.mz[:4],
+        intensities=single_spectrum.peaks.intensities[:4],
     )
     filtered_spectrum = spectrum_processor._apply_ms2deepscore_filters(
         spectrum_with_not_enough_peaks

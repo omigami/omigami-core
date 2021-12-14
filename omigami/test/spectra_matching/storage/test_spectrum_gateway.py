@@ -5,7 +5,7 @@ from matchms.Spectrum import Spectrum
 from matchms.importing.load_from_json import as_spectrum
 from pytest_redis import factories
 
-from omigami.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET
+from omigami.config import SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, EMBEDDING_HASHES
 from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 
@@ -73,13 +73,25 @@ def test_delete_spectrum_ids(spectra_stored):
     assert set(stored_ids) - set(stored_ids_2) == {stored_ids[0]}
 
 
-@pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
-def test_write_raw_spectra(redis_db, loaded_data):
-    db_entries = [as_spectrum(spectrum_data) for spectrum_data in loaded_data]
+def test_write_raw_spectra(redis_db, raw_spectra):
+    db_entries = [as_spectrum(spectrum_data) for spectrum_data in raw_spectra]
 
     dgw = RedisSpectrumDataGateway(_PROJECT)
     dgw.write_raw_spectra(db_entries)
     assert redis_db.zcard(SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET) == len(db_entries)
+
+
+def test_delete_embeddings(redis_db, ms2deepscore_embeddings_stored):
+    dgw = RedisSpectrumDataGateway("ms2deepscore")
+    hash_keys = redis_db.scan()[1]
+    embeddings_key = dgw._format_redis_key(EMBEDDING_HASHES, "positive").encode()
+    # asserting for correct test setup
+    assert embeddings_key in hash_keys
+
+    dgw.delete_embeddings("positive")
+    updated_hkeys = redis_db.scan()[1]
+
+    assert embeddings_key not in updated_hkeys
+    # Test that the delete_embeddings method doesn't raise an error if the key is
+    # not present in the DB anymore.
+    dgw.delete_embeddings("positive")

@@ -153,14 +153,23 @@ def documents_data():
 
 
 @pytest.fixture
-def mock_deploy_model_task(monkeypatch):
+def mock_s2v_deploy_model_task(monkeypatch):
 
     import omigami.spectra_matching.spec2vec.flows.deploy_model
+    import omigami.spectra_matching.spec2vec.flows.training_flow
 
+    class DeployModel(DummyTask):
+        pass
+
+    monkeypatch.setattr(
+        omigami.spectra_matching.spec2vec.flows.training_flow,
+        "DeployModel",
+        DeployModel,
+    )
     monkeypatch.setattr(
         omigami.spectra_matching.spec2vec.flows.deploy_model,
         "DeployModel",
-        DummyTask,
+        DeployModel,
     )
 
 

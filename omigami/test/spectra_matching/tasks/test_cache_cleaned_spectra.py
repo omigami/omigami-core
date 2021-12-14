@@ -32,7 +32,7 @@ def test_cache_cleaned_spectra_empty_db(cleaned_spectra_paths, empty_database):
 
     assert len(data) == 36  # 36 positive in the first chunk
     assert set(data) == expected_ids
-    assert len(spectrum_dgw.list_spectrum_ids()) == 36
+    assert set(data) == set(spectrum_dgw.list_spectrum_ids())
 
 
 @pytest.mark.skipif(

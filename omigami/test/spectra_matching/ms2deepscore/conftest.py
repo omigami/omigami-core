@@ -46,8 +46,8 @@ def positive_spectra(positive_spectra_data):
 
 
 @pytest.fixture
-def ms2deepscore_payload(loaded_data):
-    spectra = [data for data in loaded_data if data["Ion_Mode"] == "Positive"]
+def ms2deepscore_payload(raw_spectra):
+    spectra = [data for data in raw_spectra if data["Ion_Mode"] == "Positive"]
     payload = {
         "data": [
             {
@@ -157,14 +157,23 @@ def small_model_params(monkeypatch):
 
 
 @pytest.fixture
-def mock_deploy_model_task(monkeypatch):
+def mock_ms2ds_deploy_model_task(monkeypatch):
 
     import omigami.spectra_matching.ms2deepscore.flows.deploy_model
+    import omigami.spectra_matching.ms2deepscore.flows.training_flow
+
+    class DeployModel(DummyTask):
+        pass
 
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.deploy_model,
         "DeployModel",
-        DummyTask,
+        DeployModel,
+    )
+    monkeypatch.setattr(
+        omigami.spectra_matching.ms2deepscore.flows.training_flow,
+        "DeployModel",
+        DeployModel,
     )
 
 

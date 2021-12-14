@@ -22,13 +22,13 @@ def test_build_training_flow():
         overwrite_all_spectra=False,
         overwrite_model=True,
         project_name="Raging Flow",
-        deploy_model=False,
+        deploy_model=True,
         chunk_size=int(1e8),
     )
 
     assert isinstance(flow, Flow)
     assert flow.name == "Robert DeFlow"
-    assert len(flow.tasks) == 8
+    assert len(flow.tasks) == 9
     chunk_task: CreateChunks = flow.get_tasks("CreateChunks")[0]
     assert chunk_task._chunk_size == int(1e8)
 

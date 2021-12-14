@@ -67,7 +67,7 @@ def test_chunk_gnps_data_consistency(
         **TEST_TASK_CONFIG,
     )
 
-    t.chunk_gnps(local_gnps_small_json)
+    t._chunk_gnps(local_gnps_small_json)
 
     paths = data_gtw.list_files(output_directory)
     assert len(paths) == expected_chunk_files

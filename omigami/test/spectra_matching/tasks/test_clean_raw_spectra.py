@@ -24,9 +24,9 @@ def test_clean_raw_spectra_run(create_chunks_task):
 
     res = t.run(chunk_paths[0])
 
-    assert {sp.metadata["spectrum_id"] for sp in fs_dgw.read_from_file(res)} == {
-        sp["SpectrumID"] for sp in fs_dgw.load_spectrum(chunk_paths[0])
-    }
+    assert {sp.metadata["spectrum_id"] for sp in fs_dgw.read_from_file(res)}.issubset(
+        {sp["SpectrumID"] for sp in fs_dgw.load_spectrum(chunk_paths[0])}
+    )
 
 
 def test_clean_raw_spectra_flow(create_chunks_task, mock_default_config):
@@ -38,21 +38,24 @@ def test_clean_raw_spectra_flow(create_chunks_task, mock_default_config):
         cc = create_chunks_task()
         t = CleanRawSpectra(fs_dgw, params).map(cc)
 
+    t._fs_dgw.load_spectrum = Mock(side_effect=fs_dgw.load_spectrum)
     res = flow.run()
 
     assert res.is_successful()
+    assert t._fs_dgw.load_spectrum.call_count == 3  # there are three chunks processed
 
-    # running again to use cached results, and asserting it works
-    t._fs_dgw.load_spectrum = Mock()
+    # Running again to use cached results, and asserting it works
+    t._fs_dgw.load_spectrum = Mock(side_effect=fs_dgw.load_spectrum)
     res_cached = flow.run()
 
     assert res_cached.is_successful()
-    t._fs_dgw.load_spectrum.assert_not_called()
+    assert t._fs_dgw.load_spectrum.call_count == 0
+    assert res.result[t].result == res_cached.result[t].result
 
 
 @pytest.fixture
-def spectrum(loaded_data):
-    return as_spectrum(loaded_data[0])
+def single_spectrum(raw_spectra):
+    return as_spectrum(raw_spectra[0])
 
 
 @pytest.fixture
@@ -62,9 +65,9 @@ def spectrum_negative_intensity():
     )
 
 
-def test_clean_data(spectrum, spectrum_negative_intensity):
+def test_clean_data(single_spectrum, spectrum_negative_intensity):
 
-    cleaned_data = SpectrumCleaner()._common_cleaning(spectrum)
+    cleaned_data = SpectrumCleaner()._common_cleaning(single_spectrum)
     cleaned_data_negative_intensity = SpectrumCleaner()._common_cleaning(
         spectrum_negative_intensity
     )
@@ -78,12 +81,17 @@ def test_clean_data(spectrum, spectrum_negative_intensity):
 
 
 def test_apply_ms2deepscore_filters_negative_intensity(
-    spectrum_negative_intensity, spectrum
+    spectrum_negative_intensity, single_spectrum
 ):
-    spectrum_negative_intensity = SpectrumCleaner()._filter_negative_intensities(
-        spectrum_negative_intensity
-    )
-    spectrum = SpectrumCleaner()._filter_negative_intensities(spectrum)
+    sc = SpectrumCleaner()
+    removed_spectrum = sc._filter_negative_intensities(spectrum_negative_intensity)
+    assert removed_spectrum is None
 
-    assert spectrum_negative_intensity is None
+    spectrum = sc._filter_negative_intensities(single_spectrum)
     assert spectrum is not None
+
+    negative_peak = spectrum.peaks
+    negative_peak._intensities[4] = -10
+    spectrum.peaks = negative_peak
+    spectrum = sc._filter_negative_intensities(spectrum)
+    assert spectrum is None

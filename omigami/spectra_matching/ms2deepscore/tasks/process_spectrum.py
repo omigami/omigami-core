@@ -24,7 +24,6 @@ class ProcessSpectrumParameters:
     spectrum_binner_output_path: str
     ion_mode: IonModes
     overwrite_all_spectra: bool = True
-    is_pretrained_flow: bool = False
     n_bins: int = 10000
 
 
@@ -43,7 +42,7 @@ class ProcessSpectrum(Task):
             process_parameters.spectrum_binner_output_path
         )
         self._ion_mode = process_parameters.ion_mode
-        self._processor = SpectrumProcessor(process_parameters.is_pretrained_flow)
+        self._processor = SpectrumProcessor()
         self._spectrum_binner = MS2DeepScoreSpectrumBinner(process_parameters.n_bins)
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)

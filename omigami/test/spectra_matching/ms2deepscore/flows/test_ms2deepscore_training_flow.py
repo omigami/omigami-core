@@ -23,7 +23,7 @@ from omigami.test.spectra_matching.conftest import ASSETS_DIR
 os.chdir(Path(__file__).parents[4])
 
 
-def test_training_flow(flow_config):
+def test_training_flow(flow_config, mock_ms2ds_deploy_model_task):
     mock_data_gtw = MagicMock(spec=FSDataGateway)
     mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     flow_name = "test-flow"
@@ -38,6 +38,7 @@ def test_training_flow(flow_config):
         "RegisterModel",
         "CreateSpectrumIDsChunks",
         "MakeEmbeddings",
+        "DeployModel",
     }
 
     flow_parameters = TrainingFlowParameters(
@@ -66,6 +67,7 @@ def test_training_flow(flow_config):
         flow_name=flow_name,
         flow_config=flow_config,
         flow_parameters=flow_parameters,
+        deploy_model=True,
     )
 
     assert flow
@@ -87,6 +89,7 @@ def test_run_training_flow(
     clean_chunk_files,
     redis_full_setup,
     small_model_params,
+    mock_ms2ds_deploy_model_task,
 ):
     # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
@@ -123,6 +126,7 @@ def test_run_training_flow(
         flow_config=flow_config,
         flow_name="test-flow",
         flow_parameters=flow_params,
+        deploy_model=True,
     )
 
     flow_run = flow.run()

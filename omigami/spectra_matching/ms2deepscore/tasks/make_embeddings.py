@@ -37,10 +37,11 @@ class MakeEmbeddings(Task):
         spectrum_ids: Set[str] = None,
     ) -> Set[str]:
         """
-        Prefect task to create embeddings from SiameseModel. First, binned spectra are
-        read from DB for given spectrum_ids. Then, for each binned spectra, embeddings
-        are created using SiameseModel and saved to REDIS DB. Resulting object is
-        an `Embedding` object holding an embedding vector.
+        Prefect task to create embeddings from SiameseModel. The process is as follows:
+        1. Previous spectra are deleted from the cache,
+        2. Binned spectra are read from DB for given spectrum_ids.
+        3. For each binned spectra, embeddings are created using SiameseModel and are
+            cached. Resulting object is an `Embedding` object holding an embedding vector.
 
         Parameters
         ----------
@@ -57,6 +58,11 @@ class MakeEmbeddings(Task):
             Set of spectrum_ids
 
         """
+        self.logger.info(
+            f"Deleting embeddings for ms2deepscore model of {self._ion_mode} ion mode"
+        )
+        self._spectrum_dgw.delete_embeddings(self._ion_mode)
+
         model_path = train_model_output["ms2deepscore_model_path"]
         self.logger.info(f"Creating {len(spectrum_ids)} embeddings.")
         binned_spectra = self._spectrum_dgw.read_binned_spectra(

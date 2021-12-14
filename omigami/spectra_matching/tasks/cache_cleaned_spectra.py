@@ -33,8 +33,7 @@ class CacheCleanedSpectra(Task):
             A string leading to a json datafile containing spectrum data
 
         Returns:
-            A list of all the spectrum_ids contained in the files data that
-            passed the cleaning process.
+            List of cached spectrum IDs
 
         """
         self.logger.info(f"Loading spectra from {spectra_path}")

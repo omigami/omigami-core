@@ -65,7 +65,8 @@ def local_gnps_small_json() -> str:
 
 
 @pytest.fixture(scope="module")
-def loaded_data(local_gnps_small_json):
+def raw_spectra(local_gnps_small_json):
+    """100 raw spectra from SMALL_GNPS.json"""
     with open(local_gnps_small_json, "rb") as f:
         items = ijson.items(f, "item", multiple_values=True)
         results = [{k: item[k] for k in KEYS} for item in items]
@@ -73,10 +74,10 @@ def loaded_data(local_gnps_small_json):
 
 
 @pytest.fixture(scope="module")
-def spectrum_ids_by_mode(loaded_data):
+def spectrum_ids_by_mode(raw_spectra):
     spectrum_ids = {"positive": [], "negative": []}
 
-    for spectrum in loaded_data:
+    for spectrum in raw_spectra:
         spectrum_ids[spectrum["Ion_Mode"].lower()].append(spectrum["spectrum_id"])
     return spectrum_ids
 
@@ -197,13 +198,12 @@ def embeddings_from_real_predictor():
 
 @pytest.fixture()
 def ms2deepscore_embeddings_stored(redis_db, embeddings_from_real_predictor):
-    run_id = "2"
     project = "ms2deepscore"
     ion_mode = "positive"
     pipe = redis_db.pipeline()
     for embedding in embeddings_from_real_predictor:
         pipe.hset(
-            f"{EMBEDDING_HASHES}_{project}_{ion_mode}_{run_id}",
+            f"{EMBEDDING_HASHES}_{project}_{ion_mode}",
             embedding.spectrum_id,
             pickle.dumps(embedding),
         )

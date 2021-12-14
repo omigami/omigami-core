@@ -3,6 +3,8 @@ from typing import List, Dict, Any
 
 from mlflow.pyfunc import PythonModel
 
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway
+
 log = getLogger(__name__)
 SpectrumMatches = Dict[str, Dict[str, Any]]
 
@@ -11,7 +13,7 @@ class Predictor(PythonModel):
     _run_id: str
     model: Any
 
-    def __init__(self, dgw=None):
+    def __init__(self, dgw: RedisSpectrumDataGateway = None):
         self.dgw = dgw
 
     def predict(self, context, model_input):

@@ -64,7 +64,7 @@ class CreateChunks(Task):
 
         """
         self.logger.info(f"Loading file {self._input_file} for chunking.")
-        chunk_paths = self.chunk_gnps(self._input_file)
+        chunk_paths = self._chunk_gnps(self._input_file)
         self.logger.info(
             f"Split spectra into {len(chunk_paths)} chunks of size"
             f"{self._chunk_size}"
@@ -75,7 +75,7 @@ class CreateChunks(Task):
 
         return chunk_paths
 
-    def chunk_gnps(self, gnps_path: str) -> List[str]:
+    def _chunk_gnps(self, gnps_path: str) -> List[str]:
         """
         The chunking works as following:
         1. Open a stream to the gnps_path json file
