@@ -14,8 +14,8 @@ def spectrum_processor():
 
 
 @pytest.fixture
-def spectrum(single_spectrum_as_json):
-    return as_spectrum(single_spectrum_as_json[0])
+def single_spectrum(spectra_as_dict):
+    return as_spectrum(spectra_as_dict[0])
 
 
 @pytest.mark.slow
