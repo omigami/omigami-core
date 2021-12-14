@@ -136,7 +136,8 @@ dmypy.json
 **/test-output.xml
 
 **/S2DeepScore_allGNPSpositive_10k_500_500_200.hdf5
-**/chunks/
+**/raw/
+**/cleaned/
 *.orig
 **/spectrum_ids_500.pkl
 **/mlflow-server/*

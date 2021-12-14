@@ -1,4 +1,5 @@
 import pickle
+import shutil
 from pathlib import Path
 from time import sleep
 
@@ -8,9 +9,8 @@ import mlflow
 import pandas as pd
 import pytest
 import s3fs
-from drfs.filesystems import get_fs
 from moto import mock_s3
-from prefect import Client
+from prefect import Client, Flow
 from pytest_redis import factories
 
 import omigami
@@ -26,6 +26,12 @@ from omigami.flow_config import make_flow_config, PrefectExecutorMethods
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
+from omigami.spectra_matching.tasks import (
+    ChunkingParameters,
+    CreateChunks,
+    CleanRawSpectraParameters,
+    CleanRawSpectra,
+)
 
 ASSETS_DIR = Path(__file__).parents[1] / "assets"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=pd.Timedelta(seconds=0.1))
@@ -59,7 +65,8 @@ def local_gnps_small_json() -> str:
 
 
 @pytest.fixture(scope="module")
-def loaded_data(local_gnps_small_json):
+def raw_spectra(local_gnps_small_json):
+    """100 raw spectra from SMALL_GNPS.json"""
     with open(local_gnps_small_json, "rb") as f:
         items = ijson.items(f, "item", multiple_values=True)
         results = [{k: item[k] for k in KEYS} for item in items]
@@ -67,10 +74,10 @@ def loaded_data(local_gnps_small_json):
 
 
 @pytest.fixture(scope="module")
-def spectrum_ids_by_mode(loaded_data):
+def spectrum_ids_by_mode(raw_spectra):
     spectrum_ids = {"positive": [], "negative": []}
 
-    for spectrum in loaded_data:
+    for spectrum in raw_spectra:
         spectrum_ids[spectrum["Ion_Mode"].lower()].append(spectrum["spectrum_id"])
     return spectrum_ids
 
@@ -191,13 +198,12 @@ def embeddings_from_real_predictor():
 
 @pytest.fixture()
 def ms2deepscore_embeddings_stored(redis_db, embeddings_from_real_predictor):
-    run_id = "2"
     project = "ms2deepscore"
     ion_mode = "positive"
     pipe = redis_db.pipeline()
     for embedding in embeddings_from_real_predictor:
         pipe.hset(
-            f"{EMBEDDING_HASHES}_{project}_{ion_mode}_{run_id}",
+            f"{EMBEDDING_HASHES}_{project}_{ion_mode}",
             embedding.spectrum_id,
             pickle.dumps(embedding),
         )
@@ -220,9 +226,13 @@ def s3_documents_directory():
 
 @pytest.fixture()
 def clean_chunk_files():
-    fs = get_fs(str(ASSETS_DIR))
-    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "positive")]
-    _ = [fs.rm(f) for f in fs.ls(ASSETS_DIR / "chunks" / "negative")]
+    chunk_root = ASSETS_DIR / "raw"
+    if chunk_root.exists():
+        shutil.rmtree(chunk_root)
+
+    cleaned_root = ASSETS_DIR / "cleaned"
+    if cleaned_root.exists():
+        shutil.rmtree(cleaned_root)
 
 
 @pytest.fixture()
@@ -272,3 +282,42 @@ def monitor_flow_results(client: Client, flow_run_id: str):
 
         if flow_duration > 60:
             raise TimeoutError("Flow timeout. Check flow logs.")
+
+
+@pytest.fixture
+def create_chunks_task(clean_chunk_files, local_gnps_small_json):
+    data_gtw = FSDataGateway()
+    output_directory = ASSETS_DIR / "raw" / "positive"
+    chunking_parameters = ChunkingParameters(
+        local_gnps_small_json, str(output_directory), 150000, "positive"
+    )
+    t = CreateChunks(data_gtw=data_gtw, chunking_parameters=chunking_parameters)
+
+    return t
+
+
+@pytest.fixture
+def clean_spectra_task():
+    output_dir = ASSETS_DIR / "cleaned"
+    fs_dgw = FSDataGateway()
+    params = CleanRawSpectraParameters(output_dir)
+    t = CleanRawSpectra(fs_dgw, params)
+
+    return t
+
+
+@pytest.fixture()
+def cleaned_spectra_paths(create_chunks_task, clean_spectra_task):
+    with Flow("test-flow") as flow:
+        cc = create_chunks_task()
+        cs = clean_spectra_task.map(cc)
+
+    res = flow.run()
+
+    return res.result[cs].result
+
+
+@pytest.fixture
+def cleaned_spectra_chunks(cleaned_spectra_paths):
+    fs_dgw = FSDataGateway()
+    return [fs_dgw.read_from_file(p) for p in cleaned_spectra_paths]

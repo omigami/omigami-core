@@ -6,6 +6,8 @@ from mlflow.pyfunc import PythonModel
 from seldon_core.flask_utils import jsonify
 
 
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway
+
 log = getLogger(__name__)
 SpectrumMatches = Dict[str, Dict[str, Any]]
 
@@ -37,7 +39,7 @@ class Predictor(PythonModel):
     model_error_handler = flask.Blueprint("error_handlers", __name__)  # The field is
     # used to register custom exceptions
 
-    def __init__(self, dgw=None):
+    def __init__(self, dgw: RedisSpectrumDataGateway = None):
         self.dgw = dgw
 
     @staticmethod

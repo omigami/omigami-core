@@ -1,5 +1,7 @@
-from typing import Dict, List, Optional
+from dataclasses import dataclass
+from typing import List, Dict, Optional
 
+from drfs import DRPath
 from matchms import Spectrum
 from matchms.filtering import (
     default_filters,
@@ -13,6 +15,76 @@ from matchms.filtering import (
     derive_inchikey_from_inchi,
 )
 from matchms.importing.load_from_json import as_spectrum
+from prefect import Task
+
+from omigami.spectra_matching.storage import DataGateway
+from omigami.utils import merge_prefect_task_configs
+
+
+@dataclass
+class CleanRawSpectraParameters:
+    """
+    Parameters to determine aspects of the CleanRawSpectra task
+
+    output_directory:
+        Directory where the cleaned spectra will be saved
+    """
+
+    output_directory: str
+
+
+class CleanRawSpectra(Task):
+    """
+    Prefect task to save the raw spectra passed to it.
+    """
+
+    def __init__(
+        self,
+        fs_dgw: DataGateway,
+        parameters: CleanRawSpectraParameters,
+        **kwargs,
+    ):
+        self._fs_dgw = fs_dgw
+        self._output_directory = parameters.output_directory
+        self._spectrum_cleaner = SpectrumCleaner()
+        config = merge_prefect_task_configs(kwargs)
+
+        super().__init__(**config, checkpoint=True)
+
+    def run(self, raw_spectra_path: str = None) -> str:
+        """
+        Loads a json file containing spectra from GNPS and applies a series of cleaning
+        steps to the spectra. Some spectra might be filtered out in the process.
+        Saves the spectra to the file system.
+
+        Parameters:
+        ----------
+        raw_spectra_path: str
+            A string leading to a json datafile containing spectrum data
+
+        Returns:
+        --------
+        A path to the saved cleaned spectra
+
+        """
+        self.logger.info(f"Loading spectra from {raw_spectra_path}.")
+        output_path = f"{self._output_directory}/{DRPath(raw_spectra_path).stem}.pickle"
+
+        if DRPath(output_path).exists() and self.checkpoint:
+            self.logger.info(f"Using cached result at {output_path}")
+            return output_path
+
+        spectra = self._fs_dgw.load_spectrum(raw_spectra_path)
+        spectrum_ids = [sp["spectrum_id"] for sp in spectra]
+
+        self.logger.info(f"Cleaning {len(spectrum_ids)} spectra.")
+        clean_spectra = self._spectrum_cleaner.clean(spectra)
+        clean_spectrum_ids = [sp.metadata["spectrum_id"] for sp in clean_spectra]
+        self.logger.info(f"There are {len(clean_spectrum_ids)} spectra after cleaning.")
+
+        self.logger.info(f"Saving cleaned spectra to file {output_path}.")
+        self._fs_dgw.serialize_to_file(output_path, clean_spectra)
+        return output_path
 
 
 class SpectrumCleaner:

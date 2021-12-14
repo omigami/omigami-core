@@ -15,16 +15,11 @@ from omigami.spectra_matching.entities.embedding import Embedding
 from omigami.spectra_matching.storage import RedisDataGateway
 
 
-# when running locally, those should be set in pycharm/shell env
-# when running on the cluster, they will be gotten from the seldon env,
-# which was defined during deployment by the 'dataset_name' param
-
-
 class RedisSpectrumDataGateway(RedisDataGateway):
     """Data gateway for Redis storage."""
 
     def write_raw_spectra(self, spectra: List[Spectrum]):
-        """Writes a list of raw spectra to the redis database unsing the spectrum_id as the key.
+        """Writes a list of raw spectra to the redis database using the spectrum_id as the key.
 
         Parameters
         ----------
@@ -111,37 +106,38 @@ class RedisSpectrumDataGateway(RedisDataGateway):
         self,
         embeddings: List[Embedding],
         ion_mode: str,
-        run_id: str,
         logger: Logger = None,
     ):
         """Write embeddings data on the redis database."""
         self._init_client()
-        embeddings_key = self._format_redis_key(
-            hashes=EMBEDDING_HASHES, ion_mode=ion_mode, run_id=run_id
-        )
+        hash_key = self._format_redis_key(hashes=EMBEDDING_HASHES, ion_mode=ion_mode)
         if logger:
             logger.debug(
                 f"Saving {len(embeddings)} embeddings to the client {self.client}"
-                f" on hash '{embeddings_key}'."
+                f" on hash '{hash_key}'."
             )
         pipe = self.client.pipeline()
         for embedding in embeddings:
             pipe.hset(
-                embeddings_key,
+                hash_key,
                 embedding.spectrum_id,
                 pickle.dumps(embedding),
             )
         pipe.execute()
 
     def read_embeddings(
-        self, ion_mode: str, run_id: str, spectrum_ids: List[str] = None
+        self, ion_mode: str, spectrum_ids: List[str] = None
     ) -> List[Embedding]:
         """Read the embeddings from spectra IDs.
         Return a list of Embedding objects."""
         self._init_client()
         return self._read_hashes(
-            self._format_redis_key(
-                hashes=EMBEDDING_HASHES, ion_mode=ion_mode, run_id=run_id
-            ),
+            self._format_redis_key(hashes=EMBEDDING_HASHES, ion_mode=ion_mode),
             spectrum_ids,
         )
+
+    def delete_embeddings(self, ion_mode: str):
+        """Deletes embeddings for a project + ion mode combination."""
+        self._init_client()
+        hash_key = self._format_redis_key(EMBEDDING_HASHES, ion_mode)
+        self.client.delete(hash_key)

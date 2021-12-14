@@ -1,5 +1,3 @@
-prefect:
-  project: "spec2vec"
 storage:
   documents:
     positive: "documents/positive"

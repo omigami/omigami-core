@@ -43,7 +43,7 @@ def test_ms2ds_deploy_model_flow(flow_config):
 @pytest.fixture()
 def deploy_model_setup(
     tmpdir_factory,
-    mock_deploy_model_task,
+    mock_ms2ds_deploy_model_task,
     siamese_model_path,
 ):
     tmpdir = tmpdir_factory.mktemp("model")
