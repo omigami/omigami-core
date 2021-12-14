@@ -54,8 +54,8 @@ def test_clean_raw_spectra_flow(create_chunks_task, mock_default_config):
 
 
 @pytest.fixture
-def single_spectrum(spectra_as_dict):
-    return as_spectrum(spectra_as_dict[0])
+def single_spectrum(raw_spectra):
+    return as_spectrum(raw_spectra[0])
 
 
 @pytest.fixture

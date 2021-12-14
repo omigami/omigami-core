@@ -74,9 +74,9 @@ def predict_parameters():
 
 
 def test_pre_process_data(
-    word2vec_model, spectra_as_dict, spec2vec_predictor, documents_data
+    word2vec_model, raw_spectra, spec2vec_predictor, documents_data
 ):
-    data = [d for d in spectra_as_dict if d["SpectrumID"] == "CCMSLIB00000072099"]
+    data = [d for d in raw_spectra if d["SpectrumID"] == "CCMSLIB00000072099"]
     embeddings_from_model = spec2vec_predictor._pre_process_data(data)
 
     em = EmbeddingMaker(n_decimals=1)
