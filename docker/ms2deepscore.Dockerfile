@@ -4,7 +4,7 @@ FROM $BASE_IMAGE
 
 WORKDIR /opt/omigami
 
-ENV PIP_DEFAULT_TIMEOUT=100
+ENV PIP_DEFAULT_TIMEOUT=200
 
 COPY ./requirements/spectra_matching/ms2deepscore/conda.txt /opt/omigami/requirements/ms2ds_conda.txt
 
