@@ -24,9 +24,9 @@ def test_clean_raw_spectra_run(create_chunks_task):
 
     res = t.run(chunk_paths[0])
 
-    assert {sp.metadata["spectrum_id"] for sp in fs_dgw.read_from_file(res)} == {
-        sp["SpectrumID"] for sp in fs_dgw.load_spectrum(chunk_paths[0])
-    }
+    assert {sp.metadata["spectrum_id"] for sp in fs_dgw.read_from_file(res)}.issubset(
+        {sp["SpectrumID"] for sp in fs_dgw.load_spectrum(chunk_paths[0])}
+    )
 
 
 def test_clean_raw_spectra_flow(create_chunks_task, mock_default_config):
@@ -83,10 +83,15 @@ def test_clean_data(single_spectrum, spectrum_negative_intensity):
 def test_apply_ms2deepscore_filters_negative_intensity(
     spectrum_negative_intensity, single_spectrum
 ):
-    spectrum_negative_intensity = SpectrumCleaner()._filter_negative_intensities(
-        spectrum_negative_intensity
-    )
-    spectrum = SpectrumCleaner()._filter_negative_intensities(single_spectrum)
+    sc = SpectrumCleaner()
+    removed_spectrum = sc._filter_negative_intensities(spectrum_negative_intensity)
+    assert removed_spectrum is None
 
-    assert spectrum_negative_intensity is None
+    spectrum = sc._filter_negative_intensities(single_spectrum)
     assert spectrum is not None
+
+    negative_peak = spectrum.peaks
+    negative_peak._intensities[4] = -10
+    spectrum.peaks = negative_peak
+    spectrum = sc._filter_negative_intensities(spectrum)
+    assert spectrum is None
