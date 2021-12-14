@@ -21,7 +21,7 @@ from omigami.test.spectra_matching.conftest import monitor_flow_results
     "Requires local prefect server and mlflow. Make sure they are running to run this"
     "test. To run them, check README instructions."
 )
-def test_deploy_training_flow(backend_services):
+def test_deploy_training_flow(backend_services, mock_s2v_deploy_model_task):
     client = backend_services["prefect"]
     image = None  # "drtools/omigami-spec2vec:SNAPSHOT.1a6ec12c"
 
@@ -83,7 +83,7 @@ def test_download_task_local_integration(backend_services):
 )
 def test_run_model_deployment_flow(
     backend_services,
-    mock_deploy_model_task,
+    mock_s2v_deploy_model_task,
     word2vec_model,
     mock_default_config,
     registered_s2v_model,

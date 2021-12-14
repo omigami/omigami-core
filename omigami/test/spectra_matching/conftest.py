@@ -198,13 +198,12 @@ def embeddings_from_real_predictor():
 
 @pytest.fixture()
 def ms2deepscore_embeddings_stored(redis_db, embeddings_from_real_predictor):
-    run_id = "2"
     project = "ms2deepscore"
     ion_mode = "positive"
     pipe = redis_db.pipeline()
     for embedding in embeddings_from_real_predictor:
         pipe.hset(
-            f"{EMBEDDING_HASHES}_{project}_{ion_mode}_{run_id}",
+            f"{EMBEDDING_HASHES}_{project}_{ion_mode}",
             embedding.spectrum_id,
             pickle.dumps(embedding),
         )

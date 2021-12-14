@@ -1,4 +1,3 @@
-from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.tasks import (
     MakeEmbeddings,
@@ -23,5 +22,5 @@ def test_make_embeddings(
     )
 
     assert document_ids
-    embeddings = spectrum_dgw.read_embeddings("positive", SPEC2VEC_PROJECT_NAME)
+    embeddings = spectrum_dgw.read_embeddings("positive")
     assert isinstance(embeddings[0], Spec2VecEmbedding)
