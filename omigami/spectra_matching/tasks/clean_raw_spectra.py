@@ -97,8 +97,11 @@ class SpectrumCleaner:
                 processed_spectra.append(spectrum)
         return processed_spectra
 
-    def _common_cleaning(self, spectrum: Spectrum) -> Spectrum:
+    def _common_cleaning(self, spectrum: Spectrum) -> Optional[Spectrum]:
         spectrum = self._apply_filters(spectrum)
+
+        if spectrum is None:
+            return spectrum
 
         # On GNPS data, parent_mass is not present. Instead, if available, the Exact Mass
         # field should be used. In this context, they are synonyms
