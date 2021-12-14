@@ -44,7 +44,6 @@ class CreateChunks(Task):
         super().__init__(
             **config,
             **create_prefect_result_from_path(chunking_parameters.checkpoint_file),
-            checkpoint=True,
         )
 
     def run(self, spectrum_ids: List[str] = None) -> List[str]:
