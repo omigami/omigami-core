@@ -20,7 +20,9 @@ common_flow_options = [
 ]
 
 common_training_options = [
-    click.option(  # TODO: these two parameters need some refactoring
+    click.option(
+        # TODO: these two parameters need some refactoring, please refactor the same in
+        #  omigami/spectra_matching/spec2vec/cli.py during refactoring
         "--dataset-id",
         type=click.Choice(["small", "10k", "complete"]),
         required=True,

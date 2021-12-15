@@ -83,6 +83,19 @@ def training_flow_cli(*args, **kwargs):
     show_default=True,
     help="Missing percentage of ions allowed",
 )
+@click.option(
+    "--dataset-id",
+    type=click.Choice(["small", "10k", "complete"]),
+    required=True,
+    help="Name of the dataset of choice. It must match the source-uri of the dataset.",
+)
+@click.option(
+    "--ion-mode",
+    type=click.Choice(["positive", "negative"]),
+    default="positive",
+    help="Which ion mode to use.",
+    show_default=True,
+)
 @add_click_options(common_flow_options)
 def deploy_model_cli(*args, **kwargs):
     run_deploy_spec2vec_model_flow(*args, **kwargs)
