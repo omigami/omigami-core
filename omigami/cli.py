@@ -13,5 +13,11 @@ cli.add_command(spec2vec_cli)
 cli.add_command(ms2deepscore_cli)
 
 
+@cli.command(name="run")
+def run(flow_name: str, flow_version: str = None):
+    """Runs any registered flow"""
+    pass
+
+
 if __name__ == "__main__":
     cli()
