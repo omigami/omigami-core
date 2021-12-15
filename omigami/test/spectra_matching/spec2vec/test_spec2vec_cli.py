@@ -3,7 +3,7 @@ import inspect
 from omigami.spectra_matching.spec2vec.cli import spec2vec_cli
 
 
-def test_spec2vec_training_cli(monkeypatch):
+def test_spec2vec_training_cli():
     from omigami.spectra_matching.spec2vec.cli import run_spec2vec_training_flow
 
     main_args = inspect.getfullargspec(run_spec2vec_training_flow)
