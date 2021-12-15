@@ -14,42 +14,33 @@ class DownloadParameters:
     """
     Dataclass to specify parameters to download a dataset with the Download Task
 
-    Parameters
-    ----------
-    input_uri: str
+    source_uri: str
         URI to the dataset
-    output_dir: str
+    output_directory: str
         Output directory for the downloaded data
-    dataset_id: str
-        ID of the dataset
-    dataset_file: str = "gnps.json"
+    file_name: str = "gnps.json"
         Filename of the dataset
     checkpoint_file: str = "spectrum_ids.pkl"
         Filename of the checkpointfile
-    -------
     """
 
-    input_uri: str
-    output_dir: str
-    dataset_id: str
-    dataset_file: str = "gnps.json"
+    source_uri: str
+    output_directory: str
+    file_name: str = "gnps.json"
     checkpoint_file: str = "spectrum_ids.pkl"
-
-    def __post_init__(self):
-        self.directory = f"{self.output_dir}/{self.dataset_id}"
 
     @property
     def download_path(self):
-        return f"{self.directory}/{self.dataset_file}"
+        return f"{self.output_directory}/{self.file_name}"
 
     @property
     def checkpoint_path(self):
-        return f"{self.directory}/{self.checkpoint_file}"
+        return f"{self.output_directory}/{self.checkpoint_file}"
 
     @property
     def kwargs(self):
         return dict(
-            input_uri=self.input_uri,
+            input_uri=self.source_uri,
             download_path=self.download_path,
             checkpoint_path=self.checkpoint_path,
         )
@@ -63,7 +54,7 @@ class DownloadData(Task):
         **kwargs,
     ):
         self._data_gtw = data_gtw
-        self.input_uri = download_parameters.input_uri
+        self.input_uri = download_parameters.source_uri
         self.download_path = download_parameters.download_path
         self.checkpoint_path = download_parameters.checkpoint_path
 
@@ -72,7 +63,6 @@ class DownloadData(Task):
         super().__init__(
             **config,
             **create_prefect_result_from_path(download_parameters.checkpoint_path),
-            checkpoint=True,
         )
 
     def refresh_download(
@@ -117,13 +107,12 @@ class DownloadData(Task):
 
         if self.refresh_download(self.download_path):
             self._data_gtw.download_gnps(self.input_uri, self.download_path)
-
         spectrum_ids = self._data_gtw.get_spectrum_ids(self.download_path)
-        self._data_gtw.serialize_to_file(self.checkpoint_path, spectrum_ids)
-
         self.logger.info(
             f"Downloaded {len(spectrum_ids)} spectra from {self.input_uri} to {self.download_path}."
         )
+
         self.logger.info(f"Saving spectrum ids to {self.checkpoint_path}")
+        self._data_gtw.serialize_to_file(self.checkpoint_path, spectrum_ids)
 
         return spectrum_ids

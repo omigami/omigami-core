@@ -24,7 +24,6 @@ class ProcessSpectrumParameters:
     spectrum_binner_output_path: str
     ion_mode: IonModes
     overwrite_all_spectra: bool = True
-    is_pretrained_flow: bool = False
     n_bins: int = 10000
 
 
@@ -43,19 +42,19 @@ class ProcessSpectrum(Task):
             process_parameters.spectrum_binner_output_path
         )
         self._ion_mode = process_parameters.ion_mode
-        self._processor = SpectrumProcessor(process_parameters.is_pretrained_flow)
+        self._processor = SpectrumProcessor()
         self._spectrum_binner = MS2DeepScoreSpectrumBinner(process_parameters.n_bins)
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, spectrum_ids_chunks: List[Set[str]] = None) -> Set[str]:
+    def run(self, cleaned_spectrum_ids: List[Set[str]] = None) -> Set[str]:
         """
         Prefect task to clean spectra and create binned spectra from cleaned spectra.
         Binned spectra are saved to REDIS DB and filesystem.
 
         Parameters
         ----------
-        spectrum_ids_chunks: List[Set[str]]
+        cleaned_spectrum_ids: List[Set[str]]
             spectrum_ids defined in the set of chunks. If it is not passed, then method
             cleans and creates binned spectra for the existing ones in DB.
 
@@ -64,8 +63,8 @@ class ProcessSpectrum(Task):
         Set of spectrum_ids
 
         """
-        if spectrum_ids_chunks:
-            spectrum_ids = [item for elem in spectrum_ids_chunks for item in elem]
+        if cleaned_spectrum_ids:
+            spectrum_ids = [item for elem in cleaned_spectrum_ids for item in elem]
         else:
             spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         self.logger.info(f"Processing {len(spectrum_ids)} spectra")

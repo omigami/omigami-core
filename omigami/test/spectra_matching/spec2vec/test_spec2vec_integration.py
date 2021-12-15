@@ -7,15 +7,12 @@ from omigami.config import (
     SOURCE_URI_PARTIAL_GNPS,
     STORAGE_ROOT,
     DATASET_IDS,
-    MLFLOW_DIRECTORY,
 )
 from omigami.spectra_matching.spec2vec.main import (
     run_spec2vec_training_flow,
     run_deploy_spec2vec_model_flow,
 )
-from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.storage import FSDataGateway
-from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 from omigami.spectra_matching.tasks import DownloadParameters, DownloadData
 from omigami.test.spectra_matching.conftest import monitor_flow_results
 
@@ -24,7 +21,7 @@ from omigami.test.spectra_matching.conftest import monitor_flow_results
     "Requires local prefect server and mlflow. Make sure they are running to run this"
     "test. To run them, check README instructions."
 )
-def test_deploy_training_flow(backend_services):
+def test_deploy_training_flow(backend_services, mock_s2v_deploy_model_task):
     client = backend_services["prefect"]
     image = None  # "drtools/omigami-spec2vec:SNAPSHOT.1a6ec12c"
 
@@ -85,27 +82,16 @@ def test_download_task_local_integration(backend_services):
     "test. To run them, check README instructions."
 )
 def test_run_model_deployment_flow(
-    backend_services, mock_deploy_model_task, word2vec_model, mock_default_config
+    backend_services,
+    mock_s2v_deploy_model_task,
+    word2vec_model,
+    mock_default_config,
+    registered_s2v_model,
 ):
     client = backend_services["prefect"]
-    dgw = MLFlowDataGateway()
-    model = Spec2VecPredictor(
-        word2vec_model,
-        ion_mode="positive",
-        n_decimals=1,
-        intensity_weighting_power=0.5,
-        allowed_missing_percentage=15,
-    )
-    run_id = dgw.register_model(
-        model=model,
-        run_name="run",
-        experiment_name="local-integration-test-s2v",
-        model_name="integration-test-model",
-        experiment_path=str(MLFLOW_DIRECTORY),
-    )
 
     flow_id, flow_run_id = run_deploy_spec2vec_model_flow(
-        model_run_id=run_id,
+        model_run_id=registered_s2v_model["run_id"],
         image="",
         project_name="local-integration-test-s2v",
         flow_name="Model Deployment Flow",

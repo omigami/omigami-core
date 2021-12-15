@@ -30,12 +30,12 @@ class MakeEmbeddingsParameters:
 class MakeEmbeddings(Task):
     def __init__(
         self,
-        redis_spectrum_dgw: RedisSpectrumDataGateway,
+        spectrum_dgw: RedisSpectrumDataGateway,
         fs_gtw: FSDataGateway,
         parameters: MakeEmbeddingsParameters,
         **kwargs,
     ):
-        self._redis_spectrum_dgw = redis_spectrum_dgw
+        self._spectrum_dgw = spectrum_dgw
         self._fs_gtw = fs_gtw
         self._embedding_maker = EmbeddingMaker(n_decimals=parameters.n_decimals)
         self._ion_mode = parameters.ion_mode
@@ -74,6 +74,10 @@ class MakeEmbeddings(Task):
         Set of spectrum_ids
 
         """
+        self.logger.info(
+            f"Deleting embeddings for spec2vec model of {self._ion_mode} ion mode"
+        )
+        self._spectrum_dgw.delete_embeddings(self._ion_mode)
 
         documents = self._fs_gtw.read_from_file(document_path)
 
@@ -99,7 +103,5 @@ class MakeEmbeddings(Task):
             f"Finished creating embeddings. Saving {len(embeddings)} embeddings to database."
         )
         self.logger.debug(f"Using Redis DB {REDIS_DB} and model id {model_run_id}.")
-        self._redis_spectrum_dgw.write_embeddings(
-            embeddings, self._ion_mode, model_run_id, self.logger
-        )
+        self._spectrum_dgw.write_embeddings(embeddings, self._ion_mode, self.logger)
         return set(doc.get("spectrum_id") for doc in documents)

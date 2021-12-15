@@ -19,7 +19,6 @@ def mock_cli(
     allowed_missing_percentage: float,
     deploy_model: bool,
     overwrite_model: bool,
-    overwrite_all_spectra: bool,
     dataset_directory: str,
     schedule=None,
 ):
@@ -36,7 +35,6 @@ def mock_cli(
     assert allowed_missing_percentage == 5.0
     assert deploy_model is True
     assert overwrite_model is False
-    assert overwrite_all_spectra is False
     assert schedule is None
     assert dataset_directory == "dir"
 
