@@ -19,7 +19,7 @@ common_flow_options = [
     ),
 ]
 
-dataset_id = click.option(  # TODO: these two parameters need some refactoring
+dataset_id = click.option(
     "--dataset-id",
     type=click.Choice(["small", "10k", "complete"]),
     required=True,
