@@ -24,12 +24,6 @@ class DataGateway(ABC):
         pass
 
     @abstractmethod
-    def chunk_gnps(
-        self, gnps_path: str, chunk_size: int, ion_mode: str, logger=None
-    ) -> List[str]:
-        pass
-
-    @abstractmethod
     def serialize_to_file(self, path: str, object: Any) -> bool:
         pass
 

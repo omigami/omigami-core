@@ -8,13 +8,11 @@ from drfs.filesystems import get_fs
 from spec2vec import calc_vector
 from spec2vec.model_building import train_new_word2vec_model
 
-from omigami.config import EMBEDDING_HASHES
-from omigami.spectra_matching.spec2vec.config import PROJECT_NAME
+from omigami.config import EMBEDDING_HASHES, MLFLOW_DIRECTORY
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
-from omigami.spectra_matching.spec2vec.storage.redis_spectrum_document import (
-    RedisSpectrumDocumentDataGateway,
-)
+from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.storage import FSDataGateway
+from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 from omigami.test.spectra_matching.tasks import DummyTask
 
@@ -28,7 +26,6 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
         for i in range(0, len(documents_data), chunk_size)
     ]
 
-    dgw = RedisSpectrumDocumentDataGateway(project=PROJECT_NAME)
     fs_dgw = FSDataGateway()
 
     fs = get_fs(s3_documents_directory)
@@ -37,7 +34,6 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
 
     for i, documents in enumerate(documents_data):
         doc_path = f"{s3_documents_directory}/test{i}.pickle"
-        dgw.write_documents(documents, "positive")
         fs_dgw.serialize_to_file(doc_path, documents)
 
     return list(itertools.chain.from_iterable(documents_data))
@@ -45,13 +41,12 @@ def documents_stored(s3_documents_directory, documents_data, s3_mock):
 
 @pytest.fixture()
 def spec2vec_embeddings_stored(redis_db, cleaned_data, spec2vec_embeddings):
-    run_id = "1"
     project = "spec2vec"
     ion_mode = "positive"
     pipe = redis_db.pipeline()
     for embedding in spec2vec_embeddings:
         pipe.hset(
-            f"{EMBEDDING_HASHES}_{project}_{ion_mode}_{run_id}",
+            f"{EMBEDDING_HASHES}_{project}_{ion_mode}",
             embedding.spectrum_id,
             pickle.dumps(embedding),
         )
@@ -158,12 +153,42 @@ def documents_data():
 
 
 @pytest.fixture
-def mock_deploy_model_task(monkeypatch):
+def mock_s2v_deploy_model_task(monkeypatch):
 
     import omigami.spectra_matching.spec2vec.flows.deploy_model
+    import omigami.spectra_matching.spec2vec.flows.training_flow
 
+    class DeployModel(DummyTask):
+        pass
+
+    monkeypatch.setattr(
+        omigami.spectra_matching.spec2vec.flows.training_flow,
+        "DeployModel",
+        DeployModel,
+    )
     monkeypatch.setattr(
         omigami.spectra_matching.spec2vec.flows.deploy_model,
         "DeployModel",
-        DummyTask,
+        DeployModel,
     )
+
+
+@pytest.fixture
+def registered_s2v_model(word2vec_model):
+    dgw = MLFlowDataGateway()
+    model = Spec2VecPredictor(
+        word2vec_model,
+        ion_mode="positive",
+        n_decimals=1,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=15,
+    )
+    model_run_id = dgw.register_model(
+        model=model,
+        run_name="run",
+        experiment_name="local-integration-test-s2v",
+        model_name="integration-test-model",
+        experiment_path=str(MLFLOW_DIRECTORY),
+    )
+
+    return {"run_id": model_run_id, "model": model}

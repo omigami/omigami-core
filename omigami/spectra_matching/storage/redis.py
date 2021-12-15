@@ -16,19 +16,14 @@ def get_redis_client():
 
 
 class RedisDataGateway:
-    def __init__(self, project: str = None):
+    def __init__(self, project: str):
         # We initialize it with None so we can pickle this gateway when deploying the flow
-
         self.client = None
-        self.project = project
+        self.project_name = project
 
     def _init_client(self):
         if self.client is None:
             self.client = get_redis_client()
 
-    def _format_redis_key(self, hashes: str, ion_mode: str, run_id: str = None):
-
-        if not run_id:
-            return f"{hashes}_{self.project}_{ion_mode}"
-
-        return f"{hashes}_{self.project}_{ion_mode}_{run_id}"
+    def _format_redis_key(self, hashes: str, ion_mode: str) -> str:
+        return f"{hashes}_{self.project_name}_{ion_mode}"
