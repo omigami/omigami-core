@@ -49,7 +49,7 @@ class CleanRawSpectra(Task):
         self._spectrum_cleaner = SpectrumCleaner()
         config = merge_prefect_task_configs(kwargs)
 
-        super().__init__(**config, checkpoint=True)
+        super().__init__(**config)
 
     def run(self, raw_spectra_path: str = None) -> str:
         """
@@ -70,7 +70,7 @@ class CleanRawSpectra(Task):
         self.logger.info(f"Loading spectra from {raw_spectra_path}.")
         output_path = f"{self._output_directory}/{DRPath(raw_spectra_path).stem}.pickle"
 
-        if DRPath(output_path).exists() and self.checkpoint:
+        if DRPath(output_path).exists():
             self.logger.info(f"Using cached result at {output_path}")
             return output_path
 
@@ -97,8 +97,21 @@ class SpectrumCleaner:
                 processed_spectra.append(spectrum)
         return processed_spectra
 
-    def _common_cleaning(self, spectrum: Spectrum) -> Spectrum:
+    def _common_cleaning(self, spectrum: Spectrum) -> Optional[Spectrum]:
         spectrum = self._apply_filters(spectrum)
+
+        if spectrum is None:
+            return spectrum
+
+        # On GNPS data, parent_mass is not present. Instead, if available, the Exact Mass
+        # field should be used. In this context, they are synonyms
+        spectrum.metadata["parent_mass"] = (
+            spectrum.metadata["exactmass"]
+            if float(spectrum.metadata.get("exactmass", 0)) > 0
+            else None
+        )
+
+        spectrum = add_parent_mass(spectrum)
         spectrum = self._harmonize_spectrum(spectrum)
         spectrum = self._convert_metadata(spectrum)
         return spectrum
@@ -106,11 +119,11 @@ class SpectrumCleaner:
     def _apply_filters(self, spectrum: Spectrum) -> Spectrum:
         """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
-        spectrum = add_parent_mass(spectrum)
         spectrum = self._filter_negative_intensities(spectrum)
         return spectrum
 
-    def _filter_negative_intensities(self, spectrum: Spectrum) -> Optional[Spectrum]:
+    @staticmethod
+    def _filter_negative_intensities(spectrum: Spectrum) -> Optional[Spectrum]:
         """Will return None if the given Spectrum's intensity has negative values."""
 
         if spectrum and any(spectrum.peaks.intensities < 0):

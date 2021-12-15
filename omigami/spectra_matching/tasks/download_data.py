@@ -63,7 +63,6 @@ class DownloadData(Task):
         super().__init__(
             **config,
             **create_prefect_result_from_path(download_parameters.checkpoint_path),
-            checkpoint=True,
         )
 
     def refresh_download(
