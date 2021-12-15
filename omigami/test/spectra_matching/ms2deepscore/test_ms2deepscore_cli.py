@@ -18,7 +18,6 @@ def mock_cli(
     spectrum_binner_n_bins: int,
     deploy_model: bool,
     overwrite_model: bool,
-    overwrite_all_spectra: bool,
     spectrum_ids_chunk_size: int,
     train_ratio: float,
     validation_ratio: float,
@@ -45,7 +44,6 @@ def mock_cli(
     assert spectrum_ids_chunk_size == 10000
     assert deploy_model is False
     assert overwrite_model is False
-    assert overwrite_all_spectra is False
     assert schedule is None
     assert dataset_directory == str(STORAGE_ROOT / "datasets")
 

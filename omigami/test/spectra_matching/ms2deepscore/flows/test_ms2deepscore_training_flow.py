@@ -17,41 +17,38 @@ from omigami.spectra_matching.ms2deepscore.storage import (
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
-from omigami.spectra_matching.spectrum_cleaner import SpectrumCleaner
 from omigami.spectra_matching.storage import FSDataGateway
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
 
 
-def test_training_flow(flow_config):
+def test_training_flow(flow_config, mock_ms2ds_deploy_model_task):
     mock_data_gtw = MagicMock(spec=FSDataGateway)
     mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
-    mock_cleaner = MagicMock(spec=SpectrumCleaner)
     flow_name = "test-flow"
     expected_tasks = {
         "DownloadData",
         "CreateChunks",
-        "SaveRawSpectra",
+        "CleanRawSpectra",
+        "CacheCleanedSpectra",
         "ProcessSpectrum",
         "CalculateTanimotoScore",
         "TrainModel",
         "RegisterModel",
         "CreateSpectrumIDsChunks",
         "MakeEmbeddings",
+        "DeployModel",
     }
 
     flow_parameters = TrainingFlowParameters(
-        data_gtw=mock_data_gtw,
+        fs_dgw=mock_data_gtw,
         spectrum_dgw=mock_spectrum_dgw,
-        spectrum_cleaner=mock_cleaner,
         source_uri="source_uri",
         dataset_directory="datasets",
-        dataset_id="dataset-id",
         ion_mode="positive",
         chunk_size=150000,
         overwrite_model=True,
-        overwrite_all_spectra=False,
         scores_output_path="some-path",
         fingerprint_n_bits=2048,
         scores_decimals=5,
@@ -70,6 +67,7 @@ def test_training_flow(flow_config):
         flow_name=flow_name,
         flow_config=flow_config,
         flow_parameters=flow_parameters,
+        deploy_model=True,
     )
 
     assert flow
@@ -91,6 +89,7 @@ def test_run_training_flow(
     clean_chunk_files,
     redis_full_setup,
     small_model_params,
+    mock_ms2ds_deploy_model_task,
 ):
     # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
@@ -98,27 +97,22 @@ def test_run_training_flow(
 
     data_gtw = MS2DeepScoreFSDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
-    spectrum_cleaner = SpectrumCleaner()
 
     flow_params = TrainingFlowParameters(
-        data_gtw=data_gtw,
+        fs_dgw=data_gtw,
         spectrum_dgw=spectrum_dgw,
-        spectrum_cleaner=spectrum_cleaner,
         source_uri=SOURCE_URI_PARTIAL_GNPS,
-        dataset_directory=ASSETS_DIR.parent,
-        dataset_id=ASSETS_DIR.name,
+        dataset_directory=ASSETS_DIR,
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
         ion_mode="positive",
         overwrite_model=True,
-        overwrite_all_spectra=True,
         scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
         fingerprint_n_bits=2048,
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
         model_output_path=str(tmpdir / "model.hdf5"),
-        dataset_checkpoint_name="spectrum_ids_500.pkl",
         epochs=1,
         project_name="test",
         mlflow_output_directory=f"{tmpdir}/model-output",
@@ -132,6 +126,7 @@ def test_run_training_flow(
         flow_config=flow_config,
         flow_name="test-flow",
         flow_parameters=flow_params,
+        deploy_model=True,
     )
 
     flow_run = flow.run()
@@ -140,8 +135,8 @@ def test_run_training_flow(
 
     assert flow_run.is_successful()
     flow_run.result[download_task].is_cached()
-    assert len(fs.ls(ASSETS_DIR / "chunks/positive")) == 4
-    assert fs.exists(ASSETS_DIR / "chunks/positive/chunk_paths.pickle")
+    assert len(fs.ls(ASSETS_DIR / "raw/positive")) == 4
+    assert fs.exists(ASSETS_DIR / "raw/positive/raw_chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")
 

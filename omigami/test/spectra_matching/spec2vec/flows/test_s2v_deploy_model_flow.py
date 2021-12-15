@@ -18,7 +18,7 @@ def test_s2v_deploy_model_flow(flow_config):
         "LoadSpec2VecModel",
     }
     params = DeployModelFlowParameters(
-        spectrum_dgw=RedisSpectrumDataGateway(),
+        spectrum_dgw=RedisSpectrumDataGateway("project"),
         fs_dgw=FSDataGateway(),
         ion_mode="positive",
         n_decimals=2,
@@ -39,7 +39,7 @@ def test_s2v_deploy_model_flow(flow_config):
 
 @pytest.fixture()
 def deploy_model_setup(
-    tmpdir_factory, word2vec_model, monkeypatch, mock_deploy_model_task
+    tmpdir_factory, word2vec_model, monkeypatch, mock_s2v_deploy_model_task
 ):
     tmpdir = tmpdir_factory.mktemp("model")
     mlflow_uri = f"sqlite:///{tmpdir}/mlflow.sqlite"
@@ -71,7 +71,7 @@ def test_run_s2v_deploy_model_flow(
     s3_documents_directory,
 ):
     params = DeployModelFlowParameters(
-        spectrum_dgw=RedisSpectrumDataGateway(),
+        spectrum_dgw=RedisSpectrumDataGateway("project"),
         fs_dgw=FSDataGateway(),
         ion_mode="positive",
         n_decimals=1,

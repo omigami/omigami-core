@@ -11,7 +11,7 @@ def test_create_chunks(spectrum_ids):
     with Flow("test-flow") as test_flow:
         chunks = CreateSpectrumIDsChunks(
             chunk_size=10,
-            spectrum_dgw=RedisSpectrumDataGateway(),
+            spectrum_dgw=RedisSpectrumDataGateway("project"),
             **TEST_TASK_CONFIG,
         )(spectrum_ids)
 
