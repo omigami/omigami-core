@@ -23,7 +23,6 @@ from omigami.utils import merge_prefect_task_configs
 class ProcessSpectrumParameters:
     spectrum_binner_output_path: str
     ion_mode: IonModes
-    overwrite_all_spectra: bool = True
     n_bins: int = 10000
 
 
@@ -37,7 +36,6 @@ class ProcessSpectrum(Task):
     ):
         self._fs_gtw = fs_gtw
         self._spectrum_dgw = spectrum_dgw
-        self._overwrite_all_spectra = process_parameters.overwrite_all_spectra
         self._spectrum_binner_output_path = (
             process_parameters.spectrum_binner_output_path
         )
