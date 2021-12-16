@@ -96,6 +96,7 @@ def make_flow_config(
             service_account_name="prefect-server-serviceaccount",
             env=env_variables,
             memory_request="12Gi",
+            image_pull_secrets=["regcred"],
         )
     elif OMIGAMI_ENV == Environments.local:
         storage = Local(storage_root)
