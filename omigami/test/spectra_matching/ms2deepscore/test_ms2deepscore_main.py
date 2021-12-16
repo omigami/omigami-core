@@ -68,7 +68,6 @@ def test_mocked_deploy_training_flow(mock_objects):
         validation_ratio=0.2,
         test_ratio=0.2,
         epochs=5,
-        chunk_size=150000,
     )
 
     flow_id, flow_run_id = run_ms2deepscore_training_flow(**params)

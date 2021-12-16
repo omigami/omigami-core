@@ -1,6 +1,11 @@
 import click
 
-from omigami.cli_options import common_training_options, common_flow_options
+from omigami.cli_options import (
+    common_training_options,
+    common_flow_options,
+    dataset_id,
+    ion_mode,
+)
 from omigami.spectra_matching.ms2deepscore.main import (
     run_ms2deepscore_training_flow,
     run_deploy_ms2ds_model_flow,
@@ -84,5 +89,6 @@ def training_flow_cli(*args, **kwargs):
     help="Model run ID that will be used to deploy",
 )
 @add_click_options(common_flow_options)
+@add_click_options([dataset_id, ion_mode])
 def deploy_model_cli(*args, **kwargs):
     run_deploy_ms2ds_model_flow(*args, **kwargs)

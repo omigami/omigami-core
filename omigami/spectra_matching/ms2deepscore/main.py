@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 import pandas as pd
 
 from omigami.authentication.prefect_factory import prefect_client_factory
-from omigami.config import IonModes, CHUNK_SIZE
+from omigami.config import IonModes
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 
@@ -25,7 +25,6 @@ def run_ms2deepscore_training_flow(
     validation_ratio: float,
     test_ratio: float,
     epochs: int,
-    chunk_size: int = CHUNK_SIZE,
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
 ) -> Tuple[str, str]:
@@ -61,7 +60,6 @@ def run_ms2deepscore_training_flow(
         validation_ratio=validation_ratio,
         test_ratio=test_ratio,
         epochs=epochs,
-        chunk_size=chunk_size,
         schedule=schedule,
     )
     deployer = FlowDeployer(prefect_client=prefect_client_factory.get())

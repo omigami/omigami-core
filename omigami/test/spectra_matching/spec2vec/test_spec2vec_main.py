@@ -62,7 +62,6 @@ def test_mocked_deploy_training_flow(mock_objects):
         allowed_missing_percentage=15,
         deploy_model=False,
         overwrite_model=False,
-        overwrite_all_spectra=True,
         schedule=None,
     )
 
