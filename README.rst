@@ -159,18 +159,16 @@ Then a few environment variables must be updated on pytest settings:
 How to register the training flow manually
 ------------------------------------------
 
-To register a flow manually to Prefect you need to follow these steps:
+To register a **deployment** flow manually to Prefect you need to follow these steps:
 ::
 
     conda activate omigami
     export AWS_PROFILE=<your data revenue profile>
-    export PYTHONPATH=$(pwd)
-    prefect backend server
 
 For Spec2Vec:
 ::
 
-    pytest omigami/test/spec2vec/test_deployment.py
+    bash deploy_spec2vec_flow_to_dev.sh <mlfllow_run_id> <image_name> <flow_name> <ion_mode>
 
 For MS2DeepScore:
 ::
