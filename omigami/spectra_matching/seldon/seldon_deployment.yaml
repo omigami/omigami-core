@@ -47,4 +47,3 @@ spec:
               value: "redis-master.redis"
             - name: OMIGAMIDIR
               value: "/mnt/models/code/omigami"
-          image: "seldonio/mlflowserver:1.12.0-dev"
