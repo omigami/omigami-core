@@ -3,8 +3,9 @@ from typing import Any, Optional, Dict
 
 import mlflow
 
-from omigami.config import CODE_PATH, MLFLOW_SERVER, CONDA_ENV_PATH
+from omigami.config import CODE_PATH, MLFLOW_SERVER
 from omigami.spectra_matching.predictor import Predictor
+from omigami.spectra_matching.spec2vec.config import PREDICTOR_ENV_PATH
 
 
 class ModelRegistryDataGateway(ABC):
@@ -87,7 +88,7 @@ class MLFlowDataGateway(ModelRegistryDataGateway):
                 python_model=model,
                 registered_model_name=model_name,
                 code_path=[CODE_PATH],
-                conda_env=CONDA_ENV_PATH,
+                conda_env=PREDICTOR_ENV_PATH,
                 artifacts=artifacts,
             )
 
