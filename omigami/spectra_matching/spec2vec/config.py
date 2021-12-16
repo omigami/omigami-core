@@ -19,4 +19,4 @@ DOCUMENT_HASHES = config["storage"]["redis"]["document_hashes"].get(str)
 
 REDIS_HOST = config["storage"]["redis"]["env_vars"]["redis_host"].get(str)
 REDIS_DB = config["storage"]["redis"]["env_vars"]["redis_db"].get(str)
-PREDICTOR_ENV_PATH = Path(__file__).parent / "predictor.yaml"
+PREDICTOR_ENV_PATH = Path(__file__).parent / "predictor_env.yaml"
