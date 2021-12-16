@@ -37,7 +37,6 @@ def test_run_training_flow(backend_services):
         ion_mode="positive",
         deploy_model=False,
         overwrite_model=False,
-        overwrite_all_spectra=True,
         schedule=None,
         spectrum_ids_chunk_size=100,
         fingerprint_n_bits=2048,

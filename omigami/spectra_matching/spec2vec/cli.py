@@ -1,6 +1,11 @@
 import click
 
-from omigami.cli_options import common_training_options, common_flow_options
+from omigami.cli_options import (
+    common_flow_options,
+    common_training_options,
+    dataset_id,
+    ion_mode,
+)
 from omigami.spectra_matching.spec2vec.main import (
     run_spec2vec_training_flow,
     run_deploy_spec2vec_model_flow,
@@ -84,5 +89,6 @@ def training_flow_cli(*args, **kwargs):
     help="Missing percentage of ions allowed",
 )
 @add_click_options(common_flow_options)
+@add_click_options([dataset_id, ion_mode])
 def deploy_model_cli(*args, **kwargs):
     run_deploy_spec2vec_model_flow(*args, **kwargs)

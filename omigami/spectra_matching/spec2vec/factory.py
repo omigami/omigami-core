@@ -62,7 +62,6 @@ class Spec2VecFlowFactory:
         n_decimals: int = 2,
         schedule: pd.Timedelta = None,
         ion_mode: IonModes = "positive",
-        overwrite_all_spectra: bool = False,
         overwrite_model: bool = False,
         deploy_model: bool = False,
         chunk_size: int = CHUNK_SIZE,
