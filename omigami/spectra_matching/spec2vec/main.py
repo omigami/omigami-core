@@ -72,7 +72,6 @@ def run_deploy_spec2vec_model_flow(
     n_decimals: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    dataset_directory: str = None,
     project_name: str = SPEC2VEC_PROJECT_NAME,
 ) -> Tuple[str, str]:
     """
@@ -89,7 +88,7 @@ def run_deploy_spec2vec_model_flow(
 
     """
 
-    factory = Spec2VecFlowFactory(dataset_directory=dataset_directory)
+    factory = Spec2VecFlowFactory()
     flow = factory.build_model_deployment_flow(
         image=image,
         project_name=project_name,
