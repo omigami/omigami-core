@@ -94,7 +94,7 @@ class Spec2VecFlowFactory:
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
             spectrum_dgw=spectrum_dgw,
-            dataset_directory=str(self._dataset_directory / dataset_id),
+            dataset_directory=f"{self._dataset_directory}/{dataset_id}",
             ion_mode=ion_mode,
             n_decimals=n_decimals,
             iterations=iterations,
