@@ -11,7 +11,7 @@ spec:
   predictors:
   - graph:
       children: []
-      implementation: DR_CUSTOM_INFERENCE_SERVER
+      implementation: MLFLOW_SERVER
       modelUri: dummy
       name: DUMMY_NAME
     name: default
