@@ -5,7 +5,6 @@ import mlflow
 
 from omigami.config import CODE_PATH, MLFLOW_SERVER
 from omigami.spectra_matching.predictor import Predictor
-from omigami.spectra_matching.spec2vec.config import PREDICTOR_ENV_PATH
 
 
 class ModelRegistryDataGateway(ABC):
@@ -15,6 +14,7 @@ class ModelRegistryDataGateway(ABC):
         model: Predictor,
         experiment_name: str,
         run_name: str,
+        conda_env_path: str,
         experiment_path: str = None,
         model_name: Optional[str] = None,
         params: Dict[str, Any] = None,
@@ -34,6 +34,8 @@ class ModelRegistryDataGateway(ABC):
             is present, creates one.
         run_name:
             Name of the run that created this model
+        conda_env_path:
+            Path to the conda yaml file that defines the environment of the predictor
         experiment_path:
             Path used for the root of the files of a experiment. Only used when a new
             experiment is created
@@ -64,6 +66,7 @@ class MLFlowDataGateway(ModelRegistryDataGateway):
         model: Predictor,
         experiment_name: str,
         run_name: str,
+        conda_env_path: str,
         experiment_path: str = None,
         model_name: Optional[str] = None,
         params: Dict[str, Any] = None,
@@ -88,7 +91,7 @@ class MLFlowDataGateway(ModelRegistryDataGateway):
                 python_model=model,
                 registered_model_name=model_name,
                 code_path=[CODE_PATH],
-                conda_env=PREDICTOR_ENV_PATH,
+                conda_env=conda_env_path,
                 artifacts=artifacts,
             )
 
