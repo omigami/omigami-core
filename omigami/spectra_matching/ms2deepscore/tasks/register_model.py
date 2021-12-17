@@ -5,6 +5,7 @@ from pandas import Timestamp
 from prefect import Task
 
 from omigami.config import IonModes
+from omigami.spectra_matching.ms2deepscore.config import PREDICTOR_ENV_PATH
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SIAMESE_MODEL_PARAMS,
 )
@@ -75,6 +76,7 @@ class RegisterModel(Task):
 
         run_id = mlflow_dgw.register_model(
             model=MS2DeepScorePredictor(self._ion_mode),
+            conda_env_path=PREDICTOR_ENV_PATH,
             experiment_name=self._experiment_name,
             experiment_path=self._mlflow_output_path,
             params=params,

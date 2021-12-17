@@ -119,9 +119,6 @@ class MS2DeepScorePredictor(Predictor):
     def _parse_input(
         data_input_and_parameters: Dict[str, Union[Dict, List]]
     ) -> Tuple[Union[dict, list, None], Union[dict, list, None, dict]]:
-        if not isinstance(data_input_and_parameters, dict):
-            data_input_and_parameters = data_input_and_parameters.tolist()
-
         data_input = data_input_and_parameters.get("data")
         parameters = data_input_and_parameters.get("parameters")
 
@@ -162,9 +159,7 @@ class MS2DeepScorePredictor(Predictor):
         self, spectrum_ids: List[List[str]]
     ) -> List[MS2DeepScoreEmbedding]:
         unique_ids = set(item for elem in spectrum_ids for item in elem)
-        embeddings = self.dgw.read_embeddings(
-            self.ion_mode, self._run_id, list(unique_ids)
-        )
+        embeddings = self.dgw.read_embeddings(self.ion_mode, list(unique_ids))
         return embeddings
 
 
