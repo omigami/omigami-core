@@ -61,11 +61,12 @@ To run it, execute::
 
     bash release.sh $TAG
 
-If you also want to push the images to Dockerhub, add `--push` or `-p` parameter.
+If you also want to push the images to Dockerhub, add ``--push`` or ``-p`` parameter.
 This will push 3 images to 3 different repositories:
- - drtools/prefect
- - drtools/omigami-spec2vec
- - drtools/omigami-ms2deepscore
+
+* drtools/prefect
+* drtools/omigami-spec2vec
+* drtools/omigami-ms2deepscore
 ::
 
     bash release.sh $TAG --push
@@ -155,91 +156,6 @@ Then a few environment variables must be updated on pytest settings:
     MLFLOW_SERVER=sqlite:///mlflow.sqlite;
     OMIGAMI_ENV=docker
 
-
-How to register the training flow manually
-------------------------------------------
-
-To register a **deployment** flow manually to Prefect you need to follow these steps:
-::
-
-    conda activate omigami
-    export AWS_PROFILE=<your data revenue profile>
-
-For Spec2Vec:
-::
-
-    bash deploy_spec2vec_flow_to_dev.sh <mlfllow_run_id> <image_name> <flow_name> <ion_mode>
-
-For MS2DeepScore:
-::
-
-    pytest omigami/test/ms2deepscore/test_ms2deepscore_deployment.py
-
-If you want to run the deployment tests in PyCharm,
-make sure you have the `AWS_PROFILE` environment variable set in your test configuration
-and that you set the Prefect backend to server.
-
-If the Prefect Server requires authentication, you can use the arguments to set it up:
-::
-
-    --auth (bool): Enables authentication, defaults to False
-    --auth_url (str): Authentication API Path. Ex.: https://mlops.datarevenue.com/.ory/kratos/public/ [Optional, only required if auth=True]
-    --username (str): Your username [Optional, only required if auth=True]
-    --password (str): Your password [Optional, only required if auth=True]
-
-Then you can check the flow here: https://prefect.mlops.datarevenue.com/default
-
-After the model has been deployed you can access the predictions endpoint in two ways:
-
-By making a curl request:
-::
-
-    curl -v https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/predictions -H "Content-Type: application/json" -d 'input_data'
-
-::
-
-    curl -v https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/predictions -H "Content-Type: application/json" -d @path_to/input.json
-
-By accessing the external API with the user interface at:
-::
-
-    https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/doc/
-
-Or by querying the prediction API via the python request library (see notebook)
-
-
-The input data should look like:
-::
-
-    {
-       "data": {
-          "ndarray": {
-             "parameters":
-                 {
-                     "n_best_spectra": 10,
-                     "include_metadata": ["Compound_name"]
-                 },
-             "data":
-                 [
-                     {"peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
-                      "Precursor_MZ": "900"},
-                     {"peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
-                      "Precursor_MZ": "800"}
-                 ]
-          }
-       }
-    }
-
-- `peaks_json` and `Precursor_MZ` are the only mandatory fields.
-- `Precursor_MZ` can be a string of int or a string of float. i.e. "800" or "800.00"
-- The optional `n_best_spectra` parameter controls the number of predicted spectra returned per set of peaks (10 by default).
-- The optional `include_metadata` parameter controls the result spectra metadata returned to the user.
-
-The available endpoints are:
-
-- `spec2vec-positive`
-- `spec2vec-negative`
-- `ms2deepscore`
 
 Black format your code
 -------------------------------------
