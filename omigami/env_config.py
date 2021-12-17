@@ -18,7 +18,7 @@ Clusters = {
 PrefectServers = {
     Environments.local: "http://localhost:4200/graphql",
     Environments.docker: "http://localhost:4200/graphql",
-    Environments.dev: "https://prefect.mlops.datarevenue.com/graphql",
+    Environments.dev: "https://prefect-dev.omigami.com/graphql",
     Environments.prod: "https://prefect.omigami.datarevenue.com/graphql",
 }
 
