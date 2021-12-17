@@ -61,13 +61,11 @@ To run it, execute::
 
     bash release.sh $TAG
 
-If you also want to push the images to Dockerhub, add ``--push`` or ``-p`` parameter.
+If you also want to push the images to Dockerhub, add `--push` or `-p` parameter.
 This will push 3 images to 3 different repositories:
-
-* drtools/prefect
-* drtools/omigami-spec2vec
-* drtools/omigami-ms2deepscore
-
+ - drtools/prefect
+ - drtools/omigami-spec2vec
+ - drtools/omigami-ms2deepscore
 ::
 
     bash release.sh $TAG --push
@@ -158,70 +156,28 @@ Then a few environment variables must be updated on pytest settings:
     OMIGAMI_ENV=docker
 
 
-How to register the training and deployment flow
+How to register the training flow manually
 ------------------------------------------
-There is a cli interface defined to register training and deployment Prefect
-flow to development and production environments. Please set following environment
-variables before, to register a flow in dev.
-
-Environment variables::
-
-    conda activate omigami
-    export OMIGAMI_ENV=dev
-    export STORAGE_ROOT=s3://omigami-dev
-    export AWS_PROFILE=<your data revenue profile>
-
-Before submitting any flow, please make sure that images are available in the
-Dockerhub. You can check available images for spec2vec and ms2deepscore
-respectively.
-
-* spec2vec: https://hub.docker.com/repository/docker/drtools/omigami-spec2vec/tags?page=1&ordering=last_updated
-* ms2deepscore: https://hub.docker.com/repository/docker/drtools/omigami-ms2deepscore/tags?page=1&ordering=last_updated
-
-To register a **training and deployment** flow manually to Prefect you need to
-follow these steps.
-
-Please also check ``omigami/cli.py``, ``omigami/spectra_matching/spec2vec/cli.py``
-and ``omigami/cli_options.py`` for more cli parameters. Below command contains
-minimum amount of required parameters for ``train`` and ``deploy-model``
-commands to work:
-
-For Spec2Vec::
-
-    omigami spec2vec train --image=<IMAGE_NAME> --project-name=spec2vec --flow-name=<FLOW_NAME> --dataset-id=10k --ion-mode=ION_MODE --deploy-model --overwrite-model
-
-For MS2DeepScore::
-
-    omigami ms2deepscore train --image=<IMAGE_NAME> --project-name=ms2deepscore --flow-name=<FLOW_NAME> --dataset-id=10k --ion-mode=ION_MODE --deploy-model --overwrite-model
 
 To register a **deployment** flow manually to Prefect you need to follow these steps:
-
-For Spec2Vec::
-
-    omigami spec2vec deploy-model --model-run-id=<MODEL_RUN_ID> --image=<IMAGE_NAME> --project-name=spec2vec --flow-name=<FLOW_NAME> --dataset-id=10k --ion-mode=ION_MODE
-
-For MS2DeepScore::
-
-    omigami ms2deepscore deploy-model --model-run-id=<MODEL_RUN_ID> --image=<IMAGE_NAME> --project-name=ms2deepscore --flow-name=<FLOW_NAME> --dataset-id=10k --ion-mode=ION_MODE
-
-
-Where to find ``MODEL_RUN_ID``:
-You can find spec2vec and ms2deepscore models fro dev in https://dev.omigami.com/mlflow/#/
-
-If you want to deploy to production environment, make sure you have the
-``AWS_PROFILE`` and ``OMIGAMI_ENV`` and ``STORAGE_ROOT`` environment variable set
-correctly:
 ::
 
-    export OMIGAMI_ENV=prod
-    export STORAGE_ROOT=s3://omigami
+    conda activate omigami
+    export AWS_PROFILE=<your data revenue profile>
 
-Please carefully select and evaluate each cli option value before you register any
-flow to production environment.
+For Spec2Vec:
+::
 
-Make sure about ``dataset_id`` and ``source_uri`` options set correctly
-(prod environment requires complete data). Review model training parameters one
-more time if necessary.
+    bash deploy_spec2vec_flow_to_dev.sh <mlfllow_run_id> <image_name> <flow_name> <ion_mode>
+
+For MS2DeepScore:
+::
+
+    pytest omigami/test/ms2deepscore/test_ms2deepscore_deployment.py
+
+If you want to run the deployment tests in PyCharm,
+make sure you have the `AWS_PROFILE` environment variable set in your test configuration
+and that you set the Prefect backend to server.
 
 If the Prefect Server requires authentication, you can use the arguments to set it up:
 ::
@@ -231,7 +187,7 @@ If the Prefect Server requires authentication, you can use the arguments to set 
     --username (str): Your username [Optional, only required if auth=True]
     --password (str): Your password [Optional, only required if auth=True]
 
-Then you can check the flow here: https://prefect.omigami.datarevenue.com/graphql
+Then you can check the flow here: https://prefect.mlops.datarevenue.com/default
 
 After the model has been deployed you can access the predictions endpoint in two ways:
 
