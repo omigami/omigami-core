@@ -12,6 +12,9 @@ export OMIGAMI_ENV=dev  # Either 'dev' or 'prod'
 * MODEL_RUN_ID (dev): https://dev.omigami.com/mlflow/#/
 * MODEL_RUN_ID (prod): TODO
 
+Then you can check the dev flows here: https://prefect-dev.omigami.com/ 
+and production flows here: https://prefect.mlops.datarevenue.com/default
+
 ### Spec2Vec
 
 #### Training Flow
@@ -110,3 +113,57 @@ omigami spec2vec deploy-model \
     --dataset-id=10k \
     --ion-mode=positive
 ```
+
+# How to access predictions
+After the model has been deployed you can access the predictions endpoint in two ways:
+
+By making a curl request
+```shell
+curl -v https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/predictions -H "Content-Type: application/json" -d 'input_data'
+```
+
+```shell
+curl -v https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/predictions -H "Content-Type: application/json" -d @path_to/input.json
+```
+
+By accessing the external API with the user interface at:
+
+```shell
+https://mlops.datarevenue.com/seldon/seldon/<endpoint-name>/api/v0.1/doc/
+```
+
+Or by querying the prediction API via the python request library (see notebook in the client repository)
+
+
+The input data should look like:
+
+```shell
+{
+   "data": {
+      "ndarray": {
+         "parameters":
+             {
+                 "n_best_spectra": 10,
+                 "include_metadata": ["Compound_name"]
+             },
+         "data":
+             [
+                 {"peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
+                  "Precursor_MZ": "900"},
+                 {"peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
+                  "Precursor_MZ": "800"}
+             ]
+      }
+   }
+}
+```
+
+- `peaks_json` and `Precursor_MZ` are the only mandatory fields.
+- `Precursor_MZ` can be a string of int or a string of float. i.e. "800" or "800.00"
+- The optional `n_best` parameter controls the number of predicted spectra returned per set of peaks (10 by default).
+
+The available endpoints are:
+
+- `spec2vec-positive`
+- `spec2vec-negative`
+- `ms2deepscore`
