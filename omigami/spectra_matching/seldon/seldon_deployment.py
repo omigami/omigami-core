@@ -5,7 +5,7 @@ import yaml
 from kubernetes import config, client
 from kubernetes.config import ConfigException
 
-from omigami.config import SELDON_PARAMS
+from omigami.config import SELDON_PARAMS, OMIGAMI_ENV
 
 DEPLOYMENT_SPEC_PATH = Path(__file__).parent / "seldon_deployment.yaml"
 
@@ -122,6 +122,10 @@ class SeldonDeployment:
             deployment["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
                 "containers"
             ][0]["name"] = model_name
+            # set omigami_env env var
+            deployment["spec"]["predictors"][0]["componentSpecs"][0]["spec"][
+                "containers"
+            ][0]["env"][0]["value"] = OMIGAMI_ENV
 
             return deployment
 
