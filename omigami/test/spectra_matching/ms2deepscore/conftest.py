@@ -6,7 +6,7 @@ from ms2deepscore.models import load_model
 from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
-from omigami.config import SOURCE_URI_PARTIAL_GNPS_500_SPECTRA
+from omigami.config import GNPS_URIS
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
@@ -209,7 +209,7 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
     flow_params = TrainingFlowParameters(
         fs_dgw=data_gtw,
         spectrum_dgw=spectrum_dgw,
-        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
+        source_uri=GNPS_URIS["small_500"],
         # the three parameters below are for using cached assets instead of downloading
         dataset_directory=str(ASSETS_DIR),
         dataset_name="SMALL_GNPS_500_spectra.json",
