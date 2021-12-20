@@ -110,11 +110,12 @@ class MS2DeepScoreFlowFactory:
         model_output_path = str(self._ms2deepscore_root / self._directories["model"])
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
 
+        source_uri = GNPS_URIS[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
             spectrum_dgw=spectrum_dgw,
-            source_uri=GNPS_URIS[dataset_id],
+            source_uri=source_uri,
             dataset_directory=self._dataset_directory / dataset_id,
             chunk_size=chunk_size,
             ion_mode=ion_mode,
