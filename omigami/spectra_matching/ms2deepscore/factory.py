@@ -12,6 +12,7 @@ from omigami.config import (
     CHUNK_SIZE,
     MLFLOW_DIRECTORY,
     MLFLOW_SERVER,
+    GNPS_URIS,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -66,7 +67,6 @@ class MS2DeepScoreFlowFactory:
         dataset_id: str,
         fingerprint_n_bits: int,
         scores_decimals: int,
-        source_uri: str,
         spectrum_binner_n_bins: int,
         schedule: int = None,
         ion_mode: IonModes = "positive",
@@ -114,7 +114,7 @@ class MS2DeepScoreFlowFactory:
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
             spectrum_dgw=spectrum_dgw,
-            source_uri=source_uri,
+            source_uri=GNPS_URIS[dataset_id],
             dataset_directory=self._dataset_directory / dataset_id,
             chunk_size=chunk_size,
             ion_mode=ion_mode,

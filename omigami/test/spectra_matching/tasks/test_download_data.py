@@ -8,7 +8,7 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from prefect import Flow
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.config import GNPS_URIS
 from omigami.spectra_matching.storage import DataGateway, FSDataGateway
 from omigami.spectra_matching.tasks import DownloadParameters, DownloadData
 from omigami.test.spectra_matching.conftest import ASSETS_DIR
@@ -87,7 +87,7 @@ def test_download_existing_data(mock_default_config):
     data_gtw.download_gnps = lambda *args: None
     fs = get_fs(ASSETS_DIR)
     params = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS,
+        GNPS_URIS["small"],
         ASSETS_DIR,
         file_name,
     )
@@ -116,7 +116,7 @@ def test_download_existing_data_s3(mock_default_config):
     data_gtw = FSDataGateway()
     fs = get_fs(dir_)
     download_params = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS, dir_, file_name, checkpoint_name
+        GNPS_URIS["small"], dir_, file_name, checkpoint_name
     )
 
     with Flow("test-flow") as test_flow:

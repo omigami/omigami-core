@@ -13,6 +13,7 @@ from omigami.config import (
     STORAGE_ROOT,
     CHUNK_SIZE,
     MLFLOW_SERVER,
+    GNPS_URIS,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -63,7 +64,6 @@ class Spec2VecFlowFactory:
         intensity_weighting_power: float,
         allowed_missing_percentage: float,
         dataset_id: str,
-        source_uri: str,
         n_decimals: int = 2,
         schedule: pd.Timedelta = None,
         ion_mode: IonModes = "positive",
@@ -107,7 +107,7 @@ class Spec2VecFlowFactory:
             allowed_missing_percentage=allowed_missing_percentage,
             window=window,
             chunk_size=chunk_size,
-            source_uri=source_uri,
+            source_uri=GNPS_URIS[dataset_id],
             overwrite_model=overwrite_model,
             documents_save_directory=str(
                 self._spec2vec_root

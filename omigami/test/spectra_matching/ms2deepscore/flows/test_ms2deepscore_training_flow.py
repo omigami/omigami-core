@@ -6,7 +6,7 @@ import mlflow
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.config import GNPS_URIS
 from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
@@ -101,7 +101,7 @@ def test_run_training_flow(
     flow_params = TrainingFlowParameters(
         fs_dgw=data_gtw,
         spectrum_dgw=spectrum_dgw,
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        source_uri=GNPS_URIS["small"],
         dataset_directory=ASSETS_DIR,
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
