@@ -48,7 +48,11 @@ class MS2DeepScoreFlowFactory:
         model_registry_uri: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
-        self._dataset_directory = DRPath(dataset_directory) or STORAGE_ROOT / "datasets"
+        self._dataset_directory = (
+            DRPath(dataset_directory)
+            if dataset_directory is not None
+            else STORAGE_ROOT / "datasets"
+        )
         self._ms2deepscore_root = MS2DEEPSCORE_ROOT
         self._directories = directories or DIRECTORIES
         self._dataset_ids = DATASET_IDS
