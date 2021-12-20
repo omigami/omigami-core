@@ -95,6 +95,7 @@ class Spec2VecFlowFactory:
         spectrum_dgw = RedisSpectrumDataGateway(project_name)
         fs_dgw = FSDataGateway()
 
+        source_uri = GNPS_URIS[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
@@ -107,7 +108,7 @@ class Spec2VecFlowFactory:
             allowed_missing_percentage=allowed_missing_percentage,
             window=window,
             chunk_size=chunk_size,
-            source_uri=GNPS_URIS[dataset_id],
+            source_uri=source_uri,
             overwrite_model=overwrite_model,
             documents_save_directory=str(
                 self._spec2vec_root
