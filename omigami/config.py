@@ -62,7 +62,6 @@ SOURCE_URI_PARTIAL_GNPS_500_SPECTRA = config["gnps_uri"]["partial_500_spectra"].
 def get_login_config() -> Dict[str, str]:
     if OMIGAMI_ENV in (Environments.dev, Environments.prod):
         login_config = config["login"][OMIGAMI_ENV].get(dict)
-        login_config.pop("token")
     else:
         login_config = {
             "username": None,
