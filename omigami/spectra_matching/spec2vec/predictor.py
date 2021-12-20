@@ -108,7 +108,7 @@ class Spec2VecPredictor(Predictor):
             log.info("Finishing prediction.")
             return best_matches
         except (RuntimeError, FileNotFoundError, ValueError, EmbeddingMakerError) as e:
-            raise SpectraMatchingPredictorException(str(e))
+            raise SpectraMatchingPredictorException(str(e), 1, 404)
 
     @staticmethod
     def _parse_input(
