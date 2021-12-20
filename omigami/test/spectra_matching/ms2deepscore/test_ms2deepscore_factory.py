@@ -13,7 +13,6 @@ def test_build_ms2deep_training_flow():
         dataset_id="small",
         schedule=None,
         ion_mode="positive",
-        source_uri="URI",
         overwrite_model=True,
         project_name="Raging Flow",
         deploy_model=True,

@@ -6,10 +6,7 @@ from drfs import DRPath
 from drfs.filesystems import get_fs
 from ms2deepscore import SpectrumBinner
 
-from omigami.config import (
-    SOURCE_URI_PARTIAL_GNPS,
-    SOURCE_URI_COMPLETE_GNPS,
-)
+from omigami.config import GNPS_URIS
 from omigami.spectra_matching.storage import FSDataGateway, KEYS
 
 
@@ -25,8 +22,8 @@ def test_load_gnps(local_gnps_small_json):
 @pytest.mark.parametrize(
     "uri",
     [
-        SOURCE_URI_PARTIAL_GNPS,
-        SOURCE_URI_COMPLETE_GNPS,
+        GNPS_URIS["small"],
+        GNPS_URIS["complete"],
     ],
 )
 def test_download_gnps_and_serialize_to_local(uri, tmpdir):
@@ -37,9 +34,9 @@ def test_download_gnps_and_serialize_to_local(uri, tmpdir):
 
 def test_download_and_serialize_to_remote(raw_spectra, s3_mock):
     with requests_mock.Mocker() as m:
-        m.get(SOURCE_URI_PARTIAL_GNPS, text="bac")
+        m.get(GNPS_URIS["small"], text="bac")
         _ = FSDataGateway().download_gnps(
-            uri=SOURCE_URI_PARTIAL_GNPS,
+            uri=GNPS_URIS["small"],
             output_path="s3://test-bucket/test-ds",
         )
         assert DRPath("s3://test-bucket/test-ds").exists()
@@ -53,7 +50,7 @@ def test_resume_download(tmpdir, local_gnps_small_json):
     new_path = f"{tmpdir}/SMALL_GNPS_remaining.json"
 
     FSDataGateway(get_fs(path))._resume_download(
-        existing_file_size, SOURCE_URI_COMPLETE_GNPS, new_path
+        existing_file_size, GNPS_URIS["complete"], new_path
     )
 
     updated_file_size = Path(new_path).stat().st_size

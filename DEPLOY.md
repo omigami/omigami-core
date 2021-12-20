@@ -1,24 +1,29 @@
 # Deployment
 
-## Choose the cluster
+## Choose The Cluster
 
 ```shell
 export OMIGAMI_ENV=dev  # Either 'dev' or 'prod'
 ```
 
-## Where to find `S2V_IMAGE` `MS2DS_IMAGE` and `MODEL_RUN_ID`
+## Input Parameters
+
+### Docker repositores
 * S2V_IMAGE: [omigami-spec2vec repository](https://hub.docker.com/repository/docker/drtools/omigami-spec2vec/tags?page=1&ordering=last_updated)
 * MS2DS_IMAGE: [omigami-ms2deepscore repository](https://hub.docker.com/repository/docker/drtools/omigami-ms2deepscore/tags?page=1&ordering=last_updated)
 * MODEL_RUN_ID (dev): https://dev.omigami.com/mlflow/#/
 * MODEL_RUN_ID (prod): https://app.omigami.com/mlflow/#/
 
-Then you can check flows here:
-* (dev): https://prefect-dev.omigami.com/
-* (prod): https://prefect-app.omigami.com/
+### Dataset IDs
+Three values for dataset IDs are available:
+- `small`: a 100 spetra dataset
+- `small_500`: a 500 spectra dataset. I would've never guessed it.
+- `10k`: a... 10k spectra dataset
+- `complete`: all data available on GNPS. Updated monthly. Used in production
 
-### Spec2Vec
+## Spec2Vec
 
-#### Training Flow
+### Training Flow
 
 For information about all parameters and defaults:
 ```shell
@@ -28,8 +33,7 @@ omigami spec2vec train --help
 
 ```shell
 omigami spec2vec train \ 
-    --iterations=5 \
-    # default (25) is suggested for prod deployment 
+    --iterations=25 \
     --n-decimals=2 \
     --window=500 \
     --intensity-weighting-power=0.5 \
@@ -38,9 +42,6 @@ omigami spec2vec train \
     --project-name=spec2vec \
     --flow-name=<FLOW_NAME> \
     --dataset-id=10k \
-    # 'complete' is suggested for prod 
-    --source-uri=https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json \
-    # https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json is suggested for prod
     --ion-mode=positive \
     --deploy-model \
     --overwrite-model \
@@ -49,7 +50,7 @@ omigami spec2vec train \
 
 ```
 
-#### Model Deployment flow
+### Model Deployment flow
 
 For information about all parameters and defaults:
 ```shell
@@ -66,15 +67,14 @@ omigami spec2vec deploy-model \
     --project-name=spec2vec \
     --flow-name=<FLOW_NAME> \
     --dataset-id=10k \
-    # 'complete' is suggested for prod deployment
     --ion-mode=positive
 ```
 
 
 
-### MS2DeepScore
+## MS2DeepScore
 
-#### Training Flow
+### Training Flow
 
 For information about all parameters and defaults:
 ```shell
@@ -95,9 +95,6 @@ omigami ms2deepscore train \
     --project-name=ms2deepscore \
     --flow-name=<FLOW_NAME> \
     --dataset-id=10k \
-    # 'complete' is suggested for prod
-    --source-uri=https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json \
-    # https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json is suggested for prod
     --ion-mode=positive \
     --deploy-model \
     --overwrite-model \
@@ -106,7 +103,7 @@ omigami ms2deepscore train \
 
 ```
 
-#### Model Deployment flow
+### Model Deployment flow
 
 For information about all parameters and defaults:
 ```shell
@@ -120,9 +117,10 @@ omigami spec2vec deploy-model \
     --project-name =ms2deepscore \
     --flow-name=<FLOW_NAME> \
     --dataset-id=10k \
-    # 'complete' is suggested for prod deployment
     --ion-mode=positive
 ```
+
+---
 
 # How to access predictions
 After the model has been deployed you can access the predictions endpoint in two ways:

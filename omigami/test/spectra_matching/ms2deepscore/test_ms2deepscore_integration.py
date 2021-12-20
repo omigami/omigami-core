@@ -2,7 +2,7 @@ import pytest
 
 from omigami.config import (
     STORAGE_ROOT,
-    SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
+    GNPS_URIS,
     MLFLOW_DIRECTORY,
     MLFLOW_SERVER,
 )
@@ -33,7 +33,7 @@ def test_run_training_flow(backend_services):
         flow_name="MS2DS Flow",
         dataset_id="small",
         dataset_directory=str(STORAGE_ROOT.parent / "datasets-ms2ds"),
-        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
+        source_uri=GNPS_URIS["small_500"],
         ion_mode="positive",
         deploy_model=False,
         overwrite_model=False,

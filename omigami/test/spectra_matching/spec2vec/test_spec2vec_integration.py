@@ -4,7 +4,7 @@ from prefect.run_configs import LocalRun
 from prefect.storage import Local
 
 from omigami.config import (
-    SOURCE_URI_PARTIAL_GNPS,
+    GNPS_URIS,
     STORAGE_ROOT,
     DATASET_IDS,
 )
@@ -30,7 +30,7 @@ def test_deploy_training_flow(backend_services, mock_s2v_deploy_model_task):
         project_name="local-integration-test-s2v",
         flow_name="Robert DeFlow",
         dataset_id="small",
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        source_uri=GNPS_URIS["small"],
         ion_mode="positive",
         iterations=3,
         n_decimals=1,
@@ -56,7 +56,7 @@ def test_download_task_local_integration(backend_services):
     and it is useful for debugging"""
     client = backend_services["prefect"]
     params = DownloadParameters(
-        SOURCE_URI_PARTIAL_GNPS, str(STORAGE_ROOT), DATASET_IDS["small"]
+        GNPS_URIS["small"], str(STORAGE_ROOT), DATASET_IDS["small"]
     )
     with Flow(
         "test-flow",
