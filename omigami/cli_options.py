@@ -21,9 +21,7 @@ common_flow_options = [
 
 dataset_id = click.option(
     "--dataset-id",
-    # TODO: these two parameters need some refactoring, please refactor the same in
-    #  omigami/spectra_matching/spec2vec/cli.py during refactoring
-    type=click.Choice(["small", "10k", "complete"]),
+    type=click.Choice(["small", "small_500", "10k", "complete"]),
     required=True,
     help="Name of the dataset of choice. It must match the source-uri of the dataset.",
 )
