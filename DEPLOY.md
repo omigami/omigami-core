@@ -10,10 +10,11 @@ export OMIGAMI_ENV=dev  # Either 'dev' or 'prod'
 * S2V_IMAGE: [omigami-spec2vec repository](https://hub.docker.com/repository/docker/drtools/omigami-spec2vec/tags?page=1&ordering=last_updated)
 * MS2DS_IMAGE: [omigami-ms2deepscore repository](https://hub.docker.com/repository/docker/drtools/omigami-ms2deepscore/tags?page=1&ordering=last_updated)
 * MODEL_RUN_ID (dev): https://dev.omigami.com/mlflow/#/
-* MODEL_RUN_ID (prod): TODO
+* MODEL_RUN_ID (prod): https://app.omigami.com/mlflow/#/
 
-Then you can check the dev flows here: https://prefect-dev.omigami.com/ 
-and production flows here: https://prefect.mlops.datarevenue.com/default
+Then you can check flows here:
+* (dev): https://prefect-dev.omigami.com/
+* (prod): https://prefect-app.omigami.com/
 
 ### Spec2Vec
 
@@ -28,6 +29,7 @@ omigami spec2vec train --help
 ```shell
 omigami spec2vec train \ 
     --iterations=5 \
+    # default (25) is suggested for prod deployment 
     --n-decimals=2 \
     --window=500 \
     --intensity-weighting-power=0.5 \
@@ -36,11 +38,14 @@ omigami spec2vec train \
     --project-name=spec2vec \
     --flow-name=<FLOW_NAME> \
     --dataset-id=10k \
+    # 'complete' is suggested for prod 
     --source-uri=https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json \
+    # https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json is suggested for prod
     --ion-mode=positive \
     --deploy-model \
     --overwrite-model \
-    --dataset-directory=s3://omigami-dev/datasets
+    --dataset-directory=s3://omigami-dev/datasets \
+    --schedule=30
 
 ```
 
@@ -61,6 +66,7 @@ omigami spec2vec deploy-model \
     --project-name=spec2vec \
     --flow-name=<FLOW_NAME> \
     --dataset-id=10k \
+    # 'complete' is suggested for prod deployment
     --ion-mode=positive
 ```
 
@@ -77,7 +83,7 @@ omigami ms2deepscore train --help
 
 ```shell
 omigami ms2deepscore train \ 
-    ----fingerprint-n-bits=2048 \
+    --fingerprint-n-bits=2048 \
     --scores-decimals=5 \
     --spectrum-binner-n-bins=10000 \
     --spectrum-ids-chunk-size=10000 \
@@ -89,11 +95,14 @@ omigami ms2deepscore train \
     --project-name=ms2deepscore \
     --flow-name=<FLOW_NAME> \
     --dataset-id=10k \
+    # 'complete' is suggested for prod
     --source-uri=https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json \
+    # https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json is suggested for prod
     --ion-mode=positive \
     --deploy-model \
     --overwrite-model \
-    --dataset-directory=s3://omigami-dev/datasets
+    --dataset-directory=s3://omigami-dev/datasets \
+    --schedule=30
 
 ```
 
@@ -111,6 +120,7 @@ omigami spec2vec deploy-model \
     --project-name =ms2deepscore \
     --flow-name=<FLOW_NAME> \
     --dataset-id=10k \
+    # 'complete' is suggested for prod deployment
     --ion-mode=positive
 ```
 
