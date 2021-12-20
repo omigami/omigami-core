@@ -114,6 +114,8 @@ class Spec2VecPredictor(Predictor):
     def _parse_input(
         data_input_and_parameters: Dict[str, Union[Dict, List]]
     ) -> Tuple[Union[dict, list, None], Union[dict, list, None, dict]]:
+        if isinstance(data_input_and_parameters, np.ndarray):
+            data_input_and_parameters = data_input_and_parameters.tolist()
         parameters = data_input_and_parameters.get("parameters", {})
         data_input = data_input_and_parameters.get("data")
         return data_input, parameters

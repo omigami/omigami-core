@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Dict
 
 import pandas as pd
+from drfs import DRPath
 from prefect import Flow
 
 from omigami.config import (
@@ -41,7 +42,11 @@ class Spec2VecFlowFactory:
         mlflow_output_directory: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
-        self._dataset_directory = dataset_directory or STORAGE_ROOT / "datasets"
+        self._dataset_directory = (
+            DRPath(dataset_directory)
+            if dataset_directory is not None
+            else STORAGE_ROOT / "datasets"
+        )
         self._spec2vec_root = SPEC2VEC_ROOT
         self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
