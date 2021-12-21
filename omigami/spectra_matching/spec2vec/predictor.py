@@ -60,9 +60,6 @@ class Spec2VecPredictor(Predictor):
         similarity scores in the GNPS spectra library. Return a list matches of IDs
         and scores for each input spectrum.
         """
-        # if mz_range == 1:
-        #     log.warning("I'm going to error.")
-        #     raise SpectraMatchingPredictorException("I am a bad error", 1, 404)
         try:
             log.info("Creating a prediction.")
             data_input, parameters = self._parse_input(data_input_and_parameters)
@@ -197,7 +194,6 @@ class Spec2VecPredictor(Predictor):
 
     @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
     def handleCustomError(error):
-        log.info("I am handling the error.")
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
