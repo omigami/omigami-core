@@ -53,7 +53,7 @@ class Spec2VecPredictor(Predictor):
         super().__init__(RedisSpectrumDataGateway(SPEC2VEC_PROJECT_NAME))
 
     @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
-    def handle_custom_error(error):
+    def handleCustomError(error):
         log.info("I am handling the error.")
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
