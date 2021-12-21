@@ -1,6 +1,8 @@
 from logging import getLogger
 from typing import List, Dict, Any
 
+import flask
+from flask import jsonify
 from mlflow.pyfunc import PythonModel
 
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
@@ -89,3 +91,11 @@ class Predictor(PythonModel):
 
     def set_run_id(self, run_id: str):
         self._run_id = run_id
+
+    model_error_handler = flask.Blueprint("error_handlers", __name__)
+
+    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
+    def handle_custom_error(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response

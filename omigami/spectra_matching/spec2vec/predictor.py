@@ -1,9 +1,7 @@
 from logging import getLogger
 from typing import Union, List, Dict, Tuple
 
-import flask
 import numpy as np
-from flask import jsonify
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from matchms.filtering import normalize_intensities
@@ -189,11 +187,3 @@ class Spec2VecPredictor(Predictor):
             if sp_id in ref_embeddings
         ]
         return ref_emb_for_input
-
-    model_error_handler = flask.Blueprint("error_handlers", __name__)
-
-    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
-    def handleCustomError(error):
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
