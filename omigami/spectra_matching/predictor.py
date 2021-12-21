@@ -42,7 +42,6 @@ class Predictor(PythonModel):
     def __init__(self, dgw: RedisSpectrumDataGateway = None):
         self.dgw = dgw
 
-    @staticmethod
     @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
     def handle_custom_error(error):
         log.info("I am handling the error.")
