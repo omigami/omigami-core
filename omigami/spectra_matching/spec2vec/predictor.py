@@ -32,8 +32,6 @@ log = getLogger(__name__)
 
 
 class Spec2VecPredictor(Predictor):
-    model_error_handler = flask.Blueprint("error_handlers", __name__)
-
     def __init__(
         self,
         model: Word2Vec,
@@ -52,12 +50,14 @@ class Spec2VecPredictor(Predictor):
         self._run_id = run_id
         super().__init__(RedisSpectrumDataGateway(SPEC2VEC_PROJECT_NAME))
 
-    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
-    def handleCustomError(error):
-        log.info("I am handling the error.")
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
+        model_error_handler = flask.Blueprint("error_handlers", __name__)
+
+        @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
+        def handleCustomError(error):
+            log.info("I am handling the error.")
+            response = jsonify(error.to_dict())
+            response.status_code = error.status_code
+            return response
 
     def predict(
         self,
