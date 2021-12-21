@@ -115,9 +115,6 @@ class Spec2VecPredictor(Predictor):
         except (RuntimeError, FileNotFoundError, ValueError, EmbeddingMakerError) as e:
             # TODO carefully pick http status code per exception type
             raise SpectraMatchingPredictorException(str(e), 1, 404)
-        except Exception as e:
-            # TODO carefully pick http status code per exception type
-            raise SpectraMatchingPredictorException(str(e), 2, 500)
 
     @staticmethod
     def _parse_input(
