@@ -30,9 +30,9 @@ StorageRoots = {
 }
 
 RedisDatabases = {
-    Environments.local: {"small": "0"},
-    Environments.docker: {"small": "0"},
-    Environments.dev: {"small": "2", "10k": "1", "complete": "0"},
+    Environments.local: {"small": "0", "small_500": "0"},
+    Environments.docker: {"small": "0", "small_500": "0"},
+    Environments.dev: {"small": "2", "small_500": "2", "10k": "1", "complete": "0"},
     Environments.prod: {"small": "2", "complete": "0"},
 }
 
