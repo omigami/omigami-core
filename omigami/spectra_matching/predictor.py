@@ -20,7 +20,6 @@ class SpectraMatchingPredictorException(Exception):
         self.application_error_code = application_error_code
 
     def to_dict(self):
-        log.info("Converting error to dict")
         res = {
             "status": {
                 "status": self.status_code,
