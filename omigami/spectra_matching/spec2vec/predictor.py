@@ -204,3 +204,13 @@ class Spec2VecPredictor(Predictor):
             if sp_id in ref_embeddings
         ]
         return ref_emb_for_input
+
+    def __setstate__(self, state):
+        model_error_handler = flask.Blueprint("error_handlers", __name__)
+
+        @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
+        def handleCustomError(error):
+            log.info("I am handling the error.")
+            response = jsonify(error.to_dict())
+            response.status_code = error.status_code
+            return response
