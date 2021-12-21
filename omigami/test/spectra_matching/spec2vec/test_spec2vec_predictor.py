@@ -1,8 +1,8 @@
 import os
-import pickle
 from pathlib import Path
 from unittest.mock import Mock
 
+import mlflow.pyfunc
 import pandas as pd
 import pytest
 from pytest_redis import factories
@@ -223,18 +223,32 @@ def test_predictor_error_handling(tmpdir):
         run_id="1",
     )
 
-    with open(tmpdir / "model.pickle", "wb") as f:
-        pickle.dump(predictor, f)
-
-    with open(tmpdir / "model.pickle", "rb") as f:
-        loaded_model = pickle.load(f)
-
-    loaded_model.predict = Mock(
+    predictor.predict = Mock(
         side_effect=SpectraMatchingPredictorException("error", 1, 400)
     )
 
     metrics = Mock(spec=SeldonMetrics)
-    app = get_rest_microservice(loaded_model, metrics)
+    app = get_rest_microservice(predictor, metrics)
+    client = app.test_client()
+
+    response = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
+
+    assert response.status_code == 400
+    assert response.json["status"]["app_code"] == 1
+
+
+@pytest.mark.xfail
+def test_predictor_error_handling_mlflow(registered_s2v_model):
+    run = mlflow.get_run(registered_s2v_model["run_id"])
+    model_uri = run.info.artifact_uri + "/model"
+    predictor = mlflow.pyfunc.load_model(model_uri)
+
+    predictor.predict = Mock(
+        side_effect=SpectraMatchingPredictorException("error", 1, 400)
+    )
+
+    metrics = Mock(spec=SeldonMetrics)
+    app = get_rest_microservice(predictor, metrics)
     client = app.test_client()
 
     response = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
