@@ -8,6 +8,7 @@ from pytest_redis import factories
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.wrapper import get_rest_microservice
 
+from omigami.spectra_matching.predictor import SpectraMatchingPredictorException
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
     EmbeddingMaker,
@@ -220,6 +221,9 @@ def test_predictor_error_handling():
         allowed_missing_percentage=25,
         run_id="1",
     )
+    predictor.predict = Mock(
+        side_effect=SpectraMatchingPredictorException("error", 1, 400)
+    )
 
     metrics = Mock(spec=SeldonMetrics)
     app = get_rest_microservice(predictor, metrics)
@@ -227,4 +231,5 @@ def test_predictor_error_handling():
 
     response = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
 
-    assert response
+    assert response.status_code == 400
+    assert response.json["status"]["app_code"] == 1
