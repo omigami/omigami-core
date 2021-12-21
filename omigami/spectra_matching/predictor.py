@@ -71,24 +71,20 @@ class Predictor(PythonModel):
             ref_spectrum_ids.append(ref_ids)
 
         self._check_spectrum_refs(ref_spectrum_ids)
-        log.info("Finished getting ref_ids from data_input")
         return ref_spectrum_ids
 
     @staticmethod
     def _check_spectrum_refs(reference_spectra_ids: List[List[str]]):
-        log.info("Checking spectrum_refs")
         if [] in reference_spectra_ids:
             idx_null = [
                 idx
                 for idx, element in enumerate(reference_spectra_ids)
                 if element == []
             ]
-            log.info("Raising No data found RunTimeError")
             raise RuntimeError(
                 f"No data found from filtering with precursor MZ for spectra at indices {idx_null}. "
                 f"Try increasing the mz_range filtering."
             )
-        log.info("Finished checking spectrum_refs")
 
     def _add_metadata(
         self, best_matches: Dict[str, SpectrumMatches]

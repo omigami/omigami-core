@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pickle
-from logging import Logger, getLogger
+from logging import Logger
 from typing import List, Iterable, Set
 
 from matchms import Spectrum
@@ -14,8 +14,6 @@ from omigami.config import (
 from omigami.spectra_matching.entities.embedding import Embedding
 from omigami.spectra_matching.storage import RedisDataGateway
 
-
-log = getLogger(__name__)
 
 class RedisSpectrumDataGateway(RedisDataGateway):
     """Data gateway for Redis storage."""
@@ -83,7 +81,6 @@ class RedisSpectrumDataGateway(RedisDataGateway):
                 SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET, min_mz, max_mz
             )
         ]
-        log.info("Finished getting spectrum_ids_within_range")
         return spectrum_ids_within_range
 
     def _read_hashes(self, hash_name: str, spectrum_ids: List[str] = None) -> List:
