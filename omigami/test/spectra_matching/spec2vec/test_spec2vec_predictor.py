@@ -1,4 +1,5 @@
 import os
+import pickle
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -212,7 +213,7 @@ def test_add_metadata(spec2vec_predictor, spec2vec_embeddings, spec2vec_redis_se
     assert bm["CCMSLIB00000072099"]["metadata"]["compound_name"] == "Coproporphyrin I"
 
 
-def test_predictor_error_handling():
+def test_predictor_error_handling(tmpdir):
     predictor = Spec2VecPredictor(
         "model",
         ion_mode="positive",
@@ -221,12 +222,19 @@ def test_predictor_error_handling():
         allowed_missing_percentage=25,
         run_id="1",
     )
-    predictor.predict = Mock(
+
+    with open(tmpdir / "model.pickle", "wb") as f:
+        pickle.dump(predictor, f)
+
+    with open(tmpdir / "model.pickle", "rb") as f:
+        loaded_model = pickle.load(f)
+
+    loaded_model.predict = Mock(
         side_effect=SpectraMatchingPredictorException("error", 1, 400)
     )
 
     metrics = Mock(spec=SeldonMetrics)
-    app = get_rest_microservice(predictor, metrics)
+    app = get_rest_microservice(loaded_model, metrics)
     client = app.test_client()
 
     response = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
