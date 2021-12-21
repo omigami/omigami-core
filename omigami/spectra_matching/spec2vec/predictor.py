@@ -1,7 +1,9 @@
 from logging import getLogger
 from typing import Union, List, Dict, Tuple
 
+import flask
 import numpy as np
+from flask import jsonify
 from gensim.models import Word2Vec
 from matchms import calculate_scores
 from matchms.filtering import normalize_intensities
@@ -30,6 +32,8 @@ log = getLogger(__name__)
 
 
 class Spec2VecPredictor(Predictor):
+    model_error_handler = flask.Blueprint("error_handlers", __name__)
+
     def __init__(
         self,
         model: Word2Vec,
@@ -48,6 +52,13 @@ class Spec2VecPredictor(Predictor):
         self._run_id = run_id
         super().__init__(RedisSpectrumDataGateway(SPEC2VEC_PROJECT_NAME))
 
+    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
+    def handle_custom_error(error):
+        log.info("I am handling the error.")
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
+
     def predict(
         self,
         context,
@@ -60,7 +71,7 @@ class Spec2VecPredictor(Predictor):
         """
         if mz_range == 1:
             log.warning("I'm going to error.")
-            raise SpectraMatchingPredictorException("I am a bad error", 1, 444)
+            raise SpectraMatchingPredictorException("I am a bad error", 1, 404)
         try:
             log.info("Creating a prediction.")
             data_input, parameters = self._parse_input(data_input_and_parameters)

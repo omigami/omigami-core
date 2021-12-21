@@ -1,9 +1,12 @@
 import os
 from pathlib import Path
+from unittest.mock import Mock
 
 import pandas as pd
 import pytest
 from pytest_redis import factories
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.wrapper import get_rest_microservice
 
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
@@ -206,3 +209,22 @@ def test_add_metadata(spec2vec_predictor, spec2vec_embeddings, spec2vec_redis_se
     assert set(bm["CCMSLIB00000072099"].keys()) == {"score", "metadata"}
     assert len(bm["CCMSLIB00000072099"]["metadata"]) == 37  # nr of metadata in GNPS
     assert bm["CCMSLIB00000072099"]["metadata"]["compound_name"] == "Coproporphyrin I"
+
+
+def test_predictor_error_handling():
+    predictor = Spec2VecPredictor(
+        "model",
+        ion_mode="positive",
+        n_decimals=1,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=25,
+        run_id="1",
+    )
+
+    metrics = Mock(spec=SeldonMetrics)
+    app = get_rest_microservice(predictor, metrics)
+    client = app.test_client()
+
+    response = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
+
+    assert response
