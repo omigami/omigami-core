@@ -9,17 +9,13 @@ seldon:
 storage:
   dataset_id:
     small: "small"
+    small_500: "small_500"
     10k: "10k"
     complete: "complete/{date:%Y-%m}"
   redis:
     embedding_hashes: "embedding_data"
     spectrum_id_sorted_set: "spectrum_id_precursor_mz_sorted"
     spectrum_hashes: "spectrum_data"
-
-gnps_uri:
-  complete: "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json"
-  partial: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json"
-  partial_500_spectra: "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS_500_spectra.json"
 
 login:
   prod:

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Dict
 
 import pandas as pd
+from drfs import DRPath
 from prefect import Flow
 
 from omigami.config import (
@@ -12,6 +13,7 @@ from omigami.config import (
     STORAGE_ROOT,
     CHUNK_SIZE,
     MLFLOW_SERVER,
+    GNPS_URIS,
 )
 from omigami.flow_config import (
     make_flow_config,
@@ -41,7 +43,11 @@ class Spec2VecFlowFactory:
         mlflow_output_directory: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
-        self._dataset_directory = dataset_directory or STORAGE_ROOT / "datasets"
+        self._dataset_directory = (
+            DRPath(dataset_directory)
+            if dataset_directory is not None
+            else STORAGE_ROOT / "datasets"
+        )
         self._spec2vec_root = SPEC2VEC_ROOT
         self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
@@ -58,7 +64,6 @@ class Spec2VecFlowFactory:
         intensity_weighting_power: float,
         allowed_missing_percentage: float,
         dataset_id: str,
-        source_uri: str,
         n_decimals: int = 2,
         schedule: pd.Timedelta = None,
         ion_mode: IonModes = "positive",
@@ -90,6 +95,8 @@ class Spec2VecFlowFactory:
         spectrum_dgw = RedisSpectrumDataGateway(project_name)
         fs_dgw = FSDataGateway()
 
+        source_uri = GNPS_URIS[dataset_id]
+        redis_db = self._redis_dbs[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
@@ -113,7 +120,7 @@ class Spec2VecFlowFactory:
             model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=self._mlflow_output_directory,
             experiment_name=project_name,
-            redis_db=self._redis_dbs[dataset_id],
+            redis_db=redis_db,
         )
 
         training_flow = build_training_flow(

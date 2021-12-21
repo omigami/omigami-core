@@ -1,5 +1,6 @@
 import pytest
 
+from omigami.spectra_matching.spec2vec.config import PREDICTOR_ENV_PATH
 from omigami.spectra_matching.spec2vec.flows.deploy_model import (
     DeployModelFlowParameters,
     build_deploy_model_flow,
@@ -56,6 +57,7 @@ def deploy_model_setup(
         run_name="run",
         experiment_name="test-experiment",
         model_name="test",
+        conda_env_path=PREDICTOR_ENV_PATH,
         experiment_path=str(tmpdir),
     )
 

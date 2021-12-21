@@ -6,6 +6,7 @@ import mlflow
 import pytest
 
 from omigami.spectra_matching.predictor import Predictor
+from omigami.spectra_matching.spec2vec.config import PREDICTOR_ENV_PATH
 from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 
 
@@ -41,6 +42,7 @@ def test_register_model(mlflow_setup):
         run_name="run",
         experiment_name=mlflow_setup["experiment"],
         model_name="test",
+        conda_env_path=PREDICTOR_ENV_PATH,
     )
 
     assert mlflow_setup["model"]._run_id == run_id
@@ -58,6 +60,7 @@ def test_register_model_with_params(mlflow_setup):
     run_id = dgw.register_model(
         model=mlflow_setup["model"],
         run_name="run",
+        conda_env_path=PREDICTOR_ENV_PATH,
         experiment_name=mlflow_setup["experiment"],
         params=super_params,
         model_name="test",
@@ -79,6 +82,7 @@ def test_register_model_with_artifacts(mlflow_setup):
     run_id = dgw.register_model(
         model=mlflow_setup["model"],
         run_name="run",
+        conda_env_path=PREDICTOR_ENV_PATH,
         experiment_name=mlflow_setup["experiment"],
         artifacts=artifacts,
         model_name="test",
@@ -100,6 +104,7 @@ def test_register_model_with_metrics(mlflow_setup):
     run_id = dgw.register_model(
         model=Predictor(),
         model_name="test",
+        conda_env_path=PREDICTOR_ENV_PATH,
         experiment_name=mlflow_setup["experiment"],
         run_name="run",
         metrics=metrics,

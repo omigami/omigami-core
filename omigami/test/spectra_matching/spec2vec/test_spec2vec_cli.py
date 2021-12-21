@@ -19,7 +19,6 @@ def test_spec2vec_training_cli():
         "n_decimals",
         "overwrite_model",
         "schedule",
-        "source_uri",
         "window",
     }
 

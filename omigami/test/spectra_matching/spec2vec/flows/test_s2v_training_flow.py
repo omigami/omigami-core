@@ -7,7 +7,7 @@ import mlflow
 import pytest
 from drfs.filesystems import get_fs
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS
+from omigami.config import GNPS_URIS
 from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.flows.training_flow import (
     build_training_flow,
@@ -89,7 +89,7 @@ def test_run_training_flow(
     flow_params = TrainingFlowParameters(
         spectrum_dgw=spectrum_dgw,
         fs_dgw=data_gtw,
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
+        source_uri=GNPS_URIS["small"],
         dataset_directory=ASSETS_DIR,
         dataset_name="SMALL_GNPS.json",
         chunk_size=int(1e8),

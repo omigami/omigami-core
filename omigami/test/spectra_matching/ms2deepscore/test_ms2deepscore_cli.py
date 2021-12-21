@@ -18,7 +18,6 @@ def test_ms2deepscore_cli():
         "overwrite_model",
         "schedule",
         "scores_decimals",
-        "source_uri",
         "spectrum_binner_n_bins",
         "spectrum_ids_chunk_size",
         "test_ratio",

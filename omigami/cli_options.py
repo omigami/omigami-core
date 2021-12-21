@@ -1,6 +1,6 @@
 import click
 
-from omigami.config import SOURCE_URI_PARTIAL_GNPS, STORAGE_ROOT
+from omigami.config import GNPS_URIS, STORAGE_ROOT
 
 common_flow_options = [
     click.option(
@@ -21,16 +21,9 @@ common_flow_options = [
 
 dataset_id = click.option(
     "--dataset-id",
-    # TODO: these two parameters need some refactoring, please refactor the same in
-    #  omigami/spectra_matching/spec2vec/cli.py during refactoring
-    type=click.Choice(["small", "10k", "complete"]),
+    type=click.Choice(["small", "small_500", "10k", "complete"]),
     required=True,
     help="Name of the dataset of choice. It must match the source-uri of the dataset.",
-)
-source_uri = click.option(
-    "--source-uri",
-    default=SOURCE_URI_PARTIAL_GNPS,
-    help="URI to download training data from. Only downloads if it is not already downloaded",
 )
 ion_mode = click.option(
     "--ion-mode",
@@ -72,7 +65,6 @@ schedule = click.option(
 
 common_training_options = [
     dataset_id,
-    source_uri,
     ion_mode,
     deploy_model,
     overwrite_model,
