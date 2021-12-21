@@ -99,7 +99,6 @@ def test_run_model_deployment_flow(
         n_decimals=1,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=15,
-        dataset_directory=STORAGE_ROOT.parent / "datasets",
     )
 
     monitor_flow_results(client, flow_run_id)

@@ -1,6 +1,7 @@
 import pytest
 from gensim.models import Word2Vec
 
+from omigami.spectra_matching.spec2vec.config import PREDICTOR_ENV_PATH
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.spec2vec.tasks.deploy_model_tasks import LoadSpec2VecModel
 from omigami.spectra_matching.storage import FSDataGateway
@@ -22,6 +23,7 @@ def mlflow_setup(tmpdir_factory):
     run_id = dgw.register_model(
         model=model,
         run_name="run",
+        conda_env_path=PREDICTOR_ENV_PATH,
         experiment_name="test-experiment",
         model_name="test",
         experiment_path=str(tmpdir),

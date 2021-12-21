@@ -6,6 +6,7 @@ from pandas import Timestamp
 from prefect import Task
 
 from omigami.config import IonModes
+from omigami.spectra_matching.spec2vec.config import PREDICTOR_ENV_PATH
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
 from omigami.utils import merge_prefect_task_configs
@@ -86,6 +87,7 @@ class RegisterModel(Task):
         run_id = model_register.register_model(
             spec2vec_model,
             experiment_name=self._experiment_name,
+            conda_env_path=PREDICTOR_ENV_PATH,
             experiment_path=self._mlflow_output_directory,
             run_name=run_name,
             model_name=self._model_name,

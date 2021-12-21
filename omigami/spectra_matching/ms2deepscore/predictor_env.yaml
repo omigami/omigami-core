@@ -1,0 +1,22 @@
+name: omigami
+channels:
+  - conda-forge
+  - bioconda
+  - nlesc
+dependencies:
+  - python=3.7
+  - pip=20.2
+  - ijson=3.1.3
+  - matchms=0.8.2
+  - boto3=1.17.27
+  - s3fs=0.4.2
+  - pip:
+      - requests<2.25  # the first 4 packages in pip section cannot be changed
+      - pyyaml==5.4.0  # because they are ones needed by seldon to work fine.
+      - mlflow<1.12.0  # This is valid for the image seldon/mlflow:1.12.
+      - pandas<1.2.0
+      - ms2deepscore==0.2.1
+      - matchmsextras==0.2.3
+      - tqdm
+      - redis==3.5.3
+      - git+https://github.com/datarevenue-berlin/drfs

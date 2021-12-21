@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict
 
+from drfs import DRPath
 from prefect import Flow
 
 from omigami.config import (
@@ -48,7 +49,11 @@ class MS2DeepScoreFlowFactory:
         model_registry_uri: str = None,
     ):
         self._redis_dbs = REDIS_DATABASES
-        self._dataset_directory = dataset_directory or STORAGE_ROOT / "datasets"
+        self._dataset_directory = (
+            DRPath(dataset_directory)
+            if dataset_directory is not None
+            else STORAGE_ROOT / "datasets"
+        )
         self._ms2deepscore_root = MS2DEEPSCORE_ROOT
         self._directories = directories or DIRECTORIES
         self._dataset_ids = DATASET_IDS
@@ -105,11 +110,13 @@ class MS2DeepScoreFlowFactory:
         model_output_path = str(self._ms2deepscore_root / self._directories["model"])
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
 
+        source_uri = GNPS_URIS[dataset_id]
+        redis_db = self._redis_dbs[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
             spectrum_dgw=spectrum_dgw,
-            source_uri=GNPS_URIS[dataset_id],
+            source_uri=source_uri,
             dataset_directory=self._dataset_directory / dataset_id,
             chunk_size=chunk_size,
             ion_mode=ion_mode,
@@ -128,7 +135,7 @@ class MS2DeepScoreFlowFactory:
             validation_ratio=validation_ratio,
             test_ratio=test_ratio,
             spectrum_ids_chunk_size=spectrum_ids_chunk_size,
-            redis_db=self._redis_dbs[dataset_id],
+            redis_db=redis_db,
             schedule_task_days=schedule,
         )
 

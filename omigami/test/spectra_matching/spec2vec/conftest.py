@@ -9,6 +9,7 @@ from spec2vec import calc_vector
 from spec2vec.model_building import train_new_word2vec_model
 
 from omigami.config import EMBEDDING_HASHES, MLFLOW_DIRECTORY
+from omigami.spectra_matching.spec2vec.config import PREDICTOR_ENV_PATH
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.storage import FSDataGateway
@@ -188,6 +189,7 @@ def registered_s2v_model(word2vec_model):
         run_name="run",
         experiment_name="local-integration-test-s2v",
         model_name="integration-test-model",
+        conda_env_path=PREDICTOR_ENV_PATH,
         experiment_path=str(MLFLOW_DIRECTORY),
     )
 
