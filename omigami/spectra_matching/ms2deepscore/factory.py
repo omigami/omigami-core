@@ -48,7 +48,6 @@ class MS2DeepScoreFlowFactory:
         directories: Dict[str, str] = None,
         model_registry_uri: str = None,
     ):
-        self._redis_dbs = REDIS_DATABASES
         self._dataset_directory = (
             DRPath(dataset_directory)
             if dataset_directory is not None
@@ -96,7 +95,7 @@ class MS2DeepScoreFlowFactory:
         flow_config = make_flow_config(
             image=image,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
-            redis_db=self._redis_dbs[dataset_id],
+            redis_db=REDIS_DATABASES[dataset_id],
             schedule=schedule,
             storage_root=STORAGE_ROOT,
         )
@@ -111,7 +110,7 @@ class MS2DeepScoreFlowFactory:
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
 
         source_uri = GNPS_URIS[dataset_id]
-        redis_db = self._redis_dbs[dataset_id]
+        redis_db = REDIS_DATABASES[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
@@ -172,7 +171,7 @@ class MS2DeepScoreFlowFactory:
         flow_config = make_flow_config(
             image=image,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
-            redis_db=self._redis_dbs[dataset_id],
+            redis_db=REDIS_DATABASES[dataset_id],
             storage_root=STORAGE_ROOT,
         )
 
@@ -184,7 +183,7 @@ class MS2DeepScoreFlowFactory:
             spectrum_dgw=spectrum_dgw,
             fs_dgw=fs_dgw,
             ion_mode=ion_mode,
-            redis_db=self._redis_dbs[dataset_id],
+            redis_db=REDIS_DATABASES[dataset_id],
             model_registry_uri=self._model_registry_uri,
         )
 
