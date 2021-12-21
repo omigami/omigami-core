@@ -60,7 +60,7 @@ class Spec2VecPredictor(Predictor):
         """
         if mz_range == 1:
             log.warning("I'm going to error.")
-            raise SpectraMatchingPredictorException("I am a bad error", 1, 400)
+            raise SpectraMatchingPredictorException("I am a bad error", 1, 444)
         try:
             log.info("Creating a prediction.")
             data_input, parameters = self._parse_input(data_input_and_parameters)

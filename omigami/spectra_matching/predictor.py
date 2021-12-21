@@ -5,7 +5,6 @@ import flask
 from mlflow.pyfunc import PythonModel
 from seldon_core.flask_utils import jsonify
 
-
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 
 log = getLogger(__name__)
@@ -23,6 +22,7 @@ class SpectraMatchingPredictorException(Exception):
         self.application_error_code = application_error_code
 
     def to_dict(self):
+        log.info("Converting error to dict")
         res = {
             "status": {
                 "status": self.status_code,
@@ -43,9 +43,9 @@ class Predictor(PythonModel):
         self.dgw = dgw
 
     @staticmethod
-    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)  # Register
-    # the handler for an exception
+    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
     def handle_custom_error(error):
+        log.info("I am handling the error.")
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
