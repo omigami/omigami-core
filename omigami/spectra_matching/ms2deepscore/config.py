@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import confuse
 
 from omigami.config import STORAGE_ROOT
@@ -14,3 +16,4 @@ BINNED_SPECTRUM_HASHES = config["storage"]["redis"]["binned_spectrum_hashes"].ge
 PROJECT_NAME = config["prefect"]["project"].get(str)
 MS2DEEPSCORE_ROOT = STORAGE_ROOT / "ms2deepscore"
 SPECTRUM_IDS_CHUNK_SIZE = 10000
+PREDICTOR_ENV_PATH = Path(__file__).parent / "predictor_env.yaml"

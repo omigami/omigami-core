@@ -4,9 +4,7 @@ import pytest
 
 import omigami.spectra_matching.spec2vec.main
 from omigami.authentication.prefect_factory import prefect_client_factory
-from omigami.config import (
-    SOURCE_URI_PARTIAL_GNPS,
-)
+from omigami.config import GNPS_URIS
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spectra_matching.spec2vec.main import (
@@ -53,7 +51,6 @@ def test_mocked_deploy_training_flow(mock_objects):
         project_name="default",
         flow_name="Robert DeFlow",
         dataset_id="small",
-        source_uri=SOURCE_URI_PARTIAL_GNPS,
         ion_mode="positive",
         iterations=3,
         n_decimals=2,
@@ -62,7 +59,6 @@ def test_mocked_deploy_training_flow(mock_objects):
         allowed_missing_percentage=15,
         deploy_model=False,
         overwrite_model=False,
-        overwrite_all_spectra=True,
         schedule=None,
     )
 

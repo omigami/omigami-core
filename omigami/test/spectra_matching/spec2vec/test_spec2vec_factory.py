@@ -18,8 +18,6 @@ def test_build_training_flow():
         n_decimals=2,
         schedule=None,
         ion_mode="positive",
-        source_uri="None",
-        overwrite_all_spectra=False,
         overwrite_model=True,
         project_name="Raging Flow",
         deploy_model=True,

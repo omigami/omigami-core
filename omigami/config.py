@@ -54,15 +54,17 @@ SPECTRUM_ID_PRECURSOR_MZ_SORTED_SET = config["storage"]["redis"][
 SPECTRUM_HASHES = config["storage"]["redis"]["spectrum_hashes"].get(str)
 
 # URIs for downloading GNPS files
-SOURCE_URI_COMPLETE_GNPS = config["gnps_uri"]["complete"].get(str)
-SOURCE_URI_PARTIAL_GNPS = config["gnps_uri"]["partial"].get(str)
-SOURCE_URI_PARTIAL_GNPS_500_SPECTRA = config["gnps_uri"]["partial_500_spectra"].get(str)
+GNPS_URIS = {
+    "complete": "https://gnps-external.ucsd.edu/gnpslibrary/ALL_GNPS.json",
+    "small": "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS.json",
+    "small_500": "https://raw.githubusercontent.com/MLOps-architecture/share/main/test_data/SMALL_GNPS_500_spectra.json",
+    "10k": None,  # This file has no source URI and it lives only in S3
+}
 
 
 def get_login_config() -> Dict[str, str]:
     if OMIGAMI_ENV in (Environments.dev, Environments.prod):
         login_config = config["login"][OMIGAMI_ENV].get(dict)
-        login_config.pop("token")
     else:
         login_config = {
             "username": None,

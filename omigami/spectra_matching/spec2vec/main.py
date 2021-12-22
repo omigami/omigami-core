@@ -13,7 +13,6 @@ def run_spec2vec_training_flow(
     image: Optional[str],
     flow_name: str,
     dataset_id: str,
-    source_uri: str,
     ion_mode: IonModes,
     iterations: int,
     n_decimals: int,
@@ -22,7 +21,6 @@ def run_spec2vec_training_flow(
     allowed_missing_percentage: float,
     deploy_model: bool,
     overwrite_model: bool,
-    overwrite_all_spectra: bool,
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
     project_name: str = SPEC2VEC_PROJECT_NAME,
@@ -46,7 +44,6 @@ def run_spec2vec_training_flow(
         project_name=project_name,
         flow_name=flow_name,
         dataset_id=dataset_id,
-        source_uri=source_uri,
         ion_mode=ion_mode,
         iterations=iterations,
         n_decimals=n_decimals,
@@ -55,7 +52,6 @@ def run_spec2vec_training_flow(
         allowed_missing_percentage=allowed_missing_percentage,
         deploy_model=deploy_model,
         overwrite_model=overwrite_model,
-        overwrite_all_spectra=overwrite_all_spectra,
         schedule=schedule,
     )
 
@@ -74,7 +70,6 @@ def run_deploy_spec2vec_model_flow(
     n_decimals: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    dataset_directory: str = None,
     project_name: str = SPEC2VEC_PROJECT_NAME,
 ) -> Tuple[str, str]:
     """
@@ -91,7 +86,7 @@ def run_deploy_spec2vec_model_flow(
 
     """
 
-    factory = Spec2VecFlowFactory(dataset_directory=dataset_directory)
+    factory = Spec2VecFlowFactory()
     flow = factory.build_model_deployment_flow(
         image=image,
         project_name=project_name,

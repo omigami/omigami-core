@@ -4,9 +4,7 @@ import pytest
 
 import omigami.spectra_matching.ms2deepscore.main
 from omigami.authentication.prefect_factory import prefect_client_factory
-from omigami.config import (
-    SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
-)
+from omigami.config import GNPS_URIS
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 from omigami.spectra_matching.ms2deepscore.main import (
@@ -55,7 +53,6 @@ def test_mocked_deploy_training_flow(mock_objects):
         project_name="default",
         flow_name="Robert DeFlow",
         dataset_id="small",
-        source_uri=SOURCE_URI_PARTIAL_GNPS_500_SPECTRA,
         ion_mode="positive",
         deploy_model=False,
         overwrite_model=False,
@@ -68,7 +65,6 @@ def test_mocked_deploy_training_flow(mock_objects):
         validation_ratio=0.2,
         test_ratio=0.2,
         epochs=5,
-        chunk_size=150000,
     )
 
     flow_id, flow_run_id = run_ms2deepscore_training_flow(**params)
