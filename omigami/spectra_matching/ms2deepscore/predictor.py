@@ -20,7 +20,7 @@ from omigami.spectra_matching.ms2deepscore.storage import (
 from omigami.spectra_matching.predictor import (
     Predictor,
     SpectrumMatches,
-    SpectraMatchingPredictorException,
+    SpectraMatchingError,
 )
 from omigami.spectra_matching.util import (
     cosine_similarity,
@@ -113,7 +113,7 @@ class MS2DeepScorePredictor(Predictor):
             log.info("Finishing prediction.")
             return best_matches
         except Exception as e:
-            raise SpectraMatchingPredictorException(str(e), 1, 404)
+            raise SpectraMatchingError(str(e), 1, 500)
 
     @staticmethod
     def _parse_input(

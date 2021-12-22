@@ -11,11 +11,11 @@ log = getLogger(__name__)
 SpectrumMatches = Dict[str, Dict[str, Any]]
 
 
-class SpectraMatchingPredictorException(Exception):
+class SpectraMatchingError(Exception):
     status_code = 404
 
     def __init__(self, message, application_error_code, http_status_code):
-        Exception.__init__(self)
+        Exception.__init__(self, message)
         self.message = message
         if http_status_code is not None:
             self.status_code = http_status_code
@@ -30,6 +30,16 @@ class SpectraMatchingPredictorException(Exception):
             }
         }
         return res
+
+    @property
+    def _repr(self):
+        return f"SpectraMatchingError {self.status_code}: '{self.message}'"
+
+    def __repr__(self):
+        return self._repr
+
+    def __str__(self):
+        return self._repr
 
 
 class Predictor(PythonModel):
@@ -71,7 +81,10 @@ class Predictor(PythonModel):
                 for idx, element in enumerate(reference_spectra_ids)
                 if element == []
             ]
-            log.warning("Going to raise RuntimeError: No data found from filtering with precursor MZ in _check_spectrum_refs")
+            log.warning(
+                "Going to raise RuntimeError: No data found from filtering with "
+                "precursor MZ in _check_spectrum_refs"
+            )
             raise RuntimeError(
                 f"No data found from filtering with precursor MZ for spectra at indices {idx_null}. "
                 f"Try increasing the mz_range filtering."
@@ -96,8 +109,9 @@ class Predictor(PythonModel):
 
     model_error_handler = flask.Blueprint("error_handlers", __name__)
 
-    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
-    def handle_custom_error(error):
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
+
+@Predictor.model_error_handler.app_errorhandler(SpectraMatchingError)
+def handle_custom_error(error: SpectraMatchingError):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
