@@ -108,6 +108,7 @@ class Spec2VecPredictor(Predictor):
             log.info("Finishing prediction.")
             return best_matches
         except Exception as e:
+            log.warning(str(e))
             raise SpectraMatchingPredictorException(str(e), 1, 404)
 
     @staticmethod
