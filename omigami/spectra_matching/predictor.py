@@ -67,24 +67,15 @@ class Predictor(PythonModel):
                 float(precursor_mz) + mz_range,
             )
             ref_ids = self.dgw.get_spectrum_ids_within_range(min_mz, max_mz)
+            if len(ref_ids) == 0:
+                raise RuntimeError(
+                    f"No data found from filtering with precursor MZ for precursor MZ {precursor_mz}. "
+                    f"and mz_range {mz_range}. Try increasing the mz_range filtering."
+                )
+
             ref_spectrum_ids.append(ref_ids)
 
-        self._check_spectrum_refs(ref_spectrum_ids)
-        log.warning("Finished checking spectrum_refs in _get_ref_ids_from_data_input")
         return ref_spectrum_ids
-
-    @staticmethod
-    def _check_spectrum_refs(reference_spectra_ids: List[List[str]]):
-        if [] in reference_spectra_ids:
-            idx_null = [
-                idx
-                for idx, element in enumerate(reference_spectra_ids)
-                if element == []
-            ]
-            raise RuntimeError(
-                f"No data found from filtering with precursor MZ for spectra at indices {idx_null}. "
-                f"Try increasing the mz_range filtering."
-            )
 
     def _add_metadata(
         self, best_matches: Dict[str, SpectrumMatches]

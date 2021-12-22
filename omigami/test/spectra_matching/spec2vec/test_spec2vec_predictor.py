@@ -261,7 +261,7 @@ def test_seldon_internal_error_message(registered_s2v_model):
     model_uri = run.info.artifact_uri + "/model"
     predictor = mlflow.pyfunc.load_model(model_uri)
 
-    predictor._model_impl.python_model._check_spectrum_refs = Mock(
+    predictor._model_impl.python_model._get_ref_ids_from_data_input = Mock(
         side_effect=RuntimeError("Funtime error.")
     )
 
