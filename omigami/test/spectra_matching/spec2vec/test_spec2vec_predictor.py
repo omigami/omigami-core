@@ -1,10 +1,15 @@
 import os
 from pathlib import Path
+from unittest.mock import Mock
 
+import mlflow.pyfunc
 import pandas as pd
 import pytest
 from pytest_redis import factories
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.wrapper import get_rest_microservice
 
+from omigami.spectra_matching.predictor import SpectraMatchingPredictorException
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
     EmbeddingMaker,
@@ -206,3 +211,47 @@ def test_add_metadata(spec2vec_predictor, spec2vec_embeddings, spec2vec_redis_se
     assert set(bm["CCMSLIB00000072099"].keys()) == {"score", "metadata"}
     assert len(bm["CCMSLIB00000072099"]["metadata"]) == 37  # nr of metadata in GNPS
     assert bm["CCMSLIB00000072099"]["metadata"]["compound_name"] == "Coproporphyrin I"
+
+
+def test_predictor_error_handling(tmpdir):
+    predictor = Spec2VecPredictor(
+        "model",
+        ion_mode="positive",
+        n_decimals=1,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=25,
+        run_id="1",
+    )
+
+    predictor.predict = Mock(
+        side_effect=SpectraMatchingPredictorException("error", 1, 400)
+    )
+
+    metrics = Mock(spec=SeldonMetrics)
+    app = get_rest_microservice(predictor, metrics)
+    client = app.test_client()
+
+    response = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
+
+    assert response.status_code == 400
+    assert response.json["status"]["app_code"] == 1
+
+
+@pytest.mark.xfail
+def test_predictor_error_handling_mlflow(registered_s2v_model):
+    run = mlflow.get_run(registered_s2v_model["run_id"])
+    model_uri = run.info.artifact_uri + "/model"
+    predictor = mlflow.pyfunc.load_model(model_uri)
+
+    predictor.predict = Mock(
+        side_effect=SpectraMatchingPredictorException("error", 1, 400)
+    )
+
+    metrics = Mock(spec=SeldonMetrics)
+    app = get_rest_microservice(predictor, metrics)
+    client = app.test_client()
+
+    response = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
+
+    assert response.status_code == 400
+    assert response.json["status"]["app_code"] == 1

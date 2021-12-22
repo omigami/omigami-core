@@ -2,9 +2,8 @@ from logging import getLogger
 from typing import List, Dict, Any
 
 import flask
+from flask import jsonify
 from mlflow.pyfunc import PythonModel
-from seldon_core.flask_utils import jsonify
-
 
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 
@@ -36,19 +35,9 @@ class SpectraMatchingPredictorException(Exception):
 class Predictor(PythonModel):
     _run_id: str
     model: Any
-    model_error_handler = flask.Blueprint("error_handlers", __name__)  # The field is
-    # used to register custom exceptions
 
     def __init__(self, dgw: RedisSpectrumDataGateway = None):
         self.dgw = dgw
-
-    @staticmethod
-    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)  # Register
-    # the handler for an exception
-    def handle_custom_error(error):
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
 
     def predict(self, context, model_input):
         """Match spectra from a json payload input with spectra having the highest
@@ -102,3 +91,11 @@ class Predictor(PythonModel):
 
     def set_run_id(self, run_id: str):
         self._run_id = run_id
+
+    model_error_handler = flask.Blueprint("error_handlers", __name__)
+
+    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
+    def handle_custom_error(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
