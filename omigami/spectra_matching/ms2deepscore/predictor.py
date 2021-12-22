@@ -112,7 +112,7 @@ class MS2DeepScorePredictor(Predictor):
 
             log.info("Finishing prediction.")
             return best_matches
-        except (RuntimeError, FileNotFoundError, ValueError) as e:
+        except Exception as e:
             raise SpectraMatchingPredictorException(str(e), 1, 404)
 
     @staticmethod
