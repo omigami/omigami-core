@@ -1,12 +1,35 @@
 from logging import getLogger
 from typing import List, Dict, Any
 
+import flask
+from flask import jsonify
 from mlflow.pyfunc import PythonModel
 
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
 
 log = getLogger(__name__)
 SpectrumMatches = Dict[str, Dict[str, Any]]
+
+
+class SpectraMatchingPredictorException(Exception):
+    status_code = 404
+
+    def __init__(self, message, application_error_code, http_status_code):
+        Exception.__init__(self)
+        self.message = message
+        if http_status_code is not None:
+            self.status_code = http_status_code
+        self.application_error_code = application_error_code
+
+    def to_dict(self):
+        res = {
+            "status": {
+                "status": self.status_code,
+                "message": self.message,
+                "app_code": self.application_error_code,
+            }
+        }
+        return res
 
 
 class Predictor(PythonModel):
@@ -37,6 +60,7 @@ class Predictor(PythonModel):
             ref_spectrum_ids.append(ref_ids)
 
         self._check_spectrum_refs(ref_spectrum_ids)
+        log.warning("Finished checking spectrum_refs in _get_ref_ids_from_data_input")
         return ref_spectrum_ids
 
     @staticmethod
@@ -47,6 +71,7 @@ class Predictor(PythonModel):
                 for idx, element in enumerate(reference_spectra_ids)
                 if element == []
             ]
+            log.warning("Going to raise RuntimeError: No data found from filtering with precursor MZ in _check_spectrum_refs")
             raise RuntimeError(
                 f"No data found from filtering with precursor MZ for spectra at indices {idx_null}. "
                 f"Try increasing the mz_range filtering."
@@ -68,3 +93,11 @@ class Predictor(PythonModel):
 
     def set_run_id(self, run_id: str):
         self._run_id = run_id
+
+    model_error_handler = flask.Blueprint("error_handlers", __name__)
+
+    @model_error_handler.app_errorhandler(SpectraMatchingPredictorException)
+    def handle_custom_error(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response

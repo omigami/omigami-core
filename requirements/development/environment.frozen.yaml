@@ -25,7 +25,7 @@ dependencies:
       - ms2deepscore==0.2.1
       - redis==3.5.3
       - mlflow==1.14.1
-      - seldon-core==1.6.0
+      - seldon-core==1.12.0
       - git+https://github.com/datarevenue-berlin/drfs
       - matchmsextras==0.2.3
       - pubchempy==1.0.2

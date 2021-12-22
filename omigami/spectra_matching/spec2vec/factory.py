@@ -42,7 +42,6 @@ class Spec2VecFlowFactory:
         model_registry_uri: str = None,
         mlflow_output_directory: str = None,
     ):
-        self._redis_dbs = REDIS_DATABASES
         self._dataset_directory = (
             DRPath(dataset_directory)
             if dataset_directory is not None
@@ -87,7 +86,7 @@ class Spec2VecFlowFactory:
         flow_config = make_flow_config(
             image=image,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
-            redis_db=self._redis_dbs[dataset_id],
+            redis_db=REDIS_DATABASES[dataset_id],
             schedule=schedule,
             storage_root=STORAGE_ROOT,
         )
@@ -96,12 +95,12 @@ class Spec2VecFlowFactory:
         fs_dgw = FSDataGateway()
 
         source_uri = GNPS_URIS[dataset_id]
-        redis_db = self._redis_dbs[dataset_id]
+        redis_db = REDIS_DATABASES[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
             spectrum_dgw=spectrum_dgw,
-            dataset_directory=str(self._dataset_directory / dataset_id),
+            dataset_directory=f"{self._dataset_directory}/{dataset_id}",
             ion_mode=ion_mode,
             n_decimals=n_decimals,
             iterations=iterations,
@@ -159,7 +158,7 @@ class Spec2VecFlowFactory:
         flow_config = make_flow_config(
             image=image,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
-            redis_db=self._redis_dbs[dataset_id],
+            redis_db=REDIS_DATABASES[dataset_id],
             storage_root=STORAGE_ROOT,
         )
 
@@ -177,7 +176,7 @@ class Spec2VecFlowFactory:
             ),
             intensity_weighting_power=intensity_weighting_power,
             allowed_missing_percentage=allowed_missing_percentage,
-            redis_db=self._redis_dbs[dataset_id],
+            redis_db=REDIS_DATABASES[dataset_id],
             model_registry_uri=self._model_registry_uri,
         )
 

@@ -7,7 +7,11 @@ from matchms import calculate_scores
 from matchms.filtering import normalize_intensities
 from matchms.importing.load_from_json import as_spectrum
 
-from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
+from omigami.spectra_matching.predictor import (
+    Predictor,
+    SpectrumMatches,
+    SpectraMatchingPredictorException,
+)
 from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.entities.spectrum_document import (
@@ -15,6 +19,7 @@ from omigami.spectra_matching.spec2vec.entities.spectrum_document import (
 )
 from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
     EmbeddingMaker,
+    EmbeddingMakerError,
 )
 from omigami.spectra_matching.spec2vec.helper_classes.similarity_score_calculator import (
     Spec2VecSimilarityScoreCalculator,
@@ -53,44 +58,57 @@ class Spec2VecPredictor(Predictor):
         similarity scores in the GNPS spectra library. Return a list matches of IDs
         and scores for each input spectrum.
         """
-        log.info("Creating a prediction.")
-        data_input, parameters = self._parse_input(data_input_and_parameters)
-        log.info("Pre-processing data.")
-        input_spectra_embeddings = self._pre_process_data(data_input)
+        try:
+            log.info("Creating a prediction.")
+            data_input, parameters = self._parse_input(data_input_and_parameters)
+            log.info("Pre-processing data.")
+            input_spectra_embeddings = self._pre_process_data(data_input)
 
-        log.info("Loading reference embeddings.")
-        reference_spectra_ids = self._get_ref_ids_from_data_input(data_input, mz_range)
-        log.info(f"Loaded {len(reference_spectra_ids)} IDs from the database.")
-        reference_embeddings = self._load_unique_ref_embeddings(reference_spectra_ids)
-        log.info(f"Loaded {len(reference_embeddings)} embeddings from the database.")
-
-        log.info("Calculating best matches.")
-        best_matches = {}
-
-        for i, input_spectrum in enumerate(input_spectra_embeddings):
-
-            input_spectrum_ref_emb = self._get_input_ref_embeddings(
-                reference_spectra_ids[i], reference_embeddings
+            log.info("Loading reference embeddings.")
+            reference_spectra_ids = self._get_ref_ids_from_data_input(
+                data_input, mz_range
+            )
+            log.info(f"Loaded {len(reference_spectra_ids)} IDs from the database.")
+            reference_embeddings = self._load_unique_ref_embeddings(
+                reference_spectra_ids
+            )
+            log.info(
+                f"Loaded {len(reference_embeddings)} embeddings from the database."
             )
 
-            best_matches_data = {
-                "references": input_spectrum_ref_emb,
-                "query": input_spectrum,
-            }
+            log.info("Calculating best matches.")
+            best_matches = {}
 
-            if parameters.get("n_best_spectra"):
-                best_matches_data["n_best_spectra"] = parameters.get("n_best_spectra")
+            for i, input_spectrum in enumerate(input_spectra_embeddings):
 
-            spectrum_best_matches = self._calculate_best_matches(**best_matches_data)
+                input_spectrum_ref_emb = self._get_input_ref_embeddings(
+                    reference_spectra_ids[i], reference_embeddings
+                )
 
-            best_matches[
-                input_spectrum.spectrum_id or f"spectrum-{i}"
-            ] = spectrum_best_matches
+                best_matches_data = {
+                    "references": input_spectrum_ref_emb,
+                    "query": input_spectrum,
+                }
 
-        best_matches = self._add_metadata(best_matches)
+                if parameters.get("n_best_spectra"):
+                    best_matches_data["n_best_spectra"] = parameters.get(
+                        "n_best_spectra"
+                    )
 
-        log.info("Finishing prediction.")
-        return best_matches
+                spectrum_best_matches = self._calculate_best_matches(
+                    **best_matches_data
+                )
+
+                best_matches[
+                    input_spectrum.spectrum_id or f"spectrum-{i}"
+                ] = spectrum_best_matches
+
+            best_matches = self._add_metadata(best_matches)
+
+            log.info("Finishing prediction.")
+            return best_matches
+        except Exception as e:
+            raise SpectraMatchingPredictorException(str(e), 1, 404)
 
     @staticmethod
     def _parse_input(
