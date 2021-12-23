@@ -94,8 +94,7 @@ class SpectrumCleaner:
             spectrum = as_spectrum(spectrum)
             spectrum = self._common_cleaning(spectrum)
             if spectrum is not None:
-                if any(spectrum.peaks.intensities > 0):
-                    processed_spectra.append(spectrum)
+                processed_spectra.append(spectrum)
         return processed_spectra
 
     def _common_cleaning(self, spectrum: Spectrum) -> Optional[Spectrum]:
@@ -117,10 +116,11 @@ class SpectrumCleaner:
         spectrum = self._convert_metadata(spectrum)
         return spectrum
 
-    def _apply_filters(self, spectrum: Spectrum) -> Spectrum:
+    def _apply_filters(self, spectrum: Spectrum) -> Optional[Spectrum]:
         """Applies a collection of filters to normalize data, like convert str to int"""
         spectrum = default_filters(spectrum)
         spectrum = self._filter_negative_intensities(spectrum)
+        spectrum = self._filter_empty_spectrum(spectrum)
         return spectrum
 
     @staticmethod
@@ -130,6 +130,16 @@ class SpectrumCleaner:
         if spectrum and any(spectrum.peaks.intensities < 0):
             return None
 
+        return spectrum
+
+    @staticmethod
+    def _filter_empty_spectrum(spectrum: Spectrum) -> Optional[Spectrum]:
+        """
+        Filters spectrum that all peaks are 0. If not filtered, causes a bug in downstream
+        processing steps by matchms.
+        """
+        if any(spectrum.peaks.intensities > 0):
+            return None
         return spectrum
 
     @staticmethod
