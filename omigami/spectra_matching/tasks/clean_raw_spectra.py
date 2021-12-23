@@ -94,7 +94,8 @@ class SpectrumCleaner:
             spectrum = as_spectrum(spectrum)
             spectrum = self._common_cleaning(spectrum)
             if spectrum is not None:
-                processed_spectra.append(spectrum)
+                if any(spectrum.peaks.intensities > 0):
+                    processed_spectra.append(spectrum)
         return processed_spectra
 
     def _common_cleaning(self, spectrum: Spectrum) -> Optional[Spectrum]:

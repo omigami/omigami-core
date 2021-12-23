@@ -11,7 +11,7 @@ class CacheCleanedSpectra(Task):
     def __init__(
         self,
         spectrum_dgw: RedisSpectrumDataGateway,
-        fs_dgw=DataGateway,
+        fs_dgw: DataGateway,
         **kwargs,
     ):
         self._spectrum_dgw = spectrum_dgw
@@ -37,8 +37,11 @@ class CacheCleanedSpectra(Task):
 
         """
         self.logger.info(f"Loading spectra from {spectra_path}")
-        spectra: List[Spectrum] = self._fs_dgw.read_from_file(spectra_path)
+        spectra: List[Spectrum] = self._fs_dgw.read_from_file(path=spectra_path)
         spectrum_ids = [sp.metadata["spectrum_id"] for sp in spectra]
+        self.logger.info(
+            f"Finished loading file. File contains {len(spectrum_ids)} spectra."
+        )
 
         existing_spectrum_ids = self._spectrum_dgw.list_spectrum_ids()
         new_spectrum_ids = set(spectrum_ids) - set(existing_spectrum_ids)
