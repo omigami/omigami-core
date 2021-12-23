@@ -1,10 +1,18 @@
 import os
 from pathlib import Path
+from typing import List, Dict
+from unittest.mock import Mock
 
+import mlflow
+import numpy as np
 import pandas as pd
 import pytest
+from mlflow.pyfunc import PyFuncModel
 from pytest_redis import factories
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.wrapper import get_rest_microservice
 
+from omigami.spectra_matching.predictor import SpectraMatchingError
 from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbedding
 from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
     EmbeddingMaker,
@@ -206,3 +214,98 @@ def test_add_metadata(spec2vec_predictor, spec2vec_embeddings, spec2vec_redis_se
     assert set(bm["CCMSLIB00000072099"].keys()) == {"score", "metadata"}
     assert len(bm["CCMSLIB00000072099"]["metadata"]) == 37  # nr of metadata in GNPS
     assert bm["CCMSLIB00000072099"]["metadata"]["compound_name"] == "Coproporphyrin I"
+
+
+def test_predictor_error_handling(tmpdir):
+    predictor = Spec2VecPredictor(
+        "model",
+        ion_mode="positive",
+        n_decimals=1,
+        intensity_weighting_power=0.5,
+        allowed_missing_percentage=25,
+        run_id="1",
+    )
+
+    predictor.predict = Mock(side_effect=SpectraMatchingError("error", 1, 400))
+
+    metrics = Mock(spec=SeldonMetrics)
+    app = get_rest_microservice(predictor, metrics)
+    client = app.test_client()
+
+    response = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
+
+    assert response.status_code == 400
+    assert response.json["status"]["app_code"] == 1
+
+
+@pytest.mark.xfail
+def test_predictor_error_handling_mlflow(registered_s2v_model):
+    run = mlflow.get_run(registered_s2v_model["run_id"])
+    model_uri = run.info.artifact_uri + "/model"
+    predictor = mlflow.pyfunc.load_model(model_uri)
+
+    predictor.predict = Mock(side_effect=SpectraMatchingError("error", 1, 400))
+
+    metrics = Mock(spec=SeldonMetrics)
+    app = get_rest_microservice(predictor, metrics)
+    client = app.test_client()
+
+    response = client.get('/predict?json={"data":{"ndarray":[1,2]}}')
+
+    assert response.status_code == 400
+    assert response.json["status"]["app_code"] == 1
+
+
+def test_seldon_internal_error_message(registered_s2v_model):
+    run = mlflow.get_run(registered_s2v_model["run_id"])
+    model_uri = run.info.artifact_uri + "/model"
+    predictor = mlflow.pyfunc.load_model(model_uri)
+
+    predictor._model_impl.python_model._get_ref_ids_from_data_input = Mock(
+        side_effect=RuntimeError("Funtime error.")
+    )
+
+    payload = {
+        "data": {
+            "ndarray": {
+                "parameters": {
+                    "n_best_spectra": 2,
+                },
+                "data": [
+                    {
+                        "peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
+                        "Precursor_MZ": "900",
+                    },
+                    {
+                        "peaks_json": "[[289.286377,8068.000000],[295.545288,22507.000000]]",
+                        "Precursor_MZ": "800",
+                    },
+                ],
+            }
+        }
+    }
+
+    metrics = Mock(spec=SeldonMetrics)
+    app = get_rest_microservice(MLFlowServer(predictor), metrics)
+    client = app.test_client()
+
+    response = client.post("/predict", json=payload)
+
+    assert response.status_code == 500
+    assert (
+        response.json["status"]["info"] == "SpectraMatchingError 500: 'Funtime error.'"
+    )
+
+
+class MLFlowServer:
+    """
+    A minimal version of the class found in seldon-core/servers/mlflowserver/mlflowserver.py
+    """
+
+    def __init__(self, model: PyFuncModel):
+        self._model = model
+
+    def predict(
+        self, X: np.ndarray, feature_names: List[str] = None, meta: Dict = None
+    ) -> np.ndarray:
+        return self._model.predict(X)

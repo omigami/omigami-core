@@ -77,6 +77,8 @@ docker build -t $MS2DS_TAG --build-arg BASE_IMAGE=$BASE_TAG -f docker/ms2deepsco
 
 if [[ -z "$PUSH" ]]; then
   echo "Will not push to the image registry."
+  echo "Built MS2DeepScore image: $MS2DS_TAG"
+  echo "Built Spec2Vec image: $S2V_TAG"
 else
   echo "Pushing images."
   docker push $BASE_TAG

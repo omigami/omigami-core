@@ -19,7 +19,7 @@ PrefectServers = {
     Environments.local: "http://localhost:4200/graphql",
     Environments.docker: "http://localhost:4200/graphql",
     Environments.dev: "https://prefect-dev.omigami.com/graphql",
-    Environments.prod: "https://prefect.omigami.datarevenue.com/graphql",
+    Environments.prod: "https://prefect-app.omigami.com/graphql",
 }
 
 StorageRoots = {
@@ -30,9 +30,9 @@ StorageRoots = {
 }
 
 RedisDatabases = {
-    Environments.local: {"small": "0"},
-    Environments.docker: {"small": "0"},
-    Environments.dev: {"small": "2", "10k": "1", "complete": "0"},
+    Environments.local: {"small": "0", "small_500": "0"},
+    Environments.docker: {"small": "0", "small_500": "0"},
+    Environments.dev: {"small": "2", "small_500": "2", "10k": "1", "complete": "0"},
     Environments.prod: {"small": "2", "complete": "0"},
 }
 

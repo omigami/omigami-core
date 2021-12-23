@@ -17,7 +17,11 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor imp
 from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
-from omigami.spectra_matching.predictor import Predictor, SpectrumMatches
+from omigami.spectra_matching.predictor import (
+    Predictor,
+    SpectrumMatches,
+    SpectraMatchingError,
+)
 from omigami.spectra_matching.util import (
     cosine_similarity,
     cosine_similarity_matrix,
@@ -72,39 +76,44 @@ class MS2DeepScorePredictor(Predictor):
         ms2ds_similarity
             MS2DeepScore similarity score.
         """
-        log.info("Creating a prediction.")
-        data_input, parameters = self._parse_input(data_input)
+        try:
+            log.info("Creating a prediction.")
+            data_input, parameters = self._parse_input(data_input)
 
-        log.info("Loading reference spectra.")
-        reference_spectra_ids = self._get_ref_ids_from_data_input(data_input, mz_range)
-        reference_embeddings = self._load_embeddings(reference_spectra_ids)
-        log.info(f"Loaded {len(reference_embeddings)} spectra from the database.")
+            log.info("Loading reference spectra.")
+            reference_spectra_ids = self._get_ref_ids_from_data_input(
+                data_input, mz_range
+            )
+            reference_embeddings = self._load_embeddings(reference_spectra_ids)
+            log.info(f"Loaded {len(reference_embeddings)} spectra from the database.")
 
-        log.info("Pre-processing data.")
-        query_spectra = self.spectrum_processor.process_spectra(
-            data_input, process_reference_spectra=False
-        )
-        query_binned_spectra = self.model.spectrum_binner.transform(query_spectra)
-        query_embeddings = [
-            self.embedding_maker.make_embedding(self.model, binned_spectrum)
-            for binned_spectrum in query_binned_spectra
-        ]
+            log.info("Pre-processing data.")
+            query_spectra = self.spectrum_processor.process_spectra(
+                data_input, process_reference_spectra=False
+            )
+            query_binned_spectra = self.model.spectrum_binner.transform(query_spectra)
+            query_embeddings = [
+                self.embedding_maker.make_embedding(self.model, binned_spectrum)
+                for binned_spectrum in query_binned_spectra
+            ]
 
-        log.info("Calculating best matches.")
+            log.info("Calculating best matches.")
 
-        best_matches_data = {
-            "all_references": reference_embeddings,
-            "queries": query_embeddings,
-        }
+            best_matches_data = {
+                "all_references": reference_embeddings,
+                "queries": query_embeddings,
+            }
 
-        if parameters.get("n_best_spectra"):
-            best_matches_data["n_best_spectra"] = parameters.get("n_best_spectra")
+            if parameters.get("n_best_spectra"):
+                best_matches_data["n_best_spectra"] = parameters.get("n_best_spectra")
 
-        best_matches = self._calculate_best_matches(**best_matches_data)
-        best_matches = self._add_metadata(best_matches)
+            best_matches = self._calculate_best_matches(**best_matches_data)
+            best_matches = self._add_metadata(best_matches)
 
-        log.info("Finishing prediction.")
-        return best_matches
+            log.info("Finishing prediction.")
+            return best_matches
+        except Exception as e:
+            raise SpectraMatchingError(str(e), 1, 500)
 
     @staticmethod
     def _parse_input(
