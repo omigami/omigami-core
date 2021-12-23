@@ -52,8 +52,6 @@ class CreateDocuments(Task):
         Directory which documents are saved
 
         """
-        self.logger.info(f"Loading spectra from path {cleaned_spectra_path}.")
-        spectra: List[Spectrum] = self._fs_dgw.read_from_file(cleaned_spectra_path)
         document_output_path = (
             f"{self._output_directory}/{DRPath(cleaned_spectra_path).name}"
         )
@@ -61,6 +59,9 @@ class CreateDocuments(Task):
         if DRPath(document_output_path).exists():
             self.logger.info(f"Using cached existing file on {document_output_path}")
             return document_output_path
+
+        self.logger.info(f"Loading spectra from path {cleaned_spectra_path}.")
+        spectra: List[Spectrum] = self._fs_dgw.read_from_file(cleaned_spectra_path)
 
         self.logger.info(
             f"Processing {len(spectra)} spectra and converting into " f"documents."
