@@ -1,6 +1,3 @@
-import os
-
-import pytest
 from prefect import Flow
 from spec2vec import SpectrumDocument
 
@@ -9,10 +6,6 @@ from omigami.spectra_matching.spec2vec.tasks import CreateDocumentsParameters
 from omigami.spectra_matching.storage import FSDataGateway
 
 
-@pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
 def test_create_documents(
     mock_default_config, cleaned_spectra_paths, cleaned_spectra_chunks, tmpdir
 ):
@@ -35,10 +28,6 @@ def test_create_documents(
     assert len(documents) == len(cleaned_spectra_chunks[0])
 
 
-@pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
 def test_create_documents_map(
     mock_default_config, cleaned_spectra_paths, cleaned_spectra_chunks, tmpdir
 ):
