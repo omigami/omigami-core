@@ -1,6 +1,6 @@
 import click
 
-from omigami.config import GNPS_URIS, STORAGE_ROOT
+from omigami.config import STORAGE_ROOT
 
 common_flow_options = [
     click.option(
