@@ -165,6 +165,7 @@ class Spec2VecFlowFactory:
         spectrum_dgw = RedisSpectrumDataGateway(project_name)
         fs_dgw = FSDataGateway()
 
+        redis_db = REDIS_DATABASES[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = DeployModelFlowParameters(
             spectrum_dgw=spectrum_dgw,
@@ -176,7 +177,7 @@ class Spec2VecFlowFactory:
             ),
             intensity_weighting_power=intensity_weighting_power,
             allowed_missing_percentage=allowed_missing_percentage,
-            redis_db=REDIS_DATABASES[dataset_id],
+            redis_db=redis_db,
             model_registry_uri=self._model_registry_uri,
         )
 
