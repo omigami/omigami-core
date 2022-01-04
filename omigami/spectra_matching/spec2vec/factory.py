@@ -173,7 +173,10 @@ class Spec2VecFlowFactory:
             ion_mode=ion_mode,
             n_decimals=n_decimals,
             documents_directory=str(
-                self._spec2vec_root / dataset_id / self._document_dirs[ion_mode]
+                self._spec2vec_root
+                / self._document_dirs[ion_mode]
+                / dataset_id
+                / f"{n_decimals}_decimals"
             ),
             intensity_weighting_power=intensity_weighting_power,
             allowed_missing_percentage=allowed_missing_percentage,
