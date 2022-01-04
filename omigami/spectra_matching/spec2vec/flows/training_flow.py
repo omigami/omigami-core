@@ -6,7 +6,6 @@ from omigami.config import IonModes, ION_MODES, MLFLOW_SERVER
 from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.spec2vec.tasks import (
     CreateDocumentsParameters,
-    DeleteEmbeddings,
 )
 from omigami.spectra_matching.spec2vec.tasks import (
     MakeEmbeddings,
@@ -28,6 +27,7 @@ from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
     CacheCleanedSpectra,
+    DeleteEmbeddings,
 )
 
 

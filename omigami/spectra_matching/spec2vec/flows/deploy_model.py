@@ -7,7 +7,6 @@ from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.spec2vec.tasks import (
     MakeEmbeddings,
     MakeEmbeddingsParameters,
-    DeleteEmbeddings,
 )
 from omigami.spectra_matching.spec2vec.tasks.deploy_model_tasks import (
     ListDocumentPaths,
@@ -17,6 +16,7 @@ from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGat
 from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
+    DeleteEmbeddings,
 )
 
 
