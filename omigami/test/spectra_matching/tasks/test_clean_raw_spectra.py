@@ -65,19 +65,22 @@ def spectrum_negative_intensity():
     )
 
 
-def test_clean_data(single_spectrum, spectrum_negative_intensity):
-
+def test_clean_data(single_spectrum):
     cleaned_data = SpectrumCleaner()._common_cleaning(single_spectrum)
-    cleaned_data_negative_intensity = SpectrumCleaner()._common_cleaning(
-        spectrum_negative_intensity
-    )
-    assert cleaned_data_negative_intensity is None
+
     assert isinstance(cleaned_data, Spectrum)
     # Asserts invalid inchi keys are set as "" and not N/A, NA, n/a or None
     assert cleaned_data.get("inchi") not in ["N/A", "NA", "n/a", None]
     assert isinstance(cleaned_data.get("charge"), int)
     assert cleaned_data.get("parent_mass")
     assert cleaned_data.get("spectrum_id")
+
+
+def test_clean_data_negative_intensity(spectrum_negative_intensity):
+    cleaned_data_negative_intensity = SpectrumCleaner()._common_cleaning(
+        spectrum_negative_intensity
+    )
+    assert cleaned_data_negative_intensity is None
 
 
 def test_apply_ms2deepscore_filters_negative_intensity(
