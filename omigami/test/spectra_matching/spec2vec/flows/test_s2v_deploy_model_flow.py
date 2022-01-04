@@ -17,6 +17,7 @@ def test_s2v_deploy_model_flow(flow_config):
         "MakeEmbeddings",
         "DeployModel",
         "LoadSpec2VecModel",
+        "DeleteEmbeddings",
     }
     params = DeployModelFlowParameters(
         spectrum_dgw=RedisSpectrumDataGateway("project"),

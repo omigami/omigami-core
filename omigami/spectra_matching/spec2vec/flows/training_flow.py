@@ -169,9 +169,9 @@ def build_training_flow(
                 unmapped(model_run_id),
                 document_paths,
             )
-            make_embeddings.set_dependencies(training_flow, delete_embeddings)
+            make_embeddings.set_dependencies(training_flow, [delete_embeddings])
 
             deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
-            deploy_model.set_dependencies(training_flow, make_embeddings)
+            deploy_model.set_dependencies(training_flow, [make_embeddings])
 
     return training_flow

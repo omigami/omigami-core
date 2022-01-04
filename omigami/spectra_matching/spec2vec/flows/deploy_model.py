@@ -95,9 +95,9 @@ def build_deploy_model_flow(
             unmapped(model_run_id),
             document_paths,
         )
-        make_embeddings.set_dependencies(deploy_model_flow, delete_embeddings)
+        make_embeddings.set_dependencies(deploy_model_flow, [delete_embeddings])
 
         deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
-        deploy_model.set_dependencies(deploy_model_flow, make_embeddings)
+        deploy_model.set_dependencies(deploy_model_flow, [make_embeddings])
 
     return deploy_model_flow
