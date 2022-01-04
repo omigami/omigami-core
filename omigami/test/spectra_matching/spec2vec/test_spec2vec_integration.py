@@ -30,7 +30,6 @@ def test_deploy_training_flow(backend_services, mock_s2v_deploy_model_task):
         project_name="local-integration-test-s2v",
         flow_name="Robert DeFlow",
         dataset_id="small",
-        source_uri=GNPS_URIS["small"],
         ion_mode="positive",
         iterations=3,
         n_decimals=1,
