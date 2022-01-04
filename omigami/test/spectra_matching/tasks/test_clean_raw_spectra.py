@@ -80,7 +80,18 @@ def test_clean_data_negative_intensity(spectrum_negative_intensity):
     cleaned_data_negative_intensity = SpectrumCleaner()._common_cleaning(
         spectrum_negative_intensity
     )
+
     assert cleaned_data_negative_intensity is None
+
+
+def test_clean_data_all_zero_intensities():
+    spectrum_zero_intensity = Spectrum(
+        mz=np.sort(np.random.rand(216)), intensities=np.zeros(216)
+    )
+
+    res = SpectrumCleaner()._common_cleaning(spectrum_zero_intensity)
+
+    assert res is None
 
 
 def test_apply_ms2deepscore_filters_negative_intensity(
