@@ -138,9 +138,9 @@ class SpectrumCleaner:
         Filters spectrum that all peaks are 0. If not filtered, causes a bug in downstream
         processing steps by matchms.
         """
-        if any(spectrum.peaks.intensities > 0):
-            return None
-        return spectrum
+        if spectrum is not None and any(spectrum.peaks.intensities > 0):
+            return spectrum
+        return None
 
     @staticmethod
     def _harmonize_spectrum(spectrum: Spectrum) -> Spectrum:
