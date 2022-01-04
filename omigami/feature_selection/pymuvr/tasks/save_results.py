@@ -1,4 +1,3 @@
-import pandas as pd
 from prefect import Task
 
 from omigami.feature_selection.pymuvr.entities.feature_selection_results import (
@@ -7,24 +6,21 @@ from omigami.feature_selection.pymuvr.entities.feature_selection_results import 
 from omigami.utils import merge_prefect_task_configs
 
 
-class RunPymuvr(Task):
+class SaveResults(Task):
     def __init__(self, **kwargs):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, dataset: pd.DataFrame = None) -> FeatureSelectionResult:
+    def run(self, feature_selection_result: FeatureSelectionResult = None) -> None:
         """
-        Task to run pymuvr feature selection algorithm
+        Task to save pymuvr feature selection results to the filesystem
 
         Parameters
         ----------
-        dataset: TrainingDataset
-            dataset to use for pymuvr training
+        feature_selection_result: FeatureSelectionResult
 
         Returns
         -------
-        FeatureSelectionResult
-            object containing feature name and rank
 
         """
         pass
