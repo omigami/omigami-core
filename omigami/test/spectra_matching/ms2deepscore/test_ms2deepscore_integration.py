@@ -2,7 +2,6 @@ import pytest
 
 from omigami.config import (
     STORAGE_ROOT,
-    GNPS_URIS,
     MLFLOW_DIRECTORY,
     MLFLOW_SERVER,
 )
@@ -33,7 +32,6 @@ def test_run_training_flow(backend_services):
         flow_name="MS2DS Flow",
         dataset_id="small",
         dataset_directory=str(STORAGE_ROOT.parent / "datasets-ms2ds"),
-        source_uri=GNPS_URIS["small_500"],
         ion_mode="positive",
         deploy_model=False,
         overwrite_model=False,
@@ -46,7 +44,6 @@ def test_run_training_flow(backend_services):
         validation_ratio=0.2,
         test_ratio=0.2,
         epochs=5,
-        chunk_size=150000,
     )
 
     monitor_flow_results(client, flow_run_id)

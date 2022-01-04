@@ -16,6 +16,7 @@ from omigami.spectra_matching.ms2deepscore.tasks import MakeEmbeddings
 from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
+    DeleteEmbeddings,
 )
 
 
@@ -80,7 +81,11 @@ def build_deploy_model_flow(
             model_run_id
         )
 
-        MakeEmbeddings(
+        delete_embeddings = DeleteEmbeddings(
+            flow_parameters.spectrum_dgw, flow_parameters.ion_mode
+        )()
+
+        make_embeddings = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
             flow_parameters.fs_dgw,
             flow_parameters.ion_mode,
@@ -89,7 +94,9 @@ def build_deploy_model_flow(
             unmapped(model_run_id),
             spectrum_id_chunks,
         )
+        make_embeddings.set_dependencies(deploy_model_flow, [delete_embeddings])
 
-        _ = DeployModel(flow_parameters.deploying)(model_run_id)
+        deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
+        deploy_model.set_dependencies(deploy_model_flow, [make_embeddings])
 
     return deploy_model_flow

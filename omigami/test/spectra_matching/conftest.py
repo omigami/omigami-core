@@ -300,7 +300,7 @@ def create_chunks_task(clean_chunk_files, local_gnps_small_json):
 def clean_spectra_task():
     output_dir = ASSETS_DIR / "cleaned"
     fs_dgw = FSDataGateway()
-    params = CleanRawSpectraParameters(output_dir)
+    params = CleanRawSpectraParameters(str(output_dir))
     t = CleanRawSpectra(fs_dgw, params)
 
     return t

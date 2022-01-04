@@ -25,6 +25,7 @@ def test_ms2ds_deploy_model_flow(flow_config):
         "MakeEmbeddings",
         "DeployModel",
         "CreateSpectrumIDsChunks",
+        "DeleteEmbeddings",
     }
     params = DeployModelFlowParameters(
         spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(),
