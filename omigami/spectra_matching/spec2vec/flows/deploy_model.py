@@ -7,6 +7,7 @@ from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.spec2vec.tasks import (
     MakeEmbeddings,
     MakeEmbeddingsParameters,
+    DeleteEmbeddings,
 )
 from omigami.spectra_matching.spec2vec.tasks.deploy_model_tasks import (
     ListDocumentPaths,
@@ -36,6 +37,7 @@ class DeployModelFlowParameters:
         self.spectrum_dgw = spectrum_dgw
         self.documents_directory = documents_directory
         self.model_registry_uri = model_registry_uri
+        self.ion_mode = ion_mode
 
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
@@ -81,7 +83,10 @@ def build_deploy_model_flow(
             flow_parameters.fs_dgw, flow_parameters.model_registry_uri
         )(model_run_id)
 
-        _ = MakeEmbeddings(
+        delete_embeddings = DeleteEmbeddings(
+            flow_parameters.spectrum_dgw, flow_parameters.ion_mode
+        )()
+        make_embeddings = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
             flow_parameters.fs_dgw,
             flow_parameters.embedding,
@@ -90,7 +95,9 @@ def build_deploy_model_flow(
             unmapped(model_run_id),
             document_paths,
         )
+        make_embeddings.set_dependencies(deploy_model_flow, delete_embeddings)
 
-        _ = DeployModel(flow_parameters.deploying)(model_run_id)
+        deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
+        deploy_model.set_dependencies(deploy_model_flow, make_embeddings)
 
     return deploy_model_flow
