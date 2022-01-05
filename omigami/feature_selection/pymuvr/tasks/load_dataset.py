@@ -1,4 +1,4 @@
-import pandas as pd
+import dask.dataframe as dd
 from prefect import Task
 
 from omigami.utils import merge_prefect_task_configs
@@ -9,7 +9,7 @@ class LoadDataset(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, dataset_path: str = None) -> pd.DataFrame:
+    def run(self, dataset_path: str = None) -> dd.DataFrame:
         """
         Task to load dataset from given path
 
@@ -20,7 +20,7 @@ class LoadDataset(Task):
 
         Returns
         -------
-        pd.DataFrame
+        dd.DataFrame
 
         """
         pass

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal, Union
 
-import pandas as pd
+import dask.dataframe as dd
 from prefect import Task
 from py_muvr.data_structures import MetricFunction, InputEstimator
 
@@ -38,7 +38,7 @@ class RunPymuvr(Task):
         self._random_state = parameters.random_state
         super().__init__(**config)
 
-    def run(self, dataset: pd.DataFrame = None) -> FeatureSelectionResult:
+    def run(self, dataset: dd.DataFrame = None) -> FeatureSelectionResult:
         """
         Task to run pymuvr feature selection algorithm
 
