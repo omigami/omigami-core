@@ -1,7 +1,7 @@
 from datetime import timedelta, date, datetime
 from typing import Tuple
 
-from prefect import Flow, unmapped
+from prefect import Flow, unmapped, mapped
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
@@ -214,7 +214,7 @@ def build_training_flow(
                 }
             ),
             unmapped(model_registry),
-            processed_chunks,
+            mapped(processed_chunks),
         )
         t.set_dependencies(training_flow, [processed_chunks])
         #
