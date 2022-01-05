@@ -25,6 +25,7 @@ class CreateSpectrumIDsChunks(Task):
 
     def run(self, spectrum_ids: Set[str] = None) -> List[List[str]]:
         spectrum_ids = list(spectrum_ids)
+        spectrum_ids = [x for y in spectrum_ids for x in y]
         chunks = [
             spectrum_ids[x : x + self._chunk_size]
             for x in range(0, len(spectrum_ids), self._chunk_size)

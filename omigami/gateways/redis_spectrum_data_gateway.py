@@ -20,8 +20,8 @@ from omigami.spec2vec.entities.embedding import Embedding as Spec2VecEmbedding
 # when running on the cluster, they will be gotten from the seldon env,
 # which was defined during deployment by the 'dataset_name' param
 
-REDIS_HOST = str(os.getenv("REDIS_HOST"))
-REDIS_DB = str(os.getenv("REDIS_DB"))
+REDIS_HOST = str(os.getenv("REDIS_HOST", "localhost"))
+REDIS_DB = str(os.getenv("REDIS_DB", "0"))
 
 client = None
 

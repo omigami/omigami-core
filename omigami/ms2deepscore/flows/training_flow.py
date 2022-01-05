@@ -214,7 +214,7 @@ def build_training_flow(
                 }
             ),
             unmapped(model_registry),
-            mapped(processed_chunks),
+            processed_chunks,
         )
         t.set_dependencies(training_flow, [processed_chunks])
         #
