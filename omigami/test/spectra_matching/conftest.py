@@ -2,13 +2,16 @@ import pickle
 import shutil
 from pathlib import Path
 from time import sleep
+from typing import List, Dict
 
 import boto3
 import ijson
 import mlflow
+import numpy as np
 import pandas as pd
 import pytest
 import s3fs
+from mlflow.pyfunc import PyFuncModel
 from moto import mock_s3
 from prefect import Client, Flow
 from pytest_redis import factories
@@ -321,3 +324,17 @@ def cleaned_spectra_paths(create_chunks_task, clean_spectra_task):
 def cleaned_spectra_chunks(cleaned_spectra_paths):
     fs_dgw = FSDataGateway()
     return [fs_dgw.read_from_file(p) for p in cleaned_spectra_paths]
+
+
+class MLFlowServer:
+    """
+    A minimal version of the class found in seldon-core/servers/mlflowserver/mlflowserver.py
+    """
+
+    def __init__(self, model: PyFuncModel):
+        self._model = model
+
+    def predict(
+        self, X: np.ndarray, feature_names: List[str] = None, meta: Dict = None
+    ) -> np.ndarray:
+        return self._model.predict(X)

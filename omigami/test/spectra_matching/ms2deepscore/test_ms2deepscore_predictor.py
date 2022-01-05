@@ -1,26 +1,14 @@
 import os
 from copy import deepcopy
+from unittest.mock import Mock
 
+import mlflow
 import pandas as pd
 import pytest
+from seldon_core.metrics import SeldonMetrics
+from seldon_core.wrapper import get_rest_microservice
 
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
-
-pytestmark = [
-    pytest.mark.skip(reason="Not working currently"),
-    pytest.mark.skipif(
-        not os.path.exists(
-            str(
-                ASSETS_DIR
-                / "ms2deepscore"
-                / "pretrained"
-                / "MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5"
-            )
-        ),
-        reason="MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 is git ignored. Please "
-        "download it from https://zenodo.org/record/4699356#.YNyD-2ZKhcA",
-    ),
-]
+from omigami.test.spectra_matching.conftest import ASSETS_DIR, MLFlowServer
 
 
 @pytest.mark.skipif(
@@ -30,9 +18,10 @@ pytestmark = [
 def test_predictions(
     ms2deepscore_payload,
     redis_full_setup,
-    ms2deepscore_real_predictor,
+    registered_ms2ds_model,
 ):
-    scores = ms2deepscore_real_predictor.predict(
+    predictor = registered_ms2ds_model["predictor"]
+    scores = predictor.predict(
         data_input=ms2deepscore_payload,
         context="",
         mz_range=1,
@@ -89,3 +78,21 @@ def test_get_best_matches(embeddings_from_real_predictor, ms2deepscore_real_pred
         assert len(best_match) == n_best_spectra
         assert query.spectrum_id == list(best_match.keys())[0]
         assert "score" in pd.DataFrame(best_match).T.columns
+
+
+def test_ms2deepscore_predictor(
+    registered_ms2ds_model,
+    ms2ds_cached_embeddings,
+    ms2deepscore_payload
+):
+    run = mlflow.get_run(registered_ms2ds_model["run_id"])
+    model_uri = run.info.artifact_uri + "/model"
+    predictor = mlflow.pyfunc.load_model(model_uri)
+
+    metrics = Mock(spec=SeldonMetrics)
+    app = get_rest_microservice(MLFlowServer(predictor), metrics)
+    client = app.test_client()
+
+    response = client.post("/predict", json=ms2deepscore_payload)
+
+    assert response.status_code == 200

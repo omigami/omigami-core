@@ -18,6 +18,7 @@ from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
     EmbeddingMaker,
 )
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
+from omigami.test.spectra_matching.conftest import MLFlowServer
 
 redis_db = factories.redisdb("redis_nooproc")
 
@@ -295,17 +296,3 @@ def test_seldon_internal_error_message(registered_s2v_model):
     assert (
         response.json["status"]["info"] == "SpectraMatchingError 500: 'Funtime error.'"
     )
-
-
-class MLFlowServer:
-    """
-    A minimal version of the class found in seldon-core/servers/mlflowserver/mlflowserver.py
-    """
-
-    def __init__(self, model: PyFuncModel):
-        self._model = model
-
-    def predict(
-        self, X: np.ndarray, feature_names: List[str] = None, meta: Dict = None
-    ) -> np.ndarray:
-        return self._model.predict(X)

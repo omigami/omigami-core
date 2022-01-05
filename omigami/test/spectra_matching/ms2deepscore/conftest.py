@@ -1,12 +1,13 @@
 import pickle
 
+import mlflow
 import pandas as pd
 import pytest
 from ms2deepscore.models import load_model
 from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
-from omigami.config import GNPS_URIS
+from omigami.config import GNPS_URIS, MLFLOW_SERVER, MLFLOW_DIRECTORY
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
@@ -25,7 +26,13 @@ from omigami.spectra_matching.ms2deepscore.storage import (
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from omigami.spectra_matching.ms2deepscore.tasks import (
+    RegisterModelParameters,
+    TrainModelParameters,
+    RegisterModel,
+    MakeEmbeddings,
+)
+from omigami.test.spectra_matching.conftest import ASSETS_DIR, TEST_TASK_CONFIG
 from omigami.test.spectra_matching.tasks import DummyTask
 
 redis_db = factories.redisdb("redis_nooproc")
@@ -49,17 +56,23 @@ def positive_spectra(positive_spectra_data):
 def ms2deepscore_payload(raw_spectra):
     spectra = [data for data in raw_spectra if data["Ion_Mode"] == "Positive"]
     payload = {
-        "data": [
-            {
-                "peaks_json": spectra[0]["peaks_json"],
-                "Precursor_MZ": spectra[0]["Precursor_MZ"],
-            },
-            {
-                "peaks_json": spectra[1]["peaks_json"],
-                "Precursor_MZ": spectra[1]["Precursor_MZ"],
-            },
-        ],
-        "parameters": {"n_best_spectra": 2, "include_metadata": ["Compound_name"]},
+        "data": {
+            "ndarray": {
+                "parameters": {
+                    "n_best_spectra": 2,
+                },
+                "data": [
+                    {
+                        "peaks_json": spectra[0]["peaks_json"],
+                        "Precursor_MZ": spectra[0]["Precursor_MZ"],
+                    },
+                    {
+                        "peaks_json": spectra[1]["peaks_json"],
+                        "Precursor_MZ": spectra[1]["Precursor_MZ"],
+                    },
+                ],
+            }
+        }
     }
     return payload
 
@@ -239,3 +252,44 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
     )
 
     return flow
+
+
+@pytest.fixture()
+def registered_ms2ds_model(siamese_model_path):
+    params = RegisterModelParameters(
+        "test_experiment", MLFLOW_SERVER, str(MLFLOW_DIRECTORY), "positive"
+    )
+    train_params = TrainModelParameters("path", "positive", "path")
+    register_task = RegisterModel(params, train_params)
+    model_run_id = register_task.run(
+        {"ms2deepscore_model_path": siamese_model_path, "validation_loss": 0.5}
+    )
+    run = mlflow.get_run(model_run_id)
+    model_uri = run.info.artifact_uri + "/model"
+    predictor: MS2DeepScorePredictor = mlflow.pyfunc.load_model(
+        model_uri
+    )._model_impl.python_model
+
+    return {"run_id": model_run_id, "mlflow_uri": MLFLOW_SERVER, "predictor": predictor}
+
+
+@pytest.fixture
+def ms2ds_cached_embeddings(
+    registered_ms2ds_model, siamese_model_path, binned_spectra_stored, spectra_stored
+):
+    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+    spectrum_ids = spectrum_dgw.list_spectrum_ids()
+    task = MakeEmbeddings(
+        spectrum_dgw,
+        MS2DeepScoreFSDataGateway(),
+        "positive",
+        **TEST_TASK_CONFIG,
+    )
+
+    embedding_ids = task.run(
+        {"ms2deepscore_model_path": siamese_model_path, "validation_loss": 0.5},
+        registered_ms2ds_model["run_id"],
+        spectrum_ids=spectrum_ids
+    )
+
+    return embedding_ids
