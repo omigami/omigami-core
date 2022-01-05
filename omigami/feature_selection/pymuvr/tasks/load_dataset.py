@@ -23,4 +23,6 @@ class LoadDataset(Task):
         dd.DataFrame
 
         """
-        pass
+        dataframe = dd.read_csv(dataset_path)
+        # TODO what should the blocksize be here
+        return dataframe
