@@ -202,7 +202,7 @@ def build_training_flow(
             unmapped(spectrum_ids_chunks)
         )
 
-        MakeEmbeddings(
+        t = MakeEmbeddings(
             flow_parameters.spectrum_dgw,
             flow_parameters.data_gtw,
             flow_parameters.embedding,
@@ -216,6 +216,7 @@ def build_training_flow(
             unmapped(model_registry),
             processed_chunks,
         )
+        t.set_dependencies(training_flow, [processed_chunks])
         #
         # if deploy_model:
         #     DeployModel(flow_parameters.deploying)(model_registry)

@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Tuple
 
+import pandas as pd
+
 from omigami.config import (
     MLFLOW_SERVER,
     DATASET_IDS,
@@ -138,7 +140,7 @@ class MS2DeepScoreDeployer(Deployer):
         output_dir = S3_BUCKETS[self._environment]
 
         dataset_id = DATASET_IDS[self._environment][self._dataset_name].format(
-            date=datetime.today()
+            date=pd.Timestamp(2021, 8, 1)
         )
 
         spectrum_cleaner = SpectrumCleaner()
