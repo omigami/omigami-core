@@ -29,6 +29,7 @@ dependencies:
       - git+https://github.com/datarevenue-berlin/drfs
       - matchmsextras==0.2.3
       - pubchempy==1.0.2
+      - py_muvr==1.0.1
       - pytest-pycharm
       - pytest-redis
       - moto==2.2.15
