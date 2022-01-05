@@ -38,25 +38,25 @@ def test_deploy_pretrained_flow():
     assert flow_id
 
 
-@pytest.mark.skip(
-    reason="This test uses internet connection and deploys a test flow to prefect."
-)
+# @pytest.mark.skip(
+#     reason="This test uses internet connection and deploys a test flow to prefect."
+# )
 def test_deploy_training_flow():
     """
     BE CAREFUL -> DO NOT set `deploy_model=True` and `env="prod"` unless you know exactly
     what you are doing.
     """
-    env: Literal["dev", "prod"] = "dev"
+    env: Literal["dev", "prod"] = "prod"
     login_config = config["login"][env].get(dict)
-    login_config.pop("token")
+    # login_config.pop("token")
 
     deployer = MS2DeepScoreDeployer(
-        image="drtools/prefect:omigami-SNAPSHOT.f28bfc3",
+        image="drtools/prefect:omigami-SNAPSHOT.7ee32e59",
         dataset_name="complete",  # ms2deepscore can not be trained with the small dataset
         # because the minimum batch size to train is 32 samples and the small dataset
         # will lead to less samples than that.
         environment=env,
-        project_name="ms2deepscore-dev",
+        project_name="ms2deepscore",
         mlflow_server=MLFLOW_SERVER,
         source_uri=SOURCE_URI_COMPLETE_GNPS,
         auth=True,
@@ -66,6 +66,6 @@ def test_deploy_training_flow():
         overwrite_model=True,
         ion_mode="positive",
     )
-    flow_id = deployer.deploy_training_flow(flow_name="running-dev")
+    flow_id = deployer.deploy_training_flow(flow_name="make-embeddings")
 
     assert flow_id

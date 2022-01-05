@@ -186,7 +186,7 @@ class MS2DeepScoreDeployer(Deployer):
             flow_name=flow_name,
             flow_config=self._make_flow_config(),
             flow_parameters=flow_parameters,
-            deploy_model=self._deploy_model,
+            # deploy_model=self._deploy_model,
         )
 
         flow_run_id = self._create_flow_run(client, flow)
