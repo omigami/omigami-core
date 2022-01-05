@@ -27,6 +27,7 @@ from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
     CacheCleanedSpectra,
+    DeleteEmbeddings,
 )
 
 
@@ -55,6 +56,7 @@ class TrainingFlowParameters:
     ):
         self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
+        self.ion_mode = ion_mode
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
 
@@ -152,14 +154,24 @@ def build_training_flow(
             document_paths
         )
 
-        run_id = RegisterModel(flow_parameters.registering)(model)
+        model_run_id = RegisterModel(flow_parameters.registering)(model)
 
         if deploy_model:
-            _ = MakeEmbeddings(
+            delete_embeddings = DeleteEmbeddings(
+                flow_parameters.spectrum_dgw, flow_parameters.ion_mode
+            )()
+            make_embeddings = MakeEmbeddings(
                 flow_parameters.spectrum_dgw,
                 flow_parameters.fs_dgw,
                 flow_parameters.embedding,
-            ).map(unmapped(model), unmapped(run_id), document_paths)
-            DeployModel(flow_parameters.deploying)(run_id)
+            ).map(
+                unmapped(model),
+                unmapped(model_run_id),
+                document_paths,
+            )
+            make_embeddings.set_dependencies(training_flow, [delete_embeddings])
+
+            deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
+            deploy_model.set_dependencies(training_flow, [make_embeddings])
 
     return training_flow

@@ -38,6 +38,7 @@ from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
     CacheCleanedSpectra,
+    DeleteEmbeddings,
 )
 
 
@@ -196,7 +197,7 @@ def build_training_flow(
             nout=2,
         )(processed_ids, scores_output_path)
 
-        run_id = RegisterModel(
+        model_run_id = RegisterModel(
             flow_parameters.registering, training_parameters=flow_parameters.training
         )(train_model_output)
 
@@ -205,15 +206,21 @@ def build_training_flow(
         )(processed_ids)
 
         if deploy_model:
-            MakeEmbeddings(
+            delete_embeddings = DeleteEmbeddings(
+                flow_parameters.spectrum_dgw, flow_parameters.ion_mode
+            )()
+            make_embeddings = MakeEmbeddings(
                 flow_parameters.spectrum_dgw,
                 flow_parameters.fs_dgw,
                 flow_parameters.ion_mode,
             ).map(
                 unmapped(train_model_output),
-                unmapped(run_id),
+                unmapped(model_run_id),
                 processed_chunks,
             )
-            DeployModel(flow_parameters.deploying)(run_id)
+            make_embeddings.set_dependencies(training_flow, [delete_embeddings])
+
+            deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
+            deploy_model.set_dependencies(training_flow, [make_embeddings])
 
     return training_flow

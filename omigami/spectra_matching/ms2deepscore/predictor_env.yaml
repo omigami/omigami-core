@@ -17,6 +17,7 @@ dependencies:
       - pandas<1.2.0
       - ms2deepscore==0.2.1
       - matchmsextras==0.2.3
+      - pubchempy==1.0.2
       - tqdm
       - redis==3.5.3
       - git+https://github.com/datarevenue-berlin/drfs
