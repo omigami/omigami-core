@@ -74,11 +74,6 @@ class MakeEmbeddings(Task):
         Set of spectrum_ids
 
         """
-        self.logger.info(
-            f"Deleting embeddings for spec2vec model of {self._ion_mode} ion mode"
-        )
-        self._spectrum_dgw.delete_embeddings(self._ion_mode)
-
         documents = self._fs_gtw.read_from_file(document_path)
 
         self.logger.info(f"Loaded {len(documents)} documents from filesystem.")

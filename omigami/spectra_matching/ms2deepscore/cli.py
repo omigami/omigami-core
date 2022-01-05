@@ -70,8 +70,8 @@ def ms2deepscore_cli():
 )
 @click.option(
     "--epochs",
-    type=float,
-    default=5.0,
+    type=int,
+    default=5,
     show_default=True,
     help="Number of epochs for training the siamese neural network",
 )

@@ -24,7 +24,7 @@ def test_build_ms2deep_training_flow():
 
     assert isinstance(ms2deep_training_flow, Flow)
     assert ms2deep_training_flow.name == "MS2DeepScore Training Flow"
-    assert len(ms2deep_training_flow.tasks) == 11
+    assert len(ms2deep_training_flow.tasks) == 12
     tanimoto_task = ms2deep_training_flow.get_tasks("CalculateTanimotoScore")[0]
     assert tanimoto_task._decimals == 5
     assert ms2deep_training_flow.storage.directory == str(STORAGE_ROOT)
@@ -49,7 +49,7 @@ def test_build_model_deployment_flow():
 
     assert isinstance(model_deployment_flow, Flow)
     assert model_deployment_flow.name == "Model Destroyment Flow"
-    assert len(model_deployment_flow.tasks) == 5
+    assert len(model_deployment_flow.tasks) == 6
     assert model_deployment_flow.run_config.env == {
         "REDIS_DB": REDIS_DB,
         "REDIS_HOST": REDIS_HOST,

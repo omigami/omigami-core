@@ -39,6 +39,7 @@ def test_training_flow(flow_config, mock_ms2ds_deploy_model_task):
         "CreateSpectrumIDsChunks",
         "MakeEmbeddings",
         "DeployModel",
+        "DeleteEmbeddings",
     }
 
     flow_parameters = TrainingFlowParameters(
