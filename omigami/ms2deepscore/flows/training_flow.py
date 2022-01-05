@@ -12,9 +12,6 @@ from omigami.ms2deepscore.gateways import MS2DeepScoreRedisSpectrumDataGateway
 from omigami.ms2deepscore.helper_classes.siamese_model_trainer import SplitRatio
 from omigami.ms2deepscore.tasks import (
     ProcessSpectrumParameters,
-    ProcessSpectrum,
-    RegisterModel,
-    DeployModel,
     DeployModelParameters,
     RegisterModelParameters,
     MakeEmbeddingsParameters,
@@ -24,9 +21,8 @@ from omigami.ms2deepscore.tasks import (
 )
 from omigami.ms2deepscore.tasks.calculate_tanimoto_score import (
     CalculateTanimotoScoreParameters,
-    CalculateTanimotoScore,
 )
-from omigami.ms2deepscore.tasks.train_model import TrainModelParameters, TrainModel
+from omigami.ms2deepscore.tasks.train_model import TrainModelParameters
 from omigami.spectrum_cleaner import SpectrumCleaner
 from omigami.tasks import (
     DownloadData,
@@ -143,7 +139,7 @@ def build_training_flow(
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
-    deploy_model: bool = False,
+    # deploy_model: bool = False,
 ) -> Flow:
     """
     Builds the MS2DeepScore machine learning pipeline. It Downloads and process data, trains the model, makes
@@ -180,29 +176,30 @@ def build_training_flow(
             gnps_chunks
         )
 
-        processed_ids = ProcessSpectrum(
-            flow_parameters.data_gtw,
-            flow_parameters.spectrum_dgw,
-            flow_parameters.process_spectrum,
-        )(spectrum_ids_chunks)
+        # processed_ids = ProcessSpectrum(
+        #     flow_parameters.data_gtw,
+        #     flow_parameters.spectrum_dgw,
+        #     flow_parameters.process_spectrum,
+        # )(spectrum_ids_chunks)
 
-        scores_output_path = CalculateTanimotoScore(
-            flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score
-        )(processed_ids)
+        # scores_output_path = CalculateTanimotoScore(
+        #     flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score
+        # )(processed_ids)
 
-        train_model_output = TrainModel(
-            flow_parameters.data_gtw,
-            flow_parameters.spectrum_dgw,
-            flow_parameters.training,
-            nout=2,
-        )(processed_ids, scores_output_path)
+        # train_model_output = TrainModel(
+        #     flow_parameters.data_gtw,
+        #     flow_parameters.spectrum_dgw,
+        #     flow_parameters.training,
+        #     nout=2,
+        # )(processed_ids, scores_output_path)
 
-        model_registry = RegisterModel(
-            flow_parameters.registering, training_parameters=flow_parameters.training
-        )(train_model_output)
+        model_registry = {
+            "model_uri": "s3://omigami/ms2deepscore/mlflow/13920ba3955a4d589f9b5ab5a009392b/artifacts/model/",
+            "run_id": "13920ba3955a4d589f9b5ab5a009392b",
+        }
 
         processed_chunks = CreateSpectrumIDsChunks(flow_parameters.spectrum_chunking)(
-            processed_ids
+            unmapped(spectrum_ids_chunks)
         )
 
         MakeEmbeddings(
@@ -210,12 +207,17 @@ def build_training_flow(
             flow_parameters.data_gtw,
             flow_parameters.embedding,
         ).map(
-            unmapped(train_model_output),
+            unmapped(
+                {
+                    "ms2deepscore_model_path": flow_parameters.training.output_path,
+                    "validation_loss": 0.5,
+                }
+            ),
             unmapped(model_registry),
             processed_chunks,
         )
-
-        if deploy_model:
-            DeployModel(flow_parameters.deploying)(model_registry)
+        #
+        # if deploy_model:
+        #     DeployModel(flow_parameters.deploying)(model_registry)
 
     return training_flow
