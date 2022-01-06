@@ -8,7 +8,7 @@ from omigami.spectra_matching.entities.embedding import Embedding
 
 
 class MS2DeepScoreEmbedding:
-    def __init__(self, vector:  np.ndarray, spectrum_id: str, inchikey: str):
+    def __init__(self, vector: np.ndarray, spectrum_id: str, inchikey: str):
         self.vector = vector
         self.spectrum_id = spectrum_id
         self.inchikey = inchikey

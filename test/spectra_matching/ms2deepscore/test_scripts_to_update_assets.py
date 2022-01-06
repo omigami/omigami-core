@@ -26,9 +26,7 @@ def create_input_vector(binned_spectrum, input_vector_dim) -> np.ndarray:
     "`omigami/test/assets/ms2deepscore/SMALL_GNPS_as_embeddings.pkl`"
     "needs to be updated. "
 )
-def test_create_embeddings_from_real_predictor(
-    binned_spectra, ms2deepscore_predictor
-):
+def test_create_embeddings_from_real_predictor(binned_spectra, ms2deepscore_predictor):
     """
     This test is to create/update `omigami/test/assets/ms2deepscore/SMALL_GNPS_as_embeddings.pkl`
     with `MS2DeepScore_allGNPSpositive_10k_500_500_200.hdf5 model`. E.g. if you rename
