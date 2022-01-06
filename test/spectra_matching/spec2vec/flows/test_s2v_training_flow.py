@@ -14,7 +14,7 @@ from omigami.spectra_matching.spec2vec.flows.training_flow import (
     TrainingFlowParameters,
 )
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from test.spectra_matching.conftest import ASSETS_DIR
 
 os.chdir(Path(__file__).parents[4])
 

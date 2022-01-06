@@ -34,8 +34,8 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     MakeEmbeddings,
 )
 from omigami.spectra_matching.storage import FSDataGateway
-from omigami.test.spectra_matching.conftest import ASSETS_DIR, TEST_TASK_CONFIG
-from omigami.test.spectra_matching.tasks import DummyTask
+from test.spectra_matching.conftest import ASSETS_DIR, TEST_TASK_CONFIG
+from test.spectra_matching.tasks import DummyTask
 
 redis_db = factories.redisdb("redis_nooproc")
 

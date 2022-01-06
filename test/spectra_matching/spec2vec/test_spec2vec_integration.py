@@ -14,7 +14,7 @@ from omigami.spectra_matching.spec2vec.main import (
 )
 from omigami.spectra_matching.storage import FSDataGateway
 from omigami.spectra_matching.tasks import DownloadParameters, DownloadData
-from omigami.test.spectra_matching.conftest import monitor_flow_results
+from test.spectra_matching.conftest import monitor_flow_results
 
 
 @pytest.mark.skip(

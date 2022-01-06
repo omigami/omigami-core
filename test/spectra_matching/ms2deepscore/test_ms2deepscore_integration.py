@@ -14,7 +14,7 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     TrainModelParameters,
     RegisterModel,
 )
-from omigami.test.spectra_matching.conftest import monitor_flow_results
+from test.spectra_matching.conftest import monitor_flow_results
 
 
 @pytest.mark.skip(

@@ -6,7 +6,7 @@ import pandas as pd
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.wrapper import get_rest_microservice
 
-from omigami.test.spectra_matching.conftest import MLFlowServer
+from test.spectra_matching.conftest import MLFlowServer
 
 
 def test_predictions(

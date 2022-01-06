@@ -8,7 +8,7 @@ from ms2deepscore import MS2DeepScore
 from omigami.spectra_matching.ms2deepscore.predictor import (
     MS2DeepScoreSimilarityScoreCalculator,
 )
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from test.spectra_matching.conftest import ASSETS_DIR
 
 pytestmark = [
     pytest.mark.xfail(reason="Not working currently"),

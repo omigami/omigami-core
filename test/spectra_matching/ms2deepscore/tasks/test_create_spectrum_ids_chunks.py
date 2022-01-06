@@ -4,7 +4,7 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     CreateSpectrumIDsChunks,
 )
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway
-from omigami.test.spectra_matching.conftest import TEST_TASK_CONFIG
+from test.spectra_matching.conftest import TEST_TASK_CONFIG
 
 
 def test_create_chunks(spectrum_ids):

@@ -10,7 +10,7 @@ from omigami.spectra_matching.ms2deepscore.storage.redis_spectrum_gateway import
     MS2DeepScoreRedisSpectrumDataGateway,
 )
 from omigami.spectra_matching.ms2deepscore.tasks import MakeEmbeddings
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from test.spectra_matching.conftest import ASSETS_DIR
 
 
 @pytest.mark.skipif(

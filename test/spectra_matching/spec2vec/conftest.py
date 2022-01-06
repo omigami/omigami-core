@@ -14,8 +14,8 @@ from omigami.spectra_matching.spec2vec.entities.embedding import Spec2VecEmbeddi
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
 from omigami.spectra_matching.storage import FSDataGateway
 from omigami.spectra_matching.storage.model_registry import MLFlowDataGateway
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
-from omigami.test.spectra_matching.tasks import DummyTask
+from test.spectra_matching.conftest import ASSETS_DIR
+from test.spectra_matching.tasks import DummyTask
 
 
 @pytest.fixture()

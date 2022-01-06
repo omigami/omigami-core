@@ -18,7 +18,7 @@ from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
     EmbeddingMaker,
 )
 from omigami.spectra_matching.spec2vec.predictor import Spec2VecPredictor
-from omigami.test.spectra_matching.conftest import MLFlowServer
+from test.spectra_matching.conftest import MLFlowServer
 
 redis_db = factories.redisdb("redis_nooproc")
 

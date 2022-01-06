@@ -11,7 +11,7 @@ from prefect import Flow
 from omigami.config import GNPS_URIS
 from omigami.spectra_matching.storage import DataGateway, FSDataGateway
 from omigami.spectra_matching.tasks import DownloadParameters, DownloadData
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from test.spectra_matching.conftest import ASSETS_DIR
 from omigami.utils import create_prefect_result_from_path
 
 

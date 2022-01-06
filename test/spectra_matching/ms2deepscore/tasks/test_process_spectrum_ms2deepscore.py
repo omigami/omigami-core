@@ -12,7 +12,7 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     ProcessSpectrum,
 )
 from omigami.spectra_matching.storage import FSDataGateway
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from test.spectra_matching.conftest import ASSETS_DIR
 
 
 def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):

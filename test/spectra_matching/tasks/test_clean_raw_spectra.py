@@ -12,7 +12,7 @@ from omigami.spectra_matching.tasks.clean_raw_spectra import (
     CleanRawSpectra,
     CleanRawSpectraParameters,
 )
-from omigami.test.spectra_matching.conftest import ASSETS_DIR
+from test.spectra_matching.conftest import ASSETS_DIR
 
 
 def test_clean_raw_spectra_run(create_chunks_task):
