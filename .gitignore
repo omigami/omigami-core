@@ -145,6 +145,7 @@ dmypy.json
 
 # large test assets
 **/assets/*model.pkl
+omigami/test/assets/cache
 
 .DS_Store
 /local-deployment/results

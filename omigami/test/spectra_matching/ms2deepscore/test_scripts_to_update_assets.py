@@ -27,7 +27,7 @@ def create_input_vector(binned_spectrum, input_vector_dim) -> np.ndarray:
     "needs to be updated. "
 )
 def test_create_embeddings_from_real_predictor(
-    binned_spectra, ms2deepscore_real_predictor
+    binned_spectra, ms2deepscore_predictor
 ):
     """
     This test is to create/update `omigami/test/assets/ms2deepscore/SMALL_GNPS_as_embeddings.pkl`
@@ -54,9 +54,9 @@ def test_create_embeddings_from_real_predictor(
 
     embeddings = []
     for binned_spectrum in binned_spectra:
-        vector = ms2deepscore_real_predictor.model.model.base.predict(
+        vector = ms2deepscore_predictor.model.model.base.predict(
             create_input_vector(
-                binned_spectrum, ms2deepscore_real_predictor.model.input_vector_dim
+                binned_spectrum, ms2deepscore_predictor.model.input_vector_dim
             )
         )
         embeddings.append(

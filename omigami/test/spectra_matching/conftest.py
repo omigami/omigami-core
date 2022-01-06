@@ -41,7 +41,7 @@ TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=pd.Timedelta(seconds=0.1))
 redis_db = factories.redisdb("redis_nooproc")
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_default_config(monkeypatch):
     monkeypatch.setattr(omigami.utils, "DEFAULT_PREFECT_TASK_CONFIG", TEST_TASK_CONFIG)
 

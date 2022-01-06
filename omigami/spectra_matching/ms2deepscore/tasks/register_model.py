@@ -82,6 +82,7 @@ class RegisterModel(Task):
             params=params,
             artifacts=train_model_output,
             run_name=run_name,
+            model_name=f"MS2DeepScore-{self._ion_mode}"
         )
 
         self.logger.info(f"Created model run_id: {run_id}.")
