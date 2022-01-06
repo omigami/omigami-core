@@ -37,13 +37,17 @@ from omigami.spectra_matching.tasks import (
 )
 
 ASSETS_DIR = Path(__file__).parents[1] / "assets"
+CACHE_DIR = ASSETS_DIR / "cache"
 TEST_TASK_CONFIG = dict(max_retries=1, retry_delay=pd.Timedelta(seconds=0.1))
 redis_db = factories.redisdb("redis_nooproc")
 
 
-@pytest.fixture()
-def mock_default_config(monkeypatch):
-    monkeypatch.setattr(omigami.utils, "DEFAULT_PREFECT_TASK_CONFIG", TEST_TASK_CONFIG)
+@pytest.fixture(scope="session", autouse=True)
+def mock_default_config():
+    from _pytest.monkeypatch import MonkeyPatch
+
+    mpatch = MonkeyPatch()
+    mpatch.setattr(omigami.utils, "DEFAULT_PREFECT_TASK_CONFIG", TEST_TASK_CONFIG)
 
 
 def pytest_addoption(parser):

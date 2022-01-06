@@ -83,7 +83,6 @@ def test_run_model_deployment_flow(
     backend_services,
     mock_s2v_deploy_model_task,
     word2vec_model,
-    mock_default_config,
     registered_s2v_model,
 ):
     client = backend_services["prefect"]

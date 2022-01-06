@@ -68,7 +68,6 @@ def deploy_model_setup(
 def test_run_s2v_deploy_model_flow(
     deploy_model_setup,
     flow_config,
-    mock_default_config,
     monkeypatch,
     spec2vec_redis_setup,
     s3_documents_directory,

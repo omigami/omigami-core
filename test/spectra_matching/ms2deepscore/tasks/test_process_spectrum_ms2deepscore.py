@@ -51,7 +51,6 @@ def test_process_spectrum(
     spectra_stored,
     spectrum_ids,
     siamese_model_path,
-    mock_default_config,
     tmpdir,
 ):
     fs_gtw = FSDataGateway()

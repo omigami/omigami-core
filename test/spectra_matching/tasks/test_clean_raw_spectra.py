@@ -29,7 +29,7 @@ def test_clean_raw_spectra_run(create_chunks_task):
     )
 
 
-def test_clean_raw_spectra_flow(create_chunks_task, mock_default_config):
+def test_clean_raw_spectra_flow(create_chunks_task):
     output_dir = ASSETS_DIR / "cleaned"
     fs_dgw = FSDataGateway()
     params = CleanRawSpectraParameters(output_dir)

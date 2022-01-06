@@ -64,7 +64,6 @@ def deploy_model_setup(
 def test_run_ms2ds_deploy_model_flow(
     deploy_model_setup,
     flow_config,
-    mock_default_config,
     redis_full_setup,
 ):
     params = DeployModelFlowParameters(

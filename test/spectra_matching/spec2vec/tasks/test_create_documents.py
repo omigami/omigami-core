@@ -6,9 +6,7 @@ from omigami.spectra_matching.spec2vec.tasks import CreateDocumentsParameters
 from omigami.spectra_matching.storage import FSDataGateway
 
 
-def test_create_documents(
-    mock_default_config, cleaned_spectra_paths, cleaned_spectra_chunks, tmpdir
-):
+def test_create_documents(cleaned_spectra_paths, cleaned_spectra_chunks, tmpdir):
     ion_mode = "positive"
     fs_dgw = FSDataGateway()
 
@@ -28,9 +26,7 @@ def test_create_documents(
     assert len(documents) == len(cleaned_spectra_chunks[0])
 
 
-def test_create_documents_map(
-    mock_default_config, cleaned_spectra_paths, cleaned_spectra_chunks, tmpdir
-):
+def test_create_documents_map(cleaned_spectra_paths, cleaned_spectra_chunks, tmpdir):
     ion_mode = "positive"
     fs_dgw = FSDataGateway()
     documents_directory = tmpdir / "spec2vec/documents/positive/small/2_decimals"

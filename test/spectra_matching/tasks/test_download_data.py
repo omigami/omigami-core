@@ -11,11 +11,11 @@ from prefect import Flow
 from omigami.config import GNPS_URIS
 from omigami.spectra_matching.storage import DataGateway, FSDataGateway
 from omigami.spectra_matching.tasks import DownloadParameters, DownloadData
-from test.spectra_matching.conftest import ASSETS_DIR
 from omigami.utils import create_prefect_result_from_path
+from test.spectra_matching.conftest import ASSETS_DIR
 
 
-def test_refresh_data(mock_default_config, tmpdir):
+def test_refresh_data(tmpdir):
     """
     Test if the file is present, younger then 30 days and older then 30 days.
     """
@@ -55,7 +55,7 @@ def test_refresh_data(mock_default_config, tmpdir):
     assert is_old_file
 
 
-def test_download_data(mock_default_config, tmpdir):
+def test_download_data(tmpdir):
     data_gtw = MagicMock(spec=FSDataGateway)
     data_gtw.download_gnps.return_value = "download"
     data_gtw.get_spectrum_ids.return_value = "spectrum_ids"
@@ -81,7 +81,7 @@ def test_download_data(mock_default_config, tmpdir):
     )
 
 
-def test_download_existing_data(mock_default_config):
+def test_download_existing_data():
     file_name = "SMALL_GNPS.json"
     data_gtw = FSDataGateway()
     data_gtw.download_gnps = lambda *args: None
@@ -106,7 +106,7 @@ def test_download_existing_data(mock_default_config):
 
 
 @pytest.mark.skip(reason="This test uses internet connection.")
-def test_download_existing_data_s3(mock_default_config):
+def test_download_existing_data_s3():
     file_name = "spec2vec-training-flow/downloaded_datasets/test_10k/gnps.json"
     dir_ = "s3://dr-prefect"
     bucket = "dr-prefect"

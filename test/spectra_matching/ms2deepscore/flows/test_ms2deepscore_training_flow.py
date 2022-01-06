@@ -86,7 +86,6 @@ def test_training_flow(flow_config, mock_ms2ds_deploy_model_task):
 def test_run_training_flow(
     tmpdir,
     flow_config,
-    mock_default_config,
     clean_chunk_files,
     redis_full_setup,
     small_model_params,
