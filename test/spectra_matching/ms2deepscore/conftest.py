@@ -1,15 +1,17 @@
 import pickle
-from logging import getLogger
+from typing import List
 
 import mlflow
 import pandas as pd
 import pytest
+from mlflow.entities import Experiment
 from ms2deepscore.models import load_model
 from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
 from omigami.config import GNPS_URIS, EMBEDDING_HASHES
 from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
+from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
@@ -17,10 +19,7 @@ from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
 from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
-from omigami.spectra_matching.ms2deepscore.predictor import (
-    MS2DeepScorePredictor,
-    MS2DeepScoreSimilarityScoreCalculator,
-)
+from omigami.spectra_matching.ms2deepscore.predictor import MS2DeepScorePredictor
 from omigami.spectra_matching.ms2deepscore.storage import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
@@ -34,7 +33,7 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     MakeEmbeddings,
 )
 from omigami.spectra_matching.storage import FSDataGateway
-from test.spectra_matching.conftest import ASSETS_DIR, TEST_TASK_CONFIG
+from test.spectra_matching.conftest import ASSETS_DIR, TEST_TASK_CONFIG, CACHE_DIR
 from test.spectra_matching.tasks import DummyTask
 
 redis_db = factories.redisdb("redis_nooproc")
@@ -79,27 +78,16 @@ def ms2ds_payload(raw_spectra):
     return payload
 
 
-@pytest.fixture()
-def ms2deepscore_model_path():
-    return str(ASSETS_DIR / "ms2deepscore_model.hdf5")
-
-
-@pytest.fixture()
-def ms2deepscore_embedding(ms2deepscore_model_path):
-    model = load_model(ms2deepscore_model_path)
-    return MS2DeepScoreSimilarityScoreCalculator(model)
-
-
 @pytest.fixture
 def siamese_model_path(
-    small_model_params, mock_default_config, flow_config, generate_ms2ds_model_flow
+    small_model_params, mock_default_config, ms2ds_build_test_model_flow
 ):
     """Trains and caches a MS2DS model. To retrain. delete cached model."""
-    path = ASSETS_DIR / "cache" / "ms2deep_score.hdf5"
+    path = CACHE_DIR / "ms2deep_score.hdf5"
 
     if not path.exists():
         path.parent.mkdir(exist_ok=True)
-        res = generate_ms2ds_model_flow.run()
+        res = ms2ds_build_test_model_flow.run()
         assert res.is_successful()
 
     return str(path)
@@ -188,7 +176,7 @@ def mock_ms2ds_deploy_model_task(monkeypatch):
 
 
 @pytest.fixture
-def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_files):
+def ms2ds_build_test_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_files):
     """Used to generate local asset ms2deep_score.hd5 for multiple tests."""
     import omigami.spectra_matching.ms2deepscore.flows.training_flow
 
@@ -232,7 +220,7 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
-        model_output_path=str(ASSETS_DIR / "cache" / "ms2deep_score.hdf5"),
+        model_output_path=str(CACHE_DIR / "ms2deep_score.hdf5"),
         epochs=5,
         project_name="test",
         mlflow_output_directory=f"{tmpdir}/model-output",
@@ -254,12 +242,11 @@ def generate_ms2ds_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_file
 @pytest.fixture
 def registered_ms2ds_model(siamese_model_path):
     """
-    Trains a model and saves into assets cache directory. Skips training if the model
-    already exists in cache.
-
-    For retraining, delete `assets/cache/mlflow`
+    Registers a model in a local mlflow. Skips if already registered.
+    For resetting cache, delete `assets/cache/mlflow`
     """
-    mlflow_path = ASSETS_DIR / "cache" / "mlflow/mlflow.sqlite"
+    mlflow_path = CACHE_DIR / "mlflow/mlflow.sqlite"
+    mlflow_path.parent.mkdir(exist_ok=True)
     mlflow_server = "sqlite:///" + str(mlflow_path)
     experiment_name = "test_fixture"
 
@@ -267,22 +254,11 @@ def registered_ms2ds_model(siamese_model_path):
         client = mlflow.tracking.MlflowClient(tracking_uri=mlflow_server)
         experiment = client.get_experiment_by_name(experiment_name)
         if experiment is not None:
-            # Skips registering model if there is one already present (i.e. if this fixture
-            # has been executed before)
-            run = client.list_run_infos(experiment.experiment_id)[0]
-            model_uri = run.artifact_uri + "/model"
-            predictor: MS2DeepScorePredictor = mlflow.pyfunc.load_model(
-                model_uri
-            )._model_impl.python_model
-            model_run_id = run.run_id
+            model_data = _load_model_from_mlflow(client, experiment)
+            model_data["model_path"] = siamese_model_path
+            model_data["mlflow_uri"] = mlflow_server
+            return model_data
 
-            return {
-                "run_id": model_run_id,
-                "mlflow_uri": mlflow_server,
-                "predictor": predictor,
-            }
-
-    mlflow_path.parent.mkdir(exist_ok=True)
     params = RegisterModelParameters(
         experiment_name, mlflow_server, str(mlflow_path.parent), "positive"
     )
@@ -301,13 +277,31 @@ def registered_ms2ds_model(siamese_model_path):
         "run_id": model_run_id,
         "mlflow_uri": mlflow_server,
         "predictor": predictor,
+        "model_path": siamese_model_path,
     }
+
+
+def _load_model_from_mlflow(
+    client: mlflow.tracking.MlflowClient, experiment: Experiment
+) -> dict:
+    """Skips registering model if there is one already present (i.e. if the fixture
+    has been executed before"""
+    run = client.list_run_infos(experiment.experiment_id)[0]
+    model_uri = run.artifact_uri + "/model"
+    predictor: MS2DeepScorePredictor = mlflow.pyfunc.load_model(
+        model_uri
+    )._model_impl.python_model
+    model_run_id = run.run_id
+    model_data = {
+        "run_id": model_run_id,
+        "predictor": predictor,
+    }
+    return model_data
 
 
 @pytest.fixture
 def ms2ds_saved_embeddings(
     registered_ms2ds_model,
-    siamese_model_path,
     binned_spectra_stored,
     spectra_stored,
     redis_db,
@@ -318,43 +312,43 @@ def ms2ds_saved_embeddings(
 
     For recreating embeddings, delete `assets/cache/ms2ds_embeddings.pickle`.
     """
-    fs_dgw = FSDataGateway()
-    cache_path = ASSETS_DIR / "cache" / "ms2ds_embeddings.pickle"
+    fs_dgw = MS2DeepScoreFSDataGateway()
+    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
+    cache_path = CACHE_DIR / "ms2ds_embeddings.pickle"
 
     if cache_path.exists():
-        # Loads from cache and saves to redis
-        log = getLogger()
-        log.info("Using cached embeddings fixture.")
-        embeddings = fs_dgw.read_from_file(cache_path)
-        project = "ms2deepscore"
-        ion_mode = "positive"
-        pipe = redis_db.pipeline()
-        for embedding in embeddings:
-            pipe.hset(
-                f"{EMBEDDING_HASHES}_{project}_{ion_mode}",
-                embedding.spectrum_id,
-                pickle.dumps(embedding),
-            )
-        pipe.execute()
-
+        embeddings = _get_cached_embeddings(cache_path, fs_dgw, redis_db)
         return embeddings
 
-    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
-    spectrum_ids = spectrum_dgw.list_spectrum_ids()
-    task = MakeEmbeddings(
-        spectrum_dgw,
-        MS2DeepScoreFSDataGateway(),
-        "positive",
-        **TEST_TASK_CONFIG,
-    )
-
+    task = MakeEmbeddings(spectrum_dgw, fs_dgw, "positive", **TEST_TASK_CONFIG)
     embedding_ids = task.run(
-        {"ms2deepscore_model_path": siamese_model_path, "validation_loss": 0.5},
+        {
+            "ms2deepscore_model_path": registered_ms2ds_model["model_path"],
+            "validation_loss": 0.5,
+        },
         registered_ms2ds_model["run_id"],
-        spectrum_ids=spectrum_ids,
+        spectrum_ids=spectrum_dgw.list_spectrum_ids(),
     )
 
     embeddings = spectrum_dgw.read_embeddings("positive", embedding_ids)
     fs_dgw.serialize_to_file(cache_path, embeddings)
 
+    return embeddings
+
+
+def _get_cached_embeddings(
+    cache_path: str, fs_dgw: FSDataGateway, redis_db
+) -> List[MS2DeepScoreEmbedding]:
+    """Loads embeddings from cache and saves to redis"""
+    embeddings = fs_dgw.read_from_file(cache_path)
+    project = "ms2deepscore"
+    ion_mode = "positive"
+    pipe = redis_db.pipeline()
+    for embedding in embeddings:
+        pipe.hset(
+            f"{EMBEDDING_HASHES}_{project}_{ion_mode}",
+            embedding.spectrum_id,
+            pickle.dumps(embedding),
+        )
+    pipe.execute()
     return embeddings
