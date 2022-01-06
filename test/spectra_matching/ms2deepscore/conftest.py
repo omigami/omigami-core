@@ -304,10 +304,7 @@ def ms2ds_saved_embeddings(
     registered_ms2ds_model, binned_spectra_stored, spectra_stored, redis_db
 ):
     """
-    If existing, loads embeddings from assets cache directory and saves them to redis.
-    If not, creates them using the trained MS2DS model, and saves them to cache.
-
-    For recreating embeddings, delete `assets/cache/ms2ds_embeddings.pickle`.
+    Generates embeddings using registered ms2ds model. Uses cache instead, if available.
     """
     fs_dgw = MS2DeepScoreFSDataGateway()
     spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
