@@ -98,6 +98,7 @@ def siamese_model_path(
     path = ASSETS_DIR / "cache" / "ms2deep_score.hdf5"
 
     if not path.exists():
+        path.parent.mkdir(exist_ok=True)
         res = generate_ms2ds_model_flow.run()
         assert res.is_successful()
 

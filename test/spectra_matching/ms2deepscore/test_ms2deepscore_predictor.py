@@ -68,7 +68,7 @@ def test_get_best_matches(ms2ds_saved_embeddings, ms2deepscore_predictor):
 
     for query, best_match in zip(ms2ds_saved_embeddings, best_matches.values()):
         assert len(best_match) == n_best_spectra
-        assert query.spectrum_id == list(best_match.keys())[0]
+        assert query.spectrum_id in list(best_match.keys())
         assert "score" in pd.DataFrame(best_match).T.columns
 
 
