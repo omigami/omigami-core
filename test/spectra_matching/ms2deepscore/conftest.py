@@ -254,7 +254,7 @@ def registered_ms2ds_model(siamese_model_path):
         client = mlflow.tracking.MlflowClient(tracking_uri=mlflow_server)
         experiment = client.get_experiment_by_name(experiment_name)
         if experiment is not None:
-            model_data = _load_model_from_mlflow(client, experiment)
+            model_data = _load_predictor_from_mlflow(client, experiment)
             model_data["model_path"] = siamese_model_path
             model_data["mlflow_uri"] = mlflow_server
             return model_data
@@ -281,7 +281,7 @@ def registered_ms2ds_model(siamese_model_path):
     }
 
 
-def _load_model_from_mlflow(
+def _load_predictor_from_mlflow(
     client: mlflow.tracking.MlflowClient, experiment: Experiment
 ) -> dict:
     """Skips registering model if there is one already present (i.e. if the fixture
@@ -301,10 +301,7 @@ def _load_model_from_mlflow(
 
 @pytest.fixture
 def ms2ds_saved_embeddings(
-    registered_ms2ds_model,
-    binned_spectra_stored,
-    spectra_stored,
-    redis_db,
+    registered_ms2ds_model, binned_spectra_stored, spectra_stored, redis_db
 ):
     """
     If existing, loads embeddings from assets cache directory and saves them to redis.
