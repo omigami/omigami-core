@@ -93,31 +93,31 @@ def siamese_model_path(
     return str(path)
 
 
-@pytest.fixture()
+@pytest.fixture
 def siamese_model(siamese_model_path):
     ms2deepscore_model = load_model(siamese_model_path)
     return ms2deepscore_model
 
 
-@pytest.fixture()
+@pytest.fixture
 def ms2deepscore_predictor(siamese_model):
     ms2deepscore_predictor = MS2DeepScorePredictor(ion_mode="positive", run_id="2")
     ms2deepscore_predictor.model = siamese_model
     return ms2deepscore_predictor
 
 
-@pytest.fixture()
+@pytest.fixture
 def tanimoto_scores_path():
     return str(ASSETS_DIR / "ms2deepscore" / "to_train" / "tanimoto_scores.pkl")
 
 
-@pytest.fixture()
+@pytest.fixture
 def tanimoto_scores(tanimoto_scores_path):
     tanimoto_score = pd.read_pickle(tanimoto_scores_path, compression="gzip")
     return tanimoto_score
 
 
-@pytest.fixture()
+@pytest.fixture
 def binned_spectra_to_train():
     path = str(ASSETS_DIR / "ms2deepscore" / "to_train" / "binned_spectra.pkl")
     with open(path, "rb") as f:
