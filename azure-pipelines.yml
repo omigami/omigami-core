@@ -56,7 +56,7 @@ steps:
      --cov=omigami \
      --cov-report=xml \
      --cov-report=html \
-     omigami
+     test
   displayName: 'Run all tests'
 - task: PublishTestResults@2
   condition: succeededOrFailed()
