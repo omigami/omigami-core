@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from typing import Dict, Set, List
 
 from prefect import Task
 
@@ -34,8 +34,8 @@ class MakeEmbeddings(Task):
         self,
         train_model_output: Dict = None,
         run_id: str = None,
-        spectrum_ids: Set[str] = None,
-    ) -> Set[str]:
+        spectrum_ids: List[str] = None,
+    ) -> List[str]:
         """
         Prefect task to create embeddings from SiameseModel. The process is as follows:
         1. Previous spectra are deleted from the cache,
@@ -49,7 +49,7 @@ class MakeEmbeddings(Task):
             Dictionary containing `ms2deepscore_model_path` and `validation_loss`
         run_id:
             Registered model `run_id`
-        spectrum_ids: Set[str]
+        spectrum_ids: List[str]
             Set of spectrum_ids to make embedding from
 
         Returns

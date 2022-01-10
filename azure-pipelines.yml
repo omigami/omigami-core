@@ -43,10 +43,8 @@ steps:
 
 - bash: |
     source activate omigami
-    black --check --target-version py37 omigami/authentication
-    black --check --target-version py37 omigami/common
-    black --check --target-version py37 omigami/spectra_matching
-    black --check --target-version py37 omigami/test
+    black --check --target-version py37 omigami
+    black --check --target-version py37 test
   displayName: Check black formatting
 
 - bash: |
@@ -56,7 +54,7 @@ steps:
      --cov=omigami \
      --cov-report=xml \
      --cov-report=html \
-     omigami
+     test
   displayName: 'Run all tests'
 - task: PublishTestResults@2
   condition: succeededOrFailed()
