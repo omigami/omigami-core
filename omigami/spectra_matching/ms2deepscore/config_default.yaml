@@ -1,0 +1,10 @@
+prefect:
+  project: "ms2deepscore"
+storage:
+  directory:
+    pre-trained-model: "model/pre-trained/ms2deep_score.hdf5"
+    scores: "tanimoto_scores.pkl"
+    model: "model/trained/ms2deep_score.hdf5"
+    spectrum_binner: "model/trained/spectrum_binner.pkl"
+  redis:
+    binned_spectrum_hashes: "binned_spectrum_data"

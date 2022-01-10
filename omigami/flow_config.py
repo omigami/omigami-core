@@ -2,13 +2,19 @@ from datetime import timedelta
 from enum import Enum
 
 from attr import dataclass
-from drfs import DRPath
 from prefect.executors import Executor, LocalDaskExecutor
-from prefect.run_configs import RunConfig, KubernetesRun
+from prefect.run_configs import RunConfig, KubernetesRun, LocalRun, DockerRun
 from prefect.schedules import IntervalSchedule
-from prefect.storage import Storage, S3
+from prefect.storage import Storage, S3, Local, Docker
 
-from omigami.config import ROOT_DIR, S3_BUCKETS
+from omigami.config import (
+    ROOT_DIR,
+    STORAGE_ROOT,
+    OMIGAMI_ENV,
+    MLFLOW_SERVER,
+    REDIS_HOST,
+)
+from omigami.env_config import Environments
 
 """
     Implemented Prefect flow configurations:
@@ -17,6 +23,8 @@ from omigami.config import ROOT_DIR, S3_BUCKETS
 
 class PrefectStorageMethods(Enum):
     S3 = 0
+    Local = 1
+    Docker = 2
 
 
 class PrefectExecutorMethods(Enum):
@@ -42,35 +50,68 @@ class FlowConfig:
 
 
 def make_flow_config(
-    image: str,
-    storage_type: PrefectStorageMethods,
     executor_type: PrefectExecutorMethods,
+    image: str = None,
     redis_db: str = "",
-    environment: str = "dev",
+    storage_root: str = None,
     schedule: timedelta = None,
 ) -> FlowConfig:
     """
-    This will coordinate the creation of a flow config either with provided params or using the default values
-    from default_config.yaml
+    Creates the configuration necessary to run an Omigami prefect flow.
+
+    Parameters
+    ----------
+    executor_type:
+        Dask executor. Only local is implemented
+    image:
+        Image to run the flow on. Used by k8s flows. Unused by local flows
+    redis_db:
+        Redis database where the data is
+    storage_root:
+        Root directory of flow persistence
+    schedule:
+        Optional parameter for running a flow periodically
+
+    Returns
+    -------
+    FlowConfig:
+        A class containing flow configuration parameters
+
     """
 
-    # run_config
-    run_config = KubernetesRun(
-        image=image,
-        job_template_path=str(ROOT_DIR / "job_spec.yaml"),
-        labels=["dev"],
-        service_account_name="prefect-server-serviceaccount",
-        env={"REDIS_HOST": "redis-master.redis", "REDIS_DB": redis_db},
-        memory_request="12Gi",
-    )
+    env_variables = {
+        "REDIS_DB": redis_db,
+        "REDIS_HOST": REDIS_HOST,
+        "OMIGAMI_ENV": OMIGAMI_ENV,
+        "MLFLOW_SERVER": MLFLOW_SERVER,
+        "TZ": "UTC",
+    }
 
-    # storage_type
-    if storage_type == PrefectStorageMethods.S3:
-        storage = S3(DRPath(S3_BUCKETS[environment]).netloc)
+    if OMIGAMI_ENV in (Environments.dev, Environments.prod):
+        storage = S3(STORAGE_ROOT.netloc)
+        run_config = KubernetesRun(
+            image=image,
+            job_template_path=str(ROOT_DIR / "job_spec.yaml"),
+            labels=["dev"],
+            service_account_name="prefect-server-serviceaccount",
+            env=env_variables,
+            memory_request="12Gi",
+            image_pull_secrets=["regcred"],
+        )
+    elif OMIGAMI_ENV == Environments.local:
+        storage = Local(storage_root)
+        run_config = LocalRun(env=env_variables, labels=["dev"])
+    elif OMIGAMI_ENV == Environments.docker:
+        storage = Docker(
+            base_image=image,
+            local_image=True,
+            ignore_healthchecks=False,
+            prefect_directory="/opt/omigami",
+        )
+        run_config = DockerRun(env=env_variables, labels=["dev"], image=image)
     else:
-        raise ValueError(f"Prefect flow storage type '{storage_type}' not supported.")
+        raise ValueError(f"Environment {OMIGAMI_ENV} not supported.")
 
-    # executor
     if executor_type == PrefectExecutorMethods.DASK:
         raise NotImplementedError(
             "DASK as a prefect executor is not supported at the moment."

@@ -1,5 +1,4 @@
 # coding=utf-8
-import os
 from setuptools import setup, find_packages
 
 import versioneer
@@ -15,10 +14,19 @@ setup(
     author_email="markus@datarevenue.com",
     install_requires=[],
     packages=packages,
-    package_data={},
+    package_data={
+        "omigami": [
+            "config_default.yaml",
+            "spectra_matching/spec2vec/config_default.yaml",
+            "spectra_matching/ms2deepscore/config_default.yaml",
+            "spectra_matching/seldon/seldon_deployment.yaml",
+        ]
+    },
+    include_package_data=True,
     zip_safe=False,
     entry_points="""
         [console_scripts]
+        omigami=omigami.cli:cli
     """,
 )
 
