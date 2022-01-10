@@ -40,9 +40,7 @@ def test_s2v_deploy_model_flow(flow_config):
 
 
 @pytest.fixture()
-def deploy_model_setup(
-    tmpdir_factory, word2vec_model, monkeypatch, mock_s2v_deploy_model_task
-):
+def deploy_model_setup(tmpdir_factory, word2vec_model, mock_s2v_deploy_model_task):
     tmpdir = tmpdir_factory.mktemp("model")
     mlflow_uri = f"sqlite:///{tmpdir}/mlflow.sqlite"
     dgw = MLFlowDataGateway(mlflow_uri)
@@ -68,9 +66,9 @@ def deploy_model_setup(
 def test_run_s2v_deploy_model_flow(
     deploy_model_setup,
     flow_config,
-    monkeypatch,
     spec2vec_redis_setup,
     s3_documents_directory,
+    s3_mock,
 ):
     params = DeployModelFlowParameters(
         spectrum_dgw=RedisSpectrumDataGateway("project"),
