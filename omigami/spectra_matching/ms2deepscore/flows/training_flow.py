@@ -56,7 +56,6 @@ class TrainingFlowParameters:
         scores_decimals: int,
         spectrum_binner_output_path: str,
         spectrum_binner_n_bins: int,
-        overwrite_model: bool,
         model_output_path: str,
         project_name: str,
         mlflow_output_directory: str,
@@ -129,7 +128,7 @@ class TrainingFlowParameters:
         )
 
         self.deploying = DeployModelParameters(
-            redis_db, overwrite_model, f"ms2deepscore-{ion_mode}"
+            redis_db, f"ms2deepscore-{ion_mode}"
         )
 
 

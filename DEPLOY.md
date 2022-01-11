@@ -94,8 +94,6 @@ omigami ms2deepscore train \
     --flow-name=<FLOW_NAME> \
     --dataset-id=10k \
     --ion-mode=positive \
-    --deploy-model \
-    --overwrite-model \
     --dataset-directory=s3://omigami-dev/datasets \
     --schedule=30
 
