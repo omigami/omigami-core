@@ -120,6 +120,8 @@ def test_run_training_flow(
     assert fs.exists(ASSETS_DIR / "raw/positive/raw_chunk_paths.pickle")
     assert fs.exists(tmpdir / "tanimoto_scores.pkl")
     assert fs.exists(tmpdir / "model.hdf5")
+    assert fs.exists(tmpdir / "spectrum_binner.pkl")
+    assert fs.exists(tmpdir / "binned_spectra.pkl")
 
     run_id = flow_run.result[register_task].result
     artifact_uri = mlflow.get_run(run_id).info.artifact_uri

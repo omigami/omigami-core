@@ -1,7 +1,7 @@
 from datetime import timedelta, date, datetime
 from typing import Optional
 
-from prefect import Flow, unmapped
+from prefect import Flow
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 

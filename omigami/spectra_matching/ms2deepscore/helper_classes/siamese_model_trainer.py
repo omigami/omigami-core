@@ -9,11 +9,6 @@ from ms2deepscore.data_generators import DataGeneratorAllSpectrums
 from ms2deepscore.models import SiameseModel
 from tensorflow import keras
 
-from omigami.config import IonModes
-from omigami.spectra_matching.ms2deepscore.storage import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
-
 # NN Architecture parameters originated from MS2DS paper
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
 
