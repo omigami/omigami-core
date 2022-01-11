@@ -1,20 +1,18 @@
 from typing import Union, Optional
 
-from prefect import Flow, unmapped
+from prefect import Flow
 
 from omigami.config import IonModes, ION_MODES, MLFLOW_SERVER
 from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.spec2vec.tasks import (
-    CreateDocumentsParameters,
-)
-from omigami.spectra_matching.spec2vec.tasks import (
-    MakeEmbeddings,
     CreateDocuments,
     TrainModel,
     TrainModelParameters,
     RegisterModel,
     RegisterModelParameters,
-    MakeEmbeddingsParameters,
+)
+from omigami.spectra_matching.spec2vec.tasks import (
+    CreateDocumentsParameters,
 )
 from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 from omigami.spectra_matching.tasks import (
@@ -24,10 +22,7 @@ from omigami.spectra_matching.tasks import (
     CreateChunks,
     CleanRawSpectra,
     CleanRawSpectraParameters,
-    DeployModelParameters,
-    DeployModel,
     CacheCleanedSpectra,
-    DeleteEmbeddings,
 )
 
 
@@ -49,7 +44,6 @@ class TrainingFlowParameters:
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
         dataset_name: str = "gnps.json",
-        redis_db: str = "0",
         model_name: Optional[str] = "spec2vec-model",
         experiment_name: str = "default",
     ):
@@ -88,12 +82,6 @@ class TrainingFlowParameters:
             intensity_weighting_power=intensity_weighting_power,
             allowed_missing_percentage=allowed_missing_percentage,
             model_name=model_name,
-        )
-        self.embedding = MakeEmbeddingsParameters(
-            ion_mode, n_decimals, intensity_weighting_power, allowed_missing_percentage
-        )
-        self.deploying = DeployModelParameters(
-            redis_db, model_name=f"spec2vec-{ion_mode}"
         )
 
 

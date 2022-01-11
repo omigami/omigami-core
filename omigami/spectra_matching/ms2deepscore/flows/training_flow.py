@@ -30,8 +30,7 @@ from omigami.spectra_matching.tasks import (
     ChunkingParameters,
     CreateChunks,
     CleanRawSpectraParameters,
-    CleanRawSpectra,
-    DeployModelParameters,
+    CleanRawSpectra
 )
 
 
@@ -60,7 +59,6 @@ class TrainingFlowParameters:
         spectrum_ids_chunk_size: int = 10000,
         schedule_task_days: Optional[int] = 30,
         dataset_name: str = "gnps.json",
-        redis_db: str = "0",
     ):
         self.fs_dgw = fs_dgw
         self.spectrum_chunk_size = spectrum_ids_chunk_size
@@ -117,10 +115,6 @@ class TrainingFlowParameters:
 
         self.registering = RegisterModelParameters(
             project_name, model_registry_uri, mlflow_output_directory, ion_mode
-        )
-
-        self.deploying = DeployModelParameters(
-            redis_db, f"ms2deepscore-{ion_mode}"
         )
 
 

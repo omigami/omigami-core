@@ -19,7 +19,7 @@ from test.spectra_matching.conftest import ASSETS_DIR
 os.chdir(Path(__file__).parents[4])
 
 
-def test_training_flow(flow_config, mock_s2v_deploy_model_task):
+def test_training_flow(flow_config):
     mock_spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
     mock_data_gtw = MagicMock(spec=FSDataGateway)
     expected_tasks = {

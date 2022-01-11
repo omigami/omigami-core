@@ -111,7 +111,6 @@ class MS2DeepScoreFlowFactory:
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
 
         source_uri = GNPS_URIS[dataset_id]
-        redis_db = REDIS_DATABASES[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
@@ -134,7 +133,6 @@ class MS2DeepScoreFlowFactory:
             validation_ratio=validation_ratio,
             test_ratio=test_ratio,
             spectrum_ids_chunk_size=spectrum_ids_chunk_size,
-            redis_db=redis_db,
             schedule_task_days=schedule,
         )
 

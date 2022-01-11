@@ -163,11 +163,6 @@ def mock_s2v_deploy_model_task(monkeypatch):
         pass
 
     monkeypatch.setattr(
-        omigami.spectra_matching.spec2vec.flows.training_flow,
-        "DeployModel",
-        DeployModel,
-    )
-    monkeypatch.setattr(
         omigami.spectra_matching.spec2vec.flows.deploy_model,
         "DeployModel",
         DeployModel,
