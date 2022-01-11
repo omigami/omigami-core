@@ -3,7 +3,6 @@ from typing import List, Dict
 
 from prefect import Task
 
-from omigami.config import IonModes
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SiameseModelTrainer,
     SplitRatio,
@@ -15,8 +14,8 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class TrainModelParameters:
     output_path: str
-    ion_mode: IonModes
     spectrum_binner_output_path: str
+    binned_spectra_path: str
     epochs: int = 50
     split_ratio: SplitRatio = SplitRatio()
 
@@ -40,7 +39,6 @@ class TrainModel(Task):
 
     def run(
         self,
-        spectrum_ids: List[str] = None,
         scores_output_path: str = None,
     ) -> Dict:
         """
@@ -48,8 +46,6 @@ class TrainModel(Task):
 
         Parameters
         ----------
-        spectrum_ids: List[str]
-            spectrum_ids to train model on
         scores_output_path: str
             Output path to save resulting similarity scores
 

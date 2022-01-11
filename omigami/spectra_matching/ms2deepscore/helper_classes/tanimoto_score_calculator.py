@@ -23,7 +23,7 @@ class TanimotoScoreCalculator:
         self._decimals = decimals
 
     def calculate(
-        self, spectrum_ids: List[str], scores_output_path: str, logger: Logger = None
+        self, scores_output_path: str, logger: Logger = None
     ) -> str:
         binned_spectra = self._fs_dgw.read_from_file(self._binned_spectra_path)
         unique_inchi_keys = self._get_unique_inchis(binned_spectra)

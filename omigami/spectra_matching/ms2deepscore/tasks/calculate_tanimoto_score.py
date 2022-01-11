@@ -34,7 +34,7 @@ class CalculateTanimotoScore(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, spectrum_ids: Set[str] = None) -> str:
+    def run(self, spectrum_ids: Set[str]) -> str:
         """
         Prefect task to calculate the Tanimoto Scores for all pairs of binned spectra.
         Calculated scores are saved to filesystem.
@@ -42,7 +42,7 @@ class CalculateTanimotoScore(Task):
         Parameters
         ----------
         spectrum_ids: Set[str]
-            Set of spectrum_ids to calculate Tanitamo Scores
+            Set of spectrum_ids to calculate Tanitamo Scores. Only here to create depenency on previous flow task.
 
         Returns
         -------
@@ -55,7 +55,6 @@ class CalculateTanimotoScore(Task):
             fs_dgw=self._fs_dgw, n_bits=self._n_bits, binned_spectra_path=self._binned_spectra_path
         )
         path = calculator.calculate(
-            list(spectrum_ids),
             self._scores_output_path,
             self.logger,
         )

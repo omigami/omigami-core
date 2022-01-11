@@ -10,9 +10,7 @@ from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SplitRatio,
 )
-from omigami.spectra_matching.ms2deepscore.storage import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
+
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
@@ -21,8 +19,6 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     ProcessSpectrum,
     RegisterModel,
     RegisterModelParameters,
-    MakeEmbeddings,
-    CreateSpectrumIDsChunks,
     CalculateTanimotoScoreParameters,
     CalculateTanimotoScore,
     TrainModelParameters,
@@ -36,9 +32,6 @@ from omigami.spectra_matching.tasks import (
     CleanRawSpectraParameters,
     CleanRawSpectra,
     DeployModelParameters,
-    DeployModel,
-    CacheCleanedSpectra,
-    DeleteEmbeddings,
 )
 
 
@@ -46,7 +39,6 @@ class TrainingFlowParameters:
     def __init__(
         self,
         fs_dgw: MS2DeepScoreFSDataGateway,
-        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         source_uri: str,
         dataset_directory: str,
         chunk_size: int,
@@ -72,7 +64,6 @@ class TrainingFlowParameters:
         redis_db: str = "0",
     ):
         self.fs_dgw = fs_dgw
-        self.spectrum_dgw = spectrum_dgw
         self.spectrum_chunk_size = spectrum_ids_chunk_size
         self.ion_mode = ion_mode
 
@@ -178,10 +169,6 @@ def build_training_flow(
             flow_parameters.fs_dgw, flow_parameters.clean_raw_spectra
         ).map(gnps_chunk_paths)
 
-        cleaned_spectrum_ids = CacheCleanedSpectra(
-            flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
-        ).map(cleaned_spectra_paths)
-
         processed_ids = ProcessSpectrum(
             flow_parameters.fs_dgw,
             flow_parameters.process_spectrum,
@@ -193,35 +180,12 @@ def build_training_flow(
 
         train_model_output = TrainModel(
             flow_parameters.fs_dgw,
-            flow_parameters.spectrum_dgw,
             flow_parameters.training,
             nout=2,
-        )(processed_ids, scores_output_path)
+        )(scores_output_path)
 
         model_run_id = RegisterModel(
             flow_parameters.registering, training_parameters=flow_parameters.training
         )(train_model_output)
-
-        processed_chunks = CreateSpectrumIDsChunks(
-            flow_parameters.spectrum_chunk_size, flow_parameters.spectrum_dgw
-        )(processed_ids)
-
-        if deploy_model:
-            delete_embeddings = DeleteEmbeddings(
-                flow_parameters.spectrum_dgw, flow_parameters.ion_mode
-            )()
-            make_embeddings = MakeEmbeddings(
-                flow_parameters.spectrum_dgw,
-                flow_parameters.fs_dgw,
-                flow_parameters.ion_mode,
-            ).map(
-                unmapped(train_model_output),
-                unmapped(model_run_id),
-                processed_chunks,
-            )
-            make_embeddings.set_dependencies(training_flow, [delete_embeddings])
-
-            deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
-            deploy_model.set_dependencies(training_flow, [make_embeddings])
 
     return training_flow

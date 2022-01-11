@@ -11,9 +11,7 @@ from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-from omigami.spectra_matching.ms2deepscore.storage import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
+
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
@@ -23,28 +21,21 @@ from test.spectra_matching.conftest import ASSETS_DIR
 os.chdir(Path(__file__).parents[4])
 
 
-def test_training_flow(flow_config, mock_ms2ds_deploy_model_task):
+def test_training_flow(flow_config):
     mock_data_gtw = MagicMock(spec=FSDataGateway)
-    mock_spectrum_dgw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
     flow_name = "test-flow"
     expected_tasks = {
         "DownloadData",
         "CreateChunks",
         "CleanRawSpectra",
-        "CacheCleanedSpectra",
         "ProcessSpectrum",
         "CalculateTanimotoScore",
         "TrainModel",
         "RegisterModel",
-        "CreateSpectrumIDsChunks",
-        "MakeEmbeddings",
-        "DeployModel",
-        "DeleteEmbeddings",
     }
 
     flow_parameters = TrainingFlowParameters(
         fs_dgw=mock_data_gtw,
-        spectrum_dgw=mock_spectrum_dgw,
         source_uri="source_uri",
         dataset_directory="datasets",
         ion_mode="positive",
@@ -56,6 +47,7 @@ def test_training_flow(flow_config, mock_ms2ds_deploy_model_task):
         spectrum_binner_n_bins=10000,
         model_output_path="some-path",
         spectrum_binner_output_path="some-path",
+        binned_spectra_output_path="some-path",
         project_name="test",
         mlflow_output_directory="model-output",
         train_ratio=0.6,
@@ -79,28 +71,20 @@ def test_training_flow(flow_config, mock_ms2ds_deploy_model_task):
     assert task_names == expected_tasks
 
 
-@pytest.mark.skipif(
-    os.getenv("SKIP_REDIS_TEST", True),
-    reason="It can only be run if the Redis is up",
-)
 def test_run_training_flow(
     tmpdir,
     flow_config,
     clean_chunk_files,
-    redis_full_setup,
     small_model_params,
-    mock_ms2ds_deploy_model_task,
 ):
     # remove mlflow models from previous runs
     fs = get_fs(ASSETS_DIR)
     _ = [fs.rm(p) for p in fs.ls(tmpdir / "model-output")]
 
     data_gtw = MS2DeepScoreFSDataGateway()
-    spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway()
 
     flow_params = TrainingFlowParameters(
         fs_dgw=data_gtw,
-        spectrum_dgw=spectrum_dgw,
         source_uri=GNPS_URIS["small"],
         dataset_directory=ASSETS_DIR,
         dataset_name="SMALL_GNPS.json",
@@ -112,6 +96,7 @@ def test_run_training_flow(
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
+        binned_spectra_output_path=str(tmpdir / "binned_spectra.pkl"),
         model_output_path=str(tmpdir / "model.hdf5"),
         epochs=1,
         project_name="test",
