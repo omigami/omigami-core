@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Union, List, Dict, Tuple
+from typing import Union, List, Dict, Tuple, Optional
 
 import numpy as np
 from gensim.models import Word2Vec
@@ -36,8 +36,9 @@ class Spec2VecPredictor(Predictor):
         intensity_weighting_power: Union[float, int],
         allowed_missing_percentage: Union[float, int],
         run_id: str = None,
+        model: Optional[Word2Vec] = None,
     ):
-        self.model: Union[Word2Vec, None] = None
+        self.model = model
         self.ion_mode = ion_mode
         self.n_decimals = n_decimals
         self.intensity_weighting_power = intensity_weighting_power
@@ -47,6 +48,8 @@ class Spec2VecPredictor(Predictor):
         super().__init__(RedisSpectrumDataGateway(SPEC2VEC_PROJECT_NAME))
 
     def load_context(self, context):
+        if self.model is not None:
+            return
         model_path = context.artifacts["word2vec_model"]
         log.info(f"Loading model from {model_path}")
         fs_dgw = FSDataGateway()

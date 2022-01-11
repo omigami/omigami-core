@@ -140,6 +140,8 @@ def build_training_flow(
             document_paths
         )
 
-        model_run_id = RegisterModel(flow_parameters.registering)(model_path)
+        model_run_id = RegisterModel(
+            flow_parameters.registering, flow_parameters.training
+        )(model_path)
 
     return training_flow
