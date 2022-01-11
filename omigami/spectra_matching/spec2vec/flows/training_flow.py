@@ -50,7 +50,6 @@ class TrainingFlowParameters:
         allowed_missing_percentage: Union[float, int] = 5.0,
         dataset_name: str = "gnps.json",
         redis_db: str = "0",
-        overwrite_model: bool = False,
         model_name: Optional[str] = "spec2vec-model",
         experiment_name: str = "default",
     ):
@@ -94,7 +93,7 @@ class TrainingFlowParameters:
             ion_mode, n_decimals, intensity_weighting_power, allowed_missing_percentage
         )
         self.deploying = DeployModelParameters(
-            redis_db, overwrite_model, model_name=f"spec2vec-{ion_mode}"
+            redis_db, model_name=f"spec2vec-{ion_mode}"
         )
 
 

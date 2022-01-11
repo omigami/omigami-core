@@ -45,7 +45,7 @@ class DeployModelFlowParameters:
             ion_mode, n_decimals, intensity_weighting_power, allowed_missing_percentage
         )
         self.deploying = DeployModelParameters(
-            redis_db, overwrite_model=True, model_name=f"spec2vec-{ion_mode}"
+            redis_db, model_name=f"spec2vec-{ion_mode}"
         )
 
 
