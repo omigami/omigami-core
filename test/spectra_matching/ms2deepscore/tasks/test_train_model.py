@@ -21,14 +21,13 @@ from omigami.spectra_matching.ms2deepscore.tasks import TrainModel, TrainModelPa
 )
 def test_train_model(
     tmpdir,
-    binned_spectra_to_train_stored,
+    binned_spectra_to_train_path,
     tanimoto_scores_path,
     fitted_spectrum_binner_path,
 ):
     model_path = f"{tmpdir}/model.hdf5"
     parameters = TrainModelParameters(
         model_path,
-        "positive",
         spectrum_binner_output_path=fitted_spectrum_binner_path,
         epochs=2,
         split_ratio=SplitRatio(0.6, 0.3, 0.1),

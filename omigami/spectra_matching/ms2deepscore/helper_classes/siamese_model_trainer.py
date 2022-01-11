@@ -15,6 +15,8 @@ from omigami.spectra_matching.ms2deepscore.storage import (
 )
 
 # NN Architecture parameters originated from MS2DS paper
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
+
 SIAMESE_MODEL_PARAMS = {
     "batch_size": 32,
     "learning_rate": 0.001,
@@ -34,13 +36,13 @@ class SplitRatio:
 class SiameseModelTrainer:
     def __init__(
         self,
-        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
-        ion_mode: IonModes,
+        fs_dgw: MS2DeepScoreFSDataGateway,
+        binned_spectra_path: str,
         epochs: int = 50,
         split_ratio: SplitRatio = SplitRatio(),
     ):
-        self._spectrum_gtw = spectrum_dgw
-        self._ion_mode = ion_mode
+        self._fs_dgw = fs_dgw
+        self._binned_spectra_path = binned_spectra_path
         self._epochs = epochs
         self._split_ratio = split_ratio
         self._learning_rate = SIAMESE_MODEL_PARAMS["learning_rate"]
@@ -51,14 +53,12 @@ class SiameseModelTrainer:
 
     def train(
         self,
-        spectrum_ids: List[str],
         scores_output_path: str,
         spectrum_binner: SpectrumBinner,
         logger: Logger = None,
     ) -> SiameseModel:
-        binned_spectra = self._spectrum_gtw.read_binned_spectra(
-            self._ion_mode, spectrum_ids
-        )
+        binned_spectra = self._fs_dgw.read_from_file(self._binned_spectra_path)
+        
         tanimoto_scores = pd.read_pickle(scores_output_path, compression="gzip")
 
         data_generators = self._train_validation_test_split(

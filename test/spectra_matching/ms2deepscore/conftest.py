@@ -126,16 +126,8 @@ def binned_spectra_to_train():
 
 
 @pytest.fixture
-def binned_spectra_to_train_stored(redis_db, binned_spectra_to_train):
-    pipe = redis_db.pipeline()
-    for spectrum in binned_spectra_to_train:
-        pipe.hset(
-            f"{BINNED_SPECTRUM_HASHES}_positive",
-            spectrum.metadata["spectrum_id"],
-            pickle.dumps(spectrum),
-        )
-    pipe.execute()
-
+def binned_spectra_to_train_path():
+    return ASSETS_DIR / "ms2deepscore" / "to_train" / "binned_spectra.pkl"
 
 @pytest.fixture
 def small_model_params(monkeypatch):

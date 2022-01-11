@@ -8,10 +8,7 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer 
     SiameseModelTrainer,
     SplitRatio,
 )
-from omigami.spectra_matching.ms2deepscore.storage import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
-from omigami.spectra_matching.storage import DataGateway
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.utils import merge_prefect_task_configs
 
 
@@ -27,15 +24,13 @@ class TrainModelParameters:
 class TrainModel(Task):
     def __init__(
         self,
-        fs_gtw: DataGateway,
-        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
+        fs_dgw: MS2DeepScoreFSDataGateway,
         train_parameters: TrainModelParameters,
         **kwargs,
     ):
-        self._fs_dgw = fs_gtw
-        self._spectrum_gtw = spectrum_dgw
-        self._ion_mode = train_parameters.ion_mode
+        self._fs_dgw = fs_dgw
         self._spectrum_binner_output_path = train_parameters.spectrum_binner_output_path
+        self._binned_spectra_path = train_parameters.binned_spectra_path
         self._output_path = train_parameters.output_path
         self._epochs = train_parameters.epochs
         self._split_ratio = train_parameters.split_ratio
@@ -66,14 +61,13 @@ class TrainModel(Task):
         spectrum_binner = self._fs_dgw.read_from_file(self._spectrum_binner_output_path)
 
         trainer = SiameseModelTrainer(
-            self._spectrum_gtw,
-            self._ion_mode,
+            self._fs_dgw,
+            self._binned_spectra_path,
             self._epochs,
             self._split_ratio,
         )
-        model = trainer.train(
-            spectrum_ids, scores_output_path, spectrum_binner, self.logger
-        )
+        model = trainer.train(scores_output_path, spectrum_binner, self.logger)
+
         self.logger.info(f"Saving trained model to {self._output_path}.")
         self._fs_dgw.save(model, self._output_path)
 

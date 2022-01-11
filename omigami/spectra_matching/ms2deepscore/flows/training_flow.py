@@ -55,6 +55,7 @@ class TrainingFlowParameters:
         fingerprint_n_bits: int,
         scores_decimals: int,
         spectrum_binner_output_path: str,
+        binned_spectra_output_path: str,
         spectrum_binner_n_bins: int,
         overwrite_model: bool,
         model_output_path: str,
@@ -108,12 +109,13 @@ class TrainingFlowParameters:
 
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_binner_output_path,
+            binned_spectra_output_path,
             ion_mode=ion_mode,
             n_bins=spectrum_binner_n_bins,
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
-            scores_output_path, ion_mode, fingerprint_n_bits, scores_decimals
+            scores_output_path, binned_spectra_output_path, fingerprint_n_bits, scores_decimals
         )
 
         self.training = TrainModelParameters(
@@ -182,12 +184,11 @@ def build_training_flow(
 
         processed_ids = ProcessSpectrum(
             flow_parameters.fs_dgw,
-            flow_parameters.spectrum_dgw,
             flow_parameters.process_spectrum,
-        )(cleaned_spectrum_ids)
+        )(cleaned_spectra_paths)
 
         scores_output_path = CalculateTanimotoScore(
-            flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score
+            flow_parameters.fs_dgw, flow_parameters.calculate_tanimoto_score
         )(processed_ids)
 
         train_model_output = TrainModel(

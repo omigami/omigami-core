@@ -3,20 +3,18 @@ from typing import Set
 
 from prefect import Task
 
-from omigami.config import IonModes
 from omigami.spectra_matching.ms2deepscore.helper_classes.tanimoto_score_calculator import (
     TanimotoScoreCalculator,
 )
-from omigami.spectra_matching.ms2deepscore.storage import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
+
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
 from omigami.utils import merge_prefect_task_configs
 
 
 @dataclass
 class CalculateTanimotoScoreParameters:
     scores_output_path: str
-    ion_mode: IonModes
+    binned_spectra_path: str
     n_bits: int = 2048
     decimals: int = 5
 
@@ -24,13 +22,13 @@ class CalculateTanimotoScoreParameters:
 class CalculateTanimotoScore(Task):
     def __init__(
         self,
-        spectrum_gtw: MS2DeepScoreRedisSpectrumDataGateway,
+        fs_dgw: MS2DeepScoreFSDataGateway,
         parameters: CalculateTanimotoScoreParameters,
         **kwargs,
     ):
-        self._spectrum_gtw = spectrum_gtw
+        self._fs_dgw = fs_dgw
         self._scores_output_path = parameters.scores_output_path
-        self._ion_mode = parameters.ion_mode
+        self._binned_spectra_path = parameters.binned_spectra_path
         self._n_bits = parameters.n_bits
         self._decimals = parameters.decimals
         config = merge_prefect_task_configs(kwargs)
@@ -54,9 +52,7 @@ class CalculateTanimotoScore(Task):
         """
         self.logger.info(f"Calculating the Tanimoto Scores")
         calculator = TanimotoScoreCalculator(
-            spectrum_dgw=self._spectrum_gtw,
-            ion_mode=self._ion_mode,
-            n_bits=self._n_bits,
+            fs_dgw=self._fs_dgw, n_bits=self._n_bits, binned_spectra_path=self._binned_spectra_path
         )
         path = calculator.calculate(
             list(spectrum_ids),
