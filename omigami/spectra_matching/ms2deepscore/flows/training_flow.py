@@ -1,7 +1,7 @@
 from datetime import timedelta, date, datetime
 from typing import Optional
 
-from prefect import Flow, unmapped
+from prefect import Flow
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
@@ -21,7 +21,6 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     ProcessSpectrum,
     RegisterModel,
     RegisterModelParameters,
-    MakeEmbeddings,
     CreateSpectrumIDsChunks,
     CalculateTanimotoScoreParameters,
     CalculateTanimotoScore,
@@ -35,10 +34,7 @@ from omigami.spectra_matching.tasks import (
     CreateChunks,
     CleanRawSpectraParameters,
     CleanRawSpectra,
-    DeployModelParameters,
-    DeployModel,
     CacheCleanedSpectra,
-    DeleteEmbeddings,
 )
 
 
@@ -125,10 +121,6 @@ class TrainingFlowParameters:
 
         self.registering = RegisterModelParameters(
             project_name, model_registry_uri, mlflow_output_directory, ion_mode
-        )
-
-        self.deploying = DeployModelParameters(
-            redis_db, f"ms2deepscore-{ion_mode}"
         )
 
 
