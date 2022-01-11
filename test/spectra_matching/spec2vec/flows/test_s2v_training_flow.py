@@ -28,11 +28,8 @@ def test_training_flow(flow_config, mock_s2v_deploy_model_task):
         "CleanRawSpectra",
         "CacheCleanedSpectra",
         "CreateDocuments",
-        "MakeEmbeddings",
         "RegisterModel",
         "TrainModel",
-        "DeployModel",
-        "DeleteEmbeddings",
     }
     flow_params = TrainingFlowParameters(
         spectrum_dgw=mock_spectrum_dgw,
@@ -55,7 +52,6 @@ def test_training_flow(flow_config, mock_s2v_deploy_model_task):
         flow_name="test-flow",
         flow_config=flow_config,
         flow_parameters=flow_params,
-        deploy_model=True,
     )
 
     assert flow
@@ -108,7 +104,6 @@ def test_run_training_flow(
         flow_config=flow_config,
         flow_name="test-flow",
         flow_parameters=flow_params,
-        deploy_model=False,
     )
 
     flow_run = flow.run()

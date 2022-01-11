@@ -101,7 +101,6 @@ def build_training_flow(
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
-    deploy_model: bool = False,
 ) -> Flow:
     """
     Builds the spec2vec machine learning pipeline. It process data, trains a model, makes
@@ -116,8 +115,6 @@ def build_training_flow(
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Class containing all flow parameters
-    deploy_model:
-        Whether to create a seldon deployment with the result of the training flow.
     Returns
     -------
 
@@ -154,23 +151,5 @@ def build_training_flow(
         )
 
         model_run_id = RegisterModel(flow_parameters.registering)(model)
-
-        if deploy_model:
-            delete_embeddings = DeleteEmbeddings(
-                flow_parameters.spectrum_dgw, flow_parameters.ion_mode
-            )()
-            make_embeddings = MakeEmbeddings(
-                flow_parameters.spectrum_dgw,
-                flow_parameters.fs_dgw,
-                flow_parameters.embedding,
-            ).map(
-                unmapped(model),
-                unmapped(model_run_id),
-                document_paths,
-            )
-            make_embeddings.set_dependencies(training_flow, [delete_embeddings])
-
-            deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
-            deploy_model.set_dependencies(training_flow, [make_embeddings])
 
     return training_flow

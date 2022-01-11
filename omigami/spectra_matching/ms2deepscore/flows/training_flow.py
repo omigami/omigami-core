@@ -136,7 +136,6 @@ def build_training_flow(
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
-    deploy_model: bool = False,
 ) -> Flow:
     """
     Builds the MS2DeepScore machine learning pipeline. It Downloads and process data, trains the model, makes
@@ -151,8 +150,6 @@ def build_training_flow(
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Dataclass containing all flow parameters
-    deploy_model:
-        If the model will be deployed or not
     -------
 
     """
@@ -203,23 +200,5 @@ def build_training_flow(
         processed_chunks = CreateSpectrumIDsChunks(
             flow_parameters.spectrum_chunk_size, flow_parameters.spectrum_dgw
         )(processed_ids)
-
-        if deploy_model:
-            delete_embeddings = DeleteEmbeddings(
-                flow_parameters.spectrum_dgw, flow_parameters.ion_mode
-            )()
-            make_embeddings = MakeEmbeddings(
-                flow_parameters.spectrum_dgw,
-                flow_parameters.fs_dgw,
-                flow_parameters.ion_mode,
-            ).map(
-                unmapped(train_model_output),
-                unmapped(model_run_id),
-                processed_chunks,
-            )
-            make_embeddings.set_dependencies(training_flow, [delete_embeddings])
-
-            deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
-            deploy_model.set_dependencies(training_flow, [make_embeddings])
 
     return training_flow
