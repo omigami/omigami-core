@@ -44,7 +44,6 @@ class TrainingFlowParameters:
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
         dataset_name: str = "gnps.json",
-        redis_db: str = "0",
         model_name: Optional[str] = "spec2vec-model",
         experiment_name: str = "default",
     ):

@@ -63,7 +63,6 @@ class TrainingFlowParameters:
         spectrum_ids_chunk_size: int = 10000,
         schedule_task_days: Optional[int] = 30,
         dataset_name: str = "gnps.json",
-        redis_db: str = "0",
     ):
         self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw

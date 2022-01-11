@@ -93,7 +93,6 @@ class Spec2VecFlowFactory:
         fs_dgw = FSDataGateway()
 
         source_uri = GNPS_URIS[dataset_id]
-        redis_db = REDIS_DATABASES[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
@@ -116,7 +115,6 @@ class Spec2VecFlowFactory:
             model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=self._mlflow_output_directory,
             experiment_name=project_name,
-            redis_db=redis_db,
         )
 
         training_flow = build_training_flow(
