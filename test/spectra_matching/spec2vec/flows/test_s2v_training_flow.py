@@ -19,7 +19,7 @@ from test.spectra_matching.conftest import ASSETS_DIR
 os.chdir(Path(__file__).parents[4])
 
 
-def test_training_flow(flow_config, mock_s2v_deploy_model_task):
+def test_training_flow(flow_config):
     mock_spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
     mock_data_gtw = MagicMock(spec=FSDataGateway)
     expected_tasks = {
@@ -28,11 +28,8 @@ def test_training_flow(flow_config, mock_s2v_deploy_model_task):
         "CleanRawSpectra",
         "CacheCleanedSpectra",
         "CreateDocuments",
-        "MakeEmbeddings",
         "RegisterModel",
         "TrainModel",
-        "DeployModel",
-        "DeleteEmbeddings",
     }
     flow_params = TrainingFlowParameters(
         spectrum_dgw=mock_spectrum_dgw,
@@ -42,7 +39,6 @@ def test_training_flow(flow_config, mock_s2v_deploy_model_task):
         chunk_size=150000,
         ion_mode="positive",
         n_decimals=2,
-        overwrite_model=True,
         iterations=25,
         window=500,
         experiment_name="test",
@@ -56,7 +52,6 @@ def test_training_flow(flow_config, mock_s2v_deploy_model_task):
         flow_name="test-flow",
         flow_config=flow_config,
         flow_parameters=flow_params,
-        deploy_model=True,
     )
 
     assert flow
@@ -95,7 +90,6 @@ def test_run_training_flow(
         chunk_size=int(1e8),
         ion_mode="positive",
         n_decimals=1,
-        overwrite_model=True,
         iterations=3,
         window=200,
         experiment_name="test",
@@ -110,7 +104,6 @@ def test_run_training_flow(
         flow_config=flow_config,
         flow_name="test-flow",
         flow_parameters=flow_params,
-        deploy_model=False,
     )
 
     flow_run = flow.run()

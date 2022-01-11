@@ -1,7 +1,7 @@
 from datetime import timedelta, date, datetime
 from typing import Optional
 
-from prefect import Flow, unmapped
+from prefect import Flow
 from prefect.schedules import Schedule
 from prefect.schedules.clocks import IntervalClock
 
@@ -21,7 +21,6 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     ProcessSpectrum,
     RegisterModel,
     RegisterModelParameters,
-    MakeEmbeddings,
     CreateSpectrumIDsChunks,
     CalculateTanimotoScoreParameters,
     CalculateTanimotoScore,
@@ -35,10 +34,7 @@ from omigami.spectra_matching.tasks import (
     CreateChunks,
     CleanRawSpectraParameters,
     CleanRawSpectra,
-    DeployModelParameters,
-    DeployModel,
     CacheCleanedSpectra,
-    DeleteEmbeddings,
 )
 
 
@@ -56,7 +52,6 @@ class TrainingFlowParameters:
         scores_decimals: int,
         spectrum_binner_output_path: str,
         spectrum_binner_n_bins: int,
-        overwrite_model: bool,
         model_output_path: str,
         project_name: str,
         mlflow_output_directory: str,
@@ -68,7 +63,6 @@ class TrainingFlowParameters:
         spectrum_ids_chunk_size: int = 10000,
         schedule_task_days: Optional[int] = 30,
         dataset_name: str = "gnps.json",
-        redis_db: str = "0",
     ):
         self.fs_dgw = fs_dgw
         self.spectrum_dgw = spectrum_dgw
@@ -128,16 +122,11 @@ class TrainingFlowParameters:
             project_name, model_registry_uri, mlflow_output_directory, ion_mode
         )
 
-        self.deploying = DeployModelParameters(
-            redis_db, overwrite_model, f"ms2deepscore-{ion_mode}"
-        )
-
 
 def build_training_flow(
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
-    deploy_model: bool = False,
 ) -> Flow:
     """
     Builds the MS2DeepScore machine learning pipeline. It Downloads and process data, trains the model, makes
@@ -152,8 +141,6 @@ def build_training_flow(
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Dataclass containing all flow parameters
-    deploy_model:
-        If the model will be deployed or not
     -------
 
     """
@@ -204,23 +191,5 @@ def build_training_flow(
         processed_chunks = CreateSpectrumIDsChunks(
             flow_parameters.spectrum_chunk_size, flow_parameters.spectrum_dgw
         )(processed_ids)
-
-        if deploy_model:
-            delete_embeddings = DeleteEmbeddings(
-                flow_parameters.spectrum_dgw, flow_parameters.ion_mode
-            )()
-            make_embeddings = MakeEmbeddings(
-                flow_parameters.spectrum_dgw,
-                flow_parameters.fs_dgw,
-                flow_parameters.ion_mode,
-            ).map(
-                unmapped(train_model_output),
-                unmapped(model_run_id),
-                processed_chunks,
-            )
-            make_embeddings.set_dependencies(training_flow, [delete_embeddings])
-
-            deploy_model = DeployModel(flow_parameters.deploying)(model_run_id)
-            deploy_model.set_dependencies(training_flow, [make_embeddings])
 
     return training_flow

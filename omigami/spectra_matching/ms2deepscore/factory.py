@@ -69,8 +69,6 @@ class MS2DeepScoreFlowFactory:
         spectrum_binner_n_bins: int,
         schedule: int = None,
         ion_mode: IonModes = "positive",
-        deploy_model: bool = False,
-        overwrite_model: bool = False,
         project_name: str = PROJECT_NAME,
         spectrum_ids_chunk_size: int = SPECTRUM_IDS_CHUNK_SIZE,
         train_ratio: float = 0.9,
@@ -110,7 +108,6 @@ class MS2DeepScoreFlowFactory:
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
 
         source_uri = GNPS_URIS[dataset_id]
-        redis_db = REDIS_DATABASES[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
@@ -124,7 +121,6 @@ class MS2DeepScoreFlowFactory:
             scores_decimals=scores_decimals,
             spectrum_binner_output_path=spectrum_binner_output_path,
             spectrum_binner_n_bins=spectrum_binner_n_bins,
-            overwrite_model=overwrite_model,
             model_output_path=model_output_path,
             project_name=project_name,
             model_registry_uri=self._model_registry_uri,
@@ -134,7 +130,6 @@ class MS2DeepScoreFlowFactory:
             validation_ratio=validation_ratio,
             test_ratio=test_ratio,
             spectrum_ids_chunk_size=spectrum_ids_chunk_size,
-            redis_db=redis_db,
             schedule_task_days=schedule,
         )
 
@@ -142,7 +137,6 @@ class MS2DeepScoreFlowFactory:
             flow_name=flow_name,
             flow_config=flow_config,
             flow_parameters=flow_parameters,
-            deploy_model=deploy_model,
         )
 
         return ms2deepscore_flow

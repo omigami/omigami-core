@@ -168,11 +168,6 @@ def mock_ms2ds_deploy_model_task(monkeypatch):
         "DeployModel",
         DeployModel,
     )
-    monkeypatch.setattr(
-        omigami.spectra_matching.ms2deepscore.flows.training_flow,
-        "DeployModel",
-        DeployModel,
-    )
 
 
 @pytest.fixture
@@ -187,17 +182,7 @@ def ms2ds_build_test_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_fi
     )
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.training_flow,
-        "MakeEmbeddings",
-        DummyTask,
-    )
-    monkeypatch.setattr(
-        omigami.spectra_matching.ms2deepscore.flows.training_flow,
         "RegisterModel",
-        DummyTask,
-    )
-    monkeypatch.setattr(
-        omigami.spectra_matching.ms2deepscore.flows.training_flow,
-        "DeployModel",
         DummyTask,
     )
 
@@ -213,7 +198,6 @@ def ms2ds_build_test_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_fi
         dataset_name="SMALL_GNPS_500_spectra.json",
         chunk_size=150000,
         ion_mode="positive",
-        overwrite_model=True,
         # we use everything but the model path as tmpdir. We only want the model from this script
         scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
         fingerprint_n_bits=2048,

@@ -66,8 +66,6 @@ class Spec2VecFlowFactory:
         n_decimals: int = 2,
         schedule: pd.Timedelta = None,
         ion_mode: IonModes = "positive",
-        overwrite_model: bool = False,
-        deploy_model: bool = False,
         chunk_size: int = CHUNK_SIZE,
     ) -> Flow:
         """Creates all configuration/gateways objects used by the training flow, and builds
@@ -95,7 +93,6 @@ class Spec2VecFlowFactory:
         fs_dgw = FSDataGateway()
 
         source_uri = GNPS_URIS[dataset_id]
-        redis_db = REDIS_DATABASES[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
@@ -109,7 +106,6 @@ class Spec2VecFlowFactory:
             window=window,
             chunk_size=chunk_size,
             source_uri=source_uri,
-            overwrite_model=overwrite_model,
             documents_save_directory=str(
                 self._spec2vec_root
                 / self._document_dirs[ion_mode]
@@ -119,14 +115,12 @@ class Spec2VecFlowFactory:
             model_registry_uri=self._model_registry_uri,
             mlflow_output_directory=self._mlflow_output_directory,
             experiment_name=project_name,
-            redis_db=redis_db,
         )
 
         training_flow = build_training_flow(
             flow_name,
             flow_config,
             flow_parameters,
-            deploy_model=deploy_model,
         )
 
         return training_flow

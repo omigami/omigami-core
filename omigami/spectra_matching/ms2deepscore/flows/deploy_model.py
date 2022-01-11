@@ -40,7 +40,7 @@ class DeployModelFlowParameters:
         self.ion_mode = ion_mode
 
         self.deploying = DeployModelParameters(
-            redis_db, overwrite_model=True, model_name=f"ms2deepscore-{ion_mode}"
+            redis_db, model_name=f"ms2deepscore-{ion_mode}"
         )
 
 
