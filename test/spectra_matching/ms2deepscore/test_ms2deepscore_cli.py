@@ -11,11 +11,9 @@ def test_ms2deepscore_cli():
     required_params = {"dataset_id", "image", "project_name", "flow_name"}
     optional_params = {
         "dataset_directory",
-        "deploy_model",
         "epochs",
         "fingerprint_n_bits",
         "ion_mode",
-        "overwrite_model",
         "schedule",
         "scores_decimals",
         "spectrum_binner_n_bins",

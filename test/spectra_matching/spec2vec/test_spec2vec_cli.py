@@ -12,12 +12,10 @@ def test_spec2vec_training_cli():
     optional_params = {
         "allowed_missing_percentage",
         "dataset_directory",
-        "deploy_model",
         "intensity_weighting_power",
         "ion_mode",
         "iterations",
         "n_decimals",
-        "overwrite_model",
         "schedule",
         "window",
     }

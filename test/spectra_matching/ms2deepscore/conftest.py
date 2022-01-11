@@ -205,7 +205,6 @@ def ms2ds_build_test_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_fi
         dataset_name="SMALL_GNPS_500_spectra.json",
         chunk_size=150000,
         ion_mode="positive",
-        overwrite_model=True,
         # we use everything but the model path as tmpdir. We only want the model from this script
         scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
         fingerprint_n_bits=2048,

@@ -36,8 +36,6 @@ def test_deploy_training_flow(backend_services, mock_s2v_deploy_model_task):
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=15,
-        deploy_model=False,
-        overwrite_model=False,
         schedule=None,
         dataset_directory=STORAGE_ROOT.parent / "datasets",
     )

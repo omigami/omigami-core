@@ -32,21 +32,6 @@ ion_mode = click.option(
     help="Which ion mode to use.",
     show_default=True,
 )
-deploy_model = click.option(
-    "--deploy-model",
-    is_flag=True,
-    type=bool,
-    default=False,
-    help="Flag to whether deploy the model as a seldon deployment or not",
-    show_default=True,
-)
-overwrite_model = click.option(
-    "--overwrite-model",
-    is_flag=True,
-    help="Flag to overwrite existing deployed model. Only works with --deploy-model flag",
-    show_default=True,
-    default=False,
-)
 dataset_directory = click.option(
     "--dataset-directory",
     type=str,
@@ -66,8 +51,6 @@ schedule = click.option(
 common_training_options = [
     dataset_id,
     ion_mode,
-    deploy_model,
-    overwrite_model,
     dataset_directory,
     schedule,
 ]

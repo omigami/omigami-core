@@ -4,7 +4,6 @@ import pytest
 
 import omigami.spectra_matching.spec2vec.main
 from omigami.authentication.prefect_factory import prefect_client_factory
-from omigami.config import GNPS_URIS
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spectra_matching.spec2vec.main import (
@@ -57,8 +56,6 @@ def test_mocked_deploy_training_flow(mock_objects):
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=15,
-        deploy_model=False,
-        overwrite_model=False,
         schedule=None,
     )
 

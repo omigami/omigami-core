@@ -4,7 +4,6 @@ import pytest
 
 import omigami.spectra_matching.ms2deepscore.main
 from omigami.authentication.prefect_factory import prefect_client_factory
-from omigami.config import GNPS_URIS
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 from omigami.spectra_matching.ms2deepscore.main import (
@@ -54,8 +53,6 @@ def test_mocked_deploy_training_flow(mock_objects):
         flow_name="Robert DeFlow",
         dataset_id="small",
         ion_mode="positive",
-        deploy_model=False,
-        overwrite_model=False,
         schedule=None,
         spectrum_ids_chunk_size=100,
         fingerprint_n_bits=2048,

@@ -66,8 +66,6 @@ class Spec2VecFlowFactory:
         n_decimals: int = 2,
         schedule: pd.Timedelta = None,
         ion_mode: IonModes = "positive",
-        overwrite_model: bool = False,
-        deploy_model: bool = False,
         chunk_size: int = CHUNK_SIZE,
     ) -> Flow:
         """Creates all configuration/gateways objects used by the training flow, and builds
@@ -109,7 +107,6 @@ class Spec2VecFlowFactory:
             window=window,
             chunk_size=chunk_size,
             source_uri=source_uri,
-            overwrite_model=overwrite_model,
             documents_save_directory=str(
                 self._spec2vec_root
                 / self._document_dirs[ion_mode]
@@ -126,7 +123,6 @@ class Spec2VecFlowFactory:
             flow_name,
             flow_config,
             flow_parameters,
-            deploy_model=deploy_model,
         )
 
         return training_flow

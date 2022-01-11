@@ -49,7 +49,6 @@ class TrainingFlowParameters:
         spectrum_binner_output_path: str,
         binned_spectra_output_path: str,
         spectrum_binner_n_bins: int,
-        overwrite_model: bool,
         model_output_path: str,
         project_name: str,
         mlflow_output_directory: str,
@@ -122,7 +121,7 @@ class TrainingFlowParameters:
         )
 
         self.deploying = DeployModelParameters(
-            redis_db, overwrite_model, f"ms2deepscore-{ion_mode}"
+            redis_db, f"ms2deepscore-{ion_mode}"
         )
 
 
@@ -130,7 +129,6 @@ def build_training_flow(
     flow_name: str,
     flow_config: FlowConfig,
     flow_parameters: TrainingFlowParameters,
-    deploy_model: bool = False,
 ) -> Flow:
     """
     Builds the MS2DeepScore machine learning pipeline. It Downloads and process data, trains the model, makes
@@ -145,8 +143,6 @@ def build_training_flow(
         Configuration dataclass passed to prefect.Flow as a dict
     flow_parameters:
         Dataclass containing all flow parameters
-    deploy_model:
-        If the model will be deployed or not
     -------
 
     """

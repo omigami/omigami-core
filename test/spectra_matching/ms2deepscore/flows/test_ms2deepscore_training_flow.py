@@ -40,7 +40,6 @@ def test_training_flow(flow_config):
         dataset_directory="datasets",
         ion_mode="positive",
         chunk_size=150000,
-        overwrite_model=True,
         scores_output_path="some-path",
         fingerprint_n_bits=2048,
         scores_decimals=5,
@@ -60,7 +59,6 @@ def test_training_flow(flow_config):
         flow_name=flow_name,
         flow_config=flow_config,
         flow_parameters=flow_parameters,
-        deploy_model=True,
     )
 
     assert flow
@@ -90,7 +88,6 @@ def test_run_training_flow(
         dataset_name="SMALL_GNPS.json",
         chunk_size=150000,
         ion_mode="positive",
-        overwrite_model=True,
         scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
         fingerprint_n_bits=2048,
         scores_decimals=5,
@@ -111,7 +108,6 @@ def test_run_training_flow(
         flow_config=flow_config,
         flow_name="test-flow",
         flow_parameters=flow_params,
-        deploy_model=True,
     )
 
     flow_run = flow.run()

@@ -19,8 +19,6 @@ def run_spec2vec_training_flow(
     window: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    deploy_model: bool,
-    overwrite_model: bool,
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
     project_name: str = SPEC2VEC_PROJECT_NAME,
@@ -50,8 +48,6 @@ def run_spec2vec_training_flow(
         window=window,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
-        deploy_model=deploy_model,
-        overwrite_model=overwrite_model,
         schedule=schedule,
     )
 
