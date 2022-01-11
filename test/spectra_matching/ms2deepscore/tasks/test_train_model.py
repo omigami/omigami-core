@@ -29,16 +29,16 @@ def test_train_model(
     parameters = TrainModelParameters(
         model_path,
         spectrum_binner_output_path=fitted_spectrum_binner_path,
+        binned_spectra_path=binned_spectra_to_train_path,
         epochs=2,
         split_ratio=SplitRatio(0.6, 0.3, 0.1),
     )
 
     with Flow("test") as flow:
         TrainModel(
-            fs_gtw=MS2DeepScoreFSDataGateway(),
-            spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(),
+            fs_dgw=MS2DeepScoreFSDataGateway(),
             train_parameters=parameters,
-        )([], tanimoto_scores_path)
+        )(tanimoto_scores_path)
 
     state = flow.run()
     assert state.is_successful()

@@ -19,7 +19,7 @@ def test_calculate_tanimoto_score(binned_spectra, binned_spectra_to_train_path, 
     with Flow("test") as flow:
         res = CalculateTanimotoScore(
             MS2DeepScoreFSDataGateway(), parameters
-        )()
+        )([""])
 
     state = flow.run()
     assert state.is_successful()

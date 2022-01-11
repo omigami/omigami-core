@@ -64,7 +64,7 @@ def test_train_model(
         epochs=5,
         split_ratio=split_ratio,
     )
-    model = trainer.train([], tanimoto_scores_path, fitted_spectrum_binner)
+    model = trainer.train(tanimoto_scores_path, fitted_spectrum_binner)
 
     assert len(model.model.layers) == len(layer_base_dims) + 1
     assert model.input_dim == len(fitted_spectrum_binner.known_bins)

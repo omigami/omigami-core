@@ -100,7 +100,6 @@ class TrainingFlowParameters:
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_binner_output_path,
             binned_spectra_output_path,
-            ion_mode=ion_mode,
             n_bins=spectrum_binner_n_bins,
         )
 
@@ -110,8 +109,8 @@ class TrainingFlowParameters:
 
         self.training = TrainModelParameters(
             model_output_path,
-            ion_mode,
             spectrum_binner_output_path,
+            binned_spectra_output_path,
             epochs,
             SplitRatio(train_ratio, validation_ratio, test_ratio),
         )

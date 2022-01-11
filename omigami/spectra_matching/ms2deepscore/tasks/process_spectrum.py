@@ -21,7 +21,6 @@ from omigami.utils import merge_prefect_task_configs
 class ProcessSpectrumParameters:
     spectrum_binner_output_path: str
     binned_spectra_output_path: str
-    ion_mode: IonModes
     n_bins: int = 10000
 
 
@@ -39,7 +38,6 @@ class ProcessSpectrum(Task):
         self._binned_spectra_output_path = (
             process_parameters.binned_spectra_output_path
         )
-        self._ion_mode = process_parameters.ion_mode
         self._processor = SpectrumProcessor()
         self._spectrum_binner = MS2DeepScoreSpectrumBinner(process_parameters.n_bins)
         config = merge_prefect_task_configs(kwargs)
