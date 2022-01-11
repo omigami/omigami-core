@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Union, Optional
 
-from gensim.models import Word2Vec
 from pandas import Timestamp
 from prefect import Task
 
@@ -41,7 +40,7 @@ class RegisterModel(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config)
 
-    def run(self, model: Word2Vec = None) -> str:
+    def run(self, model_path: str = None) -> str:
         """
         Prefect task to register the model to MLflow Model Registry. `alpha` is saved as
         model metric. Following are saved as model parameters:
@@ -53,7 +52,7 @@ class RegisterModel(Task):
 
         Parameters
         ----------
-        model: Word2Vec
+        model_path: str
             Model trained on spectrum documents
 
         Returns
@@ -67,8 +66,8 @@ class RegisterModel(Task):
         )
         run_name = f"spec2vec-{self._ion_mode}-{Timestamp.now():%Y%m%dT%H%M}"
         model_register = MLFlowDataGateway(self._model_registry_uri)
+        artifacts = {"word2vec_model": model_path}
         spec2vec_model = Spec2VecPredictor(
-            model,
             self._ion_mode,
             self._n_decimals,
             self._intensity_weighting_power,
@@ -93,6 +92,7 @@ class RegisterModel(Task):
             model_name=self._model_name,
             params=params,
             metrics=metrics,
+            artifacts=artifacts,
         )
 
         self.logger.info(f"Created model run_id: {run_id}.")

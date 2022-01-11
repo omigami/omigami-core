@@ -23,7 +23,7 @@ from omigami.spectra_matching.spec2vec.helper_classes.embedding_maker import (
 from omigami.spectra_matching.spec2vec.helper_classes.similarity_score_calculator import (
     Spec2VecSimilarityScoreCalculator,
 )
-from omigami.spectra_matching.storage import RedisSpectrumDataGateway
+from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
 
 log = getLogger(__name__)
 
@@ -31,14 +31,13 @@ log = getLogger(__name__)
 class Spec2VecPredictor(Predictor):
     def __init__(
         self,
-        model: Word2Vec,
         ion_mode: str,
         n_decimals: int,
         intensity_weighting_power: Union[float, int],
         allowed_missing_percentage: Union[float, int],
         run_id: str = None,
     ):
-        self.model = model
+        self.model: Union[Word2Vec, None] = None
         self.ion_mode = ion_mode
         self.n_decimals = n_decimals
         self.intensity_weighting_power = intensity_weighting_power
@@ -46,6 +45,12 @@ class Spec2VecPredictor(Predictor):
         self.embedding_maker = EmbeddingMaker(self.n_decimals)
         self._run_id = run_id
         super().__init__(RedisSpectrumDataGateway(SPEC2VEC_PROJECT_NAME))
+
+    def load_context(self, context):
+        model_path = context.artifacts["word2vec_model"]
+        log.info(f"Loading model from {model_path}")
+        fs_dgw = FSDataGateway()
+        self.model = fs_dgw.read_from_file(model_path)
 
     def predict(
         self,
