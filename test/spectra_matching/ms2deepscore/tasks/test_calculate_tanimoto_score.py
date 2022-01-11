@@ -10,8 +10,7 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
 )
 
 
-def test_calculate_tanimoto_score(binned_spectra, binned_spectra_to_train_path, tmpdir):
-    spectrum_ids = [spectrum.get("spectrum_id") for spectrum in binned_spectra]
+def test_calculate_tanimoto_score(binned_spectra_to_train_path, tmpdir):
     path = f"{tmpdir}/tanimoto_scores.pkl"
     parameters = CalculateTanimotoScoreParameters(
         binned_spectra_path=binned_spectra_to_train_path, scores_output_path=path, n_bits=2048, decimals=5
