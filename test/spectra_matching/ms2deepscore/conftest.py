@@ -126,16 +126,8 @@ def binned_spectra_to_train():
 
 
 @pytest.fixture
-def binned_spectra_to_train_stored(redis_db, binned_spectra_to_train):
-    pipe = redis_db.pipeline()
-    for spectrum in binned_spectra_to_train:
-        pipe.hset(
-            f"{BINNED_SPECTRUM_HASHES}_positive",
-            spectrum.metadata["spectrum_id"],
-            pickle.dumps(spectrum),
-        )
-    pipe.execute()
-
+def binned_spectra_to_train_path():
+    return ASSETS_DIR / "ms2deepscore" / "to_train" / "binned_spectra.pkl"
 
 @pytest.fixture
 def small_model_params(monkeypatch):
@@ -158,7 +150,6 @@ def small_model_params(monkeypatch):
 def mock_ms2ds_deploy_model_task(monkeypatch):
 
     import omigami.spectra_matching.ms2deepscore.flows.deploy_model
-    import omigami.spectra_matching.ms2deepscore.flows.training_flow
 
     class DeployModel(DummyTask):
         pass
@@ -191,7 +182,6 @@ def ms2ds_build_test_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_fi
 
     flow_params = TrainingFlowParameters(
         fs_dgw=data_gtw,
-        spectrum_dgw=spectrum_dgw,
         source_uri=GNPS_URIS["small_500"],
         # the three parameters below are for using cached assets instead of downloading
         dataset_directory=str(ASSETS_DIR),
@@ -204,6 +194,7 @@ def ms2ds_build_test_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_fi
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
+        binned_spectra_output_path=str(tmpdir / "binned_spectra.pkl"),
         model_output_path=str(CACHE_DIR / "ms2deep_score.hdf5"),
         epochs=5,
         project_name="test",

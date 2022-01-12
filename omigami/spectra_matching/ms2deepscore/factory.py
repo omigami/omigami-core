@@ -102,7 +102,10 @@ class MS2DeepScoreFlowFactory:
         fs_dgw = MS2DeepScoreFSDataGateway()
 
         spectrum_binner_output_path = (
-            self._ms2deepscore_root / self._directories["spectrum_binner"]
+            self._ms2deepscore_root / self._directories["spectrum_binner"].format(dataset_id=dataset_id)
+        )
+        binned_spectra_path = (
+                self._ms2deepscore_root / self._directories["binned_spectra"].format(dataset_id=dataset_id)
         )
         model_output_path = str(self._ms2deepscore_root / self._directories["model"])
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
@@ -111,7 +114,6 @@ class MS2DeepScoreFlowFactory:
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
-            spectrum_dgw=spectrum_dgw,
             source_uri=source_uri,
             dataset_directory=self._dataset_directory / dataset_id,
             chunk_size=chunk_size,
@@ -120,6 +122,7 @@ class MS2DeepScoreFlowFactory:
             fingerprint_n_bits=fingerprint_n_bits,
             scores_decimals=scores_decimals,
             spectrum_binner_output_path=spectrum_binner_output_path,
+            binned_spectra_output_path=binned_spectra_path,
             spectrum_binner_n_bins=spectrum_binner_n_bins,
             model_output_path=model_output_path,
             project_name=project_name,

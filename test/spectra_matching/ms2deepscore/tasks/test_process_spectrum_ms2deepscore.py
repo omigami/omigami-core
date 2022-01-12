@@ -15,22 +15,6 @@ from omigami.spectra_matching.storage import FSDataGateway
 from test.spectra_matching.conftest import ASSETS_DIR
 
 
-def test_process_spectrum_calls(spectrum_ids, common_cleaned_data):
-    fs_gtw = MagicMock(spec=FSDataGateway)
-    spectrum_gtw = MagicMock(spec=MS2DeepScoreRedisSpectrumDataGateway)
-    spectrum_gtw.read_spectra.return_value = common_cleaned_data
-    parameters = ProcessSpectrumParameters("some-path", "positive")
-
-    with Flow("test-flow") as test_flow:
-        ProcessSpectrum(fs_gtw, spectrum_gtw, parameters)(spectrum_ids)
-
-    res = test_flow.run()
-
-    assert res.is_successful()
-    spectrum_gtw.list_missing_binned_spectra.assert_not_called()
-    spectrum_gtw.write_binned_spectra.assert_called_once()
-
-
 @pytest.mark.skipif(
     os.getenv("SKIP_REDIS_TEST", True),
     reason="It can only be run if the Redis is up",
