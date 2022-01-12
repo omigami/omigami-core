@@ -14,7 +14,7 @@ from omigami.spectra_matching.spec2vec.tasks import (
 from omigami.spectra_matching.spec2vec.tasks import (
     CreateDocumentsParameters,
 )
-from omigami.spectra_matching.storage import RedisSpectrumDataGateway, FSDataGateway
+from omigami.spectra_matching.storage import FSDataGateway
 from omigami.spectra_matching.tasks import (
     DownloadData,
     DownloadParameters,
@@ -22,14 +22,12 @@ from omigami.spectra_matching.tasks import (
     CreateChunks,
     CleanRawSpectra,
     CleanRawSpectraParameters,
-    CacheCleanedSpectra,
 )
 
 
 class TrainingFlowParameters:
     def __init__(
         self,
-        spectrum_dgw: RedisSpectrumDataGateway,
         fs_dgw: FSDataGateway,
         source_uri: str,
         dataset_directory: str,
@@ -48,7 +46,6 @@ class TrainingFlowParameters:
         experiment_name: str = "default",
     ):
         self.fs_dgw = fs_dgw
-        self.spectrum_dgw = spectrum_dgw
         self.ion_mode = ion_mode
         if ion_mode not in ION_MODES:
             raise ValueError("Ion mode can only be either 'positive' or 'negative'.")
@@ -124,10 +121,6 @@ def build_training_flow(
         cleaned_spectra_paths = CleanRawSpectra(
             flow_parameters.fs_dgw, flow_parameters.clean_raw_spectra
         ).map(raw_spectra_paths)
-
-        _ = CacheCleanedSpectra(
-            flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
-        ).map(cleaned_spectra_paths)
 
         document_paths = CreateDocuments(
             flow_parameters.fs_dgw,
