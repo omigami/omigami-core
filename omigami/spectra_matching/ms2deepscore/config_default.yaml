@@ -5,7 +5,7 @@ storage:
     pre-trained-model: "model/pre-trained/ms2deep_score.hdf5"
     scores: "tanimoto_scores.pkl"
     model: "model/trained/ms2deep_score.hdf5"
-    spectrum_binner: "model/trained/spectrum_binner.pkl"
-    binned_spectra: "model/trained/binned_spectra.pkl"
+    spectrum_binner: "model/{dataset_id}/spectrum_binner.pkl"
+    binned_spectra: "model/{dataset_id}/binned_spectra.pkl"
   redis:
     binned_spectrum_hashes: "binned_spectrum_data"

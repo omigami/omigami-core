@@ -102,10 +102,10 @@ class MS2DeepScoreFlowFactory:
         fs_dgw = MS2DeepScoreFSDataGateway()
 
         spectrum_binner_output_path = (
-            self._ms2deepscore_root / self._directories["spectrum_binner"]
+            self._ms2deepscore_root / self._directories["spectrum_binner"].format(dataset_id=dataset_id)
         )
         binned_spectra_path = (
-                self._ms2deepscore_root / self._directories["spectrum_binner"]
+                self._ms2deepscore_root / self._directories["binned_spectra"].format(dataset_id=dataset_id)
         )
         model_output_path = str(self._ms2deepscore_root / self._directories["model"])
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
