@@ -2,7 +2,7 @@ from typing import List
 
 from prefect import Task
 
-from spectra_matching.storage import DataGateway
+from omigami.spectra_matching.storage import DataGateway
 from utils import merge_prefect_task_configs
 
 
