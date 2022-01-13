@@ -10,9 +10,7 @@ from omigami.flow_config import FlowConfig
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SplitRatio,
 )
-from omigami.spectra_matching.ms2deepscore.storage import (
-    MS2DeepScoreRedisSpectrumDataGateway,
-)
+
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
@@ -21,7 +19,6 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     ProcessSpectrum,
     RegisterModel,
     RegisterModelParameters,
-    CreateSpectrumIDsChunks,
     CalculateTanimotoScoreParameters,
     CalculateTanimotoScore,
     TrainModelParameters,
@@ -33,8 +30,7 @@ from omigami.spectra_matching.tasks import (
     ChunkingParameters,
     CreateChunks,
     CleanRawSpectraParameters,
-    CleanRawSpectra,
-    CacheCleanedSpectra,
+    CleanRawSpectra
 )
 
 
@@ -42,7 +38,6 @@ class TrainingFlowParameters:
     def __init__(
         self,
         fs_dgw: MS2DeepScoreFSDataGateway,
-        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         source_uri: str,
         dataset_directory: str,
         chunk_size: int,
@@ -51,6 +46,7 @@ class TrainingFlowParameters:
         fingerprint_n_bits: int,
         scores_decimals: int,
         spectrum_binner_output_path: str,
+        binned_spectra_output_path: str,
         spectrum_binner_n_bins: int,
         model_output_path: str,
         project_name: str,
@@ -65,7 +61,6 @@ class TrainingFlowParameters:
         dataset_name: str = "gnps.json",
     ):
         self.fs_dgw = fs_dgw
-        self.spectrum_dgw = spectrum_dgw
         self.spectrum_chunk_size = spectrum_ids_chunk_size
         self.ion_mode = ion_mode
 
@@ -102,18 +97,18 @@ class TrainingFlowParameters:
 
         self.process_spectrum = ProcessSpectrumParameters(
             spectrum_binner_output_path,
-            ion_mode=ion_mode,
+            binned_spectra_output_path,
             n_bins=spectrum_binner_n_bins,
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
-            scores_output_path, ion_mode, fingerprint_n_bits, scores_decimals
+            scores_output_path, binned_spectra_output_path, fingerprint_n_bits, scores_decimals
         )
 
         self.training = TrainModelParameters(
             model_output_path,
-            ion_mode,
             spectrum_binner_output_path,
+            binned_spectra_output_path,
             epochs,
             SplitRatio(train_ratio, validation_ratio, test_ratio),
         )
@@ -163,33 +158,23 @@ def build_training_flow(
             flow_parameters.fs_dgw, flow_parameters.clean_raw_spectra
         ).map(gnps_chunk_paths)
 
-        cleaned_spectrum_ids = CacheCleanedSpectra(
-            flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
-        ).map(cleaned_spectra_paths)
-
         processed_ids = ProcessSpectrum(
             flow_parameters.fs_dgw,
-            flow_parameters.spectrum_dgw,
             flow_parameters.process_spectrum,
-        )(cleaned_spectrum_ids)
+        )(cleaned_spectra_paths)
 
         scores_output_path = CalculateTanimotoScore(
-            flow_parameters.spectrum_dgw, flow_parameters.calculate_tanimoto_score
+            flow_parameters.fs_dgw, flow_parameters.calculate_tanimoto_score
         )(processed_ids)
 
         train_model_output = TrainModel(
             flow_parameters.fs_dgw,
-            flow_parameters.spectrum_dgw,
             flow_parameters.training,
             nout=2,
-        )(processed_ids, scores_output_path)
+        )(scores_output_path)
 
         model_run_id = RegisterModel(
             flow_parameters.registering, training_parameters=flow_parameters.training
         )(train_model_output)
-
-        processed_chunks = CreateSpectrumIDsChunks(
-            flow_parameters.spectrum_chunk_size, flow_parameters.spectrum_dgw
-        )(processed_ids)
 
     return training_flow
