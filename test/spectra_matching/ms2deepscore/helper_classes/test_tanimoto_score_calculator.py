@@ -11,12 +11,17 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.tanimoto_score_calcula
     TanimotoScoreCalculator,
 )
 
-from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
 
 
 @pytest.fixture()
 def tanimoto_calculator(binned_spectra_to_train_path):
-    return TanimotoScoreCalculator(fs_dgw=MS2DeepScoreFSDataGateway(), binned_spectra_path=binned_spectra_to_train_path)
+    return TanimotoScoreCalculator(
+        fs_dgw=MS2DeepScoreFSDataGateway(),
+        binned_spectra_path=binned_spectra_to_train_path,
+    )
 
 
 @pytest.fixture()
