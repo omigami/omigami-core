@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import pytest
 
 from omigami.config import MLFLOW_DIRECTORY
@@ -18,10 +21,23 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
 )
 
 
-def test_ms2ds_deploy_model_flow(flow_config):
+def test_ms2ds_deploy_model_flow(flow_config, tmpdir):
+    ion_mode = "positive"
+
+    cleaned_directory = f"{tmpdir}/cleaned"
+    os.mkdir(cleaned_directory)
+    cleaned_spectra_path = f"{cleaned_directory}/{ion_mode}"
+    os.mkdir(cleaned_spectra_path)
+
+    for i in range(10):
+        path = Path(f"{cleaned_spectra_path}/cleaned_spectra-{i}")
+        path.touch()
+
     expected_tasks = {
         "ModelRunID",  # a prefect `Parameter` is actually a Task too
         "GetMS2DeepScoreModelPath",
+        "ListCleanedSpectraPaths",
+        "CacheCleanedSpectra",
         "MakeEmbeddings",
         "DeployModel",
         "CreateSpectrumIDsChunks",
@@ -30,8 +46,9 @@ def test_ms2ds_deploy_model_flow(flow_config):
     params = DeployModelFlowParameters(
         spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(),
         fs_dgw=MS2DeepScoreFSDataGateway(),
-        ion_mode="positive",
+        ion_mode=ion_mode,
         redis_db="0",
+        dataset_directory=tmpdir,
     )
 
     deploy_model_flow = build_deploy_model_flow("deploy-flow", flow_config, params)
@@ -62,9 +79,7 @@ def deploy_model_setup(
 
 
 def test_run_ms2ds_deploy_model_flow(
-    deploy_model_setup,
-    flow_config,
-    redis_full_setup,
+    deploy_model_setup, flow_config, redis_full_setup, tmpdir
 ):
     params = DeployModelFlowParameters(
         spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(),
@@ -72,6 +87,7 @@ def test_run_ms2ds_deploy_model_flow(
         ion_mode="positive",
         redis_db="0",
         model_registry_uri=deploy_model_setup["mlflow_uri"],
+        dataset_directory=tmpdir,
     )
 
     deploy_model_flow = build_deploy_model_flow("deploy-flow", flow_config, params)

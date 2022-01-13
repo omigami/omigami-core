@@ -18,6 +18,7 @@ from omigami.spectra_matching.tasks import (
     DeployModel,
     DeleteEmbeddings,
 )
+from spectra_matching.tasks import CacheCleanedSpectra, ListCleanedSpectraPaths
 
 
 class DeployModelFlowParameters:
@@ -26,6 +27,7 @@ class DeployModelFlowParameters:
         spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
         fs_dgw: MS2DeepScoreFSDataGateway,
         ion_mode: IonModes,
+        dataset_directory: str,
         redis_db: str = "0",
         model_registry_uri: str = MLFLOW_SERVER,
         spectrum_ids_chunk_size: int = 10000,
@@ -42,6 +44,7 @@ class DeployModelFlowParameters:
         self.deploying = DeployModelParameters(
             redis_db, model_name=f"ms2deepscore-{ion_mode}"
         )
+        self.cleaned_spectra_directory = f"{dataset_directory}/cleaned/{ion_mode}"
 
 
 def build_deploy_model_flow(
@@ -80,6 +83,13 @@ def build_deploy_model_flow(
         model_path = GetMS2DeepScoreModelPath(flow_parameters.model_registry_uri)(
             model_run_id
         )
+        cleaned_spectra_paths = ListCleanedSpectraPaths(
+            flow_parameters.cleaned_spectra_directory, flow_parameters.fs_dgw
+        ).run()
+
+        cache_cleaned_spectra = CacheCleanedSpectra(
+            flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
+        ).map(cleaned_spectra_paths)
 
         delete_embeddings = DeleteEmbeddings(
             flow_parameters.spectrum_dgw, flow_parameters.ion_mode

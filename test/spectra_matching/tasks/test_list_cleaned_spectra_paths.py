@@ -7,7 +7,7 @@ from spectra_matching.tasks.list_cleaned_spectra_paths import ListCleanedSpectra
 def test_list_cleaned_spectra_path(tmpdir):
     expected_paths = []
     for i in range(10):
-        path = Path(str(tmpdir / f"clenaed_spectra-{i}"))
+        path = Path(str(tmpdir / f"cleaned_spectra-{i}"))
         path.touch()
         expected_paths.append(str(path))
 

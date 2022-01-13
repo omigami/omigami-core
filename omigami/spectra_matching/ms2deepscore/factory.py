@@ -174,6 +174,7 @@ class MS2DeepScoreFlowFactory:
 
         spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway(project=project_name)
         fs_dgw = MS2DeepScoreFSDataGateway()
+        dataset_directory = self._dataset_directory / dataset_id
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = DeployModelFlowParameters(
@@ -182,6 +183,7 @@ class MS2DeepScoreFlowFactory:
             ion_mode=ion_mode,
             redis_db=REDIS_DATABASES[dataset_id],
             model_registry_uri=self._model_registry_uri,
+            dataset_directory=dataset_directory,
         )
 
         deploy_model_flow = build_deploy_model_flow(
