@@ -85,7 +85,7 @@ def build_deploy_model_flow(
         )
         cleaned_spectra_paths = ListCleanedSpectraPaths(
             flow_parameters.cleaned_spectra_directory, flow_parameters.fs_dgw
-        ).run()
+        )()
 
         cache_cleaned_spectra = CacheCleanedSpectra(
             flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
