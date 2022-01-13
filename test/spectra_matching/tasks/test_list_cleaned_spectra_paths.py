@@ -1,7 +1,9 @@
 from pathlib import Path
 
 from omigami.spectra_matching.storage import FSDataGateway
-from omigami.spectra_matching.tasks.list_cleaned_spectra_paths import ListCleanedSpectraPaths
+from omigami.spectra_matching.tasks.list_cleaned_spectra_paths import (
+    ListCleanedSpectraPaths,
+)
 
 
 def test_list_cleaned_spectra_path(tmpdir):
