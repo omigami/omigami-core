@@ -129,6 +129,7 @@ def binned_spectra_to_train():
 def binned_spectra_to_train_path():
     return ASSETS_DIR / "ms2deepscore" / "to_train" / "binned_spectra.pkl"
 
+
 @pytest.fixture
 def small_model_params(monkeypatch):
     smaller_params = {

@@ -20,19 +20,16 @@ os.chdir(Path(__file__).parents[4])
 
 
 def test_training_flow(flow_config):
-    mock_spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
     mock_data_gtw = MagicMock(spec=FSDataGateway)
     expected_tasks = {
         "DownloadData",
         "CreateChunks",
         "CleanRawSpectra",
-        "CacheCleanedSpectra",
         "CreateDocuments",
         "RegisterModel",
         "TrainModel",
     }
     flow_params = TrainingFlowParameters(
-        spectrum_dgw=mock_spectrum_dgw,
         fs_dgw=mock_data_gtw,
         source_uri="source_uri",
         dataset_directory="datasets",
@@ -70,7 +67,6 @@ def test_run_training_flow(
     tmpdir,
     flow_config,
     clean_chunk_files,
-    spec2vec_redis_setup,
 ):
     # remove mlflow models from previous runs
     mlflow_root = tmpdir / "test-mlflow"
@@ -82,7 +78,6 @@ def test_run_training_flow(
     spectrum_dgw = RedisSpectrumDataGateway(project=SPEC2VEC_PROJECT_NAME)
     data_gtw = FSDataGateway()
     flow_params = TrainingFlowParameters(
-        spectrum_dgw=spectrum_dgw,
         fs_dgw=data_gtw,
         source_uri=GNPS_URIS["small"],
         dataset_directory=ASSETS_DIR,

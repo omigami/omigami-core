@@ -51,7 +51,6 @@ class Spec2VecFlowFactory:
         self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
         self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
-        self._dataset_ids = DATASET_IDS
 
     def build_training_flow(
         self,
@@ -89,14 +88,12 @@ class Spec2VecFlowFactory:
             storage_root=STORAGE_ROOT,
         )
 
-        spectrum_dgw = RedisSpectrumDataGateway(project_name)
         fs_dgw = FSDataGateway()
 
         source_uri = GNPS_URIS[dataset_id]
-        dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
+        dataset_id = DATASET_IDS[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
-            spectrum_dgw=spectrum_dgw,
             dataset_directory=f"{self._dataset_directory}/{dataset_id}",
             ion_mode=ion_mode,
             n_decimals=n_decimals,
@@ -160,7 +157,7 @@ class Spec2VecFlowFactory:
         fs_dgw = FSDataGateway()
 
         redis_db = REDIS_DATABASES[dataset_id]
-        dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
+        dataset_id = DATASET_IDS[dataset_id].format(date=datetime.today())
         flow_parameters = DeployModelFlowParameters(
             spectrum_dgw=spectrum_dgw,
             fs_dgw=fs_dgw,
