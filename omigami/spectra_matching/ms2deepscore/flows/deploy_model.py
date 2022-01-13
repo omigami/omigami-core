@@ -18,7 +18,7 @@ from omigami.spectra_matching.tasks import (
     DeployModel,
     DeleteEmbeddings,
 )
-from spectra_matching.tasks import CacheCleanedSpectra, ListCleanedSpectraPaths
+from omigami.spectra_matching.tasks import CacheCleanedSpectra, ListCleanedSpectraPaths
 
 
 class DeployModelFlowParameters:
