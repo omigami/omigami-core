@@ -1,13 +1,13 @@
-import os
 from unittest.mock import Mock
 
-import pytest
 
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SiameseModelTrainer,
     SplitRatio,
 )
-from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
 from omigami.spectra_matching.ms2deepscore.storage.redis_spectrum_gateway import (
     MS2DeepScoreRedisSpectrumDataGateway,
 )
