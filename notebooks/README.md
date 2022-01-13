@@ -1,7 +1,7 @@
 ### How to run these notebooks
 
 1. activate omigami env `conda activate omigami`
-PS: create it using the isntructions in the main page readme
+PS: create it using the instructions in the main page readme
    
 2. install jupyterlab `pip install jupyterlab`
 
