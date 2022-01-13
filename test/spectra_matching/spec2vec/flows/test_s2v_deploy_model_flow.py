@@ -45,11 +45,11 @@ def deploy_model_setup(tmpdir_factory, word2vec_model, mock_s2v_deploy_model_tas
     mlflow_uri = f"sqlite:///{tmpdir}/mlflow.sqlite"
     dgw = MLFlowDataGateway(mlflow_uri)
     model = Spec2VecPredictor(
-        word2vec_model,
         ion_mode="positive",
         n_decimals=2,
         intensity_weighting_power=1.0,
         allowed_missing_percentage=15,
+        model=word2vec_model,
     )
     run_id = dgw.register_model(
         model=model,

@@ -1,13 +1,10 @@
 import os
 from pathlib import Path
-from typing import List, Dict
 from unittest.mock import Mock
 
 import mlflow
-import numpy as np
 import pandas as pd
 import pytest
-from mlflow.pyfunc import PyFuncModel
 from pytest_redis import factories
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.wrapper import get_rest_microservice
@@ -68,12 +65,12 @@ def big_payload():
 @pytest.fixture()
 def spec2vec_predictor(word2vec_model):
     return Spec2VecPredictor(
-        word2vec_model,
         ion_mode="positive",
         n_decimals=1,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=25,
         run_id="1",
+        model=word2vec_model,
     )
 
 
@@ -219,7 +216,6 @@ def test_add_metadata(spec2vec_predictor, spec2vec_embeddings, spec2vec_redis_se
 
 def test_predictor_error_handling(tmpdir):
     predictor = Spec2VecPredictor(
-        "model",
         ion_mode="positive",
         n_decimals=1,
         intensity_weighting_power=0.5,
