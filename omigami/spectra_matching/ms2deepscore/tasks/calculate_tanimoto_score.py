@@ -7,7 +7,9 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.tanimoto_score_calcula
     TanimotoScoreCalculator,
 )
 
-from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
 from omigami.utils import merge_prefect_task_configs
 
 
@@ -52,7 +54,9 @@ class CalculateTanimotoScore(Task):
         """
         self.logger.info(f"Calculating the Tanimoto Scores")
         calculator = TanimotoScoreCalculator(
-            fs_dgw=self._fs_dgw, n_bits=self._n_bits, binned_spectra_path=self._binned_spectra_path
+            fs_dgw=self._fs_dgw,
+            n_bits=self._n_bits,
+            binned_spectra_path=self._binned_spectra_path,
         )
         path = calculator.calculate(
             self._scores_output_path,

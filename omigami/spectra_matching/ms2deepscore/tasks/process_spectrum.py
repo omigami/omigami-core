@@ -36,9 +36,7 @@ class ProcessSpectrum(Task):
         self._spectrum_binner_output_path = (
             process_parameters.spectrum_binner_output_path
         )
-        self._binned_spectra_output_path = (
-            process_parameters.binned_spectra_output_path
-        )
+        self._binned_spectra_output_path = process_parameters.binned_spectra_output_path
         self._processor = SpectrumProcessor()
         self._spectrum_binner = MS2DeepScoreSpectrumBinner(process_parameters.n_bins)
         config = merge_prefect_task_configs(kwargs)
@@ -59,7 +57,9 @@ class ProcessSpectrum(Task):
         Set of spectrum_ids
         """
 
-        self.logger.info(f"Loading cleaned spectra from directory {Path(cleaned_spectrum_paths[0]).parent}.")
+        self.logger.info(
+            f"Loading cleaned spectra from directory {Path(cleaned_spectrum_paths[0]).parent}."
+        )
         cleaned_spectra = []
         for path in cleaned_spectrum_paths:
             cleaned_spectra += self._fs_gtw.read_from_file(path)
@@ -71,7 +71,9 @@ class ProcessSpectrum(Task):
             self.logger, cleaned_spectra_size, 20, "Process Spectra task progress"
         )
         cleaned_spectra = self._processor.process_spectra(
-            cleaned_spectra, process_reference_spectra=True, progress_logger=progress_logger
+            cleaned_spectra,
+            process_reference_spectra=True,
+            progress_logger=progress_logger,
         )
         binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
 
@@ -93,6 +95,3 @@ class ProcessSpectrum(Task):
         )
 
         return {spectrum.get("spectrum_id") for spectrum in binned_spectra}
-
-
-

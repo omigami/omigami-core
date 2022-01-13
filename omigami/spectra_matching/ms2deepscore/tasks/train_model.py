@@ -7,7 +7,9 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer 
     SiameseModelTrainer,
     SplitRatio,
 )
-from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
 from omigami.utils import merge_prefect_task_configs
 
 

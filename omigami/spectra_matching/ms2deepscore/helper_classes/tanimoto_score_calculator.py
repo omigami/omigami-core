@@ -6,7 +6,9 @@ from ms2deepscore import BinnedSpectrum
 from rdkit import Chem
 from rdkit.DataStructs import BulkTanimotoSimilarity
 
-from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
 
 
 class TanimotoScoreCalculator:
@@ -22,9 +24,7 @@ class TanimotoScoreCalculator:
         self._n_bits = n_bits
         self._decimals = decimals
 
-    def calculate(
-        self, scores_output_path: str, logger: Logger = None
-    ) -> str:
+    def calculate(self, scores_output_path: str, logger: Logger = None) -> str:
         binned_spectra = self._fs_dgw.read_from_file(self._binned_spectra_path)
         unique_inchi_keys = self._get_unique_inchis(binned_spectra)
 

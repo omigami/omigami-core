@@ -33,7 +33,7 @@ def test_s2v_deploy_model_flow(flow_config, tmpdir):
         "LoadSpec2VecModel",
         "DeleteEmbeddings",
         "ListCleanedSpectraPaths",
-        "CacheCleanedSpectra"
+        "CacheCleanedSpectra",
     }
     params = DeployModelFlowParameters(
         spectrum_dgw=RedisSpectrumDataGateway("project"),
@@ -97,7 +97,7 @@ def test_run_s2v_deploy_model_flow(
         allowed_missing_percentage=5.0,
         redis_db="0",
         model_registry_uri=deploy_model_setup["mlflow_uri"],
-        dataset_directory="directory"
+        dataset_directory="directory",
     )
 
     deploy_model_flow = build_deploy_model_flow("deploy-flow", flow_config, params)
