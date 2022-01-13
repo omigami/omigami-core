@@ -160,6 +160,7 @@ class Spec2VecFlowFactory:
 
         redis_db = REDIS_DATABASES[dataset_id]
         dataset_id = DATASET_IDS[dataset_id].format(date=datetime.today())
+        dataset_directory = self._dataset_directory / dataset_id
         flow_parameters = DeployModelFlowParameters(
             spectrum_dgw=spectrum_dgw,
             fs_dgw=fs_dgw,
@@ -175,6 +176,7 @@ class Spec2VecFlowFactory:
             allowed_missing_percentage=allowed_missing_percentage,
             redis_db=redis_db,
             model_registry_uri=self._model_registry_uri,
+            dataset_directory=dataset_directory,
         )
 
         deploy_model_flow = build_deploy_model_flow(

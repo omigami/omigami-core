@@ -18,6 +18,7 @@ from omigami.spectra_matching.tasks import (
     DeployModel,
     DeleteEmbeddings,
 )
+from spectra_matching.tasks import ListCleanedSpectraPaths, CacheCleanedSpectra
 
 
 class DeployModelFlowParameters:
@@ -28,6 +29,7 @@ class DeployModelFlowParameters:
         ion_mode: IonModes,
         n_decimals: int,
         documents_directory: str,
+        dataset_directory: str,
         intensity_weighting_power: Union[float, int] = 0.5,
         allowed_missing_percentage: Union[float, int] = 5.0,
         redis_db: str = "0",
@@ -47,6 +49,7 @@ class DeployModelFlowParameters:
         self.deploying = DeployModelParameters(
             redis_db, model_name=f"spec2vec-{ion_mode}"
         )
+        self.cleaned_spectra_directory = f"{dataset_directory}/cleaned/{ion_mode}"
 
 
 def build_deploy_model_flow(
@@ -82,6 +85,14 @@ def build_deploy_model_flow(
         loaded_model = LoadSpec2VecModel(
             flow_parameters.fs_dgw, flow_parameters.model_registry_uri
         )(model_run_id)
+
+        cleaned_spectra_paths = ListCleanedSpectraPaths(
+            flow_parameters.cleaned_spectra_directory, flow_parameters.fs_dgw
+        )()
+
+        _ = CacheCleanedSpectra(
+            flow_parameters.spectrum_dgw, flow_parameters.fs_dgw
+        ).map(cleaned_spectra_paths)
 
         delete_embeddings = DeleteEmbeddings(
             flow_parameters.spectrum_dgw, flow_parameters.ion_mode

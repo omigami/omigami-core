@@ -44,7 +44,7 @@ def test_build_model_deployment_flow():
 
     assert isinstance(flow, Flow)
     assert flow.name == "Calvin Flowers"
-    assert len(flow.tasks) == 6
+    assert len(flow.tasks) == 8
     assert flow.run_config.env == {
         "REDIS_DB": "0",
         "REDIS_HOST": "localhost",
