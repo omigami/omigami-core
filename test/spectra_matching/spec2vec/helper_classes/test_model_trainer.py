@@ -6,9 +6,6 @@ import pytest
 from drfs.filesystems import get_fs
 from pytest_redis import factories
 
-from omigami.spectra_matching.spec2vec.helper_classes.train_logger import (
-    CustomTrainingProgressLogger,
-)
 from omigami.spectra_matching.spec2vec.storage.fs_document_iterator import (
     FileSystemDocumentIterator,
 )
@@ -21,14 +18,11 @@ redis_db = factories.redisdb("redis_nooproc")
 def test_spec2vec_settings():
     epochs = 5
     gtw = Mock(spec=RedisSpectrumDataGateway)
-    train_model_params = TrainModelParameters(epochs, 10)
+    train_model_params = TrainModelParameters("path", epochs, 10)
     train_model = TrainModel(gtw, train_model_params)
 
-    callbacks, settings = train_model._create_spec2vec_settings(
-        epochs=epochs, window=10
-    )
+    settings = train_model._create_spec2vec_settings()
 
-    assert isinstance(callbacks[0], CustomTrainingProgressLogger)
     assert settings["iter"] == epochs
 
 
@@ -44,12 +38,12 @@ def test_word2vec_training_with_iterator(
     fs = get_fs(s3_documents_directory)
     fs.makedirs(s3_documents_directory)
 
-    train_model_params = TrainModelParameters(2, 10)
+    train_model_params = TrainModelParameters("path", 2, 10)
     train_model = TrainModel(dgw, train_model_params)
-    callbacks, settings = train_model._create_spec2vec_settings(epochs=2, window=10)
+    settings = train_model._create_spec2vec_settings()
 
     documents = FileSystemDocumentIterator(dgw, fs.ls(s3_documents_directory))
 
-    model = gensim.models.Word2Vec(sentences=documents, callbacks=callbacks, **settings)
+    model = gensim.models.Word2Vec(sentences=documents, **settings)
 
     assert len(documents) == model.corpus_count

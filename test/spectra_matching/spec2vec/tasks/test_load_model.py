@@ -14,7 +14,7 @@ def mlflow_setup(tmpdir_factory):
     mlflow_uri = f"sqlite:///{tmpdir}/mlflow.sqlite"
     dgw = MLFlowDataGateway(mlflow_uri)
     model = Spec2VecPredictor(
-        Word2Vec(),
+        model=Word2Vec(),
         ion_mode="positive",
         n_decimals=2,
         intensity_weighting_power=1.0,

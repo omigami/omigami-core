@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any, Dict
 
 import gensim
 import prefect
@@ -10,9 +10,6 @@ from spec2vec.model_building import (
     learning_rates_to_gensim_style,
 )
 
-from omigami.spectra_matching.spec2vec.helper_classes.train_logger import (
-    CustomTrainingProgressLogger,
-)
 from omigami.spectra_matching.spec2vec.storage.fs_document_iterator import (
     FileSystemDocumentIterator,
 )
@@ -29,25 +26,31 @@ class TrainModelParameters:
         Window size for context around the word
     """
 
+    model_directory: str
     epochs: int = 25
     window: int = 500
+
+    @property
+    def model_tmp_path(self) -> str:
+        return self.model_directory + "/tmp/{flow_run_id}/word2vec.pickle"
 
 
 class TrainModel(Task):
     def __init__(
         self,
-        data_dgw: FSDataGateway,
+        fs_dgw: FSDataGateway,
         training_parameters: TrainModelParameters,
         **kwargs,
     ):
-        self._data_dgw = data_dgw
+        self._fs_dgw = fs_dgw
+        self._model_tmp_path = training_parameters.model_tmp_path
         self._epochs = training_parameters.epochs
         self._window = training_parameters.window
 
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, document_paths: List[str] = None) -> Word2Vec:
+    def run(self, document_paths: List[str] = None) -> str:
         """
         Prefect task to train a Word2Vec model with the spectrum documents.
 
@@ -58,35 +61,35 @@ class TrainModel(Task):
 
         Returns
         -------
-        model: Word2Vec
+        Path to the saved model.
 
         """
 
-        self.logger.info(f"Loading examples from {document_paths}")
+        self.logger.info(f"Loading documents from {document_paths}")
 
         documents = FileSystemDocumentIterator(
-            fs_dgw=self._data_dgw, document_paths=document_paths
+            fs_dgw=self._fs_dgw, document_paths=document_paths
         )
 
-        self.logger.info("Started training the Word2Vec model.")
-        callbacks, settings = self._create_spec2vec_settings(self._window, self._epochs)
-        model = gensim.models.Word2Vec(
-            sentences=documents, callbacks=callbacks, **settings
+        self.logger.info(
+            "Started training the Word2Vec model on {len(documents)} documents."
         )
-        self.logger.info(f"Trained model on {len(documents)} examples.")
-        self.logger.info(f"Finished training the model.")
+        settings = self._create_spec2vec_settings()
+        model = gensim.models.Word2Vec(sentences=documents, **settings)
+        output_path = self._model_tmp_path.format(
+            flow_run_id=prefect.context.get("flow_run_id", "local")
+        )
+        self.logger.info(f"Finished training the model. Saving model to {output_path}")
+        self._fs_dgw.serialize_to_file(output_path, model)
 
-        return model
+        return output_path
 
-    def _create_spec2vec_settings(self, window: int, epochs: int):
-        settings = set_spec2vec_defaults(window=window)
+    def _create_spec2vec_settings(self) -> Dict[str, Any]:
+        settings = set_spec2vec_defaults(window=self._window)
 
         # Convert spec2vec style arguments to gensim style arguments
-        settings = learning_rates_to_gensim_style(num_of_epochs=epochs, **settings)
+        settings = learning_rates_to_gensim_style(
+            num_of_epochs=self._epochs, **settings
+        )
 
-        # Set callbacks
-        callbacks = []
-        training_progress_logger = CustomTrainingProgressLogger(epochs, self.logger)
-        callbacks.append(training_progress_logger)
-
-        return callbacks, settings
+        return settings
