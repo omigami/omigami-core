@@ -72,7 +72,9 @@ class TrainingFlowParameters:
             ion_mode=ion_mode,
             n_decimals=n_decimals,
         )
-        self.training = TrainModelParameters(iterations, window)
+        self.training = TrainModelParameters(
+            mlflow_output_directory, iterations, window
+        )
         self.registering = RegisterModelParameters(
             experiment_name=experiment_name,
             model_registry_uri=model_registry_uri,
@@ -134,10 +136,12 @@ def build_training_flow(
             flow_parameters.create_documents,
         ).map(cleaned_spectra_paths)
 
-        model = TrainModel(flow_parameters.fs_dgw, flow_parameters.training)(
+        model_path = TrainModel(flow_parameters.fs_dgw, flow_parameters.training)(
             document_paths
         )
 
-        model_run_id = RegisterModel(flow_parameters.registering)(model)
+        model_run_id = RegisterModel(
+            flow_parameters.registering, flow_parameters.training
+        )(model_path)
 
     return training_flow
