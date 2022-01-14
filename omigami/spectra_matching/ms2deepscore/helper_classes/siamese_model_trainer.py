@@ -8,12 +8,11 @@ from ms2deepscore import SpectrumBinner, BinnedSpectrum
 from ms2deepscore.data_generators import DataGeneratorAllSpectrums
 from ms2deepscore.models import SiameseModel
 from tensorflow import keras
-
-# NN Architecture parameters originated from MS2DS paper
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )
 
+# NN Architecture parameters originated from MS2DS paper
 SIAMESE_MODEL_PARAMS = {
     "batch_size": 32,
     "learning_rate": 0.001,

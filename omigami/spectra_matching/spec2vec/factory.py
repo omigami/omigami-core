@@ -88,14 +88,12 @@ class Spec2VecFlowFactory:
             storage_root=STORAGE_ROOT,
         )
 
-        spectrum_dgw = RedisSpectrumDataGateway(project_name)
         fs_dgw = FSDataGateway()
 
         source_uri = GNPS_URIS[dataset_id]
         dataset_id = DATASET_IDS[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
-            spectrum_dgw=spectrum_dgw,
             dataset_directory=f"{self._dataset_directory}/{dataset_id}",
             ion_mode=ion_mode,
             n_decimals=n_decimals,
