@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import Dict
 
+import prefect
 from prefect import Task
 
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
@@ -66,10 +67,13 @@ class TrainModel(Task):
         )
         model = trainer.train(scores_output_path, spectrum_binner, self.logger)
 
-        self.logger.info(f"Saving trained model to {self._output_path}.")
-        self._fs_dgw.save(model, self._output_path)
+        output_path = self._output_path.format(
+            flow_run_id=prefect.context.get("flow_run_id", "local")
+        )
+        self.logger.info(f"Saving trained model to {output_path}.")
+        self._fs_dgw.save(model, output_path)
 
         return {
-            "ms2deepscore_model_path": self._output_path,
+            "ms2deepscore_model_path": output_path,
             "validation_loss": model.model.history.history["val_loss"][-1],
         }
