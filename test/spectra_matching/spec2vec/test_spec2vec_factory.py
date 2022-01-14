@@ -2,7 +2,6 @@ from prefect import Flow
 
 from omigami.config import MLFLOW_SERVER, OMIGAMI_ENV
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
-from omigami.spectra_matching.tasks import CreateChunks
 
 
 def test_build_training_flow():
@@ -24,9 +23,7 @@ def test_build_training_flow():
 
     assert isinstance(flow, Flow)
     assert flow.name == "Robert DeFlow"
-    assert len(flow.tasks) == 7
-    chunk_task: CreateChunks = flow.get_tasks("CreateChunks")[0]
-    assert chunk_task._chunk_size == int(1e8)
+    assert len(flow.tasks) == 6
 
 
 def test_build_model_deployment_flow():
