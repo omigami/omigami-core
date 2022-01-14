@@ -25,6 +25,7 @@ class MS2DeepScoreFSDataGateway(FSDataGateway):
             self.fs = get_fs(path)
 
         if isinstance(self.fs, LocalFileSystem):
+            DRPath(path).parent.mkdir(parents=True, exist_ok=True)
             model.save(path)
         elif isinstance(self.fs, S3FileSystem):
             _, tmp_path = tempfile.mkstemp()
