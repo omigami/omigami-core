@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional
 
 import pandas as pd
 from drfs import DRPath
@@ -19,10 +19,7 @@ from omigami.flow_config import (
     make_flow_config,
     PrefectExecutorMethods,
 )
-from omigami.spectra_matching.spec2vec.config import (
-    DOCUMENT_DIRECTORIES,
-    SPEC2VEC_ROOT,
-)
+from omigami.spectra_matching.spec2vec.config import DOCUMENT_DIRECTORIES
 from omigami.spectra_matching.spec2vec.flows.deploy_model import (
     DeployModelFlowParameters,
     build_deploy_model_flow,
@@ -41,13 +38,19 @@ class Spec2VecFlowFactory:
         documents_dir: Dict[str, str] = None,
         model_registry_uri: str = None,
         mlflow_output_directory: str = None,
+        storage_root: str = None,
     ):
+        if storage_root is None:
+            self._storage_root = STORAGE_ROOT
+        else:
+            self._storage_root = DRPath(storage_root)
+
         self._dataset_directory = (
             DRPath(dataset_directory)
             if dataset_directory is not None
-            else STORAGE_ROOT / "datasets"
+            else self._storage_root / "datasets"
         )
-        self._spec2vec_root = SPEC2VEC_ROOT
+        self._spec2vec_root = self._storage_root / "spec2vec"
         self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
         self._mlflow_output_directory = mlflow_output_directory or str(MLFLOW_DIRECTORY)
         self._document_dirs = documents_dir or DOCUMENT_DIRECTORIES
@@ -56,12 +59,12 @@ class Spec2VecFlowFactory:
         self,
         project_name: str,
         flow_name: str,
-        image: str,
         iterations: int,
         window: int,
         intensity_weighting_power: float,
         allowed_missing_percentage: float,
         dataset_id: str,
+        image: Optional[str] = None,
         n_decimals: int = 2,
         schedule: pd.Timedelta = None,
         ion_mode: IonModes = "positive",
@@ -85,7 +88,7 @@ class Spec2VecFlowFactory:
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=REDIS_DATABASES[dataset_id],
             schedule=schedule,
-            storage_root=STORAGE_ROOT,
+            storage_root=self._storage_root,
         )
 
         fs_dgw = FSDataGateway()
@@ -150,7 +153,7 @@ class Spec2VecFlowFactory:
             image=image,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=REDIS_DATABASES[dataset_id],
-            storage_root=STORAGE_ROOT,
+            storage_root=self._storage_root,
         )
 
         spectrum_dgw = RedisSpectrumDataGateway(project_name)
