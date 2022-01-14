@@ -2,8 +2,8 @@ from typing import List
 
 from prefect import Task
 
-from spectra_matching.storage import DataGateway
-from utils import merge_prefect_task_configs
+from omigami.spectra_matching.storage import DataGateway
+from omigami.utils import merge_prefect_task_configs
 
 
 class ListCleanedSpectraPaths(Task):

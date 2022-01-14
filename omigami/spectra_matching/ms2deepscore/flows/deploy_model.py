@@ -13,12 +13,12 @@ from omigami.spectra_matching.ms2deepscore.tasks import (
     GetMS2DeepScoreModelPath,
 )
 from omigami.spectra_matching.ms2deepscore.tasks import MakeEmbeddings
+from omigami.spectra_matching.tasks import CacheCleanedSpectra, ListCleanedSpectraPaths
 from omigami.spectra_matching.tasks import (
     DeployModelParameters,
     DeployModel,
     DeleteEmbeddings,
 )
-from spectra_matching.tasks import CacheCleanedSpectra, ListCleanedSpectraPaths
 
 
 class DeployModelFlowParameters:
