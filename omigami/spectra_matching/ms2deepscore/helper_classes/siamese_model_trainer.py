@@ -8,10 +8,11 @@ from ms2deepscore import SpectrumBinner, BinnedSpectrum
 from ms2deepscore.data_generators import DataGeneratorAllSpectrums
 from ms2deepscore.models import SiameseModel
 from tensorflow import keras
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
+)
 
 # NN Architecture parameters originated from MS2DS paper
-from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import MS2DeepScoreFSDataGateway
-
 SIAMESE_MODEL_PARAMS = {
     "batch_size": 32,
     "learning_rate": 0.001,
@@ -53,7 +54,7 @@ class SiameseModelTrainer:
         logger: Logger = None,
     ) -> SiameseModel:
         binned_spectra = self._fs_dgw.read_from_file(self._binned_spectra_path)
-        
+
         tanimoto_scores = pd.read_pickle(scores_output_path, compression="gzip")
 
         data_generators = self._train_validation_test_split(

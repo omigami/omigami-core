@@ -47,7 +47,7 @@ def test_build_model_deployment_flow():
 
     assert isinstance(model_deployment_flow, Flow)
     assert model_deployment_flow.name == "Model Destroyment Flow"
-    assert len(model_deployment_flow.tasks) == 6
+    assert len(model_deployment_flow.tasks) == 8
     assert model_deployment_flow.run_config.env == {
         "REDIS_DB": REDIS_DB,
         "REDIS_HOST": REDIS_HOST,

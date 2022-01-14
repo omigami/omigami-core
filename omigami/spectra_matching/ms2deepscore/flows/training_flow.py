@@ -30,7 +30,7 @@ from omigami.spectra_matching.tasks import (
     ChunkingParameters,
     CreateChunks,
     CleanRawSpectraParameters,
-    CleanRawSpectra
+    CleanRawSpectra,
 )
 
 
@@ -102,7 +102,10 @@ class TrainingFlowParameters:
         )
 
         self.calculate_tanimoto_score = CalculateTanimotoScoreParameters(
-            scores_output_path, binned_spectra_output_path, fingerprint_n_bits, scores_decimals
+            scores_output_path,
+            binned_spectra_output_path,
+            fingerprint_n_bits,
+            scores_decimals,
         )
 
         self.training = TrainModelParameters(

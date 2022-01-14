@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import mlflow
-import pytest
 from drfs.filesystems import get_fs
 
 from omigami.config import GNPS_URIS
@@ -11,7 +10,6 @@ from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
     TrainingFlowParameters,
 )
-
 from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
     MS2DeepScoreFSDataGateway,
 )

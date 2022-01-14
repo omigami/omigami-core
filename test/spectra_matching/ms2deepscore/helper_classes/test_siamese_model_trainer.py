@@ -1,7 +1,5 @@
-import os
 from unittest.mock import Mock
 
-import pytest
 
 from omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer import (
     SiameseModelTrainer,

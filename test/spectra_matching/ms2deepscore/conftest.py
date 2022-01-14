@@ -10,7 +10,6 @@ from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
 from omigami.config import GNPS_URIS, EMBEDDING_HASHES
-from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
