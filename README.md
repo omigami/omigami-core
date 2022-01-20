@@ -23,16 +23,18 @@ Once you have conda installed, you can execute:
     omigami pip install -e .
 
 to create a new conda environment called `omigami` and install the relevant packages for development.
-For running the notebooks, additional packages can be installed by issuing the following commands with the new conda env
-activated:
+
+
+If you want to build your own predicting scripts, there are some additional packages that may be useful to you and that can be installed 
+by issuing the following commands with the new conda env activated:
 
     conda env update -f requirements/spectra_matching/spec2vec/conda.txt
     pip install -r requirements/spectra_matching/spec2vec/pip.txt
 
-In this example, we are installing spec2vec spectra_matching dependencies. You can do the same for ms2deepscore if
-you want to use its notebook.
+In this example, we are installing spec2vec spectra_matching dependencies. These packages are not necessary for training.
 
-**For Apple Silicon (M1) users, please do the extra following steps to make sure tensorflow is installed correctly (only necessary for ms2deepscore users):**
+**Considering the tensorflow extra package from spectra_matching/ms2deepscore, for Apple Silicon (M1) users, please do the 
+extra following steps to make sure tensorflow is installed correctly (only necessary for ms2deepscore users):**
 
 1. Activate the conda env and uninstall tensorflow through `pip uninstall tensorflow`
 2. Go to https://drive.google.com/drive/folders/11cACNiynhi45br1aW3ub5oQ6SrDEQx4p (source: https://github.com/tensorflow/tensorflow/issues/46044#issuecomment-797151218) and download the `tensorflow-2.5.0-py3-none-any.whl` file.
