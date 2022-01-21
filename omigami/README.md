@@ -1,7 +1,3 @@
-##############################
-Omigami on MLOps architecture
-##############################
-
 Development Environment
 =======================
 
@@ -47,39 +43,6 @@ Special steps for M1 Users
 2. Go to https://drive.google.com/drive/folders/11cACNiynhi45br1aW3ub5oQ6SrDEQx4p (source: https://github.com/tensorflow/tensorflow/issues/46044#issuecomment-797151218) and download the `tensorflow-2.5.0-py3-none-any.whl` file.
 3. Now do `pip install <path_to_downloaded_file>`
 4. You might need to install manually one or two packages. Run the tests and if necessary (you are getting ModuleNotFound errors) install the missing packages.
-
-How to build a docker image
--------------------------------------
-Whenever a Flow is registered in Prefect Server using Kubernetes, it needs to use a
-Docker image that has Prefect installed and all the packages needed for running the code.
-
-Usually, updating the requirements file should cover all the needed packages. Otherwise,
-you should update the Dockerfile.
-
-In order to build Docker Images, there's an auxiliary script to do this.
-To run it, execute::
-
-    bash release.sh $TAG
-
-If you also want to push the images to Dockerhub, add `--push` or `-p` parameter.
-This will push 3 images to 3 different repositories:
- - drtools/prefect
- - drtools/omigami-spec2vec
- - drtools/omigami-ms2deepscore
-::
-
-    bash release.sh $TAG --push
-
-How to run tests that require Redis locally
--------------------------------------------
-
-Some tests that use feature store requires Redis to run.
-Start a Redis container and set these environment variables before running the test suite:
-::
-
-    docker run -d --rm --name redis -p 6379:6379 redis:5-alpine
-    export SKIP_REDIS_TEST=False
-
 
 Running Prefect Locally
 ------------------------------------
@@ -242,6 +205,8 @@ The available endpoints are:
 - `spec2vec-positive`
 - `spec2vec-negative`
 - `ms2deepscore`
+
+PS: currently online endpoints are not available (server is down for indeterminate time)
 
 Black format your code
 -------------------------------------
