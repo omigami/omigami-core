@@ -150,4 +150,5 @@ test/assets/chunks
 
 .DS_Store
 /local-deployment/results
+/notebooks/training/results
 mlflow.sqlite
