@@ -1,30 +1,79 @@
 
-Omigami on MLOps architecture
-=============================
+# Omigami-Core
 
-Introduction
-------------
+## Introduction
 
-This repository contains the functionality necessary to train spec2vec and ms2deepscore machine learning models
-using data from the online GNPS datasets. There are two available options:
+This repository contains the backend logic that runs prefect flows to train and deploy models
+to a architecture that is based on OpenMLOps.
 
-a) Train the models using simple jupyter notebooks which outputs the trained model location (ideal for local machine training)
+## Setting up the environment
 
-b) Use a prefect pipeline through a CLI interface to orchestrate each task in the training flow (suited for training with large dataset in production)
-
-Setting up the environment
---------------------------
-
-You should install the conda python package to create a conda environment using the env files supplied in this repository.
+You should install the conda python package to create a python environment to use this repository.
 Once you have conda installed, you can execute:
 
-    conda env create -f requirements/development/environment.frozen.yaml 
-    conda activate 
-    omigami pip install -e .
+```shell
+conda env create -f requirements/development/environment.frozen.yaml 
+conda activate 
+pip install -e .
+```
 
-to create a new conda environment called `omigami` and install the relevant packages for development.
+Training Models Locally
+-------------------
+
+Omigami-Core allows training models locally using in-memory prefect or prefect server.
+For prefect server, check the next sections and potentially the DEPLOY.md document.
+
+You can check the training parameters by typing:
+
+```
+omigami spec2vec train --help
+omigami ms2deepscore train --help
+```
+
+In order to train on memory, please use the `--local` flag. All results will be saved on
+`omigami-core/local-deployment/results`.
+
+Some tasks use caching. So when running for a second time they will use the saved results. 
+If a flow is using cache, these will show up in the logs. The tasks that use caching are:
+- `DownloadData`
+- `CreateChunks`
+- `CleanRawSpectra`
+- `CreateDocuments` [spec2vec specific]
+- `ProcessSpectrum` [ms2deepscore specific] - TODO
+
+Three values for dataset IDs are available for running locally:
+- `small`: a 100 spetra dataset
+- `small_500`: a 500 spectra dataset. I would've never guessed it.
+- `complete`: all data available on GNPS. Updated monthly. Used in production.
+
+For running a local training flow with mostly default parameters:
+
+**Spec2vec:**
+```shell
+omigami spec2vec train \
+    --flow-name spec2vec-training \
+    --dataset-id small_500 \
+    --ion-mode positive \
+    --local
+```
+
+**MS2DeepScore**:
+```shell
+omigami ms2deepscore train \
+    --flow-name ms2deepscore-training \
+    --dataset-id small_500 \
+    --ion-mode positive \
+    --train-ratio 0.7 \
+    --validation-ratio 0.15 \
+    --test-ratio 0.15 \
+    --local
+```
 
 
+## Advanced Readings (Optional)
+
+
+### Building Model-specific environments
 If you want to build your own predicting scripts, there are some additional packages that may be useful to you and that can be installed 
 by issuing the following commands with the new conda env activated:
 
@@ -42,15 +91,8 @@ extra following steps to make sure tensorflow is installed correctly (only neces
 4. You might need to install manually one or two packages. Run the tests and if necessary (you are getting ModuleNotFound errors) install the missing packages.
 
 
-Using the Notebooks
--------------------
 
-Go to `notebooks/training` to find the training notebook. Inside each notebook you can find instructions on how to set
-the parameters to each training function.
-
-
-Using the Prefect training flows (for power users)
---------------------------------------------------
+###  Using the Prefect training flows
 For running the prefect training flows we need to setup local prefect and mlflow instances. Docker is also necessary
 to achieve this local environment setup. You can install `docker desktop` for your machine following the guides at
 www.docker.com. You must also have a dockerhub account, so you can build and push images to a repository owned by this
@@ -133,8 +175,7 @@ code inside each algorithm folder, nested inside the `omigami` source code folde
 Also, there is an environment variable called `STORAGE_ROOT` that can be used if you want to change where results and 
 files from intermediate steps are stored.
 
-Building and pushing images (for power users)
---------------------------------------------------
+### Building and pushing images
 To run a training flow you will need to use a docker image containing the flow code and its dependencies. You can
 build an image by issuing the following commands:
 ```
@@ -158,6 +199,6 @@ For ms2deepscore and
 for spec2vec
 
 
-Additional docs
+Additional Development Docs
 -------------------
-Additional docs for developers can be found in the readme inside the `omigami` folder.
+Additional docs for developers can be found in the readme inside the `docs` folder.

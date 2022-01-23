@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from pathlib import Path
-
 from typing import Set, List
 
 import prefect
@@ -13,7 +12,6 @@ from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_binner import
 from omigami.spectra_matching.ms2deepscore.helper_classes.spectrum_processor import (
     SpectrumProcessor,
 )
-
 from omigami.spectra_matching.storage import DataGateway
 from omigami.utils import merge_prefect_task_configs
 
@@ -42,7 +40,7 @@ class ProcessSpectrum(Task):
         config = merge_prefect_task_configs(kwargs)
         super().__init__(**config, trigger=prefect.triggers.all_successful)
 
-    def run(self, cleaned_spectrum_paths: List[str]) -> Set[str]:
+    def run(self, cleaned_spectrum_paths: List[str] = None) -> Set[str]:
         """
         Prefect task to clean spectra and create binned spectra from cleaned spectra.
         Binned spectra are saved to REDIS DB and filesystem.
@@ -77,7 +75,9 @@ class ProcessSpectrum(Task):
         )
         binned_spectra = self._spectrum_binner.bin_spectra(cleaned_spectra)
 
-        # saves spectrum binner to filesystem
+        self.logger.info(
+            f"Saving spectrum binner on {self._spectrum_binner_output_path}."
+        )
         self._fs_gtw.serialize_to_file(
             self._spectrum_binner_output_path, self._spectrum_binner.spectrum_binner
         )
@@ -86,12 +86,11 @@ class ProcessSpectrum(Task):
             self.logger.info("No new spectra have been processed.")
             return {spectrum.get("spectrum_id") for spectrum in cleaned_spectra}
 
-        # saves binned spectra to filesystem
+        self.logger.info(
+            f"Saving binned spectra on {self._binned_spectra_output_path}."
+        )
         self._fs_gtw.serialize_to_file(self._binned_spectra_output_path, binned_spectra)
 
-        self.logger.info(
-            f"Finished processing {len(binned_spectra)} binned spectra. "
-            f"Saving into spectrum database."
-        )
+        self.logger.info(f"Finished processing {len(binned_spectra)} binned spectra.")
 
         return {spectrum.get("spectrum_id") for spectrum in binned_spectra}
