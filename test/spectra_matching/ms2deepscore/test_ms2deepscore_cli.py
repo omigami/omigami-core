@@ -8,9 +8,10 @@ def test_ms2deepscore_cli():
 
     main_args = inspect.getfullargspec(run_ms2deepscore_training_flow)
     command = ms2deepscore_cli.commands["train"]
-    required_params = {"dataset_id", "image", "project_name", "flow_name"}
+    required_params = {"dataset_id", "flow_name"}
     optional_params = {
         "dataset_directory",
+        "image",
         "epochs",
         "fingerprint_n_bits",
         "ion_mode",
@@ -21,6 +22,7 @@ def test_ms2deepscore_cli():
         "test_ratio",
         "train_ratio",
         "validation_ratio",
+        "local",
     }
 
     assert command.name == "train"
@@ -34,14 +36,8 @@ def test_ms2ds_deploy_model_cli():
 
     main_args = inspect.getfullargspec(run_deploy_ms2ds_model_flow)
     command = ms2deepscore_cli.commands["deploy-model"]
-    required_params = {
-        "model_run_id",
-        "image",
-        "project_name",
-        "flow_name",
-        "dataset_id",
-    }
-    optional_params = {"ion_mode"}
+    required_params = {"model_run_id", "flow_name", "dataset_id"}
+    optional_params = {"ion_mode", "image"}
 
     assert command.name == "deploy-model"
     assert set(main_args.args) == {p.name for p in command.params}

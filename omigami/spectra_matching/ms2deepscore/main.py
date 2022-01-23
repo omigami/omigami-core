@@ -23,7 +23,6 @@ def run_ms2deepscore_training_flow(
     validation_ratio: float,
     test_ratio: float,
     epochs: int,
-    project_name: str = MS2DEEPSCORE_PROJECT_NAME,
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
     local: bool = False,
@@ -51,7 +50,7 @@ def run_ms2deepscore_training_flow(
         scores_decimals=scores_decimals,
         spectrum_binner_n_bins=spectrum_binner_n_bins,
         ion_mode=ion_mode,
-        project_name=project_name,
+        project_name=MS2DEEPSCORE_PROJECT_NAME,
         spectrum_ids_chunk_size=spectrum_ids_chunk_size,
         train_ratio=train_ratio,
         validation_ratio=validation_ratio,
@@ -60,11 +59,13 @@ def run_ms2deepscore_training_flow(
         schedule=schedule,
     )
     if local is True:
-        flow_run = run_local_training_flow(flow, project_name)
+        flow_run = run_local_training_flow(flow, MS2DEEPSCORE_PROJECT_NAME)
         return flow_run
 
     deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
-    flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
+    flow_id, flow_run_id = deployer.deploy_flow(
+        flow=flow, project_name=MS2DEEPSCORE_PROJECT_NAME
+    )
 
     return flow_id, flow_run_id
 
@@ -72,7 +73,6 @@ def run_ms2deepscore_training_flow(
 def run_deploy_ms2ds_model_flow(
     model_run_id: str,
     image: str,
-    project_name: str,
     flow_name: str,
     dataset_id: str,
     ion_mode: IonModes,
@@ -94,7 +94,7 @@ def run_deploy_ms2ds_model_flow(
     factory = MS2DeepScoreFlowFactory()
     flow = factory.build_model_deployment_flow(
         image=image,
-        project_name=project_name,
+        project_name=MS2DEEPSCORE_PROJECT_NAME,
         flow_name=flow_name,
         dataset_id=dataset_id,
         ion_mode=ion_mode,
@@ -104,7 +104,9 @@ def run_deploy_ms2ds_model_flow(
 
     deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
     flow_id, flow_run_id = deployer.deploy_flow(
-        flow=flow, project_name=project_name, flow_parameters=flow_parameters
+        flow=flow,
+        project_name=MS2DEEPSCORE_PROJECT_NAME,
+        flow_parameters=flow_parameters,
     )
 
     return flow_id, flow_run_id

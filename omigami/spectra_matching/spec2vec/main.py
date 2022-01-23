@@ -22,7 +22,6 @@ def run_spec2vec_training_flow(
     allowed_missing_percentage: float,
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
-    project_name: str = SPEC2VEC_PROJECT_NAME,
     local: bool = False,
 ) -> Tuple[str, str]:
     """
@@ -41,7 +40,7 @@ def run_spec2vec_training_flow(
     factory = Spec2VecFlowFactory(dataset_directory=dataset_directory)
     flow = factory.build_training_flow(
         image=image,
-        project_name=project_name,
+        project_name=SPEC2VEC_PROJECT_NAME,
         flow_name=flow_name,
         dataset_id=dataset_id,
         ion_mode=ion_mode,
@@ -53,11 +52,13 @@ def run_spec2vec_training_flow(
         schedule=schedule,
     )
     if local is True:
-        flow_run = run_local_training_flow(flow, project_name)
+        flow_run = run_local_training_flow(flow, SPEC2VEC_PROJECT_NAME)
         return flow_run
 
     deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
-    flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
+    flow_id, flow_run_id = deployer.deploy_flow(
+        flow=flow, project_name=SPEC2VEC_PROJECT_NAME
+    )
 
     return flow_id, flow_run_id
 
@@ -71,7 +72,6 @@ def run_deploy_spec2vec_model_flow(
     n_decimals: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    project_name: str = SPEC2VEC_PROJECT_NAME,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a model deployment flow.
@@ -90,7 +90,7 @@ def run_deploy_spec2vec_model_flow(
     factory = Spec2VecFlowFactory()
     flow = factory.build_model_deployment_flow(
         image=image,
-        project_name=project_name,
+        project_name=SPEC2VEC_PROJECT_NAME,
         flow_name=flow_name,
         dataset_id=dataset_id,
         ion_mode=ion_mode,
@@ -103,7 +103,7 @@ def run_deploy_spec2vec_model_flow(
 
     deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
     flow_id, flow_run_id = deployer.deploy_flow(
-        flow=flow, project_name=project_name, flow_parameters=flow_parameters
+        flow=flow, project_name=SPEC2VEC_PROJECT_NAME, flow_parameters=flow_parameters
     )
 
     return flow_id, flow_run_id
