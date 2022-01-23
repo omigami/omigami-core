@@ -1,16 +1,15 @@
 import click
 
-from omigami.config import GNPS_URIS, STORAGE_ROOT
+from omigami.config import STORAGE_ROOT
 
 common_flow_options = [
     click.option(
-        "--image", "-i", type=str, required=True, help="Image used to build the flow"
-    ),
-    click.option(
-        "--project-name",
-        "-p",
-        help="Name of the project. This is used as identification by Prefect",
-        required=True,
+        "--image",
+        "-i",
+        type=str,
+        required=False,
+        help="Image used to build the flow",
+        default=None,
     ),
     click.option(
         "--flow-name",
@@ -47,10 +46,17 @@ schedule = click.option(
     required=False,
     help="Period between flow runs in days",
 )
+local_run = click.option(
+    "--local",
+    is_flag=True,
+    help="Flag that triggers in memory run of the training flow",
+    show_default=True,
+)
 
 common_training_options = [
     dataset_id,
     ion_mode,
     dataset_directory,
     schedule,
+    local_run,
 ]

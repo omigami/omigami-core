@@ -1,5 +1,7 @@
+import mlflow
 import numba
 import numpy as np
+from prefect import Flow
 
 
 @numba.njit
@@ -95,3 +97,18 @@ def cosine_similarity_matrix(
     for i in range(vectors_2.shape[0]):
         vectors_2[i] = vectors_2[i] / norm_2[i]
     return np.dot(vectors_1, vectors_2.T)
+
+
+def run_local_training_flow(flow: Flow, project_name: str):
+    flow_run = flow.run()
+
+    register_task = flow.get_tasks("RegisterModel")[0]
+    run_id = flow_run.result[register_task].result
+    artifact_uri = mlflow.get_run(run_id).info.artifact_uri
+    model_uri = f"{artifact_uri}/model/artifacts"
+
+    print(
+        f"\n\nFinished Training! {project_name.upper()} model is available at: {model_uri}\n\n"
+    )
+
+    return flow_run

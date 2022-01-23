@@ -107,24 +107,24 @@ To start a training flow, issue for instance:
 
 ```
 export OMIGAMI_ENV=local
+export MLFLOW_SERVER="sqlite:///$(pwd)/local-deployment/results/mlflow.sqlite"
 
-omigami ms2deepscore train 
-    --image "<image>" 
-    --project-name ms2deepscore 
-    --flow-name ms2deepscore-first-flow-test 
-    --dataset-id 10k 
-    --ion-mode positive 
+omigami ms2deepscore train \
+    --image "<image>" \
+    --project-name ms2deepscore \ 
+    --flow-name ms2deepscore-first-flow-test \ 
+    --dataset-id small_500 \
+    --ion-mode positive \ 
 ```
 
 or
 
 ```
-omigami spec2vec train 
-    --image "<image>"
-    --project-name=spec2vec 
-    --flow-name=spec2vec-first-flow-test
-    --dataset-id 10k
-    --ion-mode positive
+omigami spec2vec train \
+    --flow-name spec2vec-training \
+    --dataset-id small_500 \
+    --ion-mode positive \
+    --local
 ```
 
 In the notebooks you can check all available options for each training method (you can alternatively check the `cli.py`

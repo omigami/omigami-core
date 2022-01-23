@@ -5,12 +5,13 @@ import pandas as pd
 from omigami.authentication.prefect_factory import prefect_client_factory
 from omigami.config import IonModes
 from omigami.deployer import FlowDeployer
+from omigami.spectra_matching.ms2deepscore import MS2DEEPSCORE_PROJECT_NAME
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
+from omigami.spectra_matching.util import run_local_training_flow
 
 
 def run_ms2deepscore_training_flow(
     image: str,
-    project_name: str,
     flow_name: str,
     dataset_id: str,
     ion_mode: IonModes,
@@ -22,8 +23,10 @@ def run_ms2deepscore_training_flow(
     validation_ratio: float,
     test_ratio: float,
     epochs: int,
+    project_name: str = MS2DEEPSCORE_PROJECT_NAME,
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
+    local: bool = False,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a MS2DeepScore model training flow.
@@ -56,6 +59,10 @@ def run_ms2deepscore_training_flow(
         epochs=epochs,
         schedule=schedule,
     )
+    if local is True:
+        flow_run = run_local_training_flow(flow, project_name)
+        return flow_run
+
     deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
     flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
 

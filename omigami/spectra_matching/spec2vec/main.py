@@ -7,6 +7,7 @@ from omigami.config import IonModes
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
+from omigami.spectra_matching.util import run_local_training_flow
 
 
 def run_spec2vec_training_flow(
@@ -22,6 +23,7 @@ def run_spec2vec_training_flow(
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
     project_name: str = SPEC2VEC_PROJECT_NAME,
+    local: bool = False,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a Spec2Vec model training flow.
@@ -50,6 +52,9 @@ def run_spec2vec_training_flow(
         allowed_missing_percentage=allowed_missing_percentage,
         schedule=schedule,
     )
+    if local is True:
+        flow_run = run_local_training_flow(flow, project_name)
+        return flow_run
 
     deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
     flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
