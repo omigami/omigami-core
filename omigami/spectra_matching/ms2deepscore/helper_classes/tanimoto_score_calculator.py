@@ -6,31 +6,26 @@ from ms2deepscore import BinnedSpectrum
 from rdkit import Chem
 from rdkit.DataStructs import BulkTanimotoSimilarity
 
-from omigami.config import IonModes
-from omigami.spectra_matching.ms2deepscore.storage import (
-    MS2DeepScoreRedisSpectrumDataGateway,
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
 )
 
 
 class TanimotoScoreCalculator:
     def __init__(
         self,
-        spectrum_dgw: MS2DeepScoreRedisSpectrumDataGateway,
-        ion_mode: IonModes,
+        fs_dgw: MS2DeepScoreFSDataGateway,
+        binned_spectra_path: str,
         n_bits: int = 2048,
         decimals: int = 5,
     ):
-        self._spectrum_dgw = spectrum_dgw
-        self._ion_mode = ion_mode
+        self._fs_dgw = fs_dgw
+        self._binned_spectra_path = binned_spectra_path
         self._n_bits = n_bits
         self._decimals = decimals
 
-    def calculate(
-        self, spectrum_ids: List[str], scores_output_path: str, logger: Logger = None
-    ) -> str:
-        binned_spectra = self._spectrum_dgw.read_binned_spectra(
-            self._ion_mode, spectrum_ids
-        )
+    def calculate(self, scores_output_path: str, logger: Logger = None) -> str:
+        binned_spectra = self._fs_dgw.read_from_file(self._binned_spectra_path)
         unique_inchi_keys = self._get_unique_inchis(binned_spectra)
 
         if logger:

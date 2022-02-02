@@ -10,15 +10,17 @@ import pytest
 from omigami.spectra_matching.ms2deepscore.helper_classes.tanimoto_score_calculator import (
     TanimotoScoreCalculator,
 )
-from omigami.spectra_matching.ms2deepscore.storage import (
-    MS2DeepScoreRedisSpectrumDataGateway,
+
+from omigami.spectra_matching.ms2deepscore.storage.fs_data_gateway import (
+    MS2DeepScoreFSDataGateway,
 )
 
 
 @pytest.fixture()
-def tanimoto_calculator():
+def tanimoto_calculator(binned_spectra_to_train_path):
     return TanimotoScoreCalculator(
-        spectrum_dgw=MS2DeepScoreRedisSpectrumDataGateway(), ion_mode="positive"
+        fs_dgw=MS2DeepScoreFSDataGateway(),
+        binned_spectra_path=binned_spectra_to_train_path,
     )
 
 
@@ -71,9 +73,8 @@ def test_get_tanimoto_scores(inchis, tanimoto_calculator):
     assert scores.notnull().all().all()
 
 
-def test_calculate(binned_spectra_stored, tanimoto_calculator, binned_spectra, tmpdir):
-    spectrum_ids = [spectrum.get("spectrum_id") for spectrum in binned_spectra]
+def test_calculate(tanimoto_calculator, tmpdir):
     path = f"{tmpdir}/tanimoto_scores.pkl"
-    tanimoto_calculator.calculate(spectrum_ids, path)
+    tanimoto_calculator.calculate(path)
 
     assert os.path.exists(path)

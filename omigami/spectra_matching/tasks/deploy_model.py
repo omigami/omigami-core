@@ -12,7 +12,6 @@ from omigami.utils import merge_prefect_task_configs
 @dataclass
 class DeployModelParameters:
     redis_db: str
-    overwrite_model: bool
     model_name: str
 
 
@@ -23,7 +22,6 @@ class DeployModel(Task):
         **kwargs,
     ):
         self._redis_db = deploy_parameters.redis_db
-        self._overwrite_model = deploy_parameters.overwrite_model
         self._model_name = deploy_parameters.model_name
 
         config = merge_prefect_task_configs(kwargs)
@@ -52,7 +50,6 @@ class DeployModel(Task):
             model_name=self._model_name,
             model_uri=model_uri,
             redis_db=self._redis_db,
-            overwrite_existing=self._overwrite_model,
         )
 
         self.logger.info(f"Model deployment finished")

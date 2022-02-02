@@ -63,7 +63,7 @@ class RegisterModel(Task):
 
         """
         self.logger.info(
-            f"Registering model to {self._model_registry_uri} on URI: "
+            f"Registering model on URI {self._model_registry_uri} on path: "
             f"{self._mlflow_output_path}."
         )
         params = self._convert_train_parameters(

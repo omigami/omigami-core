@@ -17,12 +17,25 @@ dependencies:
   - python-kubernetes=12.0.*
   - pyyaml=5.4.*
   - matchms=0.8.*
+  - black=20.*
+  - s3fs=0.4.*
+  - boto3=1.17.*
   - pip:
       - tensorflow==2.5.*
       - ms2deepscore==0.2.*
       - redis==3.5.*
       - mlflow==1.14.*
-      - seldon-core==1.6.*
+      - seldon-core==1.12.*
       - git+https://github.com/datarevenue-berlin/drfs
       - matchmsextras==0.2.*
       - pubchempy==1.0.*
+      - jupyterlab==3.2.*
+      - pytest-pycharm
+      - pytest-redis
+      - moto==2.2.*
+      - requests-mock==1.8.*
+      - pytest==3.8.*
+      - pytest-runner==4.*
+      - pytest-cov==2.7.*
+      - pytest-azurepipelines
+      - kubetest==0.9.*

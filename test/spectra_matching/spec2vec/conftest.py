@@ -163,11 +163,6 @@ def mock_s2v_deploy_model_task(monkeypatch):
         pass
 
     monkeypatch.setattr(
-        omigami.spectra_matching.spec2vec.flows.training_flow,
-        "DeployModel",
-        DeployModel,
-    )
-    monkeypatch.setattr(
         omigami.spectra_matching.spec2vec.flows.deploy_model,
         "DeployModel",
         DeployModel,
@@ -178,7 +173,7 @@ def mock_s2v_deploy_model_task(monkeypatch):
 def registered_s2v_model(word2vec_model):
     dgw = MLFlowDataGateway()
     model = Spec2VecPredictor(
-        word2vec_model,
+        model=word2vec_model,
         ion_mode="positive",
         n_decimals=1,
         intensity_weighting_power=0.5,

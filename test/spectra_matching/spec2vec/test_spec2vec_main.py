@@ -4,8 +4,8 @@ import pytest
 
 import omigami.spectra_matching.spec2vec.main
 from omigami.authentication.prefect_factory import prefect_client_factory
-from omigami.config import GNPS_URIS
 from omigami.deployer import FlowDeployer
+from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
 from omigami.spectra_matching.spec2vec.main import (
     run_spec2vec_training_flow,
@@ -48,7 +48,6 @@ def test_mocked_deploy_training_flow(mock_objects):
 
     params = dict(
         image="",
-        project_name="default",
         flow_name="Robert DeFlow",
         dataset_id="small",
         ion_mode="positive",
@@ -57,17 +56,17 @@ def test_mocked_deploy_training_flow(mock_objects):
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=15,
-        deploy_model=False,
-        overwrite_model=False,
         schedule=None,
     )
 
     flow_id, flow_run_id = run_spec2vec_training_flow(**params)
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
-    mock_objects["factory"].build_training_flow.assert_called_once_with(**params)
+    mock_objects["factory"].build_training_flow.assert_called_once_with(
+        **params, project_name=SPEC2VEC_PROJECT_NAME
+    )
     mock_objects["deployer"].deploy_flow.assert_called_once_with(
-        flow="flow", project_name="default"
+        flow="flow", project_name=SPEC2VEC_PROJECT_NAME
     )
     mock_objects["client"].get.assert_called_once()
 
@@ -84,7 +83,6 @@ def test_run_mocked_deploy_model_flow(mock_objects):
         dataset_id="small",
         n_decimals=2,
         ion_mode="positive",
-        project_name="default",
     )
 
     flow_id, flow_run_id = run_deploy_spec2vec_model_flow(
@@ -93,11 +91,11 @@ def test_run_mocked_deploy_model_flow(mock_objects):
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_objects["factory"].build_model_deployment_flow.assert_called_once_with(
-        **params
+        **params, project_name=SPEC2VEC_PROJECT_NAME
     )
     mock_objects["deployer"].deploy_flow.assert_called_once_with(
         flow="flow",
-        project_name="default",
+        project_name=SPEC2VEC_PROJECT_NAME,
         flow_parameters={"ModelRunID": "model_run_id"},
     )
     mock_objects["client"].get.assert_called_once()

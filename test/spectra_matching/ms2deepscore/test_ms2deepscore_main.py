@@ -4,8 +4,8 @@ import pytest
 
 import omigami.spectra_matching.ms2deepscore.main
 from omigami.authentication.prefect_factory import prefect_client_factory
-from omigami.config import GNPS_URIS
 from omigami.deployer import FlowDeployer
+from omigami.spectra_matching.ms2deepscore import MS2DEEPSCORE_PROJECT_NAME
 from omigami.spectra_matching.ms2deepscore.factory import MS2DeepScoreFlowFactory
 from omigami.spectra_matching.ms2deepscore.main import (
     run_ms2deepscore_training_flow,
@@ -50,12 +50,9 @@ def test_mocked_deploy_training_flow(mock_objects):
 
     params = dict(
         image="",
-        project_name="default",
         flow_name="Robert DeFlow",
         dataset_id="small",
         ion_mode="positive",
-        deploy_model=False,
-        overwrite_model=False,
         schedule=None,
         spectrum_ids_chunk_size=100,
         fingerprint_n_bits=2048,
@@ -70,9 +67,11 @@ def test_mocked_deploy_training_flow(mock_objects):
     flow_id, flow_run_id = run_ms2deepscore_training_flow(**params)
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
-    mock_objects["factory"].build_training_flow.assert_called_once_with(**params)
+    mock_objects["factory"].build_training_flow.assert_called_once_with(
+        **params, project_name=MS2DEEPSCORE_PROJECT_NAME
+    )
     mock_objects["deployer"].deploy_flow.assert_called_once_with(
-        flow="flow", project_name="default"
+        flow="flow", project_name=MS2DEEPSCORE_PROJECT_NAME
     )
     mock_objects["client"].get.assert_called_once()
 
@@ -85,7 +84,6 @@ def test_run_mocked_deploy_model_flow(mock_objects):
         image="star wars episode II wasn't so bad",
         dataset_id="small",
         ion_mode="positive",
-        project_name="default",
     )
 
     flow_id, flow_run_id = run_deploy_ms2ds_model_flow(
@@ -94,11 +92,11 @@ def test_run_mocked_deploy_model_flow(mock_objects):
 
     assert (flow_id, flow_run_id) == ("id", "run_id")
     mock_objects["factory"].build_model_deployment_flow.assert_called_once_with(
-        **params
+        **params, project_name=MS2DEEPSCORE_PROJECT_NAME
     )
     mock_objects["deployer"].deploy_flow.assert_called_once_with(
         flow="flow",
-        project_name="default",
+        project_name=MS2DEEPSCORE_PROJECT_NAME,
         flow_parameters={"ModelRunID": "model_run_id"},
     )
     mock_objects["client"].get.assert_called_once()

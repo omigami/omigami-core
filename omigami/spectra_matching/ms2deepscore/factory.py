@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional
 
 from drfs import DRPath
 from prefect import Flow
@@ -14,15 +14,11 @@ from omigami.config import (
     MLFLOW_SERVER,
     GNPS_URIS,
 )
-from omigami.flow_config import (
-    make_flow_config,
-    PrefectExecutorMethods,
-)
+from omigami.flow_config import make_flow_config, PrefectExecutorMethods
 from omigami.spectra_matching.ms2deepscore.config import (
     DIRECTORIES,
     PROJECT_NAME,
     SPECTRUM_IDS_CHUNK_SIZE,
-    MS2DEEPSCORE_ROOT,
 )
 from omigami.spectra_matching.ms2deepscore.flows.deploy_model import (
     DeployModelFlowParameters,
@@ -47,13 +43,19 @@ class MS2DeepScoreFlowFactory:
         mlflow_output_directory: str = None,
         directories: Dict[str, str] = None,
         model_registry_uri: str = None,
+        storage_root: str = None,
     ):
+        if storage_root is None:
+            self._storage_root = STORAGE_ROOT
+        else:
+            self._storage_root = DRPath(storage_root)
+
         self._dataset_directory = (
             DRPath(dataset_directory)
             if dataset_directory is not None
-            else STORAGE_ROOT / "datasets"
+            else self._storage_root / "datasets"
         )
-        self._ms2deepscore_root = MS2DEEPSCORE_ROOT
+        self._ms2deepscore_root = self._storage_root / "ms2deepscore"
         self._directories = directories or DIRECTORIES
         self._dataset_ids = DATASET_IDS
         self._model_registry_uri = model_registry_uri or MLFLOW_SERVER
@@ -62,15 +64,13 @@ class MS2DeepScoreFlowFactory:
     def build_training_flow(
         self,
         flow_name: str,
-        image: str,
         dataset_id: str,
         fingerprint_n_bits: int,
         scores_decimals: int,
         spectrum_binner_n_bins: int,
+        image: Optional[str] = None,
         schedule: int = None,
         ion_mode: IonModes = "positive",
-        deploy_model: bool = False,
-        overwrite_model: bool = False,
         project_name: str = PROJECT_NAME,
         spectrum_ids_chunk_size: int = SPECTRUM_IDS_CHUNK_SIZE,
         train_ratio: float = 0.9,
@@ -97,24 +97,24 @@ class MS2DeepScoreFlowFactory:
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=REDIS_DATABASES[dataset_id],
             schedule=schedule,
-            storage_root=STORAGE_ROOT,
+            storage_root=self._storage_root,
         )
 
-        spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway(project=project_name)
         fs_dgw = MS2DeepScoreFSDataGateway()
 
-        spectrum_binner_output_path = (
-            self._ms2deepscore_root / self._directories["spectrum_binner"]
-        )
+        spectrum_binner_output_path = self._ms2deepscore_root / self._directories[
+            "spectrum_binner"
+        ].format(dataset_id=dataset_id)
+        binned_spectra_path = self._ms2deepscore_root / self._directories[
+            "binned_spectra"
+        ].format(dataset_id=dataset_id)
         model_output_path = str(self._ms2deepscore_root / self._directories["model"])
         scores_output_path = self._ms2deepscore_root / self._directories["scores"]
 
         source_uri = GNPS_URIS[dataset_id]
-        redis_db = REDIS_DATABASES[dataset_id]
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
         flow_parameters = TrainingFlowParameters(
             fs_dgw=fs_dgw,
-            spectrum_dgw=spectrum_dgw,
             source_uri=source_uri,
             dataset_directory=self._dataset_directory / dataset_id,
             chunk_size=chunk_size,
@@ -123,8 +123,8 @@ class MS2DeepScoreFlowFactory:
             fingerprint_n_bits=fingerprint_n_bits,
             scores_decimals=scores_decimals,
             spectrum_binner_output_path=spectrum_binner_output_path,
+            binned_spectra_output_path=binned_spectra_path,
             spectrum_binner_n_bins=spectrum_binner_n_bins,
-            overwrite_model=overwrite_model,
             model_output_path=model_output_path,
             project_name=project_name,
             model_registry_uri=self._model_registry_uri,
@@ -134,7 +134,6 @@ class MS2DeepScoreFlowFactory:
             validation_ratio=validation_ratio,
             test_ratio=test_ratio,
             spectrum_ids_chunk_size=spectrum_ids_chunk_size,
-            redis_db=redis_db,
             schedule_task_days=schedule,
         )
 
@@ -142,7 +141,6 @@ class MS2DeepScoreFlowFactory:
             flow_name=flow_name,
             flow_config=flow_config,
             flow_parameters=flow_parameters,
-            deploy_model=deploy_model,
         )
 
         return ms2deepscore_flow
@@ -172,19 +170,21 @@ class MS2DeepScoreFlowFactory:
             image=image,
             executor_type=PrefectExecutorMethods.LOCAL_DASK,
             redis_db=REDIS_DATABASES[dataset_id],
-            storage_root=STORAGE_ROOT,
+            storage_root=self._storage_root,
         )
 
         spectrum_dgw = MS2DeepScoreRedisSpectrumDataGateway(project=project_name)
         fs_dgw = MS2DeepScoreFSDataGateway()
 
         dataset_id = self._dataset_ids[dataset_id].format(date=datetime.today())
+        dataset_directory = self._dataset_directory / dataset_id
         flow_parameters = DeployModelFlowParameters(
             spectrum_dgw=spectrum_dgw,
             fs_dgw=fs_dgw,
             ion_mode=ion_mode,
             redis_db=REDIS_DATABASES[dataset_id],
             model_registry_uri=self._model_registry_uri,
+            dataset_directory=dataset_directory,
         )
 
         deploy_model_flow = build_deploy_model_flow(

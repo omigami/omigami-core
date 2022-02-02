@@ -33,8 +33,6 @@ def test_run_training_flow(backend_services):
         dataset_id="small",
         dataset_directory=str(STORAGE_ROOT.parent / "datasets-ms2ds"),
         ion_mode="positive",
-        deploy_model=False,
-        overwrite_model=False,
         schedule=None,
         spectrum_ids_chunk_size=100,
         fingerprint_n_bits=2048,
@@ -51,7 +49,7 @@ def test_run_training_flow(backend_services):
 
 
 @pytest.fixture()
-def integration_test_setup(mock_ms2ds_deploy_model_task, siamese_model_path):
+def integration_test_setup(siamese_model_path, mock_ms2ds_deploy_model_task):
     params = RegisterModelParameters(
         "test_experiment", MLFLOW_SERVER, str(MLFLOW_DIRECTORY), "positive"
     )

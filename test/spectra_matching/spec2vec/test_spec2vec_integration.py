@@ -21,7 +21,7 @@ from test.spectra_matching.conftest import monitor_flow_results
     "Requires local prefect server and mlflow. Make sure they are running to run this"
     "test. To run them, check README instructions."
 )
-def test_deploy_training_flow(backend_services, mock_s2v_deploy_model_task):
+def test_deploy_spec2vec_training_flow(backend_services, mock_s2v_deploy_model_task):
     client = backend_services["prefect"]
     image = None  # "drtools/omigami-spec2vec:SNAPSHOT.1a6ec12c"
 
@@ -36,8 +36,6 @@ def test_deploy_training_flow(backend_services, mock_s2v_deploy_model_task):
         window=500,
         intensity_weighting_power=0.5,
         allowed_missing_percentage=15,
-        deploy_model=False,
-        overwrite_model=False,
         schedule=None,
         dataset_directory=STORAGE_ROOT.parent / "datasets",
     )
@@ -79,7 +77,7 @@ def test_download_task_local_integration(backend_services):
     "Requires local prefect server and mlflow. Make sure they are running to run this"
     "test. To run them, check README instructions."
 )
-def test_run_model_deployment_flow(
+def test_run_model_spec2vec_deployment_flow(
     backend_services,
     mock_s2v_deploy_model_task,
     word2vec_model,

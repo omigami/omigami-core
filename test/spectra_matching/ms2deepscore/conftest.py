@@ -10,7 +10,6 @@ from pytest_redis import factories
 
 import omigami.spectra_matching.ms2deepscore.helper_classes.siamese_model_trainer
 from omigami.config import GNPS_URIS, EMBEDDING_HASHES
-from omigami.spectra_matching.ms2deepscore.config import BINNED_SPECTRUM_HASHES
 from omigami.spectra_matching.ms2deepscore.embedding import MS2DeepScoreEmbedding
 from omigami.spectra_matching.ms2deepscore.flows.training_flow import (
     build_training_flow,
@@ -126,15 +125,8 @@ def binned_spectra_to_train():
 
 
 @pytest.fixture
-def binned_spectra_to_train_stored(redis_db, binned_spectra_to_train):
-    pipe = redis_db.pipeline()
-    for spectrum in binned_spectra_to_train:
-        pipe.hset(
-            f"{BINNED_SPECTRUM_HASHES}_positive",
-            spectrum.metadata["spectrum_id"],
-            pickle.dumps(spectrum),
-        )
-    pipe.execute()
+def binned_spectra_to_train_path():
+    return ASSETS_DIR / "ms2deepscore" / "to_train" / "binned_spectra.pkl"
 
 
 @pytest.fixture
@@ -158,18 +150,12 @@ def small_model_params(monkeypatch):
 def mock_ms2ds_deploy_model_task(monkeypatch):
 
     import omigami.spectra_matching.ms2deepscore.flows.deploy_model
-    import omigami.spectra_matching.ms2deepscore.flows.training_flow
 
     class DeployModel(DummyTask):
         pass
 
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.deploy_model,
-        "DeployModel",
-        DeployModel,
-    )
-    monkeypatch.setattr(
-        omigami.spectra_matching.ms2deepscore.flows.training_flow,
         "DeployModel",
         DeployModel,
     )
@@ -187,17 +173,7 @@ def ms2ds_build_test_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_fi
     )
     monkeypatch.setattr(
         omigami.spectra_matching.ms2deepscore.flows.training_flow,
-        "MakeEmbeddings",
-        DummyTask,
-    )
-    monkeypatch.setattr(
-        omigami.spectra_matching.ms2deepscore.flows.training_flow,
         "RegisterModel",
-        DummyTask,
-    )
-    monkeypatch.setattr(
-        omigami.spectra_matching.ms2deepscore.flows.training_flow,
-        "DeployModel",
         DummyTask,
     )
 
@@ -206,20 +182,19 @@ def ms2ds_build_test_model_flow(tmpdir, flow_config, monkeypatch, clean_chunk_fi
 
     flow_params = TrainingFlowParameters(
         fs_dgw=data_gtw,
-        spectrum_dgw=spectrum_dgw,
         source_uri=GNPS_URIS["small_500"],
         # the three parameters below are for using cached assets instead of downloading
         dataset_directory=str(ASSETS_DIR),
         dataset_name="SMALL_GNPS_500_spectra.json",
         chunk_size=150000,
         ion_mode="positive",
-        overwrite_model=True,
         # we use everything but the model path as tmpdir. We only want the model from this script
         scores_output_path=str(tmpdir / "tanimoto_scores.pkl"),
         fingerprint_n_bits=2048,
         scores_decimals=5,
         spectrum_binner_n_bins=10000,
         spectrum_binner_output_path=str(tmpdir / "spectrum_binner.pkl"),
+        binned_spectra_output_path=str(tmpdir / "binned_spectra.pkl"),
         model_output_path=str(CACHE_DIR / "ms2deep_score.hdf5"),
         epochs=5,
         project_name="test",

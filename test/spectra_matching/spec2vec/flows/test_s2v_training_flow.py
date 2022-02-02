@@ -19,30 +19,23 @@ from test.spectra_matching.conftest import ASSETS_DIR
 os.chdir(Path(__file__).parents[4])
 
 
-def test_training_flow(flow_config, mock_s2v_deploy_model_task):
-    mock_spectrum_dgw = MagicMock(spec=RedisSpectrumDataGateway)
+def test_training_flow(flow_config):
     mock_data_gtw = MagicMock(spec=FSDataGateway)
     expected_tasks = {
         "DownloadData",
         "CreateChunks",
         "CleanRawSpectra",
-        "CacheCleanedSpectra",
         "CreateDocuments",
-        "MakeEmbeddings",
         "RegisterModel",
         "TrainModel",
-        "DeployModel",
-        "DeleteEmbeddings",
     }
     flow_params = TrainingFlowParameters(
-        spectrum_dgw=mock_spectrum_dgw,
         fs_dgw=mock_data_gtw,
         source_uri="source_uri",
         dataset_directory="datasets",
         chunk_size=150000,
         ion_mode="positive",
         n_decimals=2,
-        overwrite_model=True,
         iterations=25,
         window=500,
         experiment_name="test",
@@ -56,7 +49,6 @@ def test_training_flow(flow_config, mock_s2v_deploy_model_task):
         flow_name="test-flow",
         flow_config=flow_config,
         flow_parameters=flow_params,
-        deploy_model=True,
     )
 
     assert flow
@@ -75,7 +67,6 @@ def test_run_training_flow(
     tmpdir,
     flow_config,
     clean_chunk_files,
-    spec2vec_redis_setup,
 ):
     # remove mlflow models from previous runs
     mlflow_root = tmpdir / "test-mlflow"
@@ -87,7 +78,6 @@ def test_run_training_flow(
     spectrum_dgw = RedisSpectrumDataGateway(project=SPEC2VEC_PROJECT_NAME)
     data_gtw = FSDataGateway()
     flow_params = TrainingFlowParameters(
-        spectrum_dgw=spectrum_dgw,
         fs_dgw=data_gtw,
         source_uri=GNPS_URIS["small"],
         dataset_directory=ASSETS_DIR,
@@ -95,7 +85,6 @@ def test_run_training_flow(
         chunk_size=int(1e8),
         ion_mode="positive",
         n_decimals=1,
-        overwrite_model=True,
         iterations=3,
         window=200,
         experiment_name="test",
@@ -110,7 +99,6 @@ def test_run_training_flow(
         flow_config=flow_config,
         flow_name="test-flow",
         flow_parameters=flow_params,
-        deploy_model=False,
     )
 
     flow_run = flow.run()

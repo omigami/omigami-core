@@ -7,6 +7,7 @@ from omigami.config import IonModes
 from omigami.deployer import FlowDeployer
 from omigami.spectra_matching.spec2vec import SPEC2VEC_PROJECT_NAME
 from omigami.spectra_matching.spec2vec.factory import Spec2VecFlowFactory
+from omigami.spectra_matching.util import run_local_training_flow
 
 
 def run_spec2vec_training_flow(
@@ -19,11 +20,9 @@ def run_spec2vec_training_flow(
     window: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    deploy_model: bool,
-    overwrite_model: bool,
     schedule: Optional[pd.Timedelta] = None,
     dataset_directory: str = None,
-    project_name: str = SPEC2VEC_PROJECT_NAME,
+    local: bool = False,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a Spec2Vec model training flow.
@@ -41,7 +40,7 @@ def run_spec2vec_training_flow(
     factory = Spec2VecFlowFactory(dataset_directory=dataset_directory)
     flow = factory.build_training_flow(
         image=image,
-        project_name=project_name,
+        project_name=SPEC2VEC_PROJECT_NAME,
         flow_name=flow_name,
         dataset_id=dataset_id,
         ion_mode=ion_mode,
@@ -50,13 +49,16 @@ def run_spec2vec_training_flow(
         window=window,
         intensity_weighting_power=intensity_weighting_power,
         allowed_missing_percentage=allowed_missing_percentage,
-        deploy_model=deploy_model,
-        overwrite_model=overwrite_model,
         schedule=schedule,
     )
+    if local is True:
+        flow_run = run_local_training_flow(flow, SPEC2VEC_PROJECT_NAME)
+        return flow_run
 
     deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
-    flow_id, flow_run_id = deployer.deploy_flow(flow=flow, project_name=project_name)
+    flow_id, flow_run_id = deployer.deploy_flow(
+        flow=flow, project_name=SPEC2VEC_PROJECT_NAME
+    )
 
     return flow_id, flow_run_id
 
@@ -70,7 +72,6 @@ def run_deploy_spec2vec_model_flow(
     n_decimals: int,
     intensity_weighting_power: float,
     allowed_missing_percentage: float,
-    project_name: str = SPEC2VEC_PROJECT_NAME,
 ) -> Tuple[str, str]:
     """
     Builds, deploys, and runs a model deployment flow.
@@ -89,7 +90,7 @@ def run_deploy_spec2vec_model_flow(
     factory = Spec2VecFlowFactory()
     flow = factory.build_model_deployment_flow(
         image=image,
-        project_name=project_name,
+        project_name=SPEC2VEC_PROJECT_NAME,
         flow_name=flow_name,
         dataset_id=dataset_id,
         ion_mode=ion_mode,
@@ -102,7 +103,7 @@ def run_deploy_spec2vec_model_flow(
 
     deployer = FlowDeployer(prefect_client=prefect_client_factory.get())
     flow_id, flow_run_id = deployer.deploy_flow(
-        flow=flow, project_name=project_name, flow_parameters=flow_parameters
+        flow=flow, project_name=SPEC2VEC_PROJECT_NAME, flow_parameters=flow_parameters
     )
 
     return flow_id, flow_run_id

@@ -1,0 +1,1 @@
+MS2DEEPSCORE_PROJECT_NAME = "ms2deepscore"

@@ -2,8 +2,6 @@ from pathlib import Path
 
 import confuse
 
-from omigami.config import STORAGE_ROOT
-
 
 class Configuration(confuse.Configuration):
     def config_dir(self):
@@ -11,7 +9,6 @@ class Configuration(confuse.Configuration):
 
 
 config = Configuration("omigami/spec2vec", __name__)
-SPEC2VEC_ROOT = STORAGE_ROOT / "spec2vec"
 
 DOCUMENT_DIRECTORIES = config["storage"]["documents"].get(dict)
 
